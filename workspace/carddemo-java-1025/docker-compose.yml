@@ -49,6 +49,8 @@ services:
       DB_NAME: carddemo_customer
       DB_USER: carddemo
       DB_PASSWORD: carddemo
+      IAM_TOKEN_SECRET: ${IAM_TOKEN_SECRET:-carddemo-demo-secret-change-me}
+      INTERNAL_SERVICE_NAME: card-service
     ports:
       - "8082:8082"
     depends_on:
@@ -70,14 +72,18 @@ services:
       TRANSACTION_SERVICE_URL: http://transaction-service:8085
       IAM_TOKEN_SECRET: ${IAM_TOKEN_SECRET:-carddemo-demo-secret-change-me}
       CARD_NUMBER_KEY: ${CARD_NUMBER_KEY:-local-demo-card-number-key}
+      CARD_REF_SALT: ${CARD_REF_SALT:-local-demo-card-ref-salt}
+      INTERNAL_SERVICE_NAME: card-service
+      CARD_NUMBER_GENERATION_ENABLED: ${CARD_NUMBER_GENERATION_ENABLED:-true}
+      CARD_WORKERS_ENABLED: ${CARD_WORKERS_ENABLED:-true}
+      CARD_FEE_RETRY_INTERVAL_MS: ${CARD_FEE_RETRY_INTERVAL_MS:-5000}
+      CARD_SIDE_EFFECT_INTERVAL_MS: ${CARD_SIDE_EFFECT_INTERVAL_MS:-5000}
     ports:
       - "8083:8083"
     depends_on:
       postgres:
         condition: service_healthy
       customer-service:
-        condition: service_started
-      transaction-service:
         condition: service_started
 
   account-service:
@@ -91,6 +97,8 @@ services:
       DB_NAME: carddemo_account
       DB_USER: carddemo
       DB_PASSWORD: carddemo
+      IAM_TOKEN_SECRET: ${IAM_TOKEN_SECRET:-carddemo-demo-secret-change-me}
+      INTERNAL_ALLOWED_CALLERS: transaction-service
     ports:
       - "8084:8084"
     depends_on:
@@ -111,6 +119,10 @@ services:
       CARD_SERVICE_URL: http://card-service:8083
       ACCOUNT_SERVICE_URL: http://account-service:8084
       MARKETING_SERVICE_URL: http://marketing-service:8087
+      LEDGER_SERVICE_URL: http://ledger-service:8089
+      IAM_TOKEN_SECRET: ${IAM_TOKEN_SECRET:-carddemo-demo-secret-change-me}
+      INTERNAL_SERVICE_NAME: transaction-service
+      INTERNAL_ALLOWED_CALLERS: card-service
     ports:
       - "8085:8085"
     depends_on:

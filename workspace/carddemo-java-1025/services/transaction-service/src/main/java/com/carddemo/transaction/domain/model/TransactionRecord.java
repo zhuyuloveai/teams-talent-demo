@@ -69,9 +69,18 @@ public class TransactionRecord {
     @Column(name = "status", length = 10, nullable = false)
     private TransactionStatus status;
 
+    /** 退款单指向的原收费交易号（002-A002）：非空即退款单，数据库唯一约束保证一笔原收费只退一次。 */
+    @Column(name = "original_transaction_id", length = 16, updatable = false)
+    private String originalTransactionId;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
+
+    /** 关联原收费（仅退款单使用）。 */
+    public void linkOriginalTransaction(String originalTransactionId) {
+        this.originalTransactionId = originalTransactionId;
+    }
 
     protected TransactionRecord() {
         // for JPA
@@ -176,6 +185,10 @@ public class TransactionRecord {
 
     public String getTransactionId() {
         return transactionId;
+    }
+
+    public String getOriginalTransactionId() {
+        return originalTransactionId;
     }
 
     public String getAccountId() {

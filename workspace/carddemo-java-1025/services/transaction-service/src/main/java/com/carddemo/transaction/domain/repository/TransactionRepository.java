@@ -14,6 +14,9 @@ public interface TransactionRepository {
 
     boolean existsByTransactionId(String transactionId);
 
+    /** 退款单反查：一笔原收费最多一笔退款（002-A002）。 */
+    Optional<TransactionRecord> findByOriginalTransactionId(String originalTransactionId);
+
     TransactionRecord saveTransaction(TransactionRecord transaction);
 
     /**

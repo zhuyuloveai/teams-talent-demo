@@ -50,8 +50,9 @@ public class ReplacementController {
         if (outcome.replayed()) {
             return ResponseEntity.ok(body);
         }
-        HttpStatus status = outcome.replacement().getFeeStatus() == FeeStatus.FEE_PENDING
-                ? HttpStatus.ACCEPTED : HttpStatus.CREATED;
+        boolean pending = outcome.replacement().getFeeStatus() == FeeStatus.FEE_PENDING
+                || outcome.replacement().getNumberStatus() == com.carddemo.card.domain.model.NumberStatus.PENDING;
+        HttpStatus status = pending ? HttpStatus.ACCEPTED : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(body);
     }
 
@@ -99,6 +100,7 @@ public class ReplacementController {
             String replacementId,
             String oldCardNumberLast4,
             String newCardNumberLast4,
+            String numberStatus,
             String status,
             String reason,
             String deliveryMethod,
@@ -118,6 +120,7 @@ public class ReplacementController {
                     replacement.getReplacementId(),
                     tail(replacement.getOldCardNumber()),
                     tail(replacement.getNewCardNumber()),
+                    replacement.getNumberStatus().name(),
                     replacement.getStatus().name(),
                     replacement.getReason(),
                     replacement.getDeliveryMethod(),
@@ -134,6 +137,9 @@ public class ReplacementController {
         }
 
         private static String tail(String masked) {
+            if (masked == null || masked.length() < 4) {
+                return null;
+            }
             return masked.substring(masked.length() - 4);
         }
     }

@@ -45,6 +45,13 @@ public interface TransactionJpaRepository
         }
     }
 
+    Optional<TransactionRecord> findRecordByOriginalTransactionId(String originalTransactionId);
+
+    @Override
+    default Optional<TransactionRecord> findByOriginalTransactionId(String originalTransactionId) {
+        return findRecordByOriginalTransactionId(originalTransactionId);
+    }
+
     @Override
     default Optional<String> findMaxTransactionId() {
         return findMaxTransactionIdValue();

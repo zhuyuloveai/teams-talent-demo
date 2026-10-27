@@ -37,6 +37,9 @@ public class NotificationRecord {
     @Column(name = "attempts", nullable = false)
     private int attempts;
 
+    @Column(name = "last_error", length = 500)
+    private String lastError;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -70,6 +73,20 @@ public class NotificationRecord {
         this.status = "PENDING_RETRY";
         this.attempts++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void markFailed(String error) {
+        markFailed();
+        this.lastError = error == null || error.length() <= 500 ? error : error.substring(0, 500);
+    }
+
+    public void markRetryAttempt() {
+        this.attempts++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getLastError() {
+        return lastError;
     }
 
     public String getNotificationId() {

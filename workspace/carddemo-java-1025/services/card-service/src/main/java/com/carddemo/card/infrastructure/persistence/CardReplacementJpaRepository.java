@@ -1,14 +1,18 @@
 package com.carddemo.card.infrastructure.persistence;
 
 import com.carddemo.card.domain.model.CardReplacement;
+import com.carddemo.card.domain.model.NumberStatus;
 import com.carddemo.card.domain.model.ReplacementStatus;
 import com.carddemo.card.domain.repository.CardReplacementRepository;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -22,7 +26,7 @@ public interface CardReplacementJpaRepository
 
     Optional<CardReplacement> findByActiveKey(String activeKey);
 
-    List<CardReplacement> findByOldCardNumberOrderByRequestedAtDesc(String oldCardNumber);
+    List<CardReplacement> findByOldCardRefOrderByRequestedAtDesc(String oldCardRef);
 
     Page<CardReplacement> findByStatusIn(Collection<ReplacementStatus> statuses, Pageable pageable);
 
@@ -31,11 +35,22 @@ public interface CardReplacementJpaRepository
     List<CardReplacement> findByStatusAndTrackingNoIsNullAndShippedAtBefore(ReplacementStatus status,
                                                                             LocalDateTime threshold);
 
-    boolean existsByNewCardNumber(String newCardNumber);
+    boolean existsByNewCardRef(String newCardRef);
+
+    List<CardReplacement> findByNumberStatusOrderByRequestedAtAsc(NumberStatus numberStatus);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from CardReplacement r where r.replacementId = :replacementId")
+    Optional<CardReplacement> findForUpdate(@Param("replacementId") String replacementId);
 
     @Override
-    default boolean existsNewCardNumber(String newCardNumber) {
-        return existsByNewCardNumber(newCardNumber);
+    default Optional<CardReplacement> findByIdForUpdate(String replacementId) {
+        return findForUpdate(replacementId);
+    }
+
+    @Override
+    default boolean existsNewCardRef(String newCardRef) {
+        return existsByNewCardRef(newCardRef);
     }
 
     @Override
@@ -46,6 +61,12 @@ public interface CardReplacementJpaRepository
     @Override
     default List<CardReplacement> findShippedWithoutTrackingBefore(LocalDateTime threshold) {
         return findByStatusAndTrackingNoIsNullAndShippedAtBefore(ReplacementStatus.SHIPPED, threshold);
+    }
+
+    @Override
+    default List<CardReplacement> findNumberPending(int limit) {
+        List<CardReplacement> all = findByNumberStatusOrderByRequestedAtAsc(NumberStatus.PENDING);
+        return all.size() > limit ? all.subList(0, limit) : all;
     }
 
     @Query(value = "SELECT nextval('replacement_effect_seq')", nativeQuery = true)
@@ -64,6 +85,6 @@ public interface CardReplacementJpaRepository
 
     @Override
     default CardReplacement saveReplacement(CardReplacement replacement) {
-        return save(replacement);
+        return saveAndFlush(replacement);
     }
 }

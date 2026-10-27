@@ -33,6 +33,14 @@ public class ApiProxyController {
             "{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"No upstream service is mapped to this path\"}";
     private static final String UPSTREAM_UNAVAILABLE =
             "{\"code\":\"DEPENDENCY_UNAVAILABLE\",\"message\":\"Upstream service is unavailable\"}";
+    private static final String INTERNAL_ONLY =
+            "{\"code\":\"FORBIDDEN\",\"message\":\"Internal service endpoint is not reachable from the browser\"}";
+    /** 内部资金接口（002-A007）：浏览器侧显式拒绝，不依赖"上游恰好也要鉴权"。 */
+    private static final java.util.regex.Pattern[] INTERNAL_PATHS = {
+            java.util.regex.Pattern.compile("^/api/v1/accounts/[^/]+/effects$"),
+            java.util.regex.Pattern.compile("^/api/v1/accounts/effects(/.*)?$"),
+            java.util.regex.Pattern.compile("^/api/v1/replacement-fees(/.*)?$")
+    };
 
     private final Map<String, String> routes = new LinkedHashMap<>();
     private final RestClient restClient;
@@ -79,6 +87,9 @@ public class ApiProxyController {
     @RequestMapping("/api/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest request,
                                        @RequestBody(required = false) byte[] body) {
+        if (isInternalOnly(request.getRequestURI())) {
+            return json(HttpStatus.FORBIDDEN, INTERNAL_ONLY);
+        }
         String target = resolveTarget(request.getRequestURI());
         if (target == null) {
             return json(HttpStatus.NOT_FOUND, ROUTE_NOT_FOUND);
@@ -94,7 +105,6 @@ public class ApiProxyController {
             copyHeader(request, spec, HttpHeaders.CONTENT_TYPE);
             copyHeader(request, spec, HttpHeaders.ACCEPT);
             copyHeader(request, spec, HttpHeaders.AUTHORIZATION);
-            copyHeader(request, spec, "X-User-Id");
             if (body != null && body.length > 0) {
                 spec.body(body);
             }
@@ -113,6 +123,15 @@ public class ApiProxyController {
             return json(HttpStatus.BAD_GATEWAY,
                     "{\"code\":\"UPSTREAM_ERROR\",\"message\":\"Upstream request failed\"}");
         }
+    }
+
+    static boolean isInternalOnly(String path) {
+        for (java.util.regex.Pattern pattern : INTERNAL_PATHS) {
+            if (pattern.matcher(path).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     String resolveTarget(String path) {

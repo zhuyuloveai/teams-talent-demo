@@ -630,12 +630,39 @@ function newIdempotencyKey(prefix) {
     return `${prefix}-${random}`.slice(0, 64);
 }
 
+/**
+ * 未知结果重试必须沿用同一次逻辑请求的幂等键（002-C07）：
+ * 结果未确定前不换 key；明确成功或收到确定性 4xx 后才轮换。
+ */
+function stableIdempotencyKey(scope) {
+    const storageKey = `carddemo.idem.${state.session ? state.session.user.userId : 'anon'}.${scope}`;
+    let value = window.sessionStorage.getItem(storageKey);
+    if (!value) {
+        value = newIdempotencyKey(scope);
+        window.sessionStorage.setItem(storageKey, value);
+    }
+    return { key: value, rotate: () => window.sessionStorage.removeItem(storageKey) };
+}
+
+function isUnknownOutcome(error) {
+    // 网络中断、超时、5xx 与 503 表示结果未知；4xx 是确定性拒绝。
+    if (!error) {
+        return true;
+    }
+    const status = error.status;
+    return status === undefined || status === null || status >= 500;
+}
+
+function currentUserIsAdmin() {
+    return !!(state.session && state.session.user && state.session.user.userType === 'A');
+}
+
 function cardActions(card) {
     if (card.cardStatus === 'ACTIVE' && card.activeStatus === 'Y') {
         return `
             <h3>挂失</h3>
             <div class="alert error"><strong>风险提示</strong> · 挂失后旧卡立即失效且不可撤销，如需用卡请同时申请补卡。</div>
-            <form id="loss-form" class="form-grid">
+            <form id="loss-form" class="form-grid" data-last4="${esc(card.cardNumberLast4 || '')}">
                 <label class="field"><span>挂失原因 <span class="req">*</span></span>
                     <select name="reason" required>
                         <option value="LOST">丢失</option>
@@ -643,7 +670,13 @@ function cardActions(card) {
                         <option value="DAMAGED">损坏</option>
                     </select></label>
                 <label class="field"><span>卡号后 4 位 <span class="req">*</span></span>
-                    <input name="confirmCardLast4" maxlength="4" pattern="\\d{4}" required></label>
+                    <input name="confirmCardLast4" maxlength="4" pattern="\\d{4}" required
+                        placeholder="本卡为 **** ${esc(card.cardNumberLast4 || '')}"></label>
+                ${currentUserIsAdmin() ? `
+                <label class="field"><span>客服工单号 <span class="req">*</span></span>
+                    <input name="staffTicketNo" maxlength="32" required placeholder="如 TICKET-1001"></label>
+                <label class="field"><span>核身核实引用 <span class="req">*</span></span>
+                    <input name="identityVerificationRef" maxlength="64" required placeholder="如 REF-KYC-1001"></label>` : ''}
                 <div class="form-actions span-2">
                     <button class="btn danger" type="submit" id="loss-submit">确认挂失</button>
                 </div>
@@ -671,19 +704,36 @@ function wireCardActions(cardNumber, card) {
             const msg = document.getElementById('loss-msg');
             const button = document.getElementById('loss-submit');
             msg.innerHTML = '';
+            const expectedLast4 = (lossForm.dataset.last4 || '').trim();
+            const typedLast4 = (values.confirmCardLast4 || '').trim();
+            if (expectedLast4 && typedLast4 !== expectedLast4) {
+                // 002-C07：错误但格式合法的后 4 位在浏览器侧拦截，不发 POST
+                msg.innerHTML = errBox({ message: `卡号后 4 位与本卡（**** ${expectedLast4}）不一致，请核对后再提交。` });
+                return;
+            }
+            const idem = stableIdempotencyKey(`loss-${cardNumber}`);
             setBusy(button, true, '提交中…');
             try {
+                const body = {
+                    reason: values.reason,
+                    confirmCardLast4: typedLast4,
+                    idempotencyKey: idem.key
+                };
+                if (values.staffTicketNo) body.staffTicketNo = values.staffTicketNo.trim();
+                if (values.identityVerificationRef) {
+                    body.identityVerificationRef = values.identityVerificationRef.trim();
+                }
                 await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}/loss`, {
                     method: 'POST',
-                    body: {
-                        reason: values.reason,
-                        confirmCardLast4: values.confirmCardLast4.trim(),
-                        idempotencyKey: newIdempotencyKey('loss')
-                    }
+                    body
                 });
+                idem.rotate();
                 toast('挂失已生效', 'success');
                 await pageCardDetail(cardNumber);
             } catch (error) {
+                if (!isUnknownOutcome(error)) {
+                    idem.rotate();
+                }
                 msg.innerHTML = errBox(error);
                 setBusy(button, false);
             }
@@ -2719,20 +2769,45 @@ async function pageReplacementNew(cardNumber) {
     const box = document.getElementById('replacement-new');
     try {
         const card = await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}`);
-        const addresses = await api(
-            `/api/v1/customers/${encodeURIComponent(card.customerId)}/addresses`)
-            .catch(() => ({ items: [] }));
-        const options = (addresses.items || []).map((item) => `
+        // 002-C07：地址必须来自真实客户地址资源；读取失败要显式提示并可重试，不能静默当"没有地址"
+        let addresses;
+        try {
+            addresses = await api(`/api/v1/customers/${encodeURIComponent(card.customerId)}/addresses`);
+        } catch (addressError) {
+            box.innerHTML = `
+                <div class="alert error"><strong>收卡地址读取失败</strong> · ${esc(addressError.message || '无法读取地址资源')}
+                    <div class="form-actions mt-8">
+                        <button class="btn ghost small" type="button" id="address-retry">重试</button>
+                        <a class="btn ghost small" href="#/cards/${encodeURIComponent(cardNumber)}">返回卡片</a>
+                    </div>
+                </div>`;
+            document.getElementById('address-retry')
+                .addEventListener('click', () => pageReplacementNew(cardNumber));
+            return;
+        }
+        const addressItems = addresses.items || [];
+        if (addressItems.length === 0) {
+            box.innerHTML = `
+                <div class="alert error"><strong>没有可用收卡地址</strong> · 请先在客户资料中维护地址后再申请补卡。
+                    <div class="form-actions mt-8">
+                        <button class="btn ghost small" type="button" id="address-retry">重新读取</button>
+                    </div>
+                </div>`;
+            document.getElementById('address-retry')
+                .addEventListener('click', () => pageReplacementNew(cardNumber));
+            return;
+        }
+        const options = addressItems.map((item) => `
             <option value="${esc(item.addressId)}">${esc(item.addressId)} · ${esc(item.stateCode)} ${esc(item.zipCode)}${item.primary ? '（默认）' : ''}</option>`).join('');
         const feeText = card.cardLevel === 'PLATINUM' ? '0.00 元（白金卡免收）' : '50.00 元';
         box.innerHTML = `
             <h3>补卡信息</h3>
-            <p class="hint">旧卡（${esc(card.cardStatus)}）将永久失效；新卡激活前不可交易。补卡费：${feeText}。</p>
+            <p class="hint">旧卡（${esc(card.cardStatus)}）将永久失效；新卡激活前不可交易。补卡费：${feeText}。
+                工单只保存所选地址编号，不冗余家庭地址明细。</p>
             <form id="replacement-form">
                 <div class="form-grid">
-                    <label class="field span-2"><span>收卡地址 <span class="req">*</span></span>
-                        ${options ? `<select name="addressId" required>${options}</select>`
-                            : `<input name="addressId" required maxlength="32" placeholder="ADDR-000000006">`}</label>
+                    <label class="field span-2"><span>收卡地址（确认或改选） <span class="req">*</span></span>
+                        <select name="addressId" required>${options}</select></label>
                     <label class="field"><span>配送方式 <span class="req">*</span></span>
                         <select name="deliveryMethod" required>
                             <option value="STANDARD">标准配送</option>
@@ -2759,20 +2834,29 @@ async function pageReplacementNew(cardNumber) {
             const values = formValues(form);
             const msg = document.getElementById('replacement-msg');
             msg.innerHTML = '';
+            const idem = stableIdempotencyKey(`repl-${cardNumber}`);
             setBusy(button, true, '提交中…');
             try {
                 const created = await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}/replacements`, {
                     method: 'POST',
                     body: {
-                        addressId: values.addressId.trim(),
+                        addressId: values.addressId,
                         deliveryMethod: values.deliveryMethod,
                         reason: values.reason,
-                        idempotencyKey: newIdempotencyKey('repl')
+                        idempotencyKey: idem.key
                     }
                 });
+                idem.rotate();
                 toast(`补卡申请已提交（${created.feeStatus}）`, 'success');
                 location.hash = `#/replacements/${encodeURIComponent(created.replacementId)}`;
             } catch (error) {
+                if (!isUnknownOutcome(error)) {
+                    idem.rotate();
+                } else {
+                    msg.innerHTML = errBox({ message: '结果未知（网络或下游超时）。可安全重试：同一请求会复用同一个幂等键，不会重复建单或重复收费。' });
+                    setBusy(button, false);
+                    return;
+                }
                 msg.innerHTML = errBox(error);
                 setBusy(button, false);
             }
@@ -2821,6 +2905,12 @@ async function pageReplacementDetail(replacementId) {
                 </form>
                 <div id="cancel-msg"></div>
                 <p class="hint">制卡后不可取消；已收取的补卡费将冲回一次。</p>` : ''}
+            <div class="alert mt-16">
+                <strong>需要客服协助？</strong>
+                客服可代客挂失、查询进度并协助取消（补卡申请仅持卡人本人提交）。
+                请拨打 400-000-0000 或通过在线客服提供工单号 ${esc(item.replacementId)}；
+                挂失请提供客服工单号与核身核实引用。
+            </div>
             <div class="form-actions mt-16"><a class="btn ghost" href="#/menu">返回首页</a></div>`;
         const cancelForm = document.getElementById('cancel-form');
         if (cancelForm) {
@@ -2829,15 +2919,20 @@ async function pageReplacementDetail(replacementId) {
                 const msg = document.getElementById('cancel-msg');
                 const button = document.getElementById('cancel-submit');
                 msg.innerHTML = '';
+                const idem = stableIdempotencyKey(`cancel-${replacementId}`);
                 setBusy(button, true, '提交中…');
                 try {
                     await api(`/api/v1/replacements/${encodeURIComponent(replacementId)}/cancel`, {
                         method: 'POST',
-                        body: { idempotencyKey: newIdempotencyKey('cancel') }
+                        body: { idempotencyKey: idem.key }
                     });
+                    idem.rotate();
                     toast('补卡已取消', 'success');
                     await pageReplacementDetail(replacementId);
                 } catch (error) {
+                    if (!isUnknownOutcome(error)) {
+                        idem.rotate();
+                    }
                     msg.innerHTML = errBox(error);
                     setBusy(button, false);
                 }
@@ -2886,6 +2981,7 @@ async function pageAdminReplacements() {
                 <td>${esc(item.trackingNo || '—')}</td>
                 <td>${esc(item.estimatedArrival || '—')}</td>
                 <td>
+                    <a class="btn ghost small" href="#/replacements/${encodeURIComponent(item.replacementId)}">详情</a>
                     <form class="row-form" data-id="${esc(item.replacementId)}">
                         <select name="status">
                             ${['CARD_PRODUCED', 'SHIPPED', 'ACTIVATED'].map((value) => `
@@ -2897,8 +2993,17 @@ async function pageAdminReplacements() {
                     </form>
                 </td>
             </tr>`).join('')}</tbody></table>
-            <div class="hint mt-16">共 ${esc(result.total)} 条 · 当前第 ${esc(result.page) + 1} 页</div>
+            ${pager(adminReplacementsUi.page, result.size || 20, result.total || 0, 'admin-page')}
+            <div class="hint mt-16">当前筛选：${esc(adminReplacementsUi.status || '全部')} · 列表只能查看后 4 位，
+                详情请进入工单进度页（需客服/运营权限）。</div>
             <div id="admin-msg"></div>`;
+
+        box.querySelectorAll('[data-admin-page]').forEach((button) => {
+            button.addEventListener('click', () => {
+                adminReplacementsUi.page += button.dataset.adminPage === 'next' ? 1 : -1;
+                pageAdminReplacements();
+            });
+        });
 
         document.getElementById('admin-filter').addEventListener('submit', (event) => {
             event.preventDefault();
@@ -2947,6 +3052,7 @@ async function pageAdminReplacements() {
                 const msg = document.getElementById('admin-msg');
                 const values = formValues(form);
                 msg.innerHTML = '';
+                const idem = stableIdempotencyKey(`status-${form.dataset.id}`);
                 try {
                     await api(`/api/v1/admin/replacements/${encodeURIComponent(form.dataset.id)}/status`, {
                         method: 'POST',
@@ -2954,9 +3060,10 @@ async function pageAdminReplacements() {
                             status: values.status,
                             trackingNo: values.trackingNo ? values.trackingNo.trim() : null,
                             estimatedArrival: values.estimatedArrival || null,
-                            idempotencyKey: newIdempotencyKey('status')
+                            idempotencyKey: idem.key
                         }
                     });
+                    idem.rotate();
                     toast('状态已更新', 'success');
                     await pageAdminReplacements();
                 } catch (error) {

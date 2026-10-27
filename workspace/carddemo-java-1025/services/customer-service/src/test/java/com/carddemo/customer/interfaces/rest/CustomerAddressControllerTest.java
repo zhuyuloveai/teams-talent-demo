@@ -7,22 +7,56 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Base64;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** REQ-2026-002 D-09：收卡地址资源与归属校验。 */
+/** REQ-2026-002 D-09 / 002-C04：收卡地址资源的身份与归属边界。 */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class CustomerAddressControllerTest {
 
+    private static final String SECRET = "carddemo-demo-secret-change-me";
+
     @Autowired
     private MockMvc mockMvc;
 
+    private static String token(String userId, String userType, long ttlSeconds) {
+        try {
+            String payload = userId + "|" + userType + "|" + Instant.now().plusSeconds(ttlSeconds).getEpochSecond();
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] signature = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+            return "Bearer " + encoder.encodeToString(payload.getBytes(StandardCharsets.UTF_8)) + "."
+                    + encoder.encodeToString(signature);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
     @Test
-    void listsPrimaryAddressDerivedFromCustomer() throws Exception {
+    void anonymousOrExpiredTokenIsRejected() throws Exception {
         mockMvc.perform(get("/api/v1/customers/000000006/addresses"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses")
+                        .header("Authorization", token("USER0001", "U", -60)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void listsOwnPrimaryAddressForTheAuthenticatedCustomer() throws Exception {
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses")
+                        .header("Authorization", token("USER0001", "U", 600)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1))
                 .andExpect(jsonPath("$.items[0].addressId").value("ADDR-000000006"))
@@ -32,16 +66,34 @@ class CustomerAddressControllerTest {
     }
 
     @Test
-    void returnsAddressWhenOwnedByCustomer() throws Exception {
-        mockMvc.perform(get("/api/v1/customers/000000006/addresses/ADDR-000000006"))
+    void anotherCustomersAddressIsNotVisible() throws Exception {
+        mockMvc.perform(get("/api/v1/customers/000000005/addresses/ADDR-000000006")
+                        .header("Authorization", token("USER0001", "U", 600)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ADDRESS_NOT_FOUND"));
+
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses")
+                        .header("Authorization", token("USER0002", "U", 600)))
+                .andExpect(status().isNotFound());
+    }
+
+    /** 补卡前的归属校验由 card-service 以服务身份调用，可校验任意客户的地址。 */
+    @Test
+    void serviceTokenMayValidateAddressesForCardService() throws Exception {
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("card-service", "S", 600)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.addressId").value("ADDR-000000006"));
+
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses/ADDR-000000999")
+                        .header("Authorization", token("card-service", "S", 600)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void addressOfAnotherCustomerIsNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/customers/000000005/addresses/ADDR-000000006"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("ADDRESS_NOT_FOUND"));
+    void operatorTokenWithoutSelfServicePermissionIsForbidden() throws Exception {
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses")
+                        .header("Authorization", token("ADMIN001", "A", 600)))
+                .andExpect(status().isForbidden());
     }
 }

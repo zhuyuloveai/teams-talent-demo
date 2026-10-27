@@ -48,3 +48,10 @@ springdoc:
 logging:
   level:
     com.carddemo: INFO
+
+# REQ-2026-002：内部资金接口仅接受服务 token（002-A007）
+iam:
+  token:
+    secret: ${IAM_TOKEN_SECRET:carddemo-demo-secret-change-me}
+internal:
+  allowed-callers: ${INTERNAL_ALLOWED_CALLERS:transaction-service}

@@ -19,6 +19,7 @@ public class OpsAlert {
     public static final String REPLACEMENT_FREQUENCY = "REPLACEMENT_FREQUENCY";
     public static final String MANUAL_REVIEW_REQUIRED = "MANUAL_REVIEW_REQUIRED";
     public static final String TRACKING_MISSING_24H = "TRACKING_MISSING_24H";
+    public static final String CARD_NUMBER_GENERATION_FAILED = "CARD_NUMBER_GENERATION_FAILED";
 
     @Id
     @Column(name = "alert_id", length = 36, nullable = false, updatable = false)

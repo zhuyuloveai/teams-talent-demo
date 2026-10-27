@@ -4,8 +4,10 @@ import com.carddemo.transaction.domain.exception.BusinessRuleException;
 import com.carddemo.transaction.domain.exception.NotFoundException;
 import com.carddemo.transaction.domain.exception.RemoteServiceException;
 import com.carddemo.transaction.domain.model.AccountSnapshot;
+import com.carddemo.transaction.infrastructure.security.ServiceTokenIssuer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -17,6 +19,7 @@ import java.util.Optional;
  * account-service 出站适配器。
  * 失败语义（docs/design/03-service-decomposition.md §4）：404 → 实体不存在；409 → 透传下游 code/message；
  * 5xx / 超时 → {@link RemoteServiceException}（HTTP 503 DEPENDENCY_UNAVAILABLE）。
+ * 资金 effect 接口是内部接口（002-A007），调用时附带服务 token。
  */
 @Component
 public class AccountClient {
@@ -25,10 +28,13 @@ public class AccountClient {
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
+    private final ServiceTokenIssuer tokens;
 
-    public AccountClient(@Qualifier("accountRestClient") RestClient restClient, ObjectMapper objectMapper) {
+    public AccountClient(@Qualifier("accountRestClient") RestClient restClient, ObjectMapper objectMapper,
+                         ServiceTokenIssuer tokens) {
         this.restClient = restClient;
         this.objectMapper = objectMapper;
+        this.tokens = tokens;
     }
 
     public Optional<AccountSnapshot> findAccount(String accountId) {
@@ -70,6 +76,7 @@ public class AccountClient {
         try {
             return restClient.post()
                     .uri("/api/v1/accounts/{accountId}/effects", accountId)
+                    .header(HttpHeaders.AUTHORIZATION, tokens.issue())
                     .body(new EffectBody(effectId, kind, amount))
                     .exchange((request, response) -> {
                         int status = response.getStatusCode().value();
@@ -92,6 +99,34 @@ public class AccountClient {
         } catch (RestClientException ex) {
             throw new RemoteServiceException(SERVICE + " is unavailable", ex);
         }
+    }
+
+    /**
+     * 反查稳定 effect（002-A003）：用于区分「收费确定未执行」与「已执行但交易记录缺失」。
+     * 404 → 确定未执行；5xx/超时 → 未知（调用方不得当未执行处理）。
+     */
+    public Optional<AccountEffectSnapshot> findEffect(String effectId) {
+        try {
+            return restClient.get()
+                    .uri("/api/v1/accounts/effects/{effectId}", effectId)
+                    .header(HttpHeaders.AUTHORIZATION, tokens.issue())
+                    .exchange((request, response) -> {
+                        int status = response.getStatusCode().value();
+                        if (status == 404) {
+                            return Optional.<AccountEffectSnapshot>empty();
+                        }
+                        if (!response.getStatusCode().is2xxSuccessful()) {
+                            throw new RemoteServiceException(SERVICE + " responded with HTTP " + status);
+                        }
+                        return Optional.of(objectMapper.readValue(response.getBody(), AccountEffectSnapshot.class));
+                    });
+        } catch (RestClientException ex) {
+            throw new RemoteServiceException(SERVICE + " is unavailable", ex);
+        }
+    }
+
+    public record AccountEffectSnapshot(String effectId, String accountId, String kind, BigDecimal amount,
+                                        String appliedAt) {
     }
 
     record EffectBody(String effectId, String kind, BigDecimal amount) {

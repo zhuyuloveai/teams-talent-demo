@@ -19,6 +19,10 @@ public class CardOperation {
     @Column(name = "card_number", length = 19, nullable = false, updatable = false)
     private String cardNumber;
 
+    /** 稳定卡身份（002-C03）：工单/流水按它关联，掩码列仅用于展示。 */
+    @Column(name = "card_ref", length = 64, updatable = false)
+    private String cardRef;
+
     @Column(name = "operation_type", length = 16, nullable = false, updatable = false)
     private String operationType;
 
@@ -50,11 +54,12 @@ public class CardOperation {
         // for JPA
     }
 
-    public CardOperation(String operationId, String cardNumber, String operationType, String status, String reason,
-                         String actor, String idempotencyKey, String staffTicketNo,
+    public CardOperation(String operationId, String cardNumber, String cardRef, String operationType, String status,
+                         String reason, String actor, String idempotencyKey, String staffTicketNo,
                          String identityVerificationRef, LocalDateTime createdAt, String payload) {
         this.operationId = operationId;
         this.cardNumber = cardNumber;
+        this.cardRef = cardRef;
         this.operationType = operationType;
         this.status = status;
         this.reason = reason;
@@ -72,6 +77,10 @@ public class CardOperation {
 
     public String getCardNumber() {
         return cardNumber;
+    }
+
+    public String getCardRef() {
+        return cardRef;
     }
 
     public String getOperationType() {

@@ -3,6 +3,7 @@ package com.carddemo.account.interfaces.rest;
 import com.carddemo.account.application.AccountApplicationService;
 import com.carddemo.account.application.AccountEffectService;
 import com.carddemo.account.domain.model.Account;
+import com.carddemo.account.domain.model.AccountEffect;
 import com.carddemo.account.interfaces.rest.dto.AccountEffectRequest;
 import com.carddemo.account.interfaces.rest.dto.AccountResponse;
 import com.carddemo.account.interfaces.rest.dto.AmountRequest;
@@ -96,6 +97,21 @@ public class AccountController {
                 request.kind(), request.amount());
         return ResponseEntity.ok(new AccountEffectResponse(AccountResponse.from(outcome.account()),
                 outcome.replayed()));
+    }
+
+    /**
+     * 内部反查：调用方据此区分「收费确定未执行」与「已执行但本地记录缺失」（002-A003）。
+     */
+    @Operation(summary = "按 effectId 查询资金作用", description = "内部调用；不存在返回 404")
+    @GetMapping("/effects/{effectId}")
+    public ResponseEntity<AccountEffectView> findEffect(@PathVariable String effectId) {
+        AccountEffect effect = effectService.findEffect(effectId);
+        return ResponseEntity.ok(new AccountEffectView(effect.getEffectId(), effect.getAccountId(),
+                effect.getKind(), effect.getAmount(), effect.getAppliedAt().toString()));
+    }
+
+    public record AccountEffectView(String effectId, String accountId, String kind, java.math.BigDecimal amount,
+                                    String appliedAt) {
     }
 
     public record AccountEffectResponse(AccountResponse account, boolean replayed) {

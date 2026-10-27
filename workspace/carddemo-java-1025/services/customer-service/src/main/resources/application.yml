@@ -48,3 +48,10 @@ springdoc:
 logging:
   level:
     com.carddemo: INFO
+
+# REQ-2026-002：收卡地址接口的身份边界（002-C04）
+iam:
+  token:
+    secret: ${IAM_TOKEN_SECRET:carddemo-demo-secret-change-me}
+internal:
+  service-name: ${INTERNAL_SERVICE_NAME:card-service}

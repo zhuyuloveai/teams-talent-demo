@@ -16,7 +16,12 @@ import java.time.LocalDateTime;
 /**
  * 补卡工单聚合（REQ-2026-002 / REQ-LOST-03..06）。
  * 状态迁移只允许 {@link ReplacementStatus#canTransitionTo} 声明的边；
- * feeStatus 迁移：WAIVED 终态、CHARGED→REFUNDED、FEE_PENDING→CHARGED|（确认未收）停止。
+ * feeStatus：FEE_PENDING → CHARGED | WAIVED；CHARGED → REFUND_PENDING → REFUNDED；
+ * FEE_PENDING（收费状态未知时已决定冲回）→ REFUND_PENDING。
+ * <p>
+ * 002-C03：进行中唯一性与工单归属使用 {@code oldCardRef}（{@link com.carddemo.card.domain.service.CardRef}）稳定卡身份，
+ * 不再使用"前 6 + 后 4"掩码；掩码列只用于展示。
+ * 002-C08：受理时即可落库，新卡号分配为独立步骤（{@link NumberStatus}）。
  */
 @Entity
 @Table(name = "card_replacement")
@@ -29,11 +34,25 @@ public class CardReplacement {
     @Column(name = "old_card_number", length = 19, nullable = false, updatable = false)
     private String oldCardNumber;
 
-    @Column(name = "new_card_number", length = 19, nullable = false, updatable = false)
+    @Column(name = "old_card_ref", length = 64, updatable = false)
+    private String oldCardRef;
+
+    /** 旧卡完整卡号密文（002-C08）：仅用于补号/恢复时的 BIN 与新卡建立，不参与展示。 */
+    @Column(name = "old_card_cipher", length = 64, updatable = false)
+    private String oldCardCipher;
+
+    @Column(name = "new_card_number", length = 19)
     private String newCardNumber;
 
-    @Column(name = "new_card_cipher", length = 64, nullable = false, updatable = false)
+    @Column(name = "new_card_ref", length = 64)
+    private String newCardRef;
+
+    @Column(name = "new_card_cipher", length = 64)
     private String newCardCipher;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "number_status", length = 16, nullable = false)
+    private NumberStatus numberStatus;
 
     @Column(name = "account_id", length = 11, nullable = false, updatable = false)
     private String accountId;
@@ -91,8 +110,8 @@ public class CardReplacement {
     @Column(name = "idempotency_key", length = 64, nullable = false, updatable = false)
     private String idempotencyKey;
 
-    /** 进行中唯一约束载体：进行中等于旧卡号掩码，终态置空（BR-LOST-06）。 */
-    @Column(name = "active_key", length = 19)
+    /** 进行中唯一约束载体：进行中等于旧卡稳定身份，终态置空（BR-LOST-06）。 */
+    @Column(name = "active_key", length = 64)
     private String activeKey;
 
     @Version
@@ -103,14 +122,14 @@ public class CardReplacement {
         // for JPA
     }
 
-    public CardReplacement(String replacementId, String oldCardNumber, String newCardNumber, String newCardCipher,
+    public CardReplacement(String replacementId, String oldCardNumber, String oldCardRef, String oldCardCipher,
                            String accountId, String customerId, String addressId, String reason,
-                           String deliveryMethod, BigDecimal feeAmount, FeeStatus feeStatus,
+                           String deliveryMethod, BigDecimal feeAmount, FeeStatus feeStatus, String feeBatchId,
                            LocalDateTime requestedAt, String idempotencyKey) {
         this.replacementId = replacementId;
         this.oldCardNumber = oldCardNumber;
-        this.newCardNumber = newCardNumber;
-        this.newCardCipher = newCardCipher;
+        this.oldCardRef = oldCardRef;
+        this.oldCardCipher = oldCardCipher;
         this.accountId = accountId;
         this.customerId = customerId;
         this.addressId = addressId;
@@ -118,19 +137,28 @@ public class CardReplacement {
         this.deliveryMethod = deliveryMethod;
         this.feeAmount = feeAmount;
         this.feeStatus = feeStatus;
+        this.feeBatchId = feeBatchId;
         this.requestedAt = requestedAt;
         this.idempotencyKey = idempotencyKey;
         this.status = ReplacementStatus.REQUESTED;
-        this.activeKey = oldCardNumber;
+        this.numberStatus = NumberStatus.PENDING;
+        this.activeKey = oldCardRef;
         this.version = 0;
     }
 
-    /** 稳定费用身份先落库，再调用下游；重试复用同一 feeBatchId。 */
-    public void assignFeeBatchId(String feeBatchId) {
-        if (feeStatus != FeeStatus.FEE_PENDING || this.feeBatchId != null) {
-            throw new BusinessRuleException("INVALID_FEE_STATE", "Fee batch cannot be assigned in this state.");
+    /** 新卡号生成成功后写入（可重试）：掩码用于展示，密文用于激活，ref 用于唯一性。 */
+    public void assignNewCard(String maskedCardNumber, String cipher, String ref) {
+        if (numberStatus == NumberStatus.ASSIGNED) {
+            if (maskedCardNumber.equals(newCardNumber) && ref.equals(newCardRef)) {
+                return;
+            }
+            throw new BusinessRuleException("INVALID_STATE_TRANSITION",
+                    "A card number has already been assigned to this replacement.");
         }
-        this.feeBatchId = feeBatchId;
+        this.newCardNumber = maskedCardNumber;
+        this.newCardCipher = cipher;
+        this.newCardRef = ref;
+        this.numberStatus = NumberStatus.ASSIGNED;
     }
 
     public void markCharged() {
@@ -141,24 +169,29 @@ public class CardReplacement {
         this.feeStatus = FeeStatus.CHARGED;
     }
 
-    public void assignRefundBatchId(String refundBatchId) {
-        if (feeStatus != FeeStatus.CHARGED || this.refundBatchId != null) {
-            throw new BusinessRuleException("INVALID_FEE_STATE", "Refund batch cannot be assigned in this state.");
+    /** 取消时决定冲回：已确认收费或收费状态未知（账户可能已扣）都必须走退款，不能直接 WAIVED。 */
+    public void requestRefund(String refundBatchId) {
+        if (feeStatus != FeeStatus.CHARGED && feeStatus != FeeStatus.FEE_PENDING) {
+            throw new BusinessRuleException("INVALID_FEE_STATE", "Refund cannot be requested in this state.");
+        }
+        if (this.refundBatchId != null && !this.refundBatchId.equals(refundBatchId)) {
+            throw new BusinessRuleException("INVALID_FEE_STATE", "A refund identity is already assigned.");
         }
         this.refundBatchId = refundBatchId;
+        this.feeStatus = FeeStatus.REFUND_PENDING;
     }
 
     public void markRefunded() {
-        requireFeeStatus(FeeStatus.CHARGED, "REFUNDED");
-        if (refundBatchId == null) {
-            throw new BusinessRuleException("INVALID_FEE_STATE", "Refund batch must be assigned before refunding.");
-        }
+        requireFeeStatus(FeeStatus.REFUND_PENDING, "REFUNDED");
         this.feeStatus = FeeStatus.REFUNDED;
     }
 
-    /** 取消时确认下游未收费：停止补收，费用不产生资金影响（WAIVED 为无资金终态）。 */
+    /**
+     * 取消时确认下游确定未收费：停止补收，费用不产生资金影响（WAIVED 为无资金终态）。
+     * 从 FEE_PENDING（尚未收费）或 REFUND_PENDING（已决定冲回、经核实未执行）都可落到 WAIVED。
+     */
     public void markFeeStopped() {
-        if (feeStatus != FeeStatus.FEE_PENDING) {
+        if (feeStatus != FeeStatus.FEE_PENDING && feeStatus != FeeStatus.REFUND_PENDING) {
             throw new BusinessRuleException("INVALID_FEE_STATE", "Only a pending fee can be stopped.");
         }
         this.feeStatus = FeeStatus.WAIVED;
@@ -221,12 +254,28 @@ public class CardReplacement {
         return oldCardNumber;
     }
 
+    public String getOldCardRef() {
+        return oldCardRef;
+    }
+
+    public String getOldCardCipher() {
+        return oldCardCipher;
+    }
+
     public String getNewCardNumber() {
         return newCardNumber;
     }
 
+    public String getNewCardRef() {
+        return newCardRef;
+    }
+
     public String getNewCardCipher() {
         return newCardCipher;
+    }
+
+    public NumberStatus getNumberStatus() {
+        return numberStatus;
     }
 
     public String getAccountId() {

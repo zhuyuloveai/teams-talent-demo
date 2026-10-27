@@ -131,6 +131,61 @@ REQUESTED ──► CARD_PRODUCED ──► SHIPPED ──► ACTIVATED
 
 命令与结果（真实执行）见本任务证据目录 `.../final-002/REQ-edd73c9b…-runtime/unit-tests.md`；测试范围：card-service、account-service、transaction-service、customer-service、web-ui。
 
+## 7A. 返工修复 R2（独立审查 002-A001..A007 / C-01..C-09）
+
+本节记录本轮按 PR #11 两份固定独立审查（`pr11-review-a-a674a5b.json` / `pr11-review-c-a674a5b.json`）做的根因修复与取舍，替换上文 4.2/4.3/4.4/6.1/6.2 中已被修订的描述。
+
+### 7A.1 资金路径（A-001/A-002/A-003/A-006，§4.3 修订）
+
+- **账户 effect 锁内幂等**（`AccountEffectService`）：先 `SELECT … FOR UPDATE` 锁账户行，再在同一临界区内重读 `account_effect`；命中即按 `accountId/kind/amount` 比对后返回 `replayed=true`，不符 → 409 `EFFECT_CONFLICT`；未命中才改余额并插入 effect 行（`effect_id` 主键 + 冲突后重读）。同 key 并发两笔 FEE 50 → 余额只 +50、effect 行 1 条。effect 是账户侧唯一资金身份，可被 `GET /api/v1/accounts/effects/{effectId}` 反查（内部调用）。
+- **card-service 持久费用操作 `fee_operation`**：`operation_key = FEE-<replacementId> | REFUND-<replacementId>`（PK），`effect_id`（16 位序列，唯一）、`state(PENDING/SENT/SUCCEEDED/FAILED/CANCELLED/REFUNDED)`、`attempts/last_error`、账户与卡密文。业务事务内只落工单 + `FEE` 操作行（PENDING）并提交，随后才调用下游；远端已执行但响应丢失时，同一 `effect_id` 重放返回 `replayed=true` 并确认 CHARGED。取消在同一事务内把 `FEE` 操作置 `CANCEL_REQUESTED`（栅栏），worker 只有在栅栏未竖立时才发起收费，因此取消后不会有迟到收费。
+- **未知 ≠ 未执行**（A-003）：退款前先由 transaction-service 反查账户 effect。effect 不存在 → 收费确定未发生（`refunded=false, executed=false`）；存在 → 视为已执行，先把缺失的交易行幂等补齐（同一 `transaction_id` 走一遍 charge 的写入）再退款，净额 0；account-service 不可达 → `UNKNOWN`，保持 `FEE_PENDING`/`REFUND_PENDING`，由 worker 重试，不置 `WAIVED`。
+- **退款一次**：transaction 表新增 `original_transaction_id` 并加唯一约束（PG 允许多 NULL），退款单以原 fee 事务号为唯一键；`REFUND-<replacementId>` 只有一行。收费遇到已存在退款单 → 409 `FEE_ALREADY_REFUNDED`。收费与退款对同一原 fee 使用 `pg_advisory_xact_lock(hashtext(effectId))` 串行，避免"先核实不存在、然后迟到收费"的竞态。
+- **US008 恢复 worker**（A-006）：`FeeRecoveryWorker`（`@Scheduled`，默认 5s）扫描 `fee_operation` 的 PENDING/SENT/FAILED 与 REFUND_PENDING，按稳定 `effect_id` 重投；DB 持久，重启续跑；超过上限仍继续重试并留 `attempts/last_error` 可观测，不把"写了标记"当完成。
+- **总账（Owner A-03/FEE 合同）**：transaction-service 在交易行后调用既有 ledger-service `POST /api/v1/journal-entries`，`entryGroupId=FEE-<effectId>` / `REFUND-<effectId>`，借贷配平：
+  - 收费：DEBIT `1100`（信用卡应收账款）50 / CREDIT `4001`（补卡手续费收入）50；
+  - 冲回：DEBIT `4001` / CREDIT `1100`。
+  科目号为**仅本次本地验证的固定测试科目**（`1100`/`4001`），生产会计科目仍待正式确认（PRD §12 P-05），不声称已获批。ledger 失败 → 该笔过账失败，由 card-service worker 重试（ledger 按 entryGroupId 幂等）。
+
+### 7A.2 幂等时序（A-004）
+
+`write_idempotency` 改为**与业务同事务**：`begin()` 在业务事务内插入 `IN_PROGRESS` 行（唯一约束 `(scope,key)`），完成后同事务内写 `COMPLETED + result_ref/status`。因此：
+
+- 业务回滚 → 占位行一并回滚，不会残留永久 `null` 占位或假 200；
+- 同键并发第二个请求唯一键冲突 → 业务整体回滚并返回 409 `IDEMPOTENCY_IN_PROGRESS`，重试已完成请求则重放首次结果；
+- 不再使用 `REQUIRES_NEW`，不额外借连接，不重演 001 的 afterCommit 连接饥饿。
+
+### 7A.3 副作用（C-01，§4.4 补充）
+
+- `SideEffectTransactions` 沿用 001 已验证范式：业务事务内只登记线程内队列（不碰 DB），事务提交后在**请求边界**（`SideEffectFlushFilter`）以单层 `REQUIRES_NEW` 逐条执行，失败时在另一条独立事务写补偿队列，绝不嵌套事务、绝不在 `afterCommit` 借连接。
+- 审计：先写 `audit_event`；失败写 `audit_compensation`（补齐 actor/action/resource/masked/reason/staff_ticket/verification/trace/payload）。`SideEffectWorker`（默认 5s）重放补偿 → 以同一 `event_id` 写回（PK 幂等）→ 删除补偿，恰好一条。
+- 通知：投递关闭或写失败 → `notification_record.status=PENDING_RETRY` + `attempts/last_error`；`SideEffectWorker` 重投并置 `SENT`，`biz_ref+event_type` 唯一，不重复投递。
+- 两种副作用都不参与主事务，故真实 PG INSERT 失败（触发器/约束）不会回滚挂失/补卡，旧卡仍为 LOST。
+
+### 7A.4 可信身份与权限（C-02/C-03/C-04/A-007）
+
+- **卡身份**：新增 `CardRef`＝`SHA-256(salt|PAN)` 十六进制（不可逆、可关联）；`card_replacement.old_card_ref/new_card_ref`、`card_operation.card_ref`、`active_key` 都用它，展示/日志/审计仍只有后 4 位。同 BIN+尾 4 的两张卡不再共用掩码键，工单列表/详情按 `old_card_ref` 过滤，互不串数据、各可有 1 个进行中工单。
+- **客服核身**：新增本地可信记录表 `staff_verification(ticket_no PK, customer_id, identity_verification_ref, status, verified_at)`，以**测试夹具**种子（`TICKET-1001/REF-KYC-1001` → 客户 000000006；`TICKET-1002/REF-KYC-1002` → 客户 000000005）。客服代客挂失必须命中"有效 + 客户与卡一致 + 核实引用一致"，否则 400 且无任何写入/通知；审计与 `card_operation` 记录 actor/工单/核实引用；客户自助不需要客服凭证。
+- **内部资金调用**：account-service `/api/v1/accounts/*/effects`、`/api/v1/accounts/effects/**` 与 transaction-service `/api/v1/replacement-fees/**` 需 HMAC **服务 token**（payload `userId|S|exp`，userId 必须等于被允许的调用方：transaction-service / card-service），无/坏/过期/用户 token 一律 401。card-service、transaction-service 出站调用统一由 `ServiceTokenIssuer` 签发。web-ui 代理显式拒绝 `/api/v1/accounts/*/effects` 与 `/api/v1/replacement-fees`（403），不靠"隐藏 URL"。
+- **地址接口**：customer-service 地址端点要求 token；客户只能读本人 `customerId`（新增 `customer_user` 映射，种子 USER0001→000000006、USER0002→000000005），他人 → 404；`userType=S` 且 userId=`card-service` 的内部调用可校验任意客户地址，供补卡前归属校验。
+
+### 7A.5 计数、生成失败与导出（C-05/C-08/C-09）
+
+- 计数（C-05）：`AlertService.registerAttempt` 在**状态机校验之前**、以独立事务写入（唯一键 `(kind,key)` 保证同键重放不重复计数），key 用 `CardRef`/customerId，不用掩码；被 409/400 拒绝的不同 key 请求同样计数；`LOSS` 与 `REPLACEMENT` 独立窗口，>3 次产生告警 + 人工审核记录，不新增硬拒绝。
+- 生成失败（C-08）：工单**先落 `REQUESTED`**（`number_status=PENDING`，`new_card_ref/new_card_number/new_card_cipher` 可空），再生成卡号；生成失败（`card.number.generation-enabled=false` 模拟号段不可用，或碰撞耗尽）→ 202 + `CARD_NUMBER_GENERATION_FAILED` 告警，工单可查；worker 恢复后补号；同幂等键重放返回同一工单，不重复收费/建单。
+- 导出（C-09）：CSV 按 RFC4180 转义（含 `,`/`"`/换行加引号、内部引号翻倍），对以 `= + - @` 或制表/回车开头的值加 `'` 前缀，防止表格公式注入；仍保留 24h 失效（410）与权限/审计。
+
+### 7A.6 前端（C-07）
+
+- 挂失：先比对已加载卡的后 4 位，不一致直接提示且**不发 POST**；客服入口需填工单号 + 核身引用；运营无客服权限时入口不可用。
+- 补卡：地址从真实 `/api/v1/customers/{customerId}/addresses` 读取并可确认/改选，读取失败显式提示 + 重试（不再静默当空）；工单只保存 `addressId`。
+- 进度页提供客服协助入口；未知结果重试沿用**同一逻辑请求 key**（成功后轮换），不再每次生成新 key。
+- 后台队列：真实筛选 + 分页（`page/size/total`）+ 详情抽屉 + 状态更新（SHIPPED 必填单号与预计到达）+ CSV 下载。
+
+### 7A.7 验证
+
+单元/接口测试见 §7；本轮另需真实 PostgreSQL + HTTP 故障脚本（独立 Compose、loopback 随机端口）覆盖：同 effect 并发、账户已扣但本地写失败后恢复、远端已收费但响应丢失、双取消/取消×worker、pending 取消不迟到收费、匿名/越权资金 0 写入、审计/通知真实 SQL 失败不回滚并补发、ledger 借贷配平、CSV 特殊字符、地址与客服核身负例。证据与命令见本任务运行报告。
+
 ## 8. NFR 应答
 
 | 维度 | 目标 | 实现/验证 |

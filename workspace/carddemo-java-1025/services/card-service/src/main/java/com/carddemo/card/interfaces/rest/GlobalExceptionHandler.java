@@ -36,7 +36,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ApiError> handleBusinessRule(BusinessRuleException ex) {
         HttpStatus status;
-        if (VALIDATION_FAILED.equals(ex.getCode()) || "STAFF_VERIFICATION_REQUIRED".equals(ex.getCode())) {
+        if (VALIDATION_FAILED.equals(ex.getCode()) || "STAFF_VERIFICATION_REQUIRED".equals(ex.getCode())
+                || "STAFF_VERIFICATION_INVALID".equals(ex.getCode())) {
             status = HttpStatus.BAD_REQUEST;
         } else if ("EXPORT_EXPIRED".equals(ex.getCode())) {
             status = HttpStatus.GONE;
@@ -44,6 +45,17 @@ public class GlobalExceptionHandler {
             status = HttpStatus.CONFLICT;
         }
         return ResponseEntity.status(status).body(ApiError.of(ex.getCode(), ex.getMessage()));
+    }
+
+    /**
+     * 同键并发：唯一键冲突意味着另一请求仍在处理（002-A004），返回 409 而不是 500；
+     * 事务已整体回滚，不会留下占位或半成品。
+     */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleConstraint(org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.of("IDEMPOTENCY_IN_PROGRESS",
+                        "The same idempotency key is still being processed."));
     }
 
     /** 后台权限点缺失 → 403；主体缺失（未经过滤器）→ 401。 */

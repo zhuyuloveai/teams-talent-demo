@@ -49,18 +49,13 @@ public class ReplacementExportService {
     public ExportOutcome create(CardPrincipal principal, String status, String idempotencyKey) {
         guard.requirePermission(principal, CardPermission.REPLACEMENT_READ_ANY);
         String digest = IdempotencyService.digest(status == null ? "" : status);
-        Optional<WriteIdempotency> prior = idempotency.find(SCOPE_EXPORT, idempotencyKey);
-        if (prior.isPresent()) {
-            WriteIdempotency record = prior.get();
-            if (!record.getRequestDigest().equals(digest) || !record.getSubjectId().equals(principal.userId())) {
-                throw new BusinessRuleException("IDEMPOTENCY_KEY_CONFLICT",
-                        "Idempotency key was used with a different request or subject.");
-            }
-            ReplacementExport existing = exports.findById(record.getResultRef())
+        IdempotencyService.Decision decision = idempotency.begin(SCOPE_EXPORT, idempotencyKey, digest,
+                principal.userId());
+        if (decision.replayed()) {
+            ReplacementExport existing = exports.findById(decision.record().getResultRef())
                     .orElseThrow(() -> new IllegalStateException("Export vanished"));
             return new ExportOutcome(existing, true);
         }
-        idempotency.reserve(SCOPE_EXPORT, idempotencyKey, digest, principal.userId());
 
         List<ReplacementStatus> statuses = status == null || status.isBlank()
                 ? List.of(ReplacementStatus.values())
@@ -70,15 +65,15 @@ public class ReplacementExportService {
         StringBuilder csv = new StringBuilder("replacement_id,old_card_last4,new_card_last4,status,fee_amount,"
                 + "fee_status,tracking_no,requested_at,status_updated_at\n");
         for (CardReplacement row : rows) {
-            csv.append(row.getReplacementId()).append(',')
-                    .append(tail(row.getOldCardNumber())).append(',')
-                    .append(tail(row.getNewCardNumber())).append(',')
-                    .append(row.getStatus()).append(',')
-                    .append(row.getFeeAmount()).append(',')
-                    .append(row.getFeeStatus()).append(',')
-                    .append(row.getTrackingNo() == null ? "" : row.getTrackingNo()).append(',')
-                    .append(row.getRequestedAt()).append(',')
-                    .append(row.getStatusUpdatedAt()).append('\n');
+            csv.append(csvField(row.getReplacementId())).append(',')
+                    .append(csvField(tail(row.getOldCardNumber()))).append(',')
+                    .append(csvField(tail(row.getNewCardNumber()))).append(',')
+                    .append(csvField(row.getStatus().name())).append(',')
+                    .append(csvField(row.getFeeAmount().toPlainString())).append(',')
+                    .append(csvField(row.getFeeStatus().name())).append(',')
+                    .append(csvField(row.getTrackingNo())).append(',')
+                    .append(csvField(row.getRequestedAt().toString())).append(',')
+                    .append(csvField(row.getStatusUpdatedAt().toString())).append('\n');
         }
 
         ReplacementExport export = new ReplacementExport(UUID.randomUUID().toString(), principal.userId(),
@@ -108,7 +103,33 @@ public class ReplacementExportService {
     }
 
     private static String tail(String masked) {
+        if (masked == null || masked.length() < 4) {
+            return "";
+        }
         return masked.substring(masked.length() - 4);
+    }
+
+    /**
+     * RFC4180 字段转义 + 表格公式注入防护（002-C09）：
+     * 含逗号/引号/换行的值加引号并双写内部引号；以 = + - @ 或制表/回车开头的值前置单引号，
+     * 使电子表格按文本处理而不是执行公式。
+     */
+    static String csvField(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escaped = value;
+        if (!escaped.isEmpty()) {
+            char first = escaped.charAt(0);
+            if (first == '=' || first == '+' || first == '-' || first == '@' || first == '\t' || first == '\r') {
+                escaped = "'" + escaped;
+            }
+        }
+        if (escaped.indexOf(',') >= 0 || escaped.indexOf('"') >= 0 || escaped.indexOf('\n') >= 0
+                || escaped.indexOf('\r') >= 0) {
+            escaped = "\"" + escaped.replace("\"", "\"\"") + "\"";
+        }
+        return escaped;
     }
 
     public record ExportOutcome(ReplacementExport export, boolean replayed) {

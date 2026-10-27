@@ -30,8 +30,18 @@ client:
     base-url: ${ACCOUNT_SERVICE_URL:http://localhost:8084}
   marketing-service:
     base-url: ${MARKETING_SERVICE_URL:http://localhost:8087}
+  ledger-service:
+    base-url: ${LEDGER_SERVICE_URL:http://localhost:8089}
   connect-timeout: 3s
   read-timeout: 3s
+
+# REQ-2026-002：补卡费接口仅接受 card-service 的服务 token（002-A007）
+iam:
+  token:
+    secret: ${IAM_TOKEN_SECRET:carddemo-demo-secret-change-me}
+internal:
+  service-name: ${INTERNAL_SERVICE_NAME:transaction-service}
+  allowed-callers: ${INTERNAL_ALLOWED_CALLERS:card-service}
 
 marketing:
   enabled: ${MARKETING_ENABLED:true}

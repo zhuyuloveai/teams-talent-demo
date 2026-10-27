@@ -2,6 +2,7 @@ package com.carddemo.card.domain.service;
 
 /**
  * 卡号掩码口径（PRD D-02）：存储掩码列 = 前 6 + 后 4；展示/日志/事件/导出仅后 4 位。
+ * 002-C03：掩码不再是业务键，业务键见 {@link CardRef}。
  */
 public final class Masking {
 
@@ -22,6 +23,14 @@ public final class Masking {
     /** 页面展示格式：**** **** **** 1234。 */
     public static String display(String cardNumber) {
         return "**** **** **** " + last4(cardNumber);
+    }
+
+    /** 已存储掩码（前 6 + ****** + 后 4）→ 展示格式，不需要完整 PAN。 */
+    public static String displayOfStored(String storedMasked) {
+        if (storedMasked == null || storedMasked.length() < 4) {
+            return "****";
+        }
+        return "**** **** **** " + storedMasked.substring(storedMasked.length() - 4);
     }
 
     private static String requireDigits(String cardNumber) {

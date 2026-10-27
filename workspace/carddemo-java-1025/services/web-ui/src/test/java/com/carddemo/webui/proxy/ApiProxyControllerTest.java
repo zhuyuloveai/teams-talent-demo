@@ -49,4 +49,14 @@ class ApiProxyControllerTest {
         assertThat(controller.resolveTarget("/api/v1/user")).isNull();
         assertThat(controller.resolveTarget("/api/v2/accounts")).isNull();
     }
+
+    /** 002-A007：内部资金接口在代理层显式拒绝，不依赖"上游恰好也鉴权"。 */
+    @Test
+    void internalMoneyEndpointsAreNotReachableFromTheBrowser() {
+        assertThat(ApiProxyController.isInternalOnly("/api/v1/accounts/00000000001/effects")).isTrue();
+        assertThat(ApiProxyController.isInternalOnly("/api/v1/accounts/effects/8000000000000001")).isTrue();
+        assertThat(ApiProxyController.isInternalOnly("/api/v1/replacement-fees")).isTrue();
+        assertThat(ApiProxyController.isInternalOnly("/api/v1/accounts/00000000001")).isFalse();
+        assertThat(ApiProxyController.isInternalOnly("/api/v1/replacements/REP-1")).isFalse();
+    }
 }

@@ -7,3 +7,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+# 单测中关闭后台 worker（真实恢复路径由独立 Compose 验证）
+card:
+  workers:
+    enabled: false

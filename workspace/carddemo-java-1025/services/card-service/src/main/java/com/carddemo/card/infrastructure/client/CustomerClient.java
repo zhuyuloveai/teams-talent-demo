@@ -16,15 +16,19 @@ public class CustomerClient {
     private static final String SERVICE = "customer-service";
 
     private final RestClient restClient;
+    private final com.carddemo.card.infrastructure.security.ServiceTokenIssuer tokens;
 
-    public CustomerClient(@Qualifier("customerRestClient") RestClient restClient) {
+    public CustomerClient(@Qualifier("customerRestClient") RestClient restClient,
+                          com.carddemo.card.infrastructure.security.ServiceTokenIssuer tokens) {
         this.restClient = restClient;
+        this.tokens = tokens;
     }
 
     public void requireOwnedAddress(String customerId, String addressId) {
         try {
             restClient.get()
                     .uri("/api/v1/customers/{customerId}/addresses/{addressId}", customerId, addressId)
+                    .header(org.springframework.http.HttpHeaders.AUTHORIZATION, tokens.issue())
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientException ex) {

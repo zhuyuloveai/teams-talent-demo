@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CardNumberGeneratorTest {
 
-    private final CardNumberGenerator generator = new CardNumberGenerator();
+    private final CardNumberGenerator generator = new CardNumberGenerator(true);
 
     @Test
     void generatesSixteenDigitNumberWithOldBinPrefixAndValidLuhn() {
@@ -20,6 +20,15 @@ class CardNumberGeneratorTest {
 
         assertThat(generated).hasSize(16).startsWith("334455").isNotEqualTo("3344556677889900");
         assertThat(CardNumberGenerator.isLuhnValid(generated)).isTrue();
+    }
+
+    /** 002-C08：号段不可用时明确失败，由调用方保留已受理工单并重试。 */
+    @Test
+    void unavailableRangeFailsExplicitly() {
+        CardNumberGenerator disabled = new CardNumberGenerator(false);
+        assertThatThrownBy(() -> disabled.next("3344556677889900", candidate -> false))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting("code").isEqualTo("CARD_NUMBER_GENERATION_FAILED");
     }
 
     @Test
