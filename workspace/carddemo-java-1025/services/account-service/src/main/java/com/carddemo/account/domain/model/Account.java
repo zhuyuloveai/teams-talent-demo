@@ -85,6 +85,20 @@ public class Account {
     }
 
     /**
+     * REQ-2026-002 §4.3：补卡费/冲回资金作用。FEE 增加欠款，REFUND 减少欠款（可为负=溢缴）；
+     * effectId 幂等由调用方（AccountEffectService）保证。
+     */
+    public void applyEffect(String kind, BigDecimal amount) {
+        if (!"FEE".equals(kind) && !"REFUND".equals(kind)) {
+            throw new BusinessRuleException("INVALID_EFFECT_KIND", "Effect kind must be FEE or REFUND.");
+        }
+        if (amount == null || amount.signum() <= 0) {
+            throw new BusinessRuleException("INVALID_EFFECT_AMOUNT", "Effect amount must be greater than zero.");
+        }
+        applyPosting("FEE".equals(kind) ? amount : amount.negate());
+    }
+
+    /**
      * BR-BILL-001/002：账单支付，金额恒等于当前余额，仅减少余额，不改本期贷/借累计。
      */
     public void applyBillPayment(BigDecimal amount) {

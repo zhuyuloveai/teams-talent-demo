@@ -65,6 +65,13 @@ function formValues(form) {
     return Object.fromEntries(new FormData(form).entries());
 }
 
+/** REQ-2026-002：页面只展示卡号后 4 位（PRD §8.2 / D-02）。 */
+function maskCard(cardNumber) {
+    const digits = String(cardNumber || '');
+    if (!/^\d{16}$/.test(digits)) return digits;
+    return `**** **** **** ${digits.slice(-4)}`;
+}
+
 /* ---------------- 会话与 API ---------------- */
 
 function loadSession() {
@@ -152,6 +159,7 @@ const NAV_GROUPS = [
         items: [
             { key: 'users', href: '#/users', icon: '👥', label: '用户管理' },
             { key: 'admin-installments', href: '#/admin/installments', icon: '📑', label: '分期后台' },
+            { key: 'admin-replacements', href: '#/admin/replacements', icon: '💳', label: '补卡队列' },
             { key: 'campaigns', href: '#/campaigns', icon: '📣', label: '活动管理' }
         ]
     }
@@ -440,7 +448,7 @@ function pageAccounts() {
                         <thead><tr><th>卡号</th><th>卡面姓名</th><th>到期日</th><th>状态</th><th>操作</th></tr></thead>
                         <tbody>${cards.map((card) => `
                             <tr>
-                                <td class="mono">${esc(card.cardNumber)}</td>
+                                <td class="mono">${esc(maskCard(card.cardNumber))}</td>
                                 <td>${esc(card.embossedName)}</td>
                                 <td>${dateText(card.expiryDate)}</td>
                                 <td>${statusBadge(card.activeStatus)}</td>
@@ -503,7 +511,7 @@ function pageCards() {
                     <thead><tr><th>卡号</th><th>账户</th><th>客户</th><th>卡面姓名</th><th>到期日</th><th>状态</th><th>操作</th></tr></thead>
                     <tbody>${items.map((card) => `
                         <tr>
-                            <td class="mono">${esc(card.cardNumber)}</td>
+                            <td class="mono">${esc(maskCard(card.cardNumber))}</td>
                             <td class="mono">${esc(card.accountId)}</td>
                             <td class="mono">${esc(card.customerId)}</td>
                             <td>${esc(card.embossedName)}</td>
@@ -548,7 +556,7 @@ async function pageCardDetail(cardNumber) {
                 <div>
                     <h3>卡片信息</h3>
                     <dl class="dl">
-                        <dt>卡号</dt><dd class="mono">${esc(card.cardNumber)}</dd>
+                        <dt>卡号</dt><dd class="mono">${esc(maskCard(card.cardNumber))}</dd>
                         <dt>所属账户</dt><dd class="mono">${esc(card.accountId)}</dd>
                         <dt>所属客户</dt><dd class="mono">${esc(card.customerId)}</dd>
                         <dt>卡面姓名</dt><dd>${esc(card.embossedName)}</dd>
@@ -579,7 +587,8 @@ async function pageCardDetail(cardNumber) {
                     </div>
                     <div id="card-msg"></div>
                 </form>
-            </div>`;
+            </div>
+            <div class="card mt-16" id="card-actions">${cardActions(card)}</div>`;
 
         const form = document.getElementById('card-form');
         const button = document.getElementById('card-save');
@@ -606,8 +615,99 @@ async function pageCardDetail(cardNumber) {
                 setBusy(button, false);
             }
         });
+        wireCardActions(cardNumber, card);
     } catch (error) {
         box.innerHTML = errBox(error);
+    }
+}
+
+/* ---------------- 页面：挂失 / 补卡（REQ-2026-002） ---------------- */
+
+function newIdempotencyKey(prefix) {
+    const random = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+    return `${prefix}-${random}`.slice(0, 64);
+}
+
+function cardActions(card) {
+    if (card.cardStatus === 'ACTIVE' && card.activeStatus === 'Y') {
+        return `
+            <h3>挂失</h3>
+            <div class="alert error"><strong>风险提示</strong> · 挂失后旧卡立即失效且不可撤销，如需用卡请同时申请补卡。</div>
+            <form id="loss-form" class="form-grid">
+                <label class="field"><span>挂失原因 <span class="req">*</span></span>
+                    <select name="reason" required>
+                        <option value="LOST">丢失</option>
+                        <option value="STOLEN">被盗</option>
+                        <option value="DAMAGED">损坏</option>
+                    </select></label>
+                <label class="field"><span>卡号后 4 位 <span class="req">*</span></span>
+                    <input name="confirmCardLast4" maxlength="4" pattern="\\d{4}" required></label>
+                <div class="form-actions span-2">
+                    <button class="btn danger" type="submit" id="loss-submit">确认挂失</button>
+                </div>
+                <div id="loss-msg" class="span-2"></div>
+            </form>`;
+    }
+    if (card.cardStatus === 'LOST') {
+        return `
+            <h3>补卡</h3>
+            <p class="hint">该卡已挂失。补卡申请需由持卡人本人提交，白金卡免收补卡费，其余卡收取 50.00 元。</p>
+            <div class="form-actions">
+                <a class="btn primary" href="#/cards/${encodeURIComponent(card.cardNumber)}/replacement">申请补卡</a>
+            </div>
+            <div id="replacement-list" class="mt-16"><div class="empty">加载补卡记录…</div></div>`;
+    }
+    return `<h3>挂失 / 补卡</h3><div class="empty">当前卡状态（${esc(card.cardStatus || '')}）不支持挂失或补卡。</div>`;
+}
+
+function wireCardActions(cardNumber, card) {
+    const lossForm = document.getElementById('loss-form');
+    if (lossForm) {
+        lossForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const values = formValues(lossForm);
+            const msg = document.getElementById('loss-msg');
+            const button = document.getElementById('loss-submit');
+            msg.innerHTML = '';
+            setBusy(button, true, '提交中…');
+            try {
+                await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}/loss`, {
+                    method: 'POST',
+                    body: {
+                        reason: values.reason,
+                        confirmCardLast4: values.confirmCardLast4.trim(),
+                        idempotencyKey: newIdempotencyKey('loss')
+                    }
+                });
+                toast('挂失已生效', 'success');
+                await pageCardDetail(cardNumber);
+            } catch (error) {
+                msg.innerHTML = errBox(error);
+                setBusy(button, false);
+            }
+        });
+    }
+    const listBox = document.getElementById('replacement-list');
+    if (listBox) {
+        api(`/api/v1/cards/${encodeURIComponent(cardNumber)}/replacements`)
+            .then((result) => {
+                const items = result.items || [];
+                listBox.innerHTML = items.length === 0
+                    ? '<div class="empty">暂无补卡记录</div>'
+                    : `<table class="table"><thead><tr><th>工单</th><th>状态</th><th>费用</th>
+                        <th>快递单号</th><th>申请时间</th><th></th></tr></thead><tbody>
+                        ${items.map((item) => `<tr>
+                            <td class="mono">${esc(item.replacementId)}</td>
+                            <td>${esc(item.status)}</td>
+                            <td>${esc(item.feeAmount)}（${esc(item.feeStatus)}）</td>
+                            <td>${esc(item.trackingNo || '—')}</td>
+                            <td>${esc(item.requestedAt)}</td>
+                            <td><a class="btn ghost small" href="#/replacements/${encodeURIComponent(item.replacementId)}">查看进度</a></td>
+                        </tr>`).join('')}</tbody></table>`;
+            })
+            .catch((error) => { listBox.innerHTML = errBox(error); });
     }
 }
 
@@ -2599,6 +2699,276 @@ async function pageAdminInstallmentDetail(planId) {
     }
 }
 
+/* ---------------- 页面：申请补卡 / 补卡进度 / 后台队列（REQ-2026-002） ---------------- */
+
+function statusChip(status) {
+    const colors = {
+        REQUESTED: 'warn', CARD_PRODUCED: 'neutral', SHIPPED: 'neutral',
+        ACTIVATED: 'ok', CANCELLED: 'bad'
+    };
+    return `<span class="badge ${colors[status] || 'neutral'}">${esc(status)}</span>`;
+}
+
+async function pageReplacementNew(cardNumber) {
+    shell({
+        active: 'cards',
+        title: '申请补卡',
+        subtitle: `卡号 ${maskCard(cardNumber)}`,
+        content: '<div class="card" id="replacement-new"><div class="empty">加载中…</div></div>'
+    });
+    const box = document.getElementById('replacement-new');
+    try {
+        const card = await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}`);
+        const addresses = await api(
+            `/api/v1/customers/${encodeURIComponent(card.customerId)}/addresses`)
+            .catch(() => ({ items: [] }));
+        const options = (addresses.items || []).map((item) => `
+            <option value="${esc(item.addressId)}">${esc(item.addressId)} · ${esc(item.stateCode)} ${esc(item.zipCode)}${item.primary ? '（默认）' : ''}</option>`).join('');
+        const feeText = card.cardLevel === 'PLATINUM' ? '0.00 元（白金卡免收）' : '50.00 元';
+        box.innerHTML = `
+            <h3>补卡信息</h3>
+            <p class="hint">旧卡（${esc(card.cardStatus)}）将永久失效；新卡激活前不可交易。补卡费：${feeText}。</p>
+            <form id="replacement-form">
+                <div class="form-grid">
+                    <label class="field span-2"><span>收卡地址 <span class="req">*</span></span>
+                        ${options ? `<select name="addressId" required>${options}</select>`
+                            : `<input name="addressId" required maxlength="32" placeholder="ADDR-000000006">`}</label>
+                    <label class="field"><span>配送方式 <span class="req">*</span></span>
+                        <select name="deliveryMethod" required>
+                            <option value="STANDARD">标准配送</option>
+                            <option value="EXPRESS">加急配送</option>
+                        </select></label>
+                    <label class="field"><span>补卡原因 <span class="req">*</span></span>
+                        <select name="reason" required>
+                            <option value="LOST">丢失</option>
+                            <option value="STOLEN">被盗</option>
+                            <option value="DAMAGED">损坏</option>
+                        </select></label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn primary" type="submit" id="replacement-submit">确认提交</button>
+                    <a class="btn ghost" href="#/cards/${encodeURIComponent(cardNumber)}">返回卡片</a>
+                </div>
+                <div id="replacement-msg"></div>
+            </form>`;
+
+        const form = document.getElementById('replacement-form');
+        const button = document.getElementById('replacement-submit');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const values = formValues(form);
+            const msg = document.getElementById('replacement-msg');
+            msg.innerHTML = '';
+            setBusy(button, true, '提交中…');
+            try {
+                const created = await api(`/api/v1/cards/${encodeURIComponent(cardNumber)}/replacements`, {
+                    method: 'POST',
+                    body: {
+                        addressId: values.addressId.trim(),
+                        deliveryMethod: values.deliveryMethod,
+                        reason: values.reason,
+                        idempotencyKey: newIdempotencyKey('repl')
+                    }
+                });
+                toast(`补卡申请已提交（${created.feeStatus}）`, 'success');
+                location.hash = `#/replacements/${encodeURIComponent(created.replacementId)}`;
+            } catch (error) {
+                msg.innerHTML = errBox(error);
+                setBusy(button, false);
+            }
+        });
+    } catch (error) {
+        box.innerHTML = errBox(error);
+    }
+}
+
+async function pageReplacementDetail(replacementId) {
+    shell({
+        active: 'cards',
+        title: '补卡进度',
+        subtitle: `工单 ${replacementId}`,
+        content: '<div class="card" id="replacement-detail"><div class="empty">加载中…</div></div>'
+    });
+    const box = document.getElementById('replacement-detail');
+    try {
+        const item = await api(`/api/v1/replacements/${encodeURIComponent(replacementId)}`);
+        const steps = [
+            ['REQUESTED', '已申请'], ['CARD_PRODUCED', '制卡中'],
+            ['SHIPPED', '已寄出'], ['ACTIVATED', '已激活']
+        ];
+        const order = steps.map(([key]) => key);
+        const current = item.status === 'CANCELLED' ? -1 : order.indexOf(item.status);
+        const timeline = item.status === 'CANCELLED'
+            ? '<div class="alert error"><strong>已取消</strong> · 该补卡工单已取消</div>'
+            : `<ol class="timeline">${steps.map(([key, label], index) => `
+                <li class="${index <= current ? 'done' : ''}">${esc(label)}${index === current ? '（当前）' : ''}</li>`).join('')}</ol>`;
+        box.innerHTML = `
+            <h3>工单 ${esc(item.replacementId)}</h3>
+            ${timeline}
+            <dl class="dl mt-16">
+                <dt>状态</dt><dd>${statusChip(item.status)}</dd>
+                <dt>旧卡（后 4 位）</dt><dd class="mono">**** ${esc(item.oldCardNumberLast4)}</dd>
+                <dt>新卡（后 4 位）</dt><dd class="mono">**** ${esc(item.newCardNumberLast4)}</dd>
+                <dt>补卡费</dt><dd>${esc(item.feeAmount)} 元（${esc(item.feeStatus)}）</dd>
+                <dt>快递单号</dt><dd>${esc(item.trackingNo || '物流信息同步中')}</dd>
+                <dt>预计到达</dt><dd>${esc(item.estimatedArrival || '—')}</dd>
+                <dt>申请时间</dt><dd>${esc(item.requestedAt)}</dd>
+                <dt>更新时间</dt><dd>${esc(item.statusUpdatedAt)}</dd>
+            </dl>
+            ${item.status === 'REQUESTED' ? `
+                <form id="cancel-form" class="form-actions mt-16">
+                    <button class="btn danger" type="submit" id="cancel-submit">取消补卡</button>
+                </form>
+                <div id="cancel-msg"></div>
+                <p class="hint">制卡后不可取消；已收取的补卡费将冲回一次。</p>` : ''}
+            <div class="form-actions mt-16"><a class="btn ghost" href="#/menu">返回首页</a></div>`;
+        const cancelForm = document.getElementById('cancel-form');
+        if (cancelForm) {
+            cancelForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const msg = document.getElementById('cancel-msg');
+                const button = document.getElementById('cancel-submit');
+                msg.innerHTML = '';
+                setBusy(button, true, '提交中…');
+                try {
+                    await api(`/api/v1/replacements/${encodeURIComponent(replacementId)}/cancel`, {
+                        method: 'POST',
+                        body: { idempotencyKey: newIdempotencyKey('cancel') }
+                    });
+                    toast('补卡已取消', 'success');
+                    await pageReplacementDetail(replacementId);
+                } catch (error) {
+                    msg.innerHTML = errBox(error);
+                    setBusy(button, false);
+                }
+            });
+        }
+    } catch (error) {
+        box.innerHTML = errBox(error);
+    }
+}
+
+const adminReplacementsUi = { status: '', page: 0 };
+
+async function pageAdminReplacements() {
+    shell({
+        active: 'admin-replacements',
+        title: '补卡队列',
+        subtitle: '制卡运营工作台',
+        content: '<div class="card" id="admin-replacements"><div class="empty">加载中…</div></div>'
+    });
+    const box = document.getElementById('admin-replacements');
+    try {
+        const query = `/api/v1/admin/replacements?status=${encodeURIComponent(adminReplacementsUi.status)}`
+            + `&page=${adminReplacementsUi.page}&size=20`;
+        const result = await api(query);
+        const items = result.items || [];
+        box.innerHTML = `
+            <form id="admin-filter" class="inline-form">
+                <label>状态
+                    <select id="admin-status">
+                        ${['', 'REQUESTED', 'CARD_PRODUCED', 'SHIPPED', 'ACTIVATED', 'CANCELLED'].map((value) => `
+                            <option value="${value}" ${adminReplacementsUi.status === value ? 'selected' : ''}>
+                                ${value || '全部'}</option>`).join('')}
+                    </select></label>
+                <button class="btn primary" type="submit">筛选</button>
+                <button class="btn ghost" type="button" id="admin-export">导出 CSV</button>
+            </form>
+            <table class="table mt-16"><thead><tr>
+                <th>工单</th><th>旧卡后 4 位</th><th>状态</th><th>费用</th>
+                <th>快递单号</th><th>预计到达</th><th>更新状态</th>
+            </tr></thead><tbody>
+            ${items.map((item) => `<tr>
+                <td class="mono">${esc(item.replacementId)}</td>
+                <td class="mono">**** ${esc(item.oldCardNumberLast4)}</td>
+                <td>${statusChip(item.status)}</td>
+                <td>${esc(item.feeAmount)}（${esc(item.feeStatus)}）</td>
+                <td>${esc(item.trackingNo || '—')}</td>
+                <td>${esc(item.estimatedArrival || '—')}</td>
+                <td>
+                    <form class="row-form" data-id="${esc(item.replacementId)}">
+                        <select name="status">
+                            ${['CARD_PRODUCED', 'SHIPPED', 'ACTIVATED'].map((value) => `
+                                <option value="${value}">${value}</option>`).join('')}
+                        </select>
+                        <input name="trackingNo" placeholder="快递单号" maxlength="32">
+                        <input name="estimatedArrival" type="date">
+                        <button class="btn ghost small" type="submit">更新</button>
+                    </form>
+                </td>
+            </tr>`).join('')}</tbody></table>
+            <div class="hint mt-16">共 ${esc(result.total)} 条 · 当前第 ${esc(result.page) + 1} 页</div>
+            <div id="admin-msg"></div>`;
+
+        document.getElementById('admin-filter').addEventListener('submit', (event) => {
+            event.preventDefault();
+            adminReplacementsUi.status = document.getElementById('admin-status').value;
+            adminReplacementsUi.page = 0;
+            pageAdminReplacements();
+        });
+
+        document.getElementById('admin-export').addEventListener('click', async (event) => {
+            const msg = document.getElementById('admin-msg');
+            msg.innerHTML = '';
+            setBusy(event.target, true, '导出中…');
+            try {
+                const created = await api('/api/v1/admin/replacements/exports', {
+                    method: 'POST',
+                    body: {
+                        status: adminReplacementsUi.status || null,
+                        idempotencyKey: newIdempotencyKey('export')
+                    }
+                });
+                const response = await fetch(
+                    `/api/v1/admin/replacements/exports/${encodeURIComponent(created.exportId)}`,
+                    { headers: { Authorization: `Bearer ${state.session.token}` } });
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || `导出下载失败（HTTP ${response.status}）`);
+                }
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = 'replacements.csv';
+                anchor.click();
+                URL.revokeObjectURL(url);
+                toast(`已导出 ${created.rowCount} 条，24 小时内可下载`, 'success');
+            } catch (error) {
+                msg.innerHTML = errBox(error);
+            } finally {
+                setBusy(event.target, false);
+            }
+        });
+
+        box.querySelectorAll('.row-form').forEach((form) => {
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const msg = document.getElementById('admin-msg');
+                const values = formValues(form);
+                msg.innerHTML = '';
+                try {
+                    await api(`/api/v1/admin/replacements/${encodeURIComponent(form.dataset.id)}/status`, {
+                        method: 'POST',
+                        body: {
+                            status: values.status,
+                            trackingNo: values.trackingNo ? values.trackingNo.trim() : null,
+                            estimatedArrival: values.estimatedArrival || null,
+                            idempotencyKey: newIdempotencyKey('status')
+                        }
+                    });
+                    toast('状态已更新', 'success');
+                    await pageAdminReplacements();
+                } catch (error) {
+                    msg.innerHTML = errBox(error);
+                }
+            });
+        });
+    } catch (error) {
+        box.innerHTML = errBox(error);
+    }
+}
+
 /* ---------------- 路由 ---------------- */
 
 function pageNotFound() {
@@ -2633,7 +3003,14 @@ function route() {
     if (segments.length === 0 || segments[0] === 'menu') return pageMenu();
     if (segments[0] === 'accounts') return pageAccounts();
     if (segments[0] === 'cards') {
+        if (segments[2] === 'replacement') return pageReplacementNew(segments[1]);
         return segments[1] ? pageCardDetail(segments[1]) : pageCards();
+    }
+    if (segments[0] === 'replacements') {
+        return segments[1] ? pageReplacementDetail(decodeURIComponent(segments[1])) : pageCards();
+    }
+    if (segments[0] === 'admin' && segments[1] === 'replacements') {
+        return pageAdminReplacements();
     }
     if (segments[0] === 'transactions') {
         if (segments[1] === 'new') return pageTransactionNew();

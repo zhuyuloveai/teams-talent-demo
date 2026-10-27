@@ -66,11 +66,19 @@ services:
       DB_NAME: carddemo_card
       DB_USER: carddemo
       DB_PASSWORD: carddemo
+      CUSTOMER_SERVICE_URL: http://customer-service:8082
+      TRANSACTION_SERVICE_URL: http://transaction-service:8085
+      IAM_TOKEN_SECRET: ${IAM_TOKEN_SECRET:-carddemo-demo-secret-change-me}
+      CARD_NUMBER_KEY: ${CARD_NUMBER_KEY:-local-demo-card-number-key}
     ports:
       - "8083:8083"
     depends_on:
       postgres:
         condition: service_healthy
+      customer-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
 
   account-service:
     build:

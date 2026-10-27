@@ -62,6 +62,44 @@ public class AccountClient {
         return post(accountId, "interest-accruals", amount);
     }
 
+    /**
+     * REQ-2026-002 §4.3：账户稳定 effect 资金作用（FEE 增加欠款 / REFUND 减少欠款）。
+     * 同 effectId 重试只生效一次，调用方以此实现补卡费与冲回的跨服务幂等。
+     */
+    public AccountSnapshot applyEffect(String accountId, String effectId, String kind, BigDecimal amount) {
+        try {
+            return restClient.post()
+                    .uri("/api/v1/accounts/{accountId}/effects", accountId)
+                    .body(new EffectBody(effectId, kind, amount))
+                    .exchange((request, response) -> {
+                        int status = response.getStatusCode().value();
+                        if (status == 404) {
+                            throw new NotFoundException("ACCOUNT_NOT_FOUND",
+                                    "Account " + accountId + " not found");
+                        }
+                        if (status == 409) {
+                            ApiErrorBody error = objectMapper.readValue(response.getBody(), ApiErrorBody.class);
+                            throw new BusinessRuleException(
+                                    error.code() == null ? "BUSINESS_RULE_VIOLATION" : error.code(),
+                                    error.message() == null ? "Account effect rejected" : error.message());
+                        }
+                        if (!response.getStatusCode().is2xxSuccessful()) {
+                            throw new RemoteServiceException(SERVICE + " responded with HTTP " + status);
+                        }
+                        return objectMapper.readValue(response.getBody(), EffectBodyResponse.class)
+                                .account().toSnapshot();
+                    });
+        } catch (RestClientException ex) {
+            throw new RemoteServiceException(SERVICE + " is unavailable", ex);
+        }
+    }
+
+    record EffectBody(String effectId, String kind, BigDecimal amount) {
+    }
+
+    record EffectBodyResponse(AccountBody account, boolean replayed) {
+    }
+
     private AccountSnapshot post(String accountId, String action, BigDecimal amount) {
         try {
             return restClient.post()

@@ -48,3 +48,31 @@ springdoc:
 logging:
   level:
     com.carddemo: INFO
+
+# REQ-2026-002：本地演示配置（模拟值，投产前待确认，见 PRD §12）
+card:
+  iam:
+    token:
+      secret: ${IAM_TOKEN_SECRET:carddemo-demo-secret-change-me}
+  number:
+    key: ${CARD_NUMBER_KEY:local-demo-card-number-key}
+  notification:
+    delivery-enabled: ${CARD_NOTIFICATION_ENABLED:true}
+  alert:
+    frequency-threshold: ${CARD_ALERT_THRESHOLD:3}
+    sweep-interval-ms: ${CARD_ALERT_SWEEP_MS:60000}
+
+replacement:
+  fee:
+    # SIMULATION：白金卡免收，其余 50.00（原文 §5 BR-LOST-03，正式定价待确认）
+    amount: ${REPLACEMENT_FEE_AMOUNT:50.00}
+  export:
+    max-rows: ${REPLACEMENT_EXPORT_MAX_ROWS:1000}
+
+client:
+  customer-service:
+    base-url: ${CUSTOMER_SERVICE_URL:http://localhost:8082}
+  transaction-service:
+    base-url: ${TRANSACTION_SERVICE_URL:http://localhost:8085}
+  connect-timeout: ${CLIENT_CONNECT_TIMEOUT:3s}
+  read-timeout: ${CLIENT_READ_TIMEOUT:3s}

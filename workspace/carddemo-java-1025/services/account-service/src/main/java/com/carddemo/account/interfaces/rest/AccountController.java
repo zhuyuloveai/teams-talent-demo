@@ -1,7 +1,9 @@
 package com.carddemo.account.interfaces.rest;
 
 import com.carddemo.account.application.AccountApplicationService;
+import com.carddemo.account.application.AccountEffectService;
 import com.carddemo.account.domain.model.Account;
+import com.carddemo.account.interfaces.rest.dto.AccountEffectRequest;
 import com.carddemo.account.interfaces.rest.dto.AccountResponse;
 import com.carddemo.account.interfaces.rest.dto.AmountRequest;
 import com.carddemo.account.interfaces.rest.dto.CashbackCreditRequest;
@@ -27,9 +29,11 @@ import java.util.Map;
 public class AccountController {
 
     private final AccountApplicationService accountService;
+    private final AccountEffectService effectService;
 
-    public AccountController(AccountApplicationService accountService) {
+    public AccountController(AccountApplicationService accountService, AccountEffectService effectService) {
         this.accountService = accountService;
+        this.effectService = effectService;
     }
 
     @GetMapping
@@ -78,5 +82,22 @@ public class AccountController {
                                                           @Valid @RequestBody CashbackCreditRequest request) {
         return ResponseEntity.ok(AccountResponse.from(accountService.creditCashback(accountId,
                 request.rewardId(), request.campaignId(), request.amount())));
+    }
+
+    /**
+     * REQ-2026-002 §4.3：稳定 effect 资金作用（补卡费/冲回）。同 effectId 重试只生效一次。
+     */
+    @Operation(summary = "费用/退款 effect 入账",
+            description = "按 effectId 幂等：FEE 增加欠款，REFUND 减少欠款；同 effectId 不同载荷返回 409")
+    @PostMapping("/{accountId}/effects")
+    public ResponseEntity<AccountEffectResponse> applyEffect(@PathVariable String accountId,
+                                                             @Valid @RequestBody AccountEffectRequest request) {
+        AccountEffectService.EffectOutcome outcome = effectService.applyEffect(accountId, request.effectId(),
+                request.kind(), request.amount());
+        return ResponseEntity.ok(new AccountEffectResponse(AccountResponse.from(outcome.account()),
+                outcome.replayed()));
+    }
+
+    public record AccountEffectResponse(AccountResponse account, boolean replayed) {
     }
 }

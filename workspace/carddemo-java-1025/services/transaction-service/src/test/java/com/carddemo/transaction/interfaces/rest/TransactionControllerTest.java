@@ -208,11 +208,13 @@ class TransactionControllerTest {
     void listsTransactionTypes() throws Exception {
         mockMvc.perform(get("/api/v1/transaction-types"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(7))
+                .andExpect(jsonPath("$.items.length()").value(8))
                 .andExpect(jsonPath("$.items[0].typeCode").value("01"))
                 .andExpect(jsonPath("$.items[0].description").value("Purchase"))
                 .andExpect(jsonPath("$.items[6].typeCode").value("07"))
-                .andExpect(jsonPath("$.items[6].description").value("Adjustment"));
+                .andExpect(jsonPath("$.items[6].description").value("Adjustment"))
+                .andExpect(jsonPath("$.items[7].typeCode").value("08"))
+                .andExpect(jsonPath("$.items[7].description").value("Replacement Fee"));
     }
 
     @Test

@@ -1,6 +1,8 @@
 package com.carddemo.card.interfaces.rest;
 
 import com.carddemo.card.domain.exception.BusinessRuleException;
+import com.carddemo.card.domain.exception.DownstreamUnavailableException;
+import com.carddemo.card.domain.exception.ForbiddenException;
 import com.carddemo.card.domain.exception.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -33,10 +35,31 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ApiError> handleBusinessRule(BusinessRuleException ex) {
-        HttpStatus status = VALIDATION_FAILED.equals(ex.getCode())
-                ? HttpStatus.BAD_REQUEST
-                : HttpStatus.CONFLICT;
+        HttpStatus status;
+        if (VALIDATION_FAILED.equals(ex.getCode()) || "STAFF_VERIFICATION_REQUIRED".equals(ex.getCode())) {
+            status = HttpStatus.BAD_REQUEST;
+        } else if ("EXPORT_EXPIRED".equals(ex.getCode())) {
+            status = HttpStatus.GONE;
+        } else {
+            status = HttpStatus.CONFLICT;
+        }
         return ResponseEntity.status(status).body(ApiError.of(ex.getCode(), ex.getMessage()));
+    }
+
+    /** 后台权限点缺失 → 403；主体缺失（未经过滤器）→ 401。 */
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex) {
+        HttpStatus status = "UNAUTHENTICATED".equals(ex.getCode())
+                ? HttpStatus.UNAUTHORIZED
+                : HttpStatus.FORBIDDEN;
+        return ResponseEntity.status(status).body(ApiError.of(ex.getCode(), ex.getMessage()));
+    }
+
+    /** 下游依赖不可用 → 503。 */
+    @ExceptionHandler(DownstreamUnavailableException.class)
+    public ResponseEntity<ApiError> handleDownstream(DownstreamUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiError.of("DOWNSTREAM_UNAVAILABLE", ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -14,6 +14,10 @@ import java.util.regex.Pattern;
 
 /**
  * 卡片聚合根。对应遗留 VSAM 文件 CARDDATA，记录布局见 copybook CVACT02Y（RECLN 150）。
+ * <p>
+ * REQ-2026-002（BR-LOST-01/04）：{@code card_status} 表达生命周期（ACTIVE/LOST/FROZEN/CLOSED），
+ * {@code active_status} 保留为遗留"可交易"标志（Y/N）。挂失要求两者同时为 ACTIVE/Y；
+ * 新卡建立后未激活时 {@code card_status=ACTIVE} 但 {@code active_status=N}，授权按"卡未激活"拒绝。
  */
 @Entity
 @Table(name = "card")
@@ -25,6 +29,15 @@ public class Card {
     private static final Pattern CUSTOMER_ID = Pattern.compile("\\d{9}");
     private static final Pattern CVV = Pattern.compile("\\d{3}");
     private static final Pattern EMBOSSED_NAME = Pattern.compile("[A-Za-z]+(?: [A-Za-z]+)*");
+
+    public static final String STATUS_ACTIVE = "ACTIVE";
+    public static final String STATUS_LOST = "LOST";
+    public static final String STATUS_FROZEN = "FROZEN";
+    public static final String STATUS_CLOSED = "CLOSED";
+
+    public static final String LEVEL_CLASSIC = "CLASSIC";
+    public static final String LEVEL_GOLD = "GOLD";
+    public static final String LEVEL_PLATINUM = "PLATINUM";
 
     @Id
     @Column(name = "card_number", length = 16, nullable = false, updatable = false)
@@ -48,6 +61,12 @@ public class Card {
     @Column(name = "active_status", length = 1, nullable = false)
     private String activeStatus;
 
+    @Column(name = "card_status", length = 16, nullable = false)
+    private String cardStatus;
+
+    @Column(name = "card_level", length = 16, nullable = false)
+    private String cardLevel;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -57,6 +76,10 @@ public class Card {
     }
 
     public Card(CardRegistration registration) {
+        this(registration, STATUS_ACTIVE, LEVEL_CLASSIC);
+    }
+
+    public Card(CardRegistration registration, String cardStatus, String cardLevel) {
         Objects.requireNonNull(registration, "registration must not be null");
         this.cardNumber = requireIdentifier(registration.cardNumber(), CARD_NUMBER, 16, "Card Number");
         this.accountId = requireIdentifier(registration.accountId(), ACCOUNT_ID, 11, "Account ID");
@@ -65,6 +88,8 @@ public class Card {
         this.embossedName = requireEmbossedName(registration.embossedName());
         this.expirationDate = requireExpirationDate(registration.expirationDate());
         this.activeStatus = requireActiveStatus(registration.activeStatus());
+        this.cardStatus = requireCardStatus(cardStatus);
+        this.cardLevel = requireCardLevel(cardLevel);
         this.version = 0;
     }
 
@@ -81,6 +106,23 @@ public class Card {
         this.embossedName = newName;
         this.activeStatus = newStatus;
         this.expirationDate = newExpiration;
+    }
+
+    /**
+     * BR-LOST-01：仅 ACTIVE 且已激活（可交易）的卡可挂失；状态不可回退（BR-LOST-02/04）。
+     */
+    public void markLost() {
+        if (!STATUS_ACTIVE.equals(cardStatus) || !"Y".equals(activeStatus)) {
+            throw new BusinessRuleException("CARD_NOT_ACTIVE", "Card status does not support loss.");
+        }
+        this.cardStatus = STATUS_LOST;
+        this.activeStatus = "N";
+    }
+
+    /** 补卡工单 ACTIVATED 后新卡启用（BR-LOST-08）。 */
+    public void activate() {
+        this.cardStatus = STATUS_ACTIVE;
+        this.activeStatus = "Y";
     }
 
     private LocalDate expiryDateFor(int expiryMonth, int expiryYear) {
@@ -133,6 +175,24 @@ public class Card {
         return value;
     }
 
+    private static String requireCardStatus(String value) {
+        if (value == null || !(STATUS_ACTIVE.equals(value) || STATUS_LOST.equals(value)
+                || STATUS_FROZEN.equals(value) || STATUS_CLOSED.equals(value))) {
+            throw new BusinessRuleException(VALIDATION_FAILED,
+                    "Card Status must be ACTIVE, LOST, FROZEN or CLOSED.");
+        }
+        return value;
+    }
+
+    private static String requireCardLevel(String value) {
+        if (value == null || !(LEVEL_CLASSIC.equals(value) || LEVEL_GOLD.equals(value)
+                || LEVEL_PLATINUM.equals(value))) {
+            throw new BusinessRuleException(VALIDATION_FAILED,
+                    "Card Level must be CLASSIC, GOLD or PLATINUM.");
+        }
+        return value;
+    }
+
     private static void requireExpiryMonth(int expiryMonth) {
         if (expiryMonth < 1 || expiryMonth > 12) {
             throw new BusinessRuleException(VALIDATION_FAILED, "Expiry Month must be between 1 and 12.");
@@ -143,6 +203,10 @@ public class Card {
         if (expiryYear < 1950 || expiryYear > 2099) {
             throw new BusinessRuleException(VALIDATION_FAILED, "Expiry Year must be between 1950 and 2099.");
         }
+    }
+
+    public boolean isTradable() {
+        return STATUS_ACTIVE.equals(cardStatus) && "Y".equals(activeStatus);
     }
 
     public String getCardNumber() {
@@ -171,6 +235,14 @@ public class Card {
 
     public String getActiveStatus() {
         return activeStatus;
+    }
+
+    public String getCardStatus() {
+        return cardStatus;
+    }
+
+    public String getCardLevel() {
+        return cardLevel;
     }
 
     public long getVersion() {

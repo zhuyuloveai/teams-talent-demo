@@ -74,9 +74,16 @@ public class CardApplicationService {
 
     /**
      * BR-CARD-11 + NR-CARD-01：只改卡面名/状态/到期月年，CVV 与卡号、归属不变。
+     * REQ-2026-002：已挂失/已销户的卡不得通过通用维护重新启用（不得绕过旧卡永久失效）。
      */
     public Card update(String cardNumber, CardMaintenance maintenance) {
         Card card = get(cardNumber);
+        if ("Y".equals(maintenance.activeStatus())
+                && (Card.STATUS_LOST.equals(card.getCardStatus())
+                || Card.STATUS_CLOSED.equals(card.getCardStatus()))) {
+            throw new BusinessRuleException("CARD_NOT_ACTIVE",
+                    "A lost or closed card cannot be re-activated through card maintenance.");
+        }
         card.applyMaintenance(maintenance.embossedName(), maintenance.activeStatus(),
                 maintenance.expiryMonth(), maintenance.expiryYear());
         return cards.saveCard(card);

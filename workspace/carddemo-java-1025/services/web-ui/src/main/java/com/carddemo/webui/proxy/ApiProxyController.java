@@ -68,6 +68,8 @@ public class ApiProxyController {
         routes.put("/api/v1/marketing", marketingServiceUrl);
         routes.put("/api/v1/installments", installmentServiceUrl);
         routes.put("/api/v1/admin/installments", installmentServiceUrl);
+        routes.put("/api/v1/replacements", cardServiceUrl);
+        routes.put("/api/v1/admin/replacements", cardServiceUrl);
 
         this.restClient = RestClient.builder()
                 .requestFactory(requestFactory())
