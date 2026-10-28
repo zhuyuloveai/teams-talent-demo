@@ -111,7 +111,7 @@ public class PreviewService {
                 schedule.periods(), billId, cycleStart, available);
     }
 
-    /** 单笔可分期本金：交易必须属于该账户、已入账、无逾期/争议、且本金未被占用。 */
+    /** 单笔可分期本金：交易须属于该账户、消费类、已入账、无逾期/争议，返回未被占用的本金（BR-INS-09）。 */
     BigDecimal transactionAvailablePrincipal(String accountId, String transactionId) {
         TransactionPort.TransactionView transaction = transactionPort.findTransaction(transactionId)
                 .orElseThrow(() -> new NotFoundException("INSTALLMENT_NOT_FOUND", "Transaction not found."));
@@ -119,12 +119,14 @@ public class PreviewService {
             throw new NotFoundException("INSTALLMENT_NOT_FOUND", "Transaction does not belong to this account.");
         }
         eligibilityPolicy.requirePostedTransaction(transaction.status());
+        eligibilityPolicy.requirePurchaseTransaction(transaction.isPurchase());
         EligibilityFlag flag = eligibilityFlagRepository.findById(transactionId).orElse(null);
         eligibilityPolicy.requireNoRiskFlag(flag != null && flag.isDisputed(), flag != null && flag.isDelinquent());
-        if (allocationRepository.existsByTransactionId(transactionId)) {
+        BigDecimal free = transaction.amount().subtract(allocationRepository.allocatedAmount(transactionId));
+        if (free.signum() <= 0) {
             throw new BusinessRuleException("ALREADY_INSTALLED", "This transaction principal is already installmented.");
         }
-        return transaction.amount();
+        return free;
     }
 
     public InstallmentPolicy policy() {

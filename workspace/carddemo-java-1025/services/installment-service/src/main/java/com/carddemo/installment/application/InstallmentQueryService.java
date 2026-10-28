@@ -8,6 +8,7 @@ import com.carddemo.installment.domain.model.InstallmentPlan;
 import com.carddemo.installment.domain.model.InstallmentRepayment;
 import com.carddemo.installment.domain.model.InstallmentSchedule;
 import com.carddemo.installment.domain.model.PlanStatus;
+import com.carddemo.installment.domain.model.ScheduleStatus;
 import com.carddemo.installment.domain.repository.InstallmentPlanRepository;
 import com.carddemo.installment.domain.repository.InstallmentRepaymentRepository;
 import com.carddemo.installment.domain.repository.InstallmentScheduleRepository;
@@ -44,7 +45,8 @@ public class InstallmentQueryService {
                            BigDecimal principal, int termMonths, BigDecimal monthlyFeeRate,
                            BigDecimal totalFee, BigDecimal remainingPrincipal, String status,
                            LocalDateTime createdAt, LocalDateTime settledAt,
-                           List<ScheduleView> schedules, List<RepaymentView> repayments, String warning) {
+                           List<ScheduleView> schedules, List<RepaymentView> repayments, String warning,
+                           int paidPeriods) {
     }
 
     public record PlanPage(List<PlanView> items, int page, int size, long total) {
@@ -134,7 +136,11 @@ public class InstallmentQueryService {
         List<InstallmentRepayment> repayments = withSchedules
                 ? repaymentRepository.findByPlanIdOrderByCreatedAtAsc(plan.getPlanId())
                 : List.of();
-        String warning = withSchedules && schedules.isEmpty() ? "SCHEDULE_INCONSISTENT" : null;
+        String warning = withSchedules && schedules.size() != plan.getTermMonths()
+                ? "SCHEDULE_INCONSISTENT" : null;
+        int paidPeriods = (int) schedules.stream()
+                .filter(schedule -> schedule.getStatus() == ScheduleStatus.PAID)
+                .count();
         return new PlanView(plan.getPlanId(), plan.getAccountId(), plan.getSourceType().name(),
                 plan.getSourceId(), plan.getPrincipal(), plan.getTermMonths(), plan.getMonthlyFeeRate(),
                 plan.getTotalFee(), plan.getRemainingPrincipal(), plan.getStatus().name(),
@@ -148,7 +154,7 @@ public class InstallmentQueryService {
                         .map(repayment -> new RepaymentView(repayment.getPaymentKey(), repayment.getAmount(),
                                 repayment.getPrincipalApplied(), repayment.getStatus(), repayment.getCreatedAt()))
                         .toList(),
-                warning);
+                warning, paidPeriods);
     }
 
     private static void requirePaging(int page, int size) {

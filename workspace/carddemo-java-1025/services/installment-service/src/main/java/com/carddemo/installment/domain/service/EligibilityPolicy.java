@@ -48,6 +48,14 @@ public class EligibilityPolicy {
         }
     }
 
+    /** 单笔分期的来源必须是消费类交易（与入口资格 NOT_PURCHASE 同口径）。 */
+    public void requirePurchaseTransaction(boolean purchase) {
+        if (!purchase) {
+            throw new BusinessRuleException("INSTALLMENT_NOT_ELIGIBLE",
+                    "Only purchase transactions are installable.");
+        }
+    }
+
     public void requireNoRiskFlag(boolean disputed, boolean delinquent) {
         if (disputed || delinquent) {
             throw new BusinessRuleException("INSTALLMENT_NOT_ELIGIBLE",

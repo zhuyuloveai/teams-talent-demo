@@ -15,8 +15,6 @@ public interface PrincipalAllocationRepository extends JpaRepository<PrincipalAl
 
     Optional<PrincipalAllocation> findFirstByTransactionId(String transactionId);
 
-    boolean existsByTransactionId(String transactionId);
-
     void deleteByPlanId(String planId);
 
     @Query("select coalesce(sum(a.principalAmount), 0) from PrincipalAllocation a where a.transactionId = :transactionId")

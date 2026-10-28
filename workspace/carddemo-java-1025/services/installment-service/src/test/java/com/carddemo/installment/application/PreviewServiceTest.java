@@ -72,6 +72,7 @@ class PreviewServiceTest {
         when(transactionPort.findTransaction(TXN)).thenReturn(Optional.of(new TransactionPort.TransactionView(
                 TXN, ACCOUNT, "3344556677889900", "01", "0001", "Purchase", new BigDecimal("1000.00"),
                 NOW.minusDays(1), "POSTED")));
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("0.00"));
 
         AccessGuard accessGuard = mock(AccessGuard.class);
         service = new PreviewService(policyRepository, rateRepository, flagRepository, allocationRepository,
@@ -131,12 +132,38 @@ class PreviewServiceTest {
 
     @Test
     void alreadyInstallmentedPrincipalIsRejected() {
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(true);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("1000.00"));
 
         assertThatThrownBy(() -> service.preview(CUSTOMER, command(new BigDecimal("1000.00"), 6)))
                 .isInstanceOf(BusinessRuleException.class)
                 .extracting(ex -> ((BusinessRuleException) ex).getCode())
                 .isEqualTo("ALREADY_INSTALLED");
+    }
+
+    @Test
+    void partiallyInstallmentedTransactionKeepsUnallocatedPrincipalAvailable() {
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("600.00"));
+
+        PreviewService.PreviewResult result = service.preview(CUSTOMER, command(new BigDecimal("400.00"), 6));
+
+        assertThat(result.availablePrincipal()).isEqualByComparingTo("400.00");
+
+        assertThatThrownBy(() -> service.preview(CUSTOMER, command(new BigDecimal("400.01"), 6)))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting(ex -> ((BusinessRuleException) ex).getCode())
+                .isEqualTo("PRINCIPAL_EXCEEDS_LIMIT");
+    }
+
+    @Test
+    void nonPurchaseTransactionIsNotEligible() {
+        when(transactionPort.findTransaction(TXN)).thenReturn(Optional.of(new TransactionPort.TransactionView(
+                TXN, ACCOUNT, "3344556677889900", "02", "0002", "Payment", new BigDecimal("1000.00"),
+                NOW.minusDays(1), "POSTED")));
+
+        assertThatThrownBy(() -> service.preview(CUSTOMER, command(new BigDecimal("1000.00"), 6)))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting(ex -> ((BusinessRuleException) ex).getCode())
+                .isEqualTo("INSTALLMENT_NOT_ELIGIBLE");
     }
 
     @Test

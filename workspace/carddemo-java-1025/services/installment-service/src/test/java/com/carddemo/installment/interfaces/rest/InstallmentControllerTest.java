@@ -146,7 +146,7 @@ class InstallmentControllerTest {
     }
 
     @Test
-    void invalidTermMapsTo400() throws Exception {
+    void invalidTermMapsTo409() throws Exception {
         when(applicationService.create(any(), any()))
                 .thenThrow(new BusinessRuleException("INVALID_TERM", "Only 3, 6 or 12 periods are supported."));
 
@@ -158,7 +158,38 @@ class InstallmentControllerTest {
                                  "sourceId":"0000000000000200","principal":1000.00,"termMonths":9,
                                  "previewToken":"token","agreementAccepted":true}
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("INVALID_TERM"));
+    }
+
+    @Test
+    void principalWithThreeDecimalsIsRejected() throws Exception {
+        mvc.perform(post("/api/v1/installments/preview")
+                        .requestAttr(InstallmentPrincipal.ATTRIBUTE, CUSTOMER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"accountId":"00000000006","sourceType":"TRANSACTION",
+                                 "sourceId":"0000000000000200","principal":1000.001,"termMonths":6}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
+    }
+
+    @Test
+    void missingAccountIdQueryParameterIsRejected() throws Exception {
+        mvc.perform(get("/api/v1/installments")
+                        .requestAttr(InstallmentPrincipal.ATTRIBUTE, CUSTOMER))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
+    }
+
+    @Test
+    void accountIdMustBeElevenDigits() throws Exception {
+        mvc.perform(get("/api/v1/installments")
+                        .param("accountId", "0000000006")
+                        .requestAttr(InstallmentPrincipal.ATTRIBUTE, CUSTOMER))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
     }
 
     @Test

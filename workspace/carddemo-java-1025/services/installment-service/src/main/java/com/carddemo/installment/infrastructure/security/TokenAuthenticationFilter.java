@@ -22,7 +22,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private static final String PROTECTED_PREFIX = "/api/v1/installments";
     private static final String ADMIN_PREFIX = "/api/v1/admin/installments";
     private static final String UNAUTHORIZED_BODY =
-            "{\"code\":\"UNAUTHENTICATED\",\"message\":\"A valid IAM token is required\"}";
+            "{\"code\":\"UNAUTHENTICATED\",\"message\":\"A valid IAM token is required\",\"details\":[]}";
 
     private final HmacTokenVerifier verifier;
 

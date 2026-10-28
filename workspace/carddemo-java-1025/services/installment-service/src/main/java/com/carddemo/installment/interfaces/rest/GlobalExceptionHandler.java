@@ -6,13 +6,17 @@ import com.carddemo.installment.domain.exception.ForbiddenException;
 import com.carddemo.installment.domain.exception.NotFoundException;
 import com.carddemo.installment.domain.exception.RemoteServiceException;
 import com.carddemo.installment.domain.exception.UnauthorizedException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 import java.util.Set;
@@ -22,7 +26,7 @@ import java.util.Set;
 public class GlobalExceptionHandler {
 
     private static final Set<String> BAD_REQUEST_CODES = Set.of(
-            "INVALID_PARAMETER", "INVALID_TERM", "AGREEMENT_REQUIRED", "INVALID_FEE_REBATE",
+            "INVALID_PARAMETER", "AGREEMENT_REQUIRED", "INVALID_FEE_REBATE",
             "REPAYMENT_EXCEEDS_PRINCIPAL");
 
     @ExceptionHandler(BusinessRuleException.class)
@@ -69,7 +73,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class,
-            IllegalArgumentException.class})
+            IllegalArgumentException.class, MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class, ConstraintViolationException.class,
+            HandlerMethodValidationException.class})
     public ResponseEntity<ApiError> handleValidation(Exception ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiError("INVALID_PARAMETER", "Request payload is not valid.", List.of()));

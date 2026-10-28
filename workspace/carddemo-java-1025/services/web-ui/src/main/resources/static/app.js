@@ -17,6 +17,11 @@ const money = (value) => value === null || value === undefined || value === ''
     ? '—'
     : Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/* 月费率按百分比披露（REQ-INS-03 / 原文 §13 费率明示）：0.0055 → 0.55%/月 */
+const rateText = (value) => value === null || value === undefined || value === ''
+    ? '—'
+    : `${(Number(value) * 100).toFixed(2)}%/月`;
+
 const dateText = (value) => (value ? String(value).slice(0, 10) : '—');
 
 const dateTimeText = (value) => (value ? String(value).replace('T', ' ').slice(0, 19) : '—');
@@ -2198,9 +2203,13 @@ function pageInstallmentNew() {
             box.innerHTML = `
                 <h3>② 试算结果</h3>
                 <div class="grid cols-3">
-                    <div class="stat"><div class="label">月手续费率</div><div class="value">${preview.monthlyFeeRate}</div></div>
+                    <div class="stat"><div class="label">月手续费率</div><div class="value">${rateText(preview.monthlyFeeRate)}</div></div>
                     <div class="stat"><div class="label">总手续费</div><div class="value">${money(preview.totalFee)}</div></div>
                     <div class="stat"><div class="label">首期合计</div><div class="value">${money(preview.firstPeriodTotal)}</div></div>
+                </div>
+                <div class="grid cols-2 mt-16">
+                    <div class="stat"><div class="label">还款合计（本金 + 总手续费）</div><div class="value">${money(Number(preview.principal) + Number(preview.totalFee))}</div></div>
+                    <div class="stat"><div class="label">分期本金</div><div class="value">${money(preview.principal)}</div></div>
                 </div>
                 <div class="table-wrap mt-16"><table class="table">
                     <thead><tr><th>期序</th><th>本金</th><th>手续费</th><th>本期合计</th></tr></thead>
@@ -2290,7 +2299,7 @@ function pageInstallmentDetail(planId) {
                 </div>
                 <dl class="dl mt-16">
                     <dt>来源</dt><dd>${esc(plan.sourceType)} · <span class="mono">${esc(plan.sourceId)}</span></dd>
-                    <dt>月费率 / 总手续费</dt><dd>${plan.monthlyFeeRate} / ${money(plan.totalFee)}</dd>
+                    <dt>月费率 / 总手续费</dt><dd>${rateText(plan.monthlyFeeRate)} / ${money(plan.totalFee)}</dd>
                     <dt>创建 / 结清时间</dt><dd>${dateTimeText(plan.createdAt)} / ${plan.settledAt ? dateTimeText(plan.settledAt) : '—'}</dd>
                     <dt>还款计划合计</dt><dd class="mono">${money(scheduleTotal)}</dd>
                 </dl>
@@ -2510,9 +2519,11 @@ function pageAdminInstallments() {
     });
 
     // C-02：携带 Bearer 下载真实 CSV（普通 <a> 导航不会带 Authorization）
-    document.getElementById('admin-ins-export').addEventListener('click', async () => {
+    document.getElementById('admin-ins-export').addEventListener('click', async (event) => {
         const exportMsg = document.getElementById('admin-ins-export-msg');
+        const exportButton = event.currentTarget;
         exportMsg.innerHTML = '';
+        setBusy(exportButton, true, '导出中…');
         try {
             const ticket = await api('/api/v1/admin/installments/exports?days=30', { method: 'POST' });
             exportMsg.innerHTML = `<div class="alert success">
@@ -2545,6 +2556,8 @@ function pageAdminInstallments() {
             toast('导出已生成', 'success');
         } catch (error) {
             exportMsg.innerHTML = errBox(error);
+        } finally {
+            setBusy(exportButton, false);
         }
     });
     load();
@@ -2569,7 +2582,7 @@ async function pageAdminInstallmentDetail(planId) {
             </div>
             <dl class="dl mt-16">
                 <dt>来源</dt><dd>${esc(plan.sourceType)} · <span class="mono">${esc(plan.sourceId)}</span></dd>
-                <dt>期数 / 费率 / 总手续费</dt><dd>${plan.termMonths} / ${plan.monthlyFeeRate} / ${money(plan.totalFee)}</dd>
+                <dt>期数 / 费率 / 总手续费</dt><dd>${plan.termMonths} / ${rateText(plan.monthlyFeeRate)} / ${money(plan.totalFee)}</dd>
                 <dt>创建 / 结清</dt><dd>${dateTimeText(plan.createdAt)} / ${plan.settledAt ? dateTimeText(plan.settledAt) : '—'}</dd>
             </dl>
             <h3 class="mt-16">还款计划</h3>

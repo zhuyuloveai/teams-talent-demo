@@ -442,12 +442,14 @@ public class InstallmentApplicationService {
                 throw new NotFoundException("INSTALLMENT_NOT_FOUND", "Transaction does not belong to this account.");
             }
             eligibilityPolicy.requirePostedTransaction(transaction.status());
+            eligibilityPolicy.requirePurchaseTransaction(transaction.isPurchase());
             requireNoRiskFlag(intent.getSourceId());
-            if (allocationRepository.existsByTransactionId(intent.getSourceId())) {
+            BigDecimal free = transaction.amount().subtract(allocationRepository.allocatedAmount(intent.getSourceId()));
+            if (free.signum() <= 0) {
                 throw new BusinessRuleException("ALREADY_INSTALLED",
                         "This transaction principal is already installmented.");
             }
-            eligibilityPolicy.requireWithinAvailable(intent.getPrincipal(), transaction.amount());
+            eligibilityPolicy.requireWithinAvailable(intent.getPrincipal(), free);
             List<PrincipalAllocation> allocations = new ArrayList<>(1);
             allocations.add(new PrincipalAllocation(null, intent.getSourceId(), intent.getPrincipal()));
             return allocations;

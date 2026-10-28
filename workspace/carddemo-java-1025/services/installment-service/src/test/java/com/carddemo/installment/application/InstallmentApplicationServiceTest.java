@@ -132,6 +132,7 @@ class InstallmentApplicationServiceTest {
         when(transactionPort.findTransaction(TXN)).thenReturn(Optional.of(new TransactionPort.TransactionView(
                 TXN, ACCOUNT, "3344556677889900", "01", "0001", "Purchase", new BigDecimal("1000.00"),
                 NOW.minusDays(1), "POSTED")));
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("0.00"));
 
         when(intentRepository.saveAndFlush(any(InstallmentApplicationIntent.class))).thenAnswer(invocation -> {
             InstallmentApplicationIntent intent = invocation.getArgument(0);
@@ -301,7 +302,7 @@ class InstallmentApplicationServiceTest {
 
     @Test
     void businessFailureAfterPostingPostsReversalGroup() {
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(true);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("1000.00"));
 
         assertThatThrownBy(() -> service.create(CUSTOMER, command("key-5", new BigDecimal("1000.00"))))
                 .isInstanceOf(BusinessRuleException.class)
@@ -460,7 +461,7 @@ class InstallmentApplicationServiceTest {
 
     @Test
     void failedReversalKeepsIntentResumableAndReconcilesToSingleReversal() {
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(true);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("1000.00"));
         // 第1次 create 过账成功；第2次反向过账失败；对账时 create 重复提交（duplicate）；反向过账成功
         org.mockito.Mockito.doNothing()
                 .doThrow(new RemoteServiceException("ledger-service", "ledger down"))
@@ -494,7 +495,7 @@ class InstallmentApplicationServiceTest {
     @Test
     void compensationPhaseNeverCompletesForwardEvenWhenReasonClears() {
         // 创建过账成功 → 业务拒绝 → 补偿阶段落库 → 反向过账响应丢失（状态仍 COMPENSATION_PENDING）
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(true);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("1000.00"));
         org.mockito.Mockito.doNothing()
                 .doThrow(new RemoteServiceException("ledger-service", "response lost"))
                 .doNothing()
@@ -507,7 +508,7 @@ class InstallmentApplicationServiceTest {
         assertThat(intent.getStatus()).isEqualTo(InstallmentApplicationIntent.COMPENSATION_PENDING);
 
         // 原拒绝原因解除（本金占用消失）后重试同一 key：只允许幂等完成逆向
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(false);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("0.00"));
         org.mockito.Mockito.clearInvocations(planRepository, scheduleRepository, ledgerPort);
 
         assertThatThrownBy(() -> service.create(CUSTOMER, command("key-comp", new BigDecimal("1000.00"))))
@@ -524,7 +525,7 @@ class InstallmentApplicationServiceTest {
 
     @Test
     void reconciliationOfCompensationPendingOnlyReverses() {
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(true);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("1000.00"));
         org.mockito.Mockito.doNothing()
                 .doThrow(new RemoteServiceException("ledger-service", "response lost"))
                 .doNothing()
@@ -533,7 +534,7 @@ class InstallmentApplicationServiceTest {
                 .isInstanceOf(BusinessRuleException.class);
         InstallmentApplicationIntent intent = intentsByKey.get("key-comp2");
 
-        when(allocationRepository.existsByTransactionId(TXN)).thenReturn(false);
+        when(allocationRepository.allocatedAmount(TXN)).thenReturn(new BigDecimal("0.00"));
         when(intentRepository.findByStatusInAndUpdatedAtBefore(any(), any())).thenReturn(List.of(intent));
         org.mockito.Mockito.clearInvocations(planRepository, ledgerPort);
 

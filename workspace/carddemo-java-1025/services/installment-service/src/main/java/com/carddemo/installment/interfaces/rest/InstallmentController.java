@@ -7,6 +7,7 @@ import com.carddemo.installment.application.InstallmentQueryService;
 import com.carddemo.installment.application.PreviewService;
 import com.carddemo.installment.application.RepaymentService;
 import com.carddemo.installment.application.SettlementService;
+import com.carddemo.installment.domain.exception.BusinessRuleException;
 import com.carddemo.installment.domain.exception.UnauthorizedException;
 import com.carddemo.installment.domain.model.InstallmentPlan;
 import com.carddemo.installment.domain.model.SourceType;
@@ -15,12 +16,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,15 +42,16 @@ import java.time.LocalDateTime;
  */
 @Tag(name = "分期", description = "账单/消费分期试算、创建、查询、还款与提前结清")
 @RestController
+@Validated
 @RequestMapping("/api/v1/installments")
 public class InstallmentController {
 
-    /** 试算请求（BR-INS-01/02；sourceId 交易 16 位、账单号 32 位以内）。 */
+    /** 试算请求（BR-INS-01/02；sourceId 交易 16 位、账单号 32 位以内；金额最多 2 位小数）。 */
     public record PreviewRequest(
             @NotBlank @Pattern(regexp = "\\d{11}", message = "accountId must be 11 digits") String accountId,
             @NotNull SourceType sourceType,
             @NotBlank @Size(max = 32) String sourceId,
-            @NotNull @DecimalMin(value = "0.01") BigDecimal principal,
+            @NotNull @DecimalMin(value = "0.01") @Digits(integer = 10, fraction = 2) BigDecimal principal,
             @NotNull Integer termMonths) {
     }
 
@@ -57,7 +61,7 @@ public class InstallmentController {
             @NotBlank @Pattern(regexp = "\\d{11}", message = "accountId must be 11 digits") String accountId,
             @NotNull SourceType sourceType,
             @NotBlank @Size(max = 32) String sourceId,
-            @NotNull @DecimalMin(value = "0.01") BigDecimal principal,
+            @NotNull @DecimalMin(value = "0.01") @Digits(integer = 10, fraction = 2) BigDecimal principal,
             @NotNull Integer termMonths,
             @NotBlank @Size(max = 512) String previewToken,
             boolean agreementAccepted) {
@@ -66,13 +70,13 @@ public class InstallmentController {
     /** 结清请求（BR-INS-14：settlementIdempotencyKey 决定同键重放 200 / 新键 409）。 */
     public record SettlementRequest(
             @NotBlank @Size(max = 64) String settlementIdempotencyKey,
-            @DecimalMin(value = "0.00") BigDecimal feeRebate) {
+            @DecimalMin(value = "0.00") @Digits(integer = 10, fraction = 2) BigDecimal feeRebate) {
     }
 
     /** 一期还款请求（A-003）：paymentKey 幂等，金额按最早未还期次本金回写。 */
     public record RepaymentRequest(
             @NotBlank @Size(max = 64) String paymentKey,
-            @NotNull @DecimalMin(value = "0.01") BigDecimal amount) {
+            @NotNull @DecimalMin(value = "0.01") @Digits(integer = 10, fraction = 2) BigDecimal amount) {
     }
 
     public record CreateResponse(String planId, String status, BigDecimal principal, int termMonths,
@@ -167,7 +171,7 @@ public class InstallmentController {
         return ResponseEntity.status(result.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(body);
     }
 
-    @Operation(summary = "我的分期列表", description = "page >= 1，size 1..100，status 仅 ACTIVE/SETTLED/CANCELLED。")
+    @Operation(summary = "我的分期列表", description = "accountId 11 位数字；page >= 1，size 1..100，status 仅 ACTIVE/SETTLED/CANCELLED。")
     @GetMapping
     public InstallmentQueryService.PlanPage list(
             @RequestAttribute(name = InstallmentPrincipal.ATTRIBUTE, required = false) InstallmentPrincipal principal,
@@ -176,6 +180,7 @@ public class InstallmentController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
         requirePrincipal(principal);
+        requireAccountId(accountId);
         return queryService.list(principal, accountId, status, page, size);
     }
 
@@ -233,6 +238,13 @@ public class InstallmentController {
     private static void requirePrincipal(InstallmentPrincipal principal) {
         if (principal == null) {
             throw new UnauthorizedException("A valid IAM token is required.");
+        }
+    }
+
+    /** D-05 数据合同：账户号为 11 位数字，服务端校验，不依赖前端。 */
+    private static void requireAccountId(String accountId) {
+        if (accountId == null || !accountId.matches("\\d{11}")) {
+            throw new BusinessRuleException("INVALID_PARAMETER", "accountId must be 11 digits.");
         }
     }
 }

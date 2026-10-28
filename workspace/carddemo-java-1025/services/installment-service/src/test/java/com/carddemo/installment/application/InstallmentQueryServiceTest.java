@@ -3,7 +3,9 @@ package com.carddemo.installment.application;
 import com.carddemo.installment.domain.exception.BusinessRuleException;
 import com.carddemo.installment.domain.exception.NotFoundException;
 import com.carddemo.installment.domain.model.InstallmentPlan;
+import com.carddemo.installment.domain.model.InstallmentSchedule;
 import com.carddemo.installment.domain.model.PlanStatus;
+import com.carddemo.installment.domain.model.ScheduleStatus;
 import com.carddemo.installment.domain.model.SourceType;
 import com.carddemo.installment.application.port.AuditPort;
 import com.carddemo.installment.application.port.ClockProvider;
@@ -105,6 +107,54 @@ class InstallmentQueryServiceTest {
 
         assertThat(view.warning()).isEqualTo("SCHEDULE_INCONSISTENT");
         verify(scheduleRepository).findByPlanIdOrderByInstallmentNo("IP0001");
+    }
+
+    @Test
+    void detailCountsPaidPeriodsAndFlagsIncompleteSchedule() {
+        when(planRepository.findById("IP0001")).thenReturn(Optional.of(plan()));
+        when(repaymentRepository.findByPlanIdOrderByCreatedAtAsc("IP0001")).thenReturn(List.of());
+        List<InstallmentSchedule> schedules = List.of(
+                schedule(1, ScheduleStatus.PAID),
+                schedule(2, ScheduleStatus.PAID),
+                schedule(3, ScheduleStatus.PENDING));
+        when(scheduleRepository.findByPlanIdOrderByInstallmentNo("IP0001")).thenReturn(schedules);
+
+        InstallmentQueryService.PlanView view = service.detail(CUSTOMER, "IP0001");
+
+        assertThat(view.paidPeriods()).isEqualTo(2);
+        assertThat(view.termMonths()).isEqualTo(6);
+        assertThat(view.warning()).isEqualTo("SCHEDULE_INCONSISTENT");
+    }
+
+    @Test
+    void detailWithCompleteScheduleHasNoWarning() {
+        when(planRepository.findById("IP0001")).thenReturn(Optional.of(plan()));
+        when(repaymentRepository.findByPlanIdOrderByCreatedAtAsc("IP0001")).thenReturn(List.of());
+        List<InstallmentSchedule> schedules = List.of(
+                schedule(1, ScheduleStatus.PAID),
+                schedule(2, ScheduleStatus.PENDING),
+                schedule(3, ScheduleStatus.PENDING),
+                schedule(4, ScheduleStatus.PENDING),
+                schedule(5, ScheduleStatus.PENDING),
+                schedule(6, ScheduleStatus.PENDING));
+        when(scheduleRepository.findByPlanIdOrderByInstallmentNo("IP0001")).thenReturn(schedules);
+
+        InstallmentQueryService.PlanView view = service.detail(CUSTOMER, "IP0001");
+
+        assertThat(view.paidPeriods()).isEqualTo(1);
+        assertThat(view.warning()).isNull();
+    }
+
+    private InstallmentSchedule schedule(int installmentNo, ScheduleStatus status) {
+        InstallmentSchedule schedule = mock(InstallmentSchedule.class);
+        when(schedule.getInstallmentNo()).thenReturn(installmentNo);
+        when(schedule.getStatus()).thenReturn(status);
+        when(schedule.getDueDate()).thenReturn(java.time.LocalDate.of(2026, 11, 9).plusMonths(installmentNo - 1L));
+        when(schedule.getPrincipalDue()).thenReturn(new BigDecimal("166.66"));
+        when(schedule.getPaidPrincipal()).thenReturn(BigDecimal.ZERO);
+        when(schedule.getFeeDue()).thenReturn(new BigDecimal("5.50"));
+        when(schedule.getTotalDue()).thenReturn(new BigDecimal("172.16"));
+        return schedule;
     }
 
     @Test
