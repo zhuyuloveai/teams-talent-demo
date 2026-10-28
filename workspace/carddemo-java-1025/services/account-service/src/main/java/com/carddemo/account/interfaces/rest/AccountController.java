@@ -99,15 +99,23 @@ public class AccountController {
                 outcome.replayed()));
     }
 
-    /**
-     * 内部反查：调用方据此区分「收费确定未执行」与「已执行但本地记录缺失」（002-A003）。
-     */
+    /** 内部反查：调用方据此区分「收费确定未执行」与「已执行但本地记录缺失」（002-A003）。 */
     @Operation(summary = "按 effectId 查询资金作用", description = "内部调用；不存在返回 404")
     @GetMapping("/effects/{effectId}")
     public ResponseEntity<AccountEffectView> findEffect(@PathVariable String effectId) {
         AccountEffect effect = effectService.findEffect(effectId);
         return ResponseEntity.ok(new AccountEffectView(effect.getEffectId(), effect.getAccountId(),
                 effect.getKind(), effect.getAmount(), effect.getAppliedAt().toString()));
+    }
+
+    /**
+     * 取消/退款仲裁（002-A003-R2）：以资金提交端的稳定身份为准，返回 APPLIED / CANCEL_REQUESTED / CANCELLED。
+     * 调用方在 CANCEL_REQUESTED 时必须视为未知并重试，不能宣告"未执行"。
+     */
+    @Operation(summary = "effect 取消仲裁", description = "内部调用：APPLIED 需退款一次；CANCEL_REQUESTED 未知待重试；CANCELLED 可停收")
+    @PostMapping("/effects/{effectId}/fence")
+    public ResponseEntity<AccountEffectService.FenceOutcome> fence(@PathVariable String effectId) {
+        return ResponseEntity.ok(effectService.fence(effectId));
     }
 
     public record AccountEffectView(String effectId, String accountId, String kind, java.math.BigDecimal amount,

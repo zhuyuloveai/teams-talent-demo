@@ -76,7 +76,7 @@ public class ReplacementFeeService {
                         "Transaction id was used by a different transaction type or amount.");
             }
             return new FeeResult(record.getTransactionId(), record.getAccountId(), record.getAmount(), true, false,
-                    true);
+                    true, false);
         }
         if (transactions.findByOriginalTransactionId(transactionId).isPresent()
                 || fences.findByFeeTransactionId(transactionId).isPresent()) {
@@ -89,7 +89,7 @@ public class ReplacementFeeService {
 
         accountClient.applyEffect(accountId, transactionId, "FEE", amount);
         postFee(accountId, cardNumber, transactionId, amount, text(description, "REPLACEMENT FEE"));
-        return new FeeResult(transactionId, accountId, amount, false, false, true);
+        return new FeeResult(transactionId, accountId, amount, false, false, true, false);
     }
 
     /**
@@ -110,7 +110,7 @@ public class ReplacementFeeService {
         if (existingRefund.isPresent()) {
             TransactionRecord record = existingRefund.get();
             return new FeeResult(record.getTransactionId(), record.getAccountId(), record.getAmount(), true, true,
-                    true);
+                    true, false);
         }
 
         String accountId;
@@ -122,20 +122,29 @@ public class ReplacementFeeService {
             accountId = fee.getAccountId();
             feeCardNumber = fee.getCardNumber();
         } else {
-            // 收费可能已作用于账户但交易行尚未落库（插入失败/响应丢失）：以账户 effect 为准判定是否已执行。
-            var effect = accountClient.findEffect(originalTransactionId);
-            if (effect.isEmpty()) {
-                // 确定未执行：不产生任何资金效果，并落取消栅栏阻止迟到的同身份收费。
+            // 002-A003-R2：由资金提交端仲裁。点时 GET 404 不能代表"永远未执行"——请求可能已到达但未提交。
+            AccountClient.FenceState fence = accountClient.fence(originalTransactionId);
+            String state = fence.state();
+            if (AccountEffectClaimStates.IN_FLIGHT.equals(state)) {
+                // 在途：保持未知并可重试，绝不宣告未执行。
+                return new FeeResult(refundId, fence.accountId(), ZERO, false, false, false, true);
+            }
+            if (AccountEffectClaimStates.CANCELLED.equals(state)) {
+                // 确定未执行（取消已先于资金提交生效）：落审计栅栏，不产生任何资金效果。
                 fences.saveFence(new FeeFence(originalTransactionId, "REFUND_CONFIRMED_NOT_EXECUTED",
                         LocalDateTime.now()));
-                return new FeeResult(refundId, null, ZERO, false, false, false);
+                return new FeeResult(refundId, null, ZERO, false, false, false, false);
             }
-            AccountClient.AccountEffectSnapshot applied = effect.get();
-            if (!"FEE".equals(applied.kind()) || applied.amount().compareTo(amount) != 0) {
+            if (!AccountEffectClaimStates.APPLIED.equals(state)) {
+                throw new BusinessRuleException("INVALID_FEE_STATE",
+                        "Unexpected account effect state " + state + " for " + originalTransactionId);
+            }
+            if (fence.kind() == null || !"FEE".equals(fence.kind())
+                    || fence.amount() == null || fence.amount().compareTo(amount) != 0) {
                 throw new BusinessRuleException("INVALID_ORIGINAL_TRANSACTION",
                         "Original account effect is not a matching replacement fee.");
             }
-            accountId = applied.accountId();
+            accountId = fence.accountId();
             feeCardNumber = cardNumber;
             postFee(accountId, feeCardNumber, originalTransactionId, amount, "REPLACEMENT FEE (recovered)");
         }
@@ -154,10 +163,10 @@ public class ReplacementFeeService {
             TransactionRecord stored = transactions.findByOriginalTransactionId(originalTransactionId)
                     .orElseThrow(() -> ex);
             return new FeeResult(stored.getTransactionId(), stored.getAccountId(), stored.getAmount(), true, true,
-                    true);
+                    true, false);
         }
         ledgerClient.postReplacementFeeRefund(refundId, originalTransactionId, amount);
-        return new FeeResult(refundId, accountId, amount, false, true, true);
+        return new FeeResult(refundId, accountId, amount, false, true, true, false);
     }
 
     /** 查询原收费/退款是否已过账：POSTED / NOT_EXECUTED。 */
@@ -216,12 +225,23 @@ public class ReplacementFeeService {
     }
 
     /**
-     * @param replayed   同一 transactionId 已经过账
-     * @param refunded   已执行冲回
-     * @param executed   原收费确定已执行（false 表示确定未执行，可按 WAIVED 处理）
+     * @param replayed 同一 transactionId 已经过账
+     * @param refunded 已执行冲回
+     * @param executed 原收费确定已执行（false 且 pending=false 表示确定未执行，可按 WAIVED 处理）
+     * @param pending  结果未知（资金请求可能仍在途），调用方必须保持待重试
      */
     public record FeeResult(String transactionId, String accountId, BigDecimal amount, boolean replayed,
-                            boolean refunded, boolean executed) {
+                            boolean refunded, boolean executed, boolean pending) {
+    }
+
+    /** 账户侧 effect claim 的终态（与 account-service 的 AccountEffectClaim 保持一致）。 */
+    static final class AccountEffectClaimStates {
+        static final String APPLIED = "APPLIED";
+        static final String CANCELLED = "CANCELLED";
+        static final String IN_FLIGHT = "CANCEL_REQUESTED";
+
+        private AccountEffectClaimStates() {
+        }
     }
 
     public record FeeState(String transactionId, String state, String typeCode, BigDecimal amount) {

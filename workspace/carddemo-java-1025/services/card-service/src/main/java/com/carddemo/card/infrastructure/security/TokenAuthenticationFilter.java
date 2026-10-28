@@ -26,7 +26,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             Pattern.compile("^/api/v1/cards/\\d{16}/loss$"),
             Pattern.compile("^/api/v1/cards/\\d{16}/replacements$"),
             Pattern.compile("^/api/v1/replacements(/.*)?$"),
-            Pattern.compile("^/api/v1/admin/replacements(/.*)?$")
+            Pattern.compile("^/api/v1/admin/replacements(/.*)?$"),
+            Pattern.compile("^/api/v1/cards/permissions$"),
+            Pattern.compile("^/api/v1/support-requests(/.*)?$"),
+            Pattern.compile("^/api/v1/admin/support-requests(/.*)?$")
     };
     private static final String UNAUTHORIZED_BODY =
             "{\"code\":\"UNAUTHENTICATED\",\"message\":\"A valid IAM token is required\"}";

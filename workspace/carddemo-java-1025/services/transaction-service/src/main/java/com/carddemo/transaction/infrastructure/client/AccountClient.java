@@ -102,31 +102,28 @@ public class AccountClient {
     }
 
     /**
-     * 反查稳定 effect（002-A003）：用于区分「收费确定未执行」与「已执行但交易记录缺失」。
-     * 404 → 确定未执行；5xx/超时 → 未知（调用方不得当未执行处理）。
+     * 取消/退款仲裁（002-A003-R2）：由资金提交端给出该稳定 effect 的终态。
+     * APPLIED 需退款一次；CANCEL_REQUESTED 表示请求在途、结果未知（调用方必须重试）；
+     * CANCELLED 表示确定无资金。5xx/超时 → {@link RemoteServiceException}（未知，不得当未执行）。
      */
-    public Optional<AccountEffectSnapshot> findEffect(String effectId) {
+    public FenceState fence(String effectId) {
         try {
-            return restClient.get()
-                    .uri("/api/v1/accounts/effects/{effectId}", effectId)
+            return restClient.post()
+                    .uri("/api/v1/accounts/effects/{effectId}/fence", effectId)
                     .header(HttpHeaders.AUTHORIZATION, tokens.issue())
                     .exchange((request, response) -> {
-                        int status = response.getStatusCode().value();
-                        if (status == 404) {
-                            return Optional.<AccountEffectSnapshot>empty();
-                        }
                         if (!response.getStatusCode().is2xxSuccessful()) {
-                            throw new RemoteServiceException(SERVICE + " responded with HTTP " + status);
+                            throw new RemoteServiceException(SERVICE + " responded with HTTP "
+                                    + response.getStatusCode().value());
                         }
-                        return Optional.of(objectMapper.readValue(response.getBody(), AccountEffectSnapshot.class));
+                        return objectMapper.readValue(response.getBody(), FenceState.class);
                     });
         } catch (RestClientException ex) {
             throw new RemoteServiceException(SERVICE + " is unavailable", ex);
         }
     }
 
-    public record AccountEffectSnapshot(String effectId, String accountId, String kind, BigDecimal amount,
-                                        String appliedAt) {
+    public record FenceState(String effectId, String state, String kind, String accountId, BigDecimal amount) {
     }
 
     record EffectBody(String effectId, String kind, BigDecimal amount) {

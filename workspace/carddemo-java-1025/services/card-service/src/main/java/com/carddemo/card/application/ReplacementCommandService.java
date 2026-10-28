@@ -76,8 +76,8 @@ public class ReplacementCommandService {
     }
 
     @Transactional
-    public CardReplacement create(CardPrincipal principal, String cardNumber, String addressId,
-                                  String deliveryMethod, String reason, String idempotencyKey, String digest) {
+    public CommandOutcome create(CardPrincipal principal, String cardNumber, String addressId,
+                                 String deliveryMethod, String reason, String idempotencyKey, String digest) {
         Card card = cards.findByCardNumber(cardNumber)
                 .orElseThrow(() -> new NotFoundException("CARD_NOT_FOUND", "Card not found"));
         if (principal.isAdmin()) {
@@ -89,8 +89,8 @@ public class ReplacementCommandService {
         IdempotencyService.Decision decision = idempotency.begin(SCOPE_CREATE, idempotencyKey, digest,
                 principal.userId());
         if (decision.replayed()) {
-            return replacements.findById(decision.record().getResultRef())
-                    .orElseThrow(() -> new IllegalStateException("Replacement vanished"));
+            return new CommandOutcome(replacements.findById(decision.record().getResultRef())
+                    .orElseThrow(() -> new IllegalStateException("Replacement vanished")), true);
         }
 
         if (!Card.STATUS_LOST.equals(card.getCardStatus())) {
@@ -136,7 +136,7 @@ public class ReplacementCommandService {
         int status = initialFeeStatus == FeeStatus.FEE_PENDING || replacement.getNumberStatus()
                 == com.carddemo.card.domain.model.NumberStatus.PENDING ? 202 : 201;
         idempotency.complete(SCOPE_CREATE, idempotencyKey, replacementId, status);
-        return replacement;
+        return new CommandOutcome(replacement, false);
     }
 
     /** 分配新卡号（幂等）：生成 → 落新卡 → 写回工单。失败抛出，由调用方保留 REQUESTED 并告警。 */
@@ -158,7 +158,7 @@ public class ReplacementCommandService {
     }
 
     @Transactional
-    public CardReplacement cancel(CardPrincipal principal, String replacementId, String idempotencyKey) {
+    public CommandOutcome cancel(CardPrincipal principal, String replacementId, String idempotencyKey) {
         CardReplacement replacement = replacements.findByIdForUpdate(replacementId)
                 .orElseThrow(() -> new NotFoundException("REPLACEMENT_NOT_FOUND", "Replacement not found"));
         if (principal.isAdmin()) {
@@ -169,7 +169,7 @@ public class ReplacementCommandService {
         IdempotencyService.Decision decision = idempotency.begin(SCOPE_CANCEL, idempotencyKey,
                 IdempotencyService.digest(replacementId), principal.userId());
         if (decision.replayed()) {
-            return replacements.findById(replacementId).orElse(replacement);
+            return new CommandOutcome(replacements.findById(replacementId).orElse(replacement), true);
         }
         if (replacement.getStatus() != ReplacementStatus.REQUESTED) {
             throw new BusinessRuleException("REPLACEMENT_NOT_CANCELLABLE",
@@ -203,20 +203,20 @@ public class ReplacementCommandService {
         notifications.notify("REPLACEMENT_CANCELLED", replacement.getCustomerId(), "REPLACEMENT_CANCEL_NOTICE",
                 replacementId);
         idempotency.complete(SCOPE_CANCEL, idempotencyKey, replacementId, 200);
-        return replacement;
+        return new CommandOutcome(replacement, false);
     }
 
     @Transactional
-    public CardReplacement updateStatus(CardPrincipal principal, String replacementId, ReplacementStatus target,
-                                        String trackingNo, LocalDate estimatedArrival, String idempotencyKey,
-                                        String digest) {
+    public CommandOutcome updateStatus(CardPrincipal principal, String replacementId, ReplacementStatus target,
+                                       String trackingNo, LocalDate estimatedArrival, String idempotencyKey,
+                                       String digest) {
         guard.requirePermission(principal, CardPermission.REPLACEMENT_STATUS_UPDATE);
         CardReplacement replacement = replacements.findByIdForUpdate(replacementId)
                 .orElseThrow(() -> new NotFoundException("REPLACEMENT_NOT_FOUND", "Replacement not found"));
         IdempotencyService.Decision decision = idempotency.begin(SCOPE_STATUS, idempotencyKey, digest,
                 principal.userId());
         if (decision.replayed()) {
-            return replacements.findById(replacementId).orElse(replacement);
+            return new CommandOutcome(replacements.findById(replacementId).orElse(replacement), true);
         }
         LocalDateTime now = LocalDateTime.now();
         switch (target) {
@@ -241,7 +241,7 @@ public class ReplacementCommandService {
         notifications.notify("REPLACEMENT_" + target.name(), replacement.getCustomerId(),
                 "REPLACEMENT_STATUS_NOTICE", replacementId);
         idempotency.complete(SCOPE_STATUS, idempotencyKey, replacementId, 200);
-        return replacement;
+        return new CommandOutcome(replacement, false);
     }
 
     private void activateNewCard(CardReplacement replacement) {
@@ -250,6 +250,10 @@ public class ReplacementCommandService {
                 () -> new IllegalStateException("Replacement card is missing"));
         card.activate();
         cards.saveCard(card);
+    }
+
+    /** 命令结果：真实反映"首次执行"还是"同键重放"，由 facade 原样传播到 REST 响应的 replayed。 */
+    public record CommandOutcome(CardReplacement replacement, boolean replayed) {
     }
 
     private void requireOwner(CardPrincipal principal, CardReplacement replacement) {

@@ -33,6 +33,9 @@ import java.util.regex.Pattern;
 @Component
 public class AddressAccessFilter extends OncePerRequestFilter {
 
+    /** 已验签主体类型（U=客户 / S=内部服务 / A=运营），供写操作二次复核。 */
+    public static final String USER_TYPE_ATTRIBUTE = "carddemo.customer.userType";
+
     private static final Pattern PATH = Pattern.compile("^/api/v1/customers/([^/]+)/addresses(/.*)?$");
     private static final String ALGORITHM = "HmacSHA256";
     private static final String UNAUTHORIZED_BODY =
@@ -70,6 +73,7 @@ public class AddressAccessFilter extends OncePerRequestFilter {
         String[] parts = payload.split("\\|");
         String userId = parts[0];
         String userType = parts[1];
+        request.setAttribute(USER_TYPE_ATTRIBUTE, userType);
         Matcher matcher = PATH.matcher(request.getRequestURI());
         String requestedCustomerId = matcher.matches() ? matcher.group(1) : null;
 

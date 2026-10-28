@@ -23,6 +23,15 @@ public class CustomerAddressService {
         return addresses.findByCustomerIdOrderByAddressIdAsc(customerId);
     }
 
+    /** 客户本人修改收卡地址（002-C07）：调用方已在过滤器校验"本人"，这里只做归属二次确认。 */
+    @Transactional
+    public CustomerAddress update(String customerId, String addressId, String line1, String line2, String line3,
+                                 String stateCode, String countryCode, String zipCode) {
+        CustomerAddress address = get(customerId, addressId);
+        address.updateDetails(line1, line2, line3, stateCode, countryCode, zipCode);
+        return addresses.saveAndFlush(address);
+    }
+
     public CustomerAddress get(String customerId, String addressId) {
         return addresses.findByAddressIdAndCustomerId(addressId, customerId)
                 .orElseThrow(() -> new NotFoundException("ADDRESS_NOT_FOUND",

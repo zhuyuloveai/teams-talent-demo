@@ -1,6 +1,7 @@
 package com.carddemo.transaction.application;
 
 import com.carddemo.transaction.domain.exception.BusinessRuleException;
+import com.carddemo.transaction.domain.exception.RemoteServiceException;
 import com.carddemo.transaction.domain.model.CardSnapshot;
 import com.carddemo.transaction.domain.model.FeeFence;
 import com.carddemo.transaction.domain.model.TranCategoryBalance;
@@ -124,8 +125,8 @@ class ReplacementFeeServiceTest {
     void refundCompletesMissingFeePostingFromAccountEffectAndThenReverses() {
         when(transactions.findByTransactionId(REFUND_ID)).thenReturn(Optional.empty());
         when(transactions.findByTransactionId(FEE_ID)).thenReturn(Optional.empty());
-        when(accountClient.findEffect(FEE_ID)).thenReturn(Optional.of(new AccountClient.AccountEffectSnapshot(
-                FEE_ID, "00000000006", "FEE", new BigDecimal("50.00"), LocalDateTime.now().toString())));
+        when(accountClient.fence(FEE_ID)).thenReturn(new AccountClient.FenceState(FEE_ID, "APPLIED", "FEE",
+                "00000000006", new BigDecimal("50.00")));
         when(balances.find(anyString(), anyString(), anyString())).thenReturn(Optional.empty());
         when(transactions.saveTransaction(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -146,7 +147,8 @@ class ReplacementFeeServiceTest {
     void refundWithoutAnyTraceOfChargeProducesNoMoneyAndFencesLateCharge() {
         when(transactions.findByTransactionId(REFUND_ID)).thenReturn(Optional.empty());
         when(transactions.findByTransactionId(FEE_ID)).thenReturn(Optional.empty());
-        when(accountClient.findEffect(FEE_ID)).thenReturn(Optional.empty());
+        when(accountClient.fence(FEE_ID)).thenReturn(new AccountClient.FenceState(FEE_ID, "CANCELLED", null,
+                null, null));
 
         ReplacementFeeService.FeeResult result = service.refund(REFUND_ID, FEE_ID, new BigDecimal("50.00"), CARD);
 
@@ -158,6 +160,36 @@ class ReplacementFeeServiceTest {
         ArgumentCaptor<FeeFence> fence = ArgumentCaptor.forClass(FeeFence.class);
         verify(fences).saveFence(fence.capture());
         assertThat(fence.getValue().getFeeTransactionId()).isEqualTo(FEE_ID);
+    }
+
+    /** 002-A003-R2：账户侧仲裁为"在途"时必须保持未知可重试，绝不能当未执行。 */
+    @Test
+    void refundKeepsUnknownWhileAccountChargeIsStillInFlight() {
+        when(transactions.findByTransactionId(REFUND_ID)).thenReturn(Optional.empty());
+        when(transactions.findByTransactionId(FEE_ID)).thenReturn(Optional.empty());
+        when(accountClient.fence(FEE_ID)).thenReturn(new AccountClient.FenceState(FEE_ID, "CANCEL_REQUESTED",
+                "FEE", "00000000006", new BigDecimal("50.00")));
+
+        ReplacementFeeService.FeeResult result = service.refund(REFUND_ID, FEE_ID, new BigDecimal("50.00"), CARD);
+
+        assertThat(result.pending()).isTrue();
+        assertThat(result.executed()).isFalse();
+        verify(accountClient, never()).applyEffect(anyString(), anyString(), anyString(), any());
+        verify(fences, never()).saveFence(any());
+        verify(transactions, never()).saveTransaction(any());
+    }
+
+    /** 002-A003-R1：取锁失败必须拒绝并保留可重试，不得无锁继续做资金操作。 */
+    @Test
+    void lockFailureRejectsWithoutMoneyMovement() {
+        org.mockito.Mockito.doThrow(new RemoteServiceException("Fee posting lock is unavailable"))
+                .when(postingLock).acquire(FEE_ID);
+
+        assertThatThrownBy(() -> service.charge(FEE_ID, CARD, new BigDecimal("50.00"), null))
+                .isInstanceOf(RemoteServiceException.class);
+        verify(accountClient, never()).applyEffect(anyString(), anyString(), anyString(), any());
+        verify(transactions, never()).saveTransaction(any());
+        verify(ledgerClient, never()).postReplacementFee(anyString(), any());
     }
 
     /** 栅栏已存在：迟到的收费请求被拒绝，不产生资金效果。 */

@@ -55,6 +55,6 @@ public class ReplacementFeeClient {
     }
 
     public record FeeResult(String transactionId, String accountId, BigDecimal amount, boolean replayed,
-                            boolean refunded, boolean executed) {
+                            boolean refunded, boolean executed, boolean pending) {
     }
 }

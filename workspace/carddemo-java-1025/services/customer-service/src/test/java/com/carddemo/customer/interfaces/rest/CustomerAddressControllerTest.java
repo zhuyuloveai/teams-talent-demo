@@ -90,6 +90,46 @@ class CustomerAddressControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    /** 002-C07：本人可修改地址资源，改后仍是同一 addressId；他人与服务身份不能写。 */
+    @Test
+    void ownerCanUpdateAddressWhileOthersCannot() throws Exception {
+        String body = "{\"addressLine1\":\"1 Market Street\",\"addressLine3\":\"San Francisco CA\","
+                + "\"stateCode\":\"CA\",\"zipCode\":\"94105\"}";
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("USER0001", "U", 600))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.addressId").value("ADDR-000000006"))
+                .andExpect(jsonPath("$.addressLine1").value("1 Market Street"))
+                .andExpect(jsonPath("$.stateCode").value("CA"))
+                .andExpect(jsonPath("$.zipCode").value("94105"));
+
+        mockMvc.perform(get("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("USER0001", "U", 600)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.zipCode").value("94105"));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("USER0002", "U", 600))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("card-service", "S", 600))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/v1/customers/000000006/addresses/ADDR-000000006")
+                        .header("Authorization", token("USER0001", "U", 600))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"stateCode\":\"CAL\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void operatorTokenWithoutSelfServicePermissionIsForbidden() throws Exception {
         mockMvc.perform(get("/api/v1/customers/000000006/addresses")

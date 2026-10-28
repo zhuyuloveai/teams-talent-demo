@@ -37,7 +37,8 @@ public interface CardReplacementJpaRepository
 
     boolean existsByNewCardRef(String newCardRef);
 
-    List<CardReplacement> findByNumberStatusOrderByRequestedAtAsc(NumberStatus numberStatus);
+    List<CardReplacement> findByNumberStatusAndStatusOrderByRequestedAtAsc(NumberStatus numberStatus,
+                                                                          ReplacementStatus status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from CardReplacement r where r.replacementId = :replacementId")
@@ -65,7 +66,9 @@ public interface CardReplacementJpaRepository
 
     @Override
     default List<CardReplacement> findNumberPending(int limit) {
-        List<CardReplacement> all = findByNumberStatusOrderByRequestedAtAsc(NumberStatus.PENDING);
+        // 002-C08：已取消（终态）的工单不再补号，避免取消后新建卡行。
+        List<CardReplacement> all = findByNumberStatusAndStatusOrderByRequestedAtAsc(NumberStatus.PENDING,
+                ReplacementStatus.REQUESTED);
         return all.size() > limit ? all.subList(0, limit) : all;
     }
 

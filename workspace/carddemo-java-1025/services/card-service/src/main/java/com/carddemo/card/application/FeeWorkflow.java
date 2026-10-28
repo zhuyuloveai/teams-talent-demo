@@ -159,6 +159,12 @@ public class FeeWorkflow {
             return;
         }
         CardReplacement replacement = replacements.findByIdForUpdate(replacementId).orElse(null);
+        if (result.pending()) {
+            // 资金请求可能仍在途：结果未知，保持待重试，绝不宣告未执行（002-A003-R2）。
+            refund.markAttemptFailed("account effect outcome unknown; retrying", LocalDateTime.now());
+            operations.saveOperation(refund);
+            return;
+        }
         if (!result.executed()) {
             // 下游确认原收费未执行：停收、无资金，并释放退款操作（交易侧已落取消栅栏）。
             refund.markCancelled(LocalDateTime.now());

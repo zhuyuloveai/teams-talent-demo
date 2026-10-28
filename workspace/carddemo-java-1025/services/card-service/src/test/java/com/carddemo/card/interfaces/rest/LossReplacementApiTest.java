@@ -87,10 +87,10 @@ class LossReplacementApiTest {
         ensureCard(OTHER_CUSTOMER_CARD, "00000000005", "000000005", "JOHN DOE");
         when(feeClient.charge(anyString(), anyString(), any())).thenAnswer(invocation ->
                 new ReplacementFeeClient.FeeResult(invocation.getArgument(0), "00000000006",
-                        new BigDecimal("50.00"), false, false, true));
+                        new BigDecimal("50.00"), false, false, true, false));
         when(feeClient.refund(anyString(), anyString(), any(), anyString())).thenAnswer(invocation ->
                 new ReplacementFeeClient.FeeResult(invocation.getArgument(0), "00000000006",
-                        new BigDecimal("50.00"), false, true, true));
+                        new BigDecimal("50.00"), false, true, true, false));
     }
 
     private void ensureCard(String cardNumber, String accountId, String customerId, String name) {

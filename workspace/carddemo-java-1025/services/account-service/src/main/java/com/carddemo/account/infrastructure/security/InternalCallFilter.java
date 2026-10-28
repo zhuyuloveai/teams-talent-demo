@@ -27,7 +27,8 @@ public class InternalCallFilter extends OncePerRequestFilter {
 
     private static final Pattern[] PROTECTED = {
             Pattern.compile("^/api/v1/accounts/[^/]+/effects$"),
-            Pattern.compile("^/api/v1/accounts/effects/[^/]+$")
+            Pattern.compile("^/api/v1/accounts/effects/[^/]+$"),
+            Pattern.compile("^/api/v1/accounts/effects/[^/]+/fence$")
     };
     private static final String UNAUTHORIZED_BODY =
             "{\"code\":\"UNAUTHENTICATED\",\"message\":\"A valid internal service token is required\"}";

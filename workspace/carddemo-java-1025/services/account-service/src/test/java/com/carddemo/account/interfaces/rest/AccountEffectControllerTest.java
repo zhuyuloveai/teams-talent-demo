@@ -179,6 +179,65 @@ class AccountEffectControllerTest {
         assertThat(balanceOf("00000000005")).isEqualByComparingTo(otherBefore);
     }
 
+    /** 002-A003-R2：取消仲裁与资金提交互斥——fence 先落 CANCELLED 后同一 effect 不能再扣款。 */
+    @Test
+    void fenceOnAbsentEffectBlocksLateCharge() throws Exception {
+        String auth = serviceToken();
+        String accountId = "00000000007";
+        BigDecimal before = balanceOf(accountId);
+        String effectId = "8000000000000401";
+
+        mockMvc.perform(post("/api/v1/accounts/effects/" + effectId + "/fence")
+                        .header("Authorization", auth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("CANCELLED"));
+
+        mockMvc.perform(post("/api/v1/accounts/" + accountId + "/effects")
+                        .header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"effectId\":\"" + effectId + "\",\"kind\":\"FEE\",\"amount\":50.00}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("EFFECT_CANCELLED"));
+
+        assertThat(balanceOf(accountId)).isEqualByComparingTo(before);
+    }
+
+    /** 已应用的资金作用：仲裁返回 APPLIED（调用方必须退款一次），重复 fence 不再改变资金。 */
+    @Test
+    void fenceOnAppliedEffectReportsApplied() throws Exception {
+        String auth = serviceToken();
+        String accountId = "00000000004";
+        String effectId = "8000000000000402";
+        mockMvc.perform(post("/api/v1/accounts/" + accountId + "/effects")
+                        .header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"effectId\":\"" + effectId + "\",\"kind\":\"FEE\",\"amount\":50.00}"))
+                .andExpect(status().isOk());
+        BigDecimal after = balanceOf(accountId);
+
+        mockMvc.perform(post("/api/v1/accounts/effects/" + effectId + "/fence")
+                        .header("Authorization", auth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("APPLIED"))
+                .andExpect(jsonPath("$.accountId").value(accountId));
+
+        assertThat(balanceOf(accountId)).isEqualByComparingTo(after);
+        mockMvc.perform(post("/api/v1/accounts/effects/" + effectId + "/fence")
+                        .header("Authorization", auth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("APPLIED"));
+        assertThat(balanceOf(accountId)).isEqualByComparingTo(after);
+    }
+
+    @Test
+    void fenceRequiresInternalServiceToken() throws Exception {
+        mockMvc.perform(post("/api/v1/accounts/effects/8000000000000403/fence"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/accounts/effects/8000000000000403/fence")
+                        .header("Authorization", token("USER0001", "U", 600)))
+                .andExpect(status().isUnauthorized());
+    }
+
     @Test
     void unknownAccountAndInvalidKindAreRejected() throws Exception {
         String auth = serviceToken();

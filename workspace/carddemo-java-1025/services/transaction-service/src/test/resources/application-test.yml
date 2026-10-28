@@ -13,3 +13,8 @@ client:
     base-url: http://localhost:8083
   account-service:
     base-url: http://localhost:8084
+
+# 单测在 H2 上显式关闭 advisory lock（生产默认开启，取锁失败即拒绝而不是无锁继续）
+fee:
+  posting-lock:
+    enabled: false

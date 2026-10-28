@@ -45,6 +45,41 @@ public class CustomerAddress {
         // for JPA
     }
 
+    /** 客户本人修改收卡地址（002-C07）：地址身份不变，只更新行政信息。 */
+    public void updateDetails(String line1, String line2, String line3, String stateCode, String countryCode,
+                              String zipCode) {
+        if (line1 != null && !line1.isBlank()) {
+            this.addressLine1 = line1.trim();
+        }
+        if (line2 != null) {
+            this.addressLine2 = line2.trim();
+        }
+        if (line3 != null && !line3.isBlank()) {
+            this.addressLine3 = line3.trim();
+        }
+        if (stateCode != null && !stateCode.isBlank()) {
+            this.stateCode = stateCode.trim().toUpperCase();
+        }
+        if (countryCode != null && !countryCode.isBlank()) {
+            this.countryCode = countryCode.trim().toUpperCase();
+        }
+        if (zipCode != null && !zipCode.isBlank()) {
+            this.zipCode = zipCode.trim();
+        }
+    }
+
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public String getAddressLine3() {
+        return addressLine3;
+    }
+
     public String getAddressId() {
         return addressId;
     }

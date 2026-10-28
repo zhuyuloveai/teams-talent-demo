@@ -79,7 +79,9 @@ public class ReplacementNumberWorker {
     private boolean tryAssign(String replacementId) {
         Boolean assigned = tx.execute(status -> {
             CardReplacement replacement = replacements.findByIdForUpdate(replacementId).orElse(null);
-            if (replacement == null || replacement.getNumberStatus() == NumberStatus.ASSIGNED) {
+            if (replacement == null || replacement.getNumberStatus() == NumberStatus.ASSIGNED
+                    || replacement.getStatus() != com.carddemo.card.domain.model.ReplacementStatus.REQUESTED) {
+                // 锁内再校验状态：已取消/已终结的工单不得补号建卡（002-C08）。
                 return false;
             }
             String oldCardNumber = cipher.decrypt(replacement.getOldCardCipher());

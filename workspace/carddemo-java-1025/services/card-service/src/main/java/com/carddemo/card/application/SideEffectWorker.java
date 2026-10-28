@@ -36,16 +36,19 @@ public class SideEffectWorker {
     private final NotificationRetryRepository notificationRetries;
     private final SideEffectTransactions sideEffects;
     private final boolean schedulingEnabled;
+    private final boolean deliveryEnabled;
 
     public SideEffectWorker(AuditRepository audit, NotificationRepository notifications,
                             NotificationRetryRepository notificationRetries,
                             SideEffectTransactions sideEffects,
-                            @Value("${card.workers.enabled:true}") boolean schedulingEnabled) {
+                            @Value("${card.workers.enabled:true}") boolean schedulingEnabled,
+                            @Value("${card.notification.delivery-enabled:true}") boolean deliveryEnabled) {
         this.audit = audit;
         this.notifications = notifications;
         this.notificationRetries = notificationRetries;
         this.sideEffects = sideEffects;
         this.schedulingEnabled = schedulingEnabled;
+        this.deliveryEnabled = deliveryEnabled;
     }
 
     @Scheduled(fixedDelayString = "${card.side-effect.interval-ms:5000}",
@@ -107,6 +110,10 @@ public class SideEffectWorker {
 
     /** 投递 PENDING_RETRY 通知，返回本轮成功条数；已 SENT 的不再投递。 */
     public int dispatchNotifications() {
+        if (!deliveryEnabled) {
+            // 渠道关闭时不得把待补发记录直接标记为已发送（002-C01）。
+            return 0;
+        }
         List<NotificationRecord> pending = notifications.findPendingRetry(MAX_NOTIFICATIONS_PER_ROUND);
         int sent = 0;
         for (NotificationRecord record : pending) {

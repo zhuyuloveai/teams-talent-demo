@@ -87,6 +87,33 @@ function saveSession(session) {
     sessionStorage.setItem(AUTH_KEY, JSON.stringify(session));
 }
 
+/**
+ * 002-C07：按后端真实能力显示写操作（后端仍逐次校验权限点）。
+ * 客户本人按 customerId 判断归属；客服/运营按 card-service 返回的权限点判断。
+ */
+async function loadCapabilities() {
+    if (!state.session || !state.session.token) {
+        state.capabilities = { permissions: [], customerId: null };
+        return state.capabilities;
+    }
+    try {
+        state.capabilities = await api('/api/v1/cards/permissions');
+    } catch (ignored) {
+        state.capabilities = { permissions: [], customerId: null };
+    }
+    return state.capabilities;
+}
+
+function hasCapability(permission) {
+    const capabilities = state.capabilities || { permissions: [] };
+    return (capabilities.permissions || []).includes(permission);
+}
+
+function isOwnCustomer(customerId) {
+    const capabilities = state.capabilities || {};
+    return !!customerId && capabilities.customerId === customerId;
+}
+
 function clearSession() {
     state.session = null;
     sessionStorage.removeItem(AUTH_KEY);
@@ -159,7 +186,8 @@ const NAV_GROUPS = [
         items: [
             { key: 'users', href: '#/users', icon: '👥', label: '用户管理' },
             { key: 'admin-installments', href: '#/admin/installments', icon: '📑', label: '分期后台' },
-            { key: 'admin-replacements', href: '#/admin/replacements', icon: '💳', label: '补卡队列' },
+            { key: 'admin-replacements', href: '#/admin/replacements', icon: '💳', label: '补卡队列',
+              permission: 'replacement:read:any' },
             { key: 'campaigns', href: '#/campaigns', icon: '📣', label: '活动管理' }
         ]
     }
@@ -171,7 +199,8 @@ function visibleNavGroups() {
         .filter((group) => !group.adminOnly || isAdmin)
         .map((group) => ({
             ...group,
-            items: group.items.filter((item) => !item.adminOnly || isAdmin)
+            items: group.items.filter((item) => (!item.adminOnly || isAdmin)
+                && (!item.permission || hasCapability(item.permission)))
         }));
 }
 
@@ -302,6 +331,8 @@ function pageLogin() {
                 body: { userId: values.userId.trim(), password: values.password }
             });
             saveSession({ token: result.token, expiresAt: result.expiresAt, user: result.user });
+            state.capabilities = null;
+            await loadCapabilities();
             toast(`欢迎，${result.user.firstName}（${result.user.landingMenu === 'ADMIN' ? '管理员' : '普通用户'}）`, 'success');
             location.hash = '#/menu';
         } catch (error) {
@@ -658,7 +689,9 @@ function currentUserIsAdmin() {
 }
 
 function cardActions(card) {
-    if (card.cardStatus === 'ACTIVE' && card.activeStatus === 'Y') {
+    const canReportLoss = isOwnCustomer(card.customerId) || hasCapability('card:loss:assist');
+    const canRequestReplacement = isOwnCustomer(card.customerId);
+    if (card.cardStatus === 'ACTIVE' && card.activeStatus === 'Y' && canReportLoss) {
         return `
             <h3>挂失</h3>
             <div class="alert error"><strong>风险提示</strong> · 挂失后旧卡立即失效且不可撤销，如需用卡请同时申请补卡。</div>
@@ -684,12 +717,13 @@ function cardActions(card) {
             </form>`;
     }
     if (card.cardStatus === 'LOST') {
+        // 002-C07：只有持卡人本人看到补卡入口；客服/运营只读（PRD v1.2 §6.2）。
         return `
             <h3>补卡</h3>
             <p class="hint">该卡已挂失。补卡申请需由持卡人本人提交，白金卡免收补卡费，其余卡收取 50.00 元。</p>
-            <div class="form-actions">
+            ${canRequestReplacement ? `<div class="form-actions">
                 <a class="btn primary" href="#/cards/${encodeURIComponent(card.cardNumber)}/replacement">申请补卡</a>
-            </div>
+            </div>` : '<div class="alert">当前身份不可代客申请补卡；可协助取消或查询进度。</div>'}
             <div id="replacement-list" class="mt-16"><div class="empty">加载补卡记录…</div></div>`;
     }
     return `<h3>挂失 / 补卡</h3><div class="empty">当前卡状态（${esc(card.cardStatus || '')}）不支持挂失或补卡。</div>`;
@@ -2804,9 +2838,21 @@ async function pageReplacementNew(cardNumber) {
             <h3>补卡信息</h3>
             <p class="hint">旧卡（${esc(card.cardStatus)}）将永久失效；新卡激活前不可交易。补卡费：${feeText}。
                 工单只保存所选地址编号，不冗余家庭地址明细。</p>
+            <form id="address-form" class="form-grid mt-16" data-customer="${esc(card.customerId)}">
+                <label class="field span-2"><span>地址确认与修改（客户本人地址资源，保存后仍用同一 addressId）</span>
+                    <select name="addressId" required>${options}</select></label>
+                <label class="field"><span>地址行 1</span><input name="addressLine1" maxlength="50"></label>
+                <label class="field"><span>地址行 3（城市/州）</span><input name="addressLine3" maxlength="50"></label>
+                <label class="field"><span>州</span><input name="stateCode" maxlength="2" pattern="[A-Za-z]{2}"></label>
+                <label class="field"><span>邮编</span><input name="zipCode" maxlength="10" pattern="\\d{5}(-\\d{4})?"></label>
+                <div class="form-actions span-2">
+                    <button class="btn ghost" type="submit" id="address-save">保存地址修改</button>
+                </div>
+                <div id="address-msg" class="span-2"></div>
+            </form>
             <form id="replacement-form">
                 <div class="form-grid">
-                    <label class="field span-2"><span>收卡地址（确认或改选） <span class="req">*</span></span>
+                    <label class="field span-2"><span>收卡地址编号（确认后用于本工单） <span class="req">*</span></span>
                         <select name="addressId" required>${options}</select></label>
                     <label class="field"><span>配送方式 <span class="req">*</span></span>
                         <select name="deliveryMethod" required>
@@ -2826,6 +2872,52 @@ async function pageReplacementNew(cardNumber) {
                 </div>
                 <div id="replacement-msg"></div>
             </form>`;
+
+        const addressForm = document.getElementById('address-form');
+        const addressMsg = document.getElementById('address-msg');
+        const addressSave = document.getElementById('address-save');
+
+        const loadAddressValues = async () => {
+            const selected = addressForm.addressId.value;
+            try {
+                const detail = await api(`/api/v1/customers/${encodeURIComponent(card.customerId)}`
+                    + `/addresses/${encodeURIComponent(selected)}`);
+                addressForm.addressLine1.value = detail.addressLine1 || '';
+                addressForm.addressLine3.value = detail.addressLine3 || '';
+                addressForm.stateCode.value = detail.stateCode || '';
+                addressForm.zipCode.value = detail.zipCode || '';
+                addressMsg.innerHTML = '';
+            } catch (error) {
+                addressMsg.innerHTML = errBox({ message: `读取地址失败：${error.message}（可重试）` });
+            }
+        };
+        addressForm.addressId.addEventListener('change', loadAddressValues);
+        await loadAddressValues();
+
+        addressForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            addressMsg.innerHTML = '';
+            const values = formValues(addressForm);
+            setBusy(addressSave, true, '保存中…');
+            try {
+                await api(`/api/v1/customers/${encodeURIComponent(card.customerId)}`
+                    + `/addresses/${encodeURIComponent(values.addressId)}`, {
+                    method: 'PUT',
+                    body: {
+                        addressLine1: values.addressLine1 || null,
+                        addressLine3: values.addressLine3 || null,
+                        stateCode: values.stateCode || null,
+                        zipCode: values.zipCode || null
+                    }
+                });
+                toast('收卡地址已保存', 'success');
+                await loadAddressValues();
+            } catch (error) {
+                addressMsg.innerHTML = errBox(error);
+            } finally {
+                setBusy(addressSave, false);
+            }
+        });
 
         const form = document.getElementById('replacement-form');
         const button = document.getElementById('replacement-submit');
@@ -2899,19 +2991,51 @@ async function pageReplacementDetail(replacementId) {
                 <dt>申请时间</dt><dd>${esc(item.requestedAt)}</dd>
                 <dt>更新时间</dt><dd>${esc(item.statusUpdatedAt)}</dd>
             </dl>
-            ${item.status === 'REQUESTED' ? `
+            ${item.status === 'REQUESTED' && (isOwnCustomer(item.customerId) || hasCapability('replacement:cancel:assist')) ? `
                 <form id="cancel-form" class="form-actions mt-16">
                     <button class="btn danger" type="submit" id="cancel-submit">取消补卡</button>
                 </form>
                 <div id="cancel-msg"></div>
                 <p class="hint">制卡后不可取消；已收取的补卡费将冲回一次。</p>` : ''}
-            <div class="alert mt-16">
-                <strong>需要客服协助？</strong>
-                客服可代客挂失、查询进度并协助取消（补卡申请仅持卡人本人提交）。
-                请拨打 400-000-0000 或通过在线客服提供工单号 ${esc(item.replacementId)}；
-                挂失请提供客服工单号与核身核实引用。
+            <div class="card mt-16">
+                <h3>需要客服协助？</h3>
+                <p class="hint">提交一条本地客服协助请求，客服/运营会在补卡队列中看到它（不需要外部客服平台）。</p>
+                <form id="support-form" class="form-grid">
+                    <label class="field span-2"><span>说明（可选）</span>
+                        <input name="note" maxlength="500" placeholder="例如：希望协助取消 / 修改收卡地址"></label>
+                    <div class="form-actions span-2">
+                        <button class="btn ghost" type="submit" id="support-submit">提交客服协助请求</button>
+                    </div>
+                    <div id="support-msg" class="span-2"></div>
+                </form>
+                <div id="support-list" class="mt-8"></div>
             </div>
             <div class="form-actions mt-16"><a class="btn ghost" href="#/menu">返回首页</a></div>`;
+        const supportForm = document.getElementById('support-form');
+        const supportMsg = document.getElementById('support-msg');
+        const supportList = document.getElementById('support-list');
+        supportForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            supportMsg.innerHTML = '';
+            const values = formValues(supportForm);
+            setBusy(document.getElementById('support-submit'), true, '提交中…');
+            try {
+                const created = await api('/api/v1/support-requests', {
+                    method: 'POST',
+                    body: { subjectType: 'REPLACEMENT', subjectRef: replacementId, note: values.note || null }
+                });
+                toast(`协助请求已提交：${created.requestId}`, 'success');
+                supportMsg.innerHTML = `<div class="alert">已提交本地客服协助请求 ${esc(created.requestId)}，`
+                    + '客服在工作台可见。</div>';
+                supportList.innerHTML = '';
+                await pageReplacementDetail(replacementId);
+            } catch (error) {
+                supportMsg.innerHTML = errBox(error);
+            } finally {
+                setBusy(document.getElementById('support-submit'), false);
+            }
+        });
+
         const cancelForm = document.getElementById('cancel-form');
         if (cancelForm) {
             cancelForm.addEventListener('submit', async (event) => {
@@ -2982,6 +3106,7 @@ async function pageAdminReplacements() {
                 <td>${esc(item.estimatedArrival || '—')}</td>
                 <td>
                     <a class="btn ghost small" href="#/replacements/${encodeURIComponent(item.replacementId)}">详情</a>
+                    ${hasCapability('replacement:status:update') ? `
                     <form class="row-form" data-id="${esc(item.replacementId)}">
                         <select name="status">
                             ${['CARD_PRODUCED', 'SHIPPED', 'ACTIVATED'].map((value) => `
@@ -2990,13 +3115,17 @@ async function pageAdminReplacements() {
                         <input name="trackingNo" placeholder="快递单号" maxlength="32">
                         <input name="estimatedArrival" type="date">
                         <button class="btn ghost small" type="submit">更新</button>
-                    </form>
+                    </form>` : '<span class="hint">当前身份无状态更新权限</span>'}
                 </td>
             </tr>`).join('')}</tbody></table>
             ${pager(adminReplacementsUi.page, result.size || 20, result.total || 0, 'admin-page')}
             <div class="hint mt-16">当前筛选：${esc(adminReplacementsUi.status || '全部')} · 列表只能查看后 4 位，
                 详情请进入工单进度页（需客服/运营权限）。</div>
-            <div id="admin-msg"></div>`;
+            <div id="admin-msg"></div>
+            <div class="card mt-16" id="support-queue">
+                <h3>客服协助请求</h3>
+                <div class="empty">加载中…</div>
+            </div>`;
 
         box.querySelectorAll('[data-admin-page]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -3004,6 +3133,29 @@ async function pageAdminReplacements() {
                 pageAdminReplacements();
             });
         });
+
+        api('/api/v1/admin/support-requests?status=OPEN')
+            .then((items) => {
+                const queue = document.getElementById('support-queue');
+                if (!items || items.length === 0) {
+                    queue.innerHTML = '<h3>客服协助请求</h3><div class="empty">暂无待处理请求</div>';
+                    return;
+                }
+                queue.innerHTML = `<h3>客服协助请求</h3>
+                    <table class="table"><thead><tr><th>请求</th><th>客户</th><th>关联</th><th>说明</th>
+                        <th>提交时间</th></tr></thead><tbody>
+                    ${items.map((item) => `<tr>
+                        <td class="mono">${esc(item.requestId)}</td>
+                        <td class="mono">${esc(item.customerId)}</td>
+                        <td class="mono">${esc(item.subjectRef || item.subjectType)}</td>
+                        <td>${esc(item.note || '—')}</td>
+                        <td>${esc(item.createdAt)}</td>
+                    </tr>`).join('')}</tbody></table>`;
+            })
+            .catch((error) => {
+                document.getElementById('support-queue').innerHTML =
+                    `<h3>客服协助请求</h3>${errBox(error)}`;
+            });
 
         document.getElementById('admin-filter').addEventListener('submit', (event) => {
             event.preventDefault();
@@ -3087,8 +3239,11 @@ function pageNotFound() {
     });
 }
 
-function route() {
+async function route() {
     loadSession();
+    if (state.session && !state.capabilities) {
+        await loadCapabilities();
+    }
     const hash = location.hash || '#/menu';
     const queryIndex = hash.indexOf('?');
     const path = (queryIndex < 0 ? hash : hash.slice(0, queryIndex)).replace(/^#/, '');

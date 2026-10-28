@@ -88,8 +88,12 @@ public class ReplacementService {
         // 地址归属校验是远端调用，放在事务外，避免事务期间占用连接。
         customers.requireOwnedAddress(card.getCustomerId(), addressId);
 
-        CardReplacement replacement = commands.create(principal, cardNumber, addressId, deliveryMethod, reason,
-                idempotencyKey, digest);
+        ReplacementCommandService.CommandOutcome created = commands.create(principal, cardNumber, addressId,
+                deliveryMethod, reason, idempotencyKey, digest);
+        CardReplacement replacement = created.replacement();
+        if (created.replayed()) {
+            return new CreateOutcome(replacement, true);
+        }
 
         if (replacement.getFeeStatus() == FeeStatus.FEE_PENDING) {
             feeWorkflow.charge(replacement.getReplacementId());
@@ -111,11 +115,16 @@ public class ReplacementService {
             throw new NotFoundException("REPLACEMENT_NOT_FOUND", "Replacement not found");
         }
 
-        CardReplacement cancelled = commands.cancel(principal, replacementId, idempotencyKey);
-        if (cancelled.getFeeStatus() == FeeStatus.REFUND_PENDING) {
+        ReplacementCommandService.CommandOutcome cancelled = commands.cancel(principal, replacementId,
+                idempotencyKey);
+        if (cancelled.replayed()) {
+            // 同键同载荷/主体重放：返回首次结果，不重复退款/通知/审计。
+            return new CancelOutcome(replacements.findById(replacementId).orElse(cancelled.replacement()), true);
+        }
+        if (cancelled.replacement().getFeeStatus() == FeeStatus.REFUND_PENDING) {
             feeWorkflow.refund(replacementId);
         }
-        return new CancelOutcome(replacements.findById(replacementId).orElse(cancelled), false);
+        return new CancelOutcome(replacements.findById(replacementId).orElse(cancelled.replacement()), false);
     }
 
     /**
@@ -128,15 +137,15 @@ public class ReplacementService {
         if (target == ReplacementStatus.CANCELLED) {
             // 取消必须复用与持卡人取消相同的权限点（cancel:assist）、幂等与退款/停收链，
             // 不能因为"运营状态更新"权限而绕过（002-A005）。
-            CardReplacement cancelled = cancel(principal, replacementId, idempotencyKey).replacement();
-            return new StatusOutcome(cancelled, false);
+            CancelOutcome cancelOutcome = cancel(principal, replacementId, idempotencyKey);
+            return new StatusOutcome(cancelOutcome.replacement(), cancelOutcome.replayed());
         }
         guard.requirePermission(principal, CardPermission.REPLACEMENT_STATUS_UPDATE);
         String digest = IdempotencyService.digest(replacementId, status, trackingNo,
                 estimatedArrival == null ? null : estimatedArrival.toString());
-        CardReplacement updated = commands.updateStatus(principal, replacementId, target, trackingNo,
-                estimatedArrival, idempotencyKey, digest);
-        return new StatusOutcome(updated, false);
+        ReplacementCommandService.CommandOutcome updated = commands.updateStatus(principal, replacementId, target,
+                trackingNo, estimatedArrival, idempotencyKey, digest);
+        return new StatusOutcome(updated.replacement(), updated.replayed());
     }
 
     public CardReplacement get(CardPrincipal principal, String replacementId) {
