@@ -186,6 +186,55 @@ REQUESTED ──► CARD_PRODUCED ──► SHIPPED ──► ACTIVATED
 
 单元/接口测试见 §7；本轮另需真实 PostgreSQL + HTTP 故障脚本（独立 Compose、loopback 随机端口）覆盖：同 effect 并发、账户已扣但本地写失败后恢复、远端已收费但响应丢失、双取消/取消×worker、pending 取消不迟到收费、匿名/越权资金 0 写入、审计/通知真实 SQL 失败不回滚并补发、ledger 借贷配平、CSV 特殊字符、地址与客服核身负例。证据与命令见本任务运行报告。
 
+## 7B. 返工 R3（PR11 e4303f3 复审剩余项）
+
+本节补充 7A 的资金仲裁与前端能力说明，替换 7A.1 中"点时 404 即可判定未执行"的旧描述。
+
+### 7B.1 资金提交端的到达/取消仲裁（002-A003-R1/R2）
+
+- **锁定失败不再降级**：`FeePostingLock` 取不到 advisory lock 时抛 503（可重试），**不会**把进程置为"无锁继续"；
+  唯一的关闭方式是非 PG 单测显式配置 `fee.posting-lock.enabled=false`。真实 PG 验证：外部会话持锁期间
+  余额与 effect 行都不变、工单保持 FEE_PENDING；释放后同一 `effect_id` 恢复收费且只扣一次。
+- **账户侧 claim（资金提交端的因果锚点）**：表 `account_effect_claim(effect_id PK, kind, account_id, amount,
+  state, version)`，状态 `CLAIMED → APPLIED`，取消路径可写 `CANCEL_REQUESTED`/`CANCELLED`。
+  `POST /accounts/{id}/effects` 分两步：①独立事务登记/读取 claim（已取消 → 409 `EFFECT_CANCELLED`，零资金写）；
+  ②资金事务：锁 claim → 锁账户 → **拿到账户锁后重新读取 claim** → 仍未取消才应用资金并置 APPLIED。
+- **取消仲裁端点** `POST /accounts/effects/{effectId}/fence`（内部服务 token）返回：
+  - `APPLIED`：资金已提交 → 调用方必须退款一次；
+  - `CANCEL_REQUESTED`：请求已到达但未提交 → 调用方视为**未知**，保持可重试（绝不宣告未执行）；
+  - `CANCELLED`：从未到达或已被拦下 → 调用方才可以停收（WAIVED）。
+- **transaction-service** 退款改为调用上述 fence：`APPLIED` → 幂等补齐原收费再冲回一次；`CANCELLED` → 落审计栅栏、
+  `executed=false`；`CANCEL_REQUESTED` → 返回 `pending=true`，card-service 的 `FeeWorkflow` 保持 `REFUND_PENDING`
+  并继续重试。因此"调用方超时释放锁 + 取消在点时 404 窗口并发 + 原请求迟到提交"最终落到两种因果安全终态之一：
+  取消拦下（无扣款）或迟到费用由同一退款身份冲回一次（净额 0、FEE/REFUND 分录组各自唯一且平衡）。
+
+### 7B.2 重放语义（002-A004-R1）
+
+`ReplacementCommandService` 返回 `CommandOutcome(replacement, replayed)`，facade 原样传播：
+同键同载荷/同主体重放 → HTTP 200 `replayed=true`，不重复退款/通知/审计；异载荷或异主体仍 409。
+业务事务失败（如卡未挂失）时幂等占位随事务回滚，随后合法重试只生效一次。
+
+### 7B.3 通知渠道（002-C01）
+
+`SideEffectWorker` 读取 `card.notification.delivery-enabled`：渠道关闭时**不投递、不改状态**，
+记录保持 `PENDING_RETRY`；渠道恢复后按同一 `notification_id` 恰好投递一次（`SENT`）。
+
+### 7B.4 号段与取消（002-C08）
+
+`findNumberPending` 与锁内校验都要求 `number_status=PENDING 且 status=REQUESTED`；
+已取消工单不再补号、不新建卡行，未取消的 REQUESTED 仍可恢复补号。
+
+### 7B.5 前端能力（002-C07）
+
+- `GET /api/v1/cards/permissions` 返回当前主体的真实权限点与 customerId；前端按此显示挂失（`card:loss:assist`
+  或本人）、补卡（仅本人）、取消（`replacement:cancel:assist` 或本人）、状态更新（`replacement:status:update`）
+  与补卡队列（`replacement:read:any`）；后端仍逐次校验，不扩大任何角色写权限。
+- 收卡地址可在补卡页**真实修改**：`PUT /api/v1/customers/{customerId}/addresses/{addressId}`（仅客户本人 token，
+  服务/运营 403），保存后仍以同一 `addressId` 提交补卡；工单不冗余地址明细。
+- 客服入口：新增本地 `support_request` 表与 `POST /api/v1/support-requests`（客户提交）、
+  `GET /api/v1/admin/support-requests`（客服/运营按 `replacement:read:any` 查看），不依赖外部客服平台，
+  也不声称外部接入；客服代客操作仍走既有权限点与可信核身记录。
+
 ## 8. NFR 应答
 
 | 维度 | 目标 | 实现/验证 |
