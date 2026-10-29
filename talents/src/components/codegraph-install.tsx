@@ -5,6 +5,7 @@ import { App, Button, Collapse, Tag, Tooltip } from 'antd';
 import { codegraphEngine, installCodegraph, type CodegraphEngine } from '../api.ts';
 import { useTalents } from '../store.tsx';
 import { when } from '../demo/format.ts';
+import { useT } from '../i18n.tsx';
 
 // One state for every place that shows it; checked once per page load (and again on request), polled while installing.
 let current: CodegraphEngine | undefined, loading: Promise<void> | null = null;
@@ -27,44 +28,47 @@ function useEngine() {
 function useInstall() {
   const { toast } = useTalents();
   const { modal } = App.useApp();
+  const t = useT();
   return (engine: CodegraphEngine) => modal.confirm({
-    title: '安装 CodeGraph？', okText: '安装', cancelText: '取消', width: 560,
-    content: <><p>将在本机运行 CodeGraph 官方安装脚本（固定 v1.6.0）：从 GitHub 下载，安装到 <code>~/.codegraph</code>，命令入口在 <code>~/.local/bin</code>。可能需要几分钟。</p>
+    title: t('cgi.confirmTitle'), okText: t('cgi.install'), cancelText: t('common.cancel'), width: 560,
+    content: <><p>{t('cgi.confirmBodyBefore')} <code>~/.codegraph</code>{t('cgi.confirmBodyMiddle')} <code>~/.local/bin</code>{t('cgi.confirmBodyAfter')}</p>
       <pre className="log">{engine.command}</pre></>,
     onOk: async () => {
       try {
         publish(await installCodegraph());
         const done = await follow();
-        toast(done.install?.status === 'success' ? '已安装 CodeGraph ' + (done.status.version ?? '') : '安装没有成功，在 CodeGraph 详情中查看日志');
-      } catch (e) { toast('无法安装：' + (e as Error).message); }
+        toast(done.install?.status === 'success' ? t('cgi.installedVersion', { version: done.status.version ?? '' }) : t('cgi.installFailed'));
+      } catch (e) { toast(t('cgi.installError', { error: (e as Error).message })); }
     },
   });
 }
 
 /** On the capability card: 已安装, 安装中, or the 安装 button. */
 export function CodegraphInstall() {
+  const t = useT();
   const engine = useEngine(), install = useInstall();
   if (!engine) return null;
-  if (engine.install?.status === 'running') return <Button size="small" loading>安装中</Button>;
-  if (engine.status.state === 'installed') return <Tag color="success">已安装{engine.status.version && ' ' + engine.status.version}</Tag>;
-  if (!engine.command) return <Tooltip title={engine.status.detail}><Tag color="warning">未安装</Tag></Tooltip>;
-  return <Tooltip title={engine.status.state === 'failed' ? engine.status.detail : '本机没有找到 codegraph'}><Button size="small" type="primary" onClick={() => install(engine)}>安装</Button></Tooltip>;
+  if (engine.install?.status === 'running') return <Button size="small" loading>{t('cgi.installing')}</Button>;
+  if (engine.status.state === 'installed') return <Tag color="success">{t('cgi.installed')}{engine.status.version && ' ' + engine.status.version}</Tag>;
+  if (!engine.command) return <Tooltip title={engine.status.detail}><Tag color="warning">{t('cgi.notInstalled')}</Tag></Tooltip>;
+  return <Tooltip title={engine.status.state === 'failed' ? engine.status.detail : t('cgi.missingLocal')}><Button size="small" type="primary" onClick={() => install(engine)}>{t('cgi.install')}</Button></Tooltip>;
 }
 
 /** On the capability page: what the self-check says, the install command and the last install's log. */
 export function CodegraphInstallDetail() {
+  const t = useT();
   const engine = useEngine(), install = useInstall();
   if (!engine) return null;
   const { status, install: last } = engine, running = last?.status === 'running';
-  return <div className="field"><span className="label">本机安装</span>
-    <p>{running ? '正在安装…' : status.state === 'installed' ? '已安装 codegraph ' + (status.version ?? '') + '，自检通过' : status.state === 'missing' ? '未安装：本机没有找到 codegraph' : '自检没有通过'}
-      <span className="caption">（检测于 {when(new Date(status.checkedAt).toISOString())}）</span></p>
+  return <div className="field"><span className="label">{t('cgi.localInstall')}</span>
+    <p>{running ? t('cgi.installingDots') : status.state === 'installed' ? t('cgi.installedSelfCheck', { version: status.version ?? '' }) : status.state === 'missing' ? t('cgi.missingDetail') : t('cgi.selfCheckFailed')}
+      <span className="caption">{t('cgi.checkedAt', { time: when(new Date(status.checkedAt).toISOString()) })}</span></p>
     {status.state === 'failed' && status.detail && <pre className="log">{status.detail}</pre>}
     <div className="actions">
-      {status.state !== 'installed' && engine.command && <Button type="primary" loading={running} onClick={() => install(engine)}>{running ? '安装中' : '安装'}</Button>}
-      <Button disabled={running} onClick={() => void load(true)}>重新检测</Button>
+      {status.state !== 'installed' && engine.command && <Button type="primary" loading={running} onClick={() => install(engine)}>{running ? t('cgi.installing') : t('cgi.install')}</Button>}
+      <Button disabled={running} onClick={() => void load(true)}>{t('cgi.recheck')}</Button>
     </div>
-    {last && <Collapse size="small" defaultActiveKey={running ? ['log'] : []} items={[{ key: 'log', label: '安装日志（' + { running: '进行中', success: '成功', failed: '失败' }[last.status] + '，' + when(new Date(last.startedAt).toISOString()) + '）',
+    {last && <Collapse size="small" defaultActiveKey={running ? ['log'] : []} items={[{ key: 'log', label: t('cgi.logLabel', { status: t(last.status === 'running' ? 'cgi.logRunning' : last.status === 'success' ? 'cgi.logSuccess' : 'cgi.logFailed'), time: when(new Date(last.startedAt).toISOString()) }),
       children: <pre className="log">{last.logs.join('\n')}</pre> }]} />}
   </div>;
 }

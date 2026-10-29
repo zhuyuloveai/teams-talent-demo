@@ -3,7 +3,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { App } from 'antd';
 import { ApiError, codegraphRuns, resetState, saveState, startCodegraphRun, submitPullRequest, teamsUpdate, type Boot, type CodegraphUpdate, type SubmitRequest } from './api.ts';
 import { home, parseHash, type Route } from './navigation.ts';
+import { useLocale } from './i18n.tsx';
+import { currentT } from '../../shared/i18n/index.ts';
 import { project, task, taskName } from './demo/model.ts';
+import { localizeCapabilities, localizeCategories } from './demo/catalog-en.ts';
 import { finishRun, runProgress } from './demo/runs.ts';
 import type { Role, Source, TalentsState, Task, TeamsInfo, TeamsPart } from './types.ts';
 
@@ -66,6 +69,7 @@ function routeOf(state: TalentsState, hash: string): Route {
 
 export function TalentsProvider({ boot, children }: { boot: Boot; children: ReactNode }) {
   const { message } = App.useApp();
+  const { locale } = useLocale();
   const [state, setState] = useState(boot.state), stateRef = useRef(boot.state);
   const [teams, setTeams] = useState(boot.teams), teamsRef = useRef(boot.teams);
   const [route, setRoute] = useState(() => routeOf(boot.state, location.hash));
@@ -117,13 +121,13 @@ export function TalentsProvider({ boot, children }: { boot: Boot; children: Reac
     const before = stateRef.current, next = withCodegraphRuns(before, update);
     for (const t of before.tasks) {
       const after = next.tasks.find(x => x.id === t.id);
-      if (t.run?.live && after && after.status !== 'running') toast((after.status === 'success' ? '任务完成：' : '任务失败：') + taskName(next, after));
+      if (t.run?.live && after && after.status !== 'running') toast((after.status === 'success' ? currentT('store.taskDone') : currentT('store.taskFailed')) + taskName(next, after));
     }
     stateRef.current = next; setState(next);
   }, [toast]);
   const startCodegraph = useCallback(async (taskId: string) => {
     const t = task(stateRef.current, taskId);
-    if (!t?.projectId) throw new Error('任务不存在');
+    if (!t?.projectId) throw new Error(currentT('store.taskMissing'));
     showCodegraph(await startCodegraphRun({ taskId, projectId: t.projectId, sourceId: t.sources[0] }));
   }, [showCodegraph]);
   const syncCodegraph = useCallback(() => { codegraphRuns().then(showCodegraph, () => undefined); }, [showCodegraph]);
@@ -209,11 +213,17 @@ export function TalentsProvider({ boot, children }: { boot: Boot; children: Reac
     const pid = projectId ?? focusProject ?? stateRef.current.projects[0]?.id ?? 'carddemo';
     const url = new URL('/teams', teams.origin);
     url.searchParams.set('demo-role', role === 'admin' ? 'owner' : 'member');
+    url.searchParams.set('lang', localStorage.getItem('demo-locale') === 'en' ? 'en' : 'zh');
     url.hash = '/projects?project=' + encodeURIComponent(pid) + '&tab=content';
     return url.toString();
   }, [focusProject, role, teams.origin]);
 
-  const value = useMemo<Talents>(() => ({ state, teams, route, role, focusProject, clock, update, reset, submit, startCodegraph, syncCodegraph, go, replace, toast, teamsLink }),
-    [state, teams, route, role, focusProject, clock, update, reset, submit, startCodegraph, syncCodegraph, go, replace, toast, teamsLink]);
+  // The capability catalog is product copy, not user data: show it in the UI language while the saved state stays Chinese.
+  const view = useMemo(() => locale === 'en'
+    ? { ...state, categories: localizeCategories(state.categories), capabilities: localizeCapabilities(state.capabilities) }
+    : state, [state, locale]);
+
+  const value = useMemo<Talents>(() => ({ state: view, teams, route, role, focusProject, clock, update, reset, submit, startCodegraph, syncCodegraph, go, replace, toast, teamsLink }),
+    [view, teams, route, role, focusProject, clock, update, reset, submit, startCodegraph, syncCodegraph, go, replace, toast, teamsLink]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
