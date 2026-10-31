@@ -9,7 +9,7 @@ import { seedState } from '../server/seed.ts';
 
 test('exports only published artifacts, at their published version', () => {
   const state = seedState();
-  state.artifacts.push({ id: 'a-draft', projectId: 'carddemo', cap: 'traj', name: '草稿', desc: '', sources: ['s-sessions'], kind: 'files', files: ['trajectory/platinum/Improvement Suggestions.md'], published: null, draft: { created: '2026-10-27 09:00', revisions: [] } });
+  state.artifacts.push({ id: 'a-draft', projectId: 'carddemo', cap: 'traj', name: 'Draft', desc: '', sources: ['s-sessions'], kind: 'files', files: ['trajectory/platinum/Improvement Suggestions.md'], published: null, draft: { created: '2026-10-27 09:00', revisions: [] } });
   const { knowledge } = buildExport(state);
   assert.deepEqual(knowledge.artifacts.map(a => [a.id, a.version]), [['a-platinum-cashback-page', 1],
     ['a-req-2026-001', 1], ['a-req-2026-002', 1], ['a-req-2026-003', 1], ['a-req-2026-004', 1],
@@ -20,7 +20,7 @@ test('exports only published artifacts, at their published version', () => {
   assert.deepEqual(knowledge.artifacts.find(a => a.id === 'a-std')!.agents, ['Code', 'Reviewer']);
   assert.ok(!('agents' in knowledge.artifacts.find(a => a.id === 'a-biz')!), 'knowledge meant for every agent lists none');
   const biz = knowledge.artifacts.find(a => a.id === 'a-biz')!;
-  assert.equal(biz.capabilityName, '业务知识提取');
+  assert.equal(biz.capabilityName, 'Business knowledge extraction');
   assert.equal(biz.delivery, 'local');
 });
 
@@ -35,8 +35,8 @@ test('published files use the published text: v1 overrides and review revisions'
 
   // A publish from the review page stores revised text in published.over.
   const std = state.artifacts.find(a => a.id === 'a-std')!;
-  std.published = { ...std.published!, version: 2, over: { 'doc-knowledge/Bank Coding Standards Essentials.md': { text: '# 修订后的规范\n' } } };
-  assert.equal(buildExport(state).files.get('a-std/v2')![0].text, '# 修订后的规范\n');
+  std.published = { ...std.published!, version: 2, over: { 'doc-knowledge/Bank Coding Standards Essentials.md': { text: '# Revised standards\n' } } };
+  assert.equal(buildExport(state).files.get('a-std/v2')![0].text, '# Revised standards\n');
 });
 
 test('writes knowledge.json and the files, and removes versions no longer published', async () => {
@@ -52,7 +52,7 @@ test('writes knowledge.json and the files, and removes versions no longer publis
   assert.match(index, /Unified Error Codes and Exception Handling/);
   // PR-mode specs carry their PR records; diff-mode specs carry their mining metadata.
   assert.ok(miner.files.some((f: any) => f.type === 'json' && f.title.startsWith('PR #')));
-  assert.ok(miner.files.some((f: any) => f.type === 'json' && /挖掘元数据/.test(f.title)));
+  assert.ok(miner.files.some((f: any) => f.type === 'json' && /: Mining metadata$/.test(f.title)));
 
   state.artifacts.find(a => a.id === 'a-std')!.published!.version = 2;
   state.artifacts = state.artifacts.filter(a => a.id !== 'a-miner');
@@ -63,15 +63,15 @@ test('writes knowledge.json and the files, and removes versions no longer publis
 
 test('exports the AGENTS.md rules as published and the project skill versions Talents wrote', async () => {
   const state = seedState();
-  state.artifacts.push({ id: 'a-rules-carddemo', projectId: 'carddemo', cap: 'traj', name: 'AGENTS.md 规则', desc: '', sources: [], kind: 'files', files: ['rules/AGENTS.md'],
-    rules: [{ text: '规则一', version: 1 }, { text: '规则二', version: 2 }], published: { version: 1, at: '2026-10-27 21:00', note: '规则一', delivery: 'local', files: ['rules/AGENTS.md'] }, draft: null });
-  state.skillVersions.push({ projectId: 'carddemo', skillId: 'arch-adr-writing', version: '1.1.0', basedOn: { version: '1.0.0' }, at: '2026-10-27 21:00', note: '统一章节契约',
+  state.artifacts.push({ id: 'a-rules-carddemo', projectId: 'carddemo', cap: 'traj', name: 'AGENTS.md rules', desc: '', sources: [], kind: 'files', files: ['rules/AGENTS.md'],
+    rules: [{ text: 'Rule one', version: 1 }, { text: 'Rule two', version: 2 }], published: { version: 1, at: '2026-10-27 21:00', note: 'Rule one', delivery: 'local', files: ['rules/AGENTS.md'] }, draft: null });
+  state.skillVersions.push({ projectId: 'carddemo', skillId: 'arch-adr-writing', version: '1.1.0', basedOn: { version: '1.0.0' }, at: '2026-10-27 21:00', note: 'Unify the section contract',
     from: { artifact: 'a-traj', suggestion: 'change-02' }, files: [{ path: 'SKILL.md', text: '| version | 1.1.0 |\n' }] });
   const data = buildExport(state);
   assert.ok(!data.knowledge.artifacts.some(a => a.id === 'a-traj'), 'a diagnosis is not exported');
   const rules = data.files.get('a-rules-carddemo/v1')![0].text;
-  assert.match(rules, /1\. 规则一/);
-  assert.doesNotMatch(rules, /规则二/, 'only the rules of the published version');
+  assert.match(rules, /1\. Rule one/);
+  assert.doesNotMatch(rules, /Rule two/, 'only the rules of the published version');
   assert.deepEqual(data.knowledge.skills!.map(s => [s.skillId, s.version, s.files.map(f => f.path)]), [['arch-adr-writing', '1.1.0', ['SKILL.md']]]);
   const dir = await mkdtemp(join(tmpdir(), 'talents-export-'));
   await writeExport(dir, data);

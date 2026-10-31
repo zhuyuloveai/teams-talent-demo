@@ -48,10 +48,10 @@ test('while the index is being updated, or after it is removed, the last graph s
   const shown = (await views.view(PROJECT_ID, REPO_ID, repository))!;
   setState(repository, 'indexing');
   const updating = (await views.view(PROJECT_ID, REPO_ID, repository))!;
-  assert.match(updating.notice!, /^索引正在更新，显示的是 .* 的索引$/);
+  assert.match(updating.notice!, /^The index is being updated; showing the index from .*$/);
   assert.equal(updating.graph.metadata.snapshotId, shown.graph.metadata.snapshotId);
   await rm(join(repository, '.codegraph'), { recursive: true });
-  assert.match((await views.view(PROJECT_ID, REPO_ID, repository))!.notice!, /^代码仓中已没有 CodeGraph 索引/);
+  assert.match((await views.view(PROJECT_ID, REPO_ID, repository))!.notice!, /^The repository no longer has a CodeGraph index/);
   assert.equal(await new CodegraphViews(join(repository, 'other-state')).view(PROJECT_ID, REPO_ID, repository), null);
 });
 
@@ -66,13 +66,13 @@ test('the artifact shows the graph generated from the index; without an index or
     assert.equal(codegraphSnapshot(PROJECT_ID, REPO_ID)!.metadata.snapshotId, live.metadata.snapshotId, 'source previews read the generated graph');
     assert.equal((await codegraphView(PROJECT_ID, REPO_ID, null))!.graph.metadata.snapshotId, live.metadata.snapshotId, 'without the bound directory, the generated graph');
     const state = seedState();
-    const artifact: Artifact = { id: 'a-cg-shop', projectId: PROJECT_ID, cap: 'codegraph', name: 'shop 代码图谱', desc: '', sources: [REPO_ID], kind: 'index', stats: [], mcpName: 'codegraph',
-      published: { version: 3, at: '2026-10-26 02:05', note: '首次发布', delivery: 'cloud', agents: ['Code'], basis: null, auto: true }, draft: null };
+    const artifact: Artifact = { id: 'a-cg-shop', projectId: PROJECT_ID, cap: 'codegraph', name: 'shop code graph', desc: '', sources: [REPO_ID], kind: 'index', stats: [], mcpName: 'codegraph',
+      published: { version: 3, at: '2026-10-26 02:05', note: 'First publish', delivery: 'cloud', agents: ['Code'], basis: null, auto: true }, draft: null };
     state.artifacts.push(artifact);
     const a = withCodegraph(state).artifacts.find(x => x.id === 'a-cg-shop')!;
     assert.equal(a.graphSnapshot, live.metadata.snapshotId);
-    assert.deepEqual(a.stats, [['文件', String(FIXTURE.files)], ['节点', String(FIXTURE.files + FIXTURE.symbols)], ['关系', String(live.metadata.edges)]]);
+    assert.deepEqual(a.stats, [['Files', String(FIXTURE.files)], ['Nodes', String(FIXTURE.files + FIXTURE.symbols)], ['Relations', String(live.metadata.edges)]]);
     assert.equal(a.published!.version, 3, 'a graph read without a Talents build keeps the version');
-    assert.match(a.published!.note, /^索引更新于 /);
+    assert.match(a.published!.note, /^Index updated at /);
   } finally { setLiveCodegraph(null); }
 });

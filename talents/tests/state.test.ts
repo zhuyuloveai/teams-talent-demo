@@ -18,10 +18,10 @@ const roundTrip = (change: (client: any) => void) => {
 
 test('saving strips Teams-derived team, projects, sessions and source fields', () => {
   const saved = roundTrip(client => {
-    client.team.name = '被改掉的团队';
-    client.projects[0].name = '被改掉的项目';
+    client.team.name = 'Renamed team';
+    client.projects[0].name = 'Renamed project';
     client.sessions.push({ id: 'x' });
-    client.sources.find((s: any) => s.id === DOCSET_ID).name = '被改掉的文档集';
+    client.sources.find((s: any) => s.id === DOCSET_ID).name = 'Renamed document set';
     client.teams = { origin: 'x' };
   });
   for (const key of ['team', 'projects', 'sessions', 'sources', 'teams']) assert.ok(!(key in saved), key + ' should not be stored');
@@ -41,12 +41,12 @@ test('saving keeps Talents metadata about Teams sources (document check, new ver
 });
 
 test('a registered local document source is stored with the project it was registered in, or at team level', () => {
-  const registered = (id: string, projectId?: string | null) => ({ id, type: 'docs', name: '会议纪要', path: '/Volumes/team-share/meeting-notes', files: 3, tree: [],
+  const registered = (id: string, projectId?: string | null) => ({ id, type: 'docs', name: 'Meeting notes', path: '/Volumes/team-share/meeting-notes', files: 3, tree: [],
     from: { kind: 'shared' }, lastCheck: '2026-10-27 09:00', versions: [{ at: '2026-10-27 09:00', initial: 3 }], ...(projectId === undefined ? {} : { projectId }) });
   const saved = roundTrip(client => { client.sources.push(registered('s-project', 'carddemo'), registered('s-team', null), registered('s-unset')); });
   const local = (id: string) => saved.localSources.find(s => s.id === id)!;
   assert.equal(local('s-project').projectId, 'carddemo');
-  assert.equal(local('s-project').name, '会议纪要');
+  assert.equal(local('s-project').name, 'Meeting notes');
   assert.ok(!('fromTeams' in local('s-project')));
   assert.equal(local('s-team').projectId, null);
   assert.equal(local('s-unset').projectId, null);
@@ -77,7 +77,7 @@ test('the store checks the revision and writes every change', async () => {
 test('restarting takes the current built-in capabilities and keeps imported ones', async () => {
   const path = join(await mkdtemp(join(tmpdir(), 'talents-store-')), 'state.json');
   const first = new Store(path); await first.init();
-  await first.mutate(first.state.revision, s => ({ ...s, capabilities: [...s.capabilities.map(c => ({ ...c, name: '旧名称' })), { id: 'db-schema', cat: 'index', name: '数据库结构索引', custom: true }] }));
+  await first.mutate(first.state.revision, s => ({ ...s, capabilities: [...s.capabilities.map(c => ({ ...c, name: 'Old name' })), { id: 'db-schema', cat: 'index', name: 'Database schema index', custom: true }] }));
   const again = new Store(path); await again.init();
   const builtIn = seedState().capabilities;
   assert.deepEqual(again.state.capabilities.slice(0, builtIn.length).map(c => c.name), builtIn.map(c => c.name));
@@ -87,12 +87,12 @@ test('restarting takes the current built-in capabilities and keeps imported ones
 test('restarting renames the index artifacts stored under their old names, and nothing else', async () => {
   const path = join(await mkdtemp(join(tmpdir(), 'talents-store-')), 'state.json');
   const first = new Store(path); await first.init();
-  await first.mutate(first.state.revision, s => ({ ...s, artifacts: s.artifacts.map(a => a.id === 'a-docidx' ? { ...a, name: '自定义名称' } : a) }));
+  await first.mutate(first.state.revision, s => ({ ...s, artifacts: s.artifacts.map(a => a.id === 'a-docidx' ? { ...a, name: 'Custom name' } : a) }));
   const again = new Store(path); await again.init();
-  assert.equal(again.state.artifacts.find(a => a.id === 'a-docidx')!.name, '自定义名称');
-  await again.mutate(again.state.revision, s => ({ ...s, artifacts: s.artifacts.map(a => a.id === 'a-docidx' ? { ...a, name: '信用卡营销交付文档检索索引' } : a) }));
+  assert.equal(again.state.artifacts.find(a => a.id === 'a-docidx')!.name, 'Custom name');
+  await again.mutate(again.state.revision, s => ({ ...s, artifacts: s.artifacts.map(a => a.id === 'a-docidx' ? { ...a, name: '信用卡营销交付文档检索索引' } /* a name stored before the translation */ : a) }));
   const last = new Store(path); await last.init();
-  assert.equal(last.state.artifacts.find(a => a.id === 'a-docidx')!.name, '设计文档检索索引');
+  assert.equal(last.state.artifacts.find(a => a.id === 'a-docidx')!.name, 'Design document search index');
 });
 
 test('restarting drops the archived code graph and its task from stored demo data; tasks no longer link to it', async () => {

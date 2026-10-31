@@ -19,8 +19,8 @@ test('scenario registration is additive, idempotent and does not migrate the exi
  const before=structuredClone(state),result=appendPlatinumCashbackPage(state);
  assert.equal(result.added,true);assert.deepEqual(state,before);assert.deepEqual({...result.state,artifacts:result.state.artifacts.filter(item=>item.id!==platinumCashbackPage.artifactId)},before);
  assert.equal(appendPlatinumCashbackPage(result.state).state,result.state);assert.equal(appendPlatinumCashbackPage(result.state).added,false);
- result.state.artifacts.find(item=>item.id===platinumCashbackPage.artifactId)!.desc='用户已改';
- assert.throws(()=>appendPlatinumCashbackPage(result.state),/内容不同/);
+ result.state.artifacts.find(item=>item.id===platinumCashbackPage.artifactId)!.desc='changed by the user';
+ assert.throws(()=>appendPlatinumCashbackPage(result.state),/already exists with different content/);
 });
 test('existing HTTP client-state round trip changes only the single artifact',()=>{
  const previous=seedState();previous.artifacts=previous.artifacts.filter(item=>item.id!==platinumCashbackPage.artifactId);
@@ -39,6 +39,6 @@ test('published scenario contains exact full texts and verified repository refer
  const manifest=JSON.parse(await readFile(join(contentDir,platinumCashbackPage.manifest),'utf8'));
  for(const file of manifest.knowledgeFiles){const content=await readFile(join(contentDir,file.path));assert.equal(createHash('sha256').update(content).digest('hex'),file.sha256);assert.equal(output.files.get(artifact.id+'/v1')!.find(item=>item.path===file.path)!.text,content.toString('utf8'));}
  for(const file of manifest.sourceFiles)assert.equal(createHash('sha256').update(historicalSourceBytes(file)).digest('hex'),file.sha256);
- const implementation=await readFile(join(contentDir,platinumCashbackPage.files.implementation),'utf8');assert.match(implementation,/没有白金等级/);assert.match(implementation,/不是 React/);
- const acceptance=await readFile(join(contentDir,platinumCashbackPage.files.acceptance),'utf8');assert.match(acceptance,/待执行的用例/);assert.match(acceptance,/不发送报名、交易、奖励评估或入账/);
+ const implementation=await readFile(join(contentDir,platinumCashbackPage.files.implementation),'utf8');assert.match(implementation,/has no platinum tier/);assert.match(implementation,/not a React/);
+ const acceptance=await readFile(join(contentDir,platinumCashbackPage.files.acceptance),'utf8');assert.match(acceptance,/case definitions still to be executed/);assert.match(acceptance,/No enrollment, transaction, reward evaluation or posting write requests are sent/);
 });

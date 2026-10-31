@@ -55,7 +55,7 @@ test('rule PR preserves existing AGENTS.md and does not write Skill versions or 
   const fake = fakeGithub({ 'AGENTS.md': '# Existing rules\n' });
   const result = await submitPullRequest(a, target, 'change-03', fake.gh);
   assert.match(result.files[0].text, /^# Existing rules\n/);
-  assert.match(result.files[0].text, /最后一次完整验证/);
+  assert.match(result.files[0].text, /the last full verification/);
   assert.equal(result.files[0].path, 'AGENTS.md');
   assert.deepEqual(state.skillVersions, []);
   assert.ok(!state.artifacts.some(a => a.id === 'a-rules-carddemo'));
@@ -71,14 +71,14 @@ test('Skill PR checks the diagnosis basis and preserves nested file paths', asyn
   assert.equal(result.files.length, suggestion.files.length);
   assert.deepEqual(result.files.map(f => f.text), suggestion.files.map((f: any) => f.after));
   const stale = fakeGithub();
-  await assert.rejects(submitPullRequest(a, target, suggestion.id, stale.gh), /建议依据不同/);
+  await assert.rejects(submitPullRequest(a, target, suggestion.id, stale.gh), /differs from the one the suggestion is based on/);
   assert.ok(!stale.calls.some(c => c.method === 'POST'));
 });
 
 test('gh failures propagate and indexes cannot be submitted', async () => {
   const a = seedState().artifacts.find(a => a.id === 'a-biz')!;
   await assert.rejects(submitPullRequest(a, target, undefined, async () => { throw new Error('mock: gh not authenticated'); }), /not authenticated/);
-  await assert.rejects(submitPullRequest(seedState().artifacts.find(a => a.kind === 'index')!, target, undefined, fakeGithub().gh), /远端索引/);
+  await assert.rejects(submitPullRequest(seedState().artifacts.find(a => a.kind === 'index')!, target, undefined, fakeGithub().gh), /A remote index/);
 });
 
 test('files go to the repository root, and a CRLF skill file keeps its line endings', async () => {
@@ -103,9 +103,9 @@ test('PRs go to the origin and base branch of the workspace bound to the project
   const repo = { id: 'repository:carddemo:carddemo-java-1025', name: 'carddemo-java-1025' };
   for (const remote of ['https://github.com/JeffyLiu003/carddemo-java-1025.git', 'git@github.com:JeffyLiu003/carddemo-java-1025.git', 'ssh://git@github.com/JeffyLiu003/carddemo-java-1025'])
     assert.deepEqual(defaultTarget(project([{ ...repo, path: '/work/carddemo-java-1025', remote, branch: 'develop' }]), 'carddemo'), { repository: 'JeffyLiu003/carddemo-java-1025', base: 'develop' });
-  assert.throws(() => defaultTarget(project([repo]), 'carddemo'), /还没有在 iCode Teams 中绑定代码仓/);
-  assert.throws(() => defaultTarget(project([{ ...repo, path: '/work/carddemo', remote: 'https://code.bank.local/carddemo.git', branch: 'main' }]), 'carddemo'), /不在 GitHub 上/);
-  assert.throws(() => defaultTarget(project([repo]), 'unknown'), /还没有在 iCode Teams 中绑定代码仓/);
+  assert.throws(() => defaultTarget(project([repo]), 'carddemo'), /has no repository bound in iCode Teams yet/);
+  assert.throws(() => defaultTarget(project([{ ...repo, path: '/work/carddemo', remote: 'https://code.bank.local/carddemo.git', branch: 'main' }]), 'carddemo'), /is not on GitHub/);
+  assert.throws(() => defaultTarget(project([repo]), 'unknown'), /has no repository bound in iCode Teams yet/);
 });
 
 test('the Skill suggestion is based on the Skill in workspace/.agents/skills of this repository', async () => {
@@ -120,7 +120,7 @@ test('the Skill suggestion is based on the Skill in workspace/.agents/skills of 
 
 test('a missing base branch is reported, and a new branch skips the PR lookup', async () => {
   const a = seedState().artifacts.find(a => a.id === 'a-biz')!;
-  await assert.rejects(submitPullRequest(a, { ...target, base: 'release' }, undefined, async () => { throw new Error('gh: Not Found (HTTP 404)'); }), /目标分支不存在：release/);
+  await assert.rejects(submitPullRequest(a, { ...target, base: 'release' }, undefined, async () => { throw new Error('gh: Not Found (HTTP 404)'); }), /Target branch does not exist: release/);
   const fake = fakeGithub();
   await submitPullRequest(a, target, undefined, fake.gh);
   assert.ok(!fake.calls.some(c => c.path.includes('/pulls?')));
@@ -132,6 +132,6 @@ test('steps are reported in order as they start, and stop at the one that fails'
   await submitPullRequest(biz, target, undefined, fakeGithub().gh, step => steps.push(step));
   assert.deepEqual(steps, [0, 1, 2, 3, 4]);
   const a = seedState().artifacts.find(a => a.kind === 'diagnosis')!, failed: number[] = [];
-  await assert.rejects(submitPullRequest(a, target, 'change-02', fakeGithub().gh, step => failed.push(step)), /建议依据不同/);
+  await assert.rejects(submitPullRequest(a, target, 'change-02', fakeGithub().gh, step => failed.push(step)), /differs from the one the suggestion is based on/);
   assert.deepEqual(failed, [0, 1]);
 });

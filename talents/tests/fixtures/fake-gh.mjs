@@ -19,7 +19,7 @@ else if (path.includes('/contents/')) {
 }
 else if (method === 'GET' && path.includes('/pulls?')) result = [];
 else if (method === 'POST' && path.endsWith('/pulls')) {
-  if (existsSync(process.env.TEST_GH_FAIL)) { unlinkSync(process.env.TEST_GH_FAIL); fail('模拟提交失败，请重试'); }
+  if (existsSync(process.env.TEST_GH_FAIL)) { unlinkSync(process.env.TEST_GH_FAIL); fail('Simulated submit failure, please try again'); }
   result = { html_url: 'https://github.com/example/project/pull/42' };
 }
 process.stdout.write(JSON.stringify(result));

@@ -36,22 +36,22 @@ test('maps the project documents into one document set named after the project',
   const model = teamsModel(snapshot);
   const set = model.sources.find(s => s.type === 'docs' && s.projectId === 'carddemo')!;
   assert.equal(set.id, DOCSET_ID);
-  assert.equal(set.name, '设计文档');
+  assert.equal(set.name, 'Design documents');
   assert.equal(set.path, 'teams');
   assert.equal(set.files, 3);
   assert.deepEqual(set.tree, [{ dir: 'teams/docs', files: ['cashback-contract.md'] }, { dir: 'teams/fixtures/project-documents/carddemo/docs/design/adr', files: ['ADR-009-marketing-integration.md', 'ADR-007-authentication-scope.md'] }]);
-  assert.equal(set.titles!['teams/docs/cashback-contract.md'], '消费返现规则');
+  assert.equal(set.titles!['teams/docs/cashback-contract.md'], 'Spending cashback rules');
   assert.equal(set.fromTeams, true);
   assert.deepEqual(model.sources.filter(s => s.projectId === 'carddemo').map(s => s.id), [REPO_ID, DOCSET_ID]);
 });
 
 test('the Teams owner is the admin entry and member "member" is the developer entry', () => {
   const { team } = teamsModel(snapshot);
-  assert.equal(team.name, '信用卡研发团队');
+  assert.equal(team.name, 'Credit Card R&D Team');
   assert.equal(team.admin, 'owner');
   assert.equal(team.me, 'member');
-  assert.equal(team.members.find(m => m.id === team.admin)!.name, '林悦');
-  assert.equal(team.members.find(m => m.id === team.me)!.name, '陈晨');
+  assert.equal(team.members.find(m => m.id === team.admin)!.name, 'Lin Yue');
+  assert.equal(team.members.find(m => m.id === team.me)!.name, 'Chen Chen');
   assert.equal(team.members.length, 6);
 });
 
@@ -60,7 +60,7 @@ test('shared sessions come from Teams, keyed by member', () => {
   assert.equal(sessions.length, snapshot.sessions.length);
   const s = sessions.find(x => x.id === '3f2a9c41d7e0')!;
   assert.equal(s.owner, 'member');
-  assert.equal(s.ownerName, '陈晨');
+  assert.equal(s.ownerName, 'Chen Chen');
   assert.equal(s.updated, '2026-10-26 18:42');
   assert.equal(s.projectId, 'carddemo');
   assert.ok(s.messages > s.turns && s.tokens > 0);
@@ -85,13 +85,13 @@ test('client state merges Talents metadata into Teams sources and adds the team-
 test('reads Teams over HTTP; while Teams cannot be read the team is empty and the reason is given', async () => {
   const served: SharedTeams = { revision: 'a1.3', snapshot };
   const online = await readTeamsData(async path => { assert.equal(path, '/api/shared/teams'); return served; });
-  assert.deepEqual([online.online, online.revision, online.snapshot.team.name], [true, 'a1.3', '信用卡研发团队']);
+  assert.deepEqual([online.online, online.revision, online.snapshot.team.name], [true, 'a1.3', 'Credit Card R&D Team']);
   const offline = await readTeamsData(async () => { throw new TypeError('fetch failed'); });
   assert.equal(offline.online, false);
   assert.deepEqual([offline.snapshot.projects, offline.snapshot.team.members], [[], []]);
-  assert.match(!offline.online ? offline.error : '', /无法读取 iCode Teams 数据：fetch failed/);
+  assert.match(!offline.online ? offline.error : '', /Cannot read iCode Teams data: fetch failed/);
   const invalid = await readTeamsData(async () => ({ revision: 'a1.3', snapshot: { schemaVersion: 2 } }));
-  assert.match(!invalid.online ? invalid.error : '', /格式无效/);
+  assert.match(!invalid.online ? invalid.error : '', /Invalid iCode Teams data format/);
 });
 
 test('waits on Teams for a newer revision, and gives null when Teams cannot be reached', async () => {
@@ -110,9 +110,9 @@ test('what Teams serves maps one to one: projects, documents with AGENTS.md, ski
     const docs = model.sources.find(s => s.type === 'docs' && s.projectId === p.id)!;
     assert.deepEqual(Object.keys(docs.titles!), p.documents.map(d => d.path));
   }
-  assert.equal(model.sources.find(s => s.type === 'docs' && s.projectId === 'teams')!.titles!['AGENTS.md'], '项目规范 AGENTS.md');
-  // Named as Teams lists them under 项目资料与资产.
-  assert.deepEqual(Object.values(model.sources.find(s => s.id === DOCSET_ID)!.titles!), ['营销能力设计', '营销集成与入账边界', '鉴权范围设计决策']);
+  assert.equal(model.sources.find(s => s.type === 'docs' && s.projectId === 'teams')!.titles!['AGENTS.md'], 'Project standards AGENTS.md');
+  // Named as Teams lists them under Project materials and assets.
+  assert.deepEqual(Object.values(model.sources.find(s => s.id === DOCSET_ID)!.titles!), ['Marketing capability design', 'Marketing integration and posting boundary', 'Authentication scope design decision']);
   // The bound workspace gives the repository its path, origin and branch; the id does not change.
   const repo = model.sources.find(s => s.id === REPO_ID)!;
   assert.deepEqual([repo.path, repo.bound, repo.origin, repo.branch], ['/work/carddemo-java-1025', true, 'https://github.com/JeffyLiu003/carddemo-java-1025.git', 'develop']);

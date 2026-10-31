@@ -1,4 +1,4 @@
-// "应用" on a code graph: the codegraph MCP server added to iCode's Code Agent (server/icode-agent.ts).
+// "Apply" on a code graph: the codegraph MCP server added to iCode's Code Agent (server/icode-agent.ts).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';

@@ -25,7 +25,7 @@ try {
   for (let n = 0; ; n++) {
     if (server.exitCode !== null) throw new Error(logs);
     try { if ((await fetch(origin + '/api/health')).ok) break; } catch { /* starting */ }
-    if (n > 80) throw new Error('服务未启动：' + logs);
+    if (n > 80) throw new Error('Service did not start: ' + logs);
     await new Promise(done => setTimeout(done, 200));
   }
   browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -33,36 +33,36 @@ try {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(origin + '/talents?role=member#/dev-knowledge?project=carddemo');
-  await page.locator('.item-card', { hasText: '信用卡营销返现业务知识' }).waitFor();
+  await page.locator('.item-card', { hasText: 'Credit Card Marketing Cashback Business Knowledge' }).waitFor();
   assert.equal(await page.locator('.compact-role-switch').count(), 0);
-  assert.equal(await page.getByRole('link', { name: '本地索引', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('link', { name: 'Local index', exact: true }).count(), 0);
   for (const hash of ['team', 'capabilities', 'projects?project=carddemo&tab=sources', 'projects?project=carddemo&tab=tasks']) {
     await page.goto(origin + '/talents/#/' + hash);
     await page.locator('.page-header h1').first().waitFor();
   }
   await page.goto(origin + '/talents/#/projects?project=carddemo&id=a-biz');
-  await page.getByRole('button', { name: '提交 PR', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit PR', exact: true }).click();
   let dialog = page.getByRole('dialog');
   await dialog.locator('input[value="JeffyLiu003/carddemo-java-1025"]').waitFor();
-  assert.equal(await dialog.getByLabel('GitHub 仓库').inputValue(), 'JeffyLiu003/carddemo-java-1025');
-  assert.equal(await dialog.getByLabel('目标分支').inputValue(), 'develop');
-  await dialog.getByRole('button', { name: '提交 PR', exact: true }).click();
-  await dialog.getByText('提交失败', { exact: true }).waitFor();
-  assert.equal(await dialog.locator('.submit-steps .ant-steps-item-error').innerText(), '创建 PR');
+  assert.equal(await dialog.getByLabel('GitHub repository').inputValue(), 'JeffyLiu003/carddemo-java-1025');
+  assert.equal(await dialog.getByLabel('Target branch').inputValue(), 'develop');
+  await dialog.getByRole('button', { name: 'Submit PR', exact: true }).click();
+  await dialog.getByText('Submission failed', { exact: true }).waitFor();
+  assert.equal(await dialog.locator('.submit-steps .ant-steps-item-error').innerText(), 'Create PR');
   assert.equal(await dialog.locator('.submit-steps .ant-steps-item-finish').count(), 4);
-  await dialog.getByRole('button', { name: '提交 PR', exact: true }).click();
-  await page.locator('.wb-side').getByRole('link', { name: '查看 PR' }).waitFor();
+  await dialog.getByRole('button', { name: 'Submit PR', exact: true }).click();
+  await page.locator('.wb-side').getByRole('link', { name: 'View PR' }).waitFor();
   await page.reload();
-  await page.locator('.wb-side').getByRole('link', { name: '查看 PR' }).waitFor();
+  await page.locator('.wb-side').getByRole('link', { name: 'View PR' }).waitFor();
   await page.goto(origin + '/talents/#/projects?project=carddemo&id=a-traj');
-  for (const title of ['统一 ADR Skill', '为完成声明补充']) {
+  for (const title of ['Unify the section contract across the ADR Skill', 'to completion claims']) {
     await page.locator('.file-item', { hasText: title }).click();
-    await page.getByRole('button', { name: '提交改进 PR', exact: true }).click();
+    await page.getByRole('button', { name: 'Submit improvement PR', exact: true }).click();
     dialog = page.getByRole('dialog');
     await dialog.locator('input[value="JeffyLiu003/carddemo-java-1025"]').waitFor();
-    if (title === '统一 ADR Skill') assert.equal(await dialog.getByLabel('仓内 Skill 目录').inputValue(), '.agents/skills/arch-adr-writing');
-    await dialog.getByRole('button', { name: '提交 PR', exact: true }).click();
-    await page.locator('.wb-side').getByRole('link', { name: '查看 PR' }).waitFor();
+    if (title === 'Unify the section contract across the ADR Skill') assert.equal(await dialog.getByLabel('Skill directory in the repository').inputValue(), '.agents/skills/arch-adr-writing');
+    await dialog.getByRole('button', { name: 'Submit PR', exact: true }).click();
+    await page.locator('.wb-side').getByRole('link', { name: 'View PR' }).waitFor();
   }
   const boot = await (await fetch(origin + '/api/bootstrap')).json();
   const a = boot.state.artifacts.find((a: any) => a.id === 'a-biz');
@@ -82,7 +82,7 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '/tmp/talents-pr-mobile.png', fullPage: true });
   assert.deepEqual(errors, []);
-  console.log('管理者入口、知识 PR、建议 PR、失败重试与持久化通过；gh 全部使用本地模拟。');
+  console.log('Admin entry, knowledge PR, suggestion PRs, failure retry and persistence passed; gh is simulated locally throughout.');
 } finally {
   await browser?.close(); server.kill(); teams.close();
   await stopped;

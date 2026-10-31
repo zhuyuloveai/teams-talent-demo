@@ -15,13 +15,15 @@ import {contentDir,repositoryRoot} from '../server/config.ts';
 import {fourRequirementScenarios,fourRequirementScenariosV2} from '../../shared/four-requirement-scenarios.ts';
 const hash=(text:Buffer|string)=>createHash('sha256').update(text).digest('hex');
 const scenarioIds=new Set([...fourRequirementScenarios,...fourRequirementScenariosV2].map(s=>s.artifactId));
+// The translated sources name their last two sections differently: 001/002 and 003/004 were translated separately.
+const headings:Record<string,[string,string]>={'a-req-2026-001':['## 13. Compliance Notes','### 12.3 Items to Be Confirmed'],'a-req-2026-002':['## 13. Compliance Notes','### 12.3 Items to Be Confirmed'],'a-req-2026-003':['## 13. Compliance annotations','### 12.3 Open items'],'a-req-2026-004':['## 13. Compliance annotations','### 12.3 Open items']};
 const legacySeed=()=>{const state=seedState();state.artifacts=state.artifacts.filter(a=>!scenarioIds.has(a.id));return state;};
 test('four source artifacts append atomically without replacing user data or claiming execution',()=>{
  const state=legacySeed();state.tasks.push({id:'user-run',status:'running'});state.skillVersions.push({projectId:'carddemo',skillId:'existing',version:'2.0.0',basedOn:{version:'1.0.0'},at:'2026-10-28',note:'user skill',from:{artifact:'user-artifact',suggestion:'user-suggestion'},files:[]});
  const before=structuredClone(state),added=appendFourRequirements(state);
  assert.equal(added.added.length,4);assert.deepEqual(state,before);assert.deepEqual({...added.state,artifacts:added.state.artifacts.filter(a=>!added.added.includes(a.id))},before);
  assert.equal(appendFourRequirements(added.state).state,added.state);
- added.state.artifacts.at(-1)!.desc='user change';assert.throws(()=>appendFourRequirements(added.state),/内容不同/);
+ added.state.artifacts.at(-1)!.desc='user change';assert.throws(()=>appendFourRequirements(added.state),/has different content/);
 });
 test('all raw documents, profile and provenance survive export unchanged with fixed source commit',async()=>{
  const {state}=appendFourRequirements(seedState()),output=buildExport(state);
@@ -30,9 +32,9 @@ test('all raw documents, profile and provenance survive export unchanged with fi
   const manifest=JSON.parse(await readFile(join(contentDir,s.manifest),'utf8'));
   assert.equal(manifest.sourceSha256,s.sourceSha256);assert.equal(manifest.businessId,s.businessId);assert.equal(manifest.testProfile.version,'test-profile-v1');
   for(const file of manifest.knowledgeFiles){const raw=await readFile(join(contentDir,file.path));assert.equal(hash(raw),file.sha256);assert.equal(files.find(f=>f.path===file.path)!.text,raw.toString('utf8'));}
-  const original=await readFile(join(contentDir,s.files.requirement),'utf8');assert.equal(hash(original),s.sourceSha256);assert.match(original,/## 13\. 合规标注/);assert.match(original,/### 12\.3 待确认事项/);
+  const original=await readFile(join(contentDir,s.files.requirement),'utf8');assert.equal(hash(original),s.sourceSha256);for(const heading of headings[s.artifactId])assert.ok(original.split('\n').includes(heading),s.artifactId+': '+heading);
   for(const file of manifest.sourceFiles)assert.equal(hash(historicalSourceBytes(file)),file.sha256);
-  const profile=await readFile(join(contentDir,s.files.profile),'utf8');assert.match(profile,/19\.25/);assert.match(profile,/审批来源：用户 2026-10-28/);assert.equal(hash(profile),manifest.testProfile.sha256);
+  const profile=await readFile(join(contentDir,s.files.profile),'utf8');assert.match(profile,/19\.25/);assert.match(profile,/Approval source: on 2026-10-28 the user/);assert.equal(hash(profile),manifest.testProfile.sha256);
  }
 });
 
@@ -51,7 +53,7 @@ test('explicit v2 registration retains every v1 artifact and exported full text'
   assert.equal(manifest.version,2);assert.equal(manifest.previousVersion.version,1);assert.equal(manifest.testProfile.version,'test-profile-v2');assert.equal(manifest.testProfile.sha256,fourRequirementProfileV2Sha256);
   for(const file of manifest.knowledgeFiles){const raw=await readFile(join(contentDir,file.path));assert.equal(hash(raw),file.sha256);assert.equal(files.find(f=>f.path===file.path)!.text,raw.toString('utf8'));}
   assert.equal(hash(files.find(f=>f.path===s.files.requirement)!.text),s.sourceSha256);
-  const profile=files.find(f=>f.path===s.files.profile)!.text;assert.equal(hash(profile),fourRequirementProfileV2Sha256);assert.match(profile,/协调会话制定的测试口径，非用户\/业务正式政策签字/);assert.match(profile,/900\.00.*3.*600\.00/);assert.match(profile,/606\.00/);assert.match(profile,/FEE_PENDING 停止补收/);assert.match(profile,/四个主体相互独立/);assert.match(profile,/复核前不执行最终资金结算/);assert.match(profile,/Asia\/Shanghai/);
+  const profile=files.find(f=>f.path===s.files.profile)!.text;assert.equal(hash(profile),fourRequirementProfileV2Sha256);assert.match(profile,/test profile set by the coordination session, not a formal user\/business policy sign-off/);assert.match(profile,/900\.00.*3.*600\.00/);assert.match(profile,/606\.00/);assert.match(profile,/FEE_PENDING stops the pending collection/);assert.match(profile,/four mutually independent parties/);assert.match(profile,/the final funds settlement is not executed before review/);assert.match(profile,/Asia\/Shanghai/);
  }
 });
 

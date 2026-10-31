@@ -2,41 +2,41 @@
   "schemaVersion": 1,
   "exportedAt": "2026-10-27T04:59:01.892Z",
   "team": {
-    "name": "信用卡研发团队",
+    "name": "Credit Card R&D Team",
     "members": [
       {
         "id": "owner",
-        "name": "林悦",
+        "name": "Lin Yue",
         "role": "owner",
         "status": "active"
       },
       {
         "id": "member",
-        "name": "陈晨",
+        "name": "Chen Chen",
         "role": "member",
         "status": "active"
       },
       {
         "id": "su",
-        "name": "苏晴",
+        "name": "Su Qing",
         "role": "member",
         "status": "active"
       },
       {
         "id": "yang",
-        "name": "杨帆",
+        "name": "Yang Fan",
         "role": "member",
         "status": "active"
       },
       {
         "id": "zhao",
-        "name": "赵宁",
+        "name": "Zhao Ning",
         "role": "member",
         "status": "active"
       },
       {
         "id": "wang",
-        "name": "王晓",
+        "name": "Wang Xiao",
         "role": "member",
         "status": "active"
       }
@@ -46,7 +46,7 @@
     {
       "id": "carddemo",
       "name": "Credit Card",
-      "description": "针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。",
+      "description": "Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months.",
       "readonly": false,
       "repositories": [
         {
@@ -54,35 +54,35 @@
           "name": "carddemo-java-1025",
           "path": "/fixtures/checkouts/carddemo-java-1025",
           "branch": "main",
-          "description": "Java 21 微服务：7 个服务和 Web UI",
+          "description": "Java 21 microservices: 7 services and a Web UI",
           "remote": "https://github.com/JeffyLiu003/carddemo-java-1025.git"
         }
       ],
       "documents": [
         {
           "id": "design-library:carddemo:marketing-capability",
-          "title": "消费返现规则",
+          "title": "Spending cashback rules",
           "path": "teams/docs/cashback-contract.md",
-          "summary": "白金卡资格、三个月期间、额外0.5%与金额舍入规则。"
+          "summary": "Platinum card eligibility, the three-month period, the extra 0.5% and amount rounding rules."
         },
         {
           "id": "design-library:carddemo:ADR-009",
-          "title": "交易处理边界",
+          "title": "Transaction processing boundary",
           "path": "teams/fixtures/project-documents/carddemo/docs/design/adr/ADR-009-marketing-integration.md",
-          "summary": "交易入账与营销评估之间的调用、提交及重试约定。"
+          "summary": "Call, commit and retry conventions between transaction posting and marketing evaluation."
         },
         {
           "id": "design-library:carddemo:ADR-007",
-          "title": "权限与安全范围",
+          "title": "Permissions and security scope",
           "path": "teams/fixtures/project-documents/carddemo/docs/design/adr/ADR-007-authentication-scope.md",
-          "summary": "已有系统的认证范围与限制说明；属于设计资料。"
+          "summary": "Authentication scope and limits of the existing system; design material."
         }
       ]
     },
     {
       "id": "teams",
       "name": "iCode Teams",
-      "description": "面向企业内部 Agent 应用的客户端与发布平台。",
+      "description": "A client and release platform for internal enterprise Agent applications.",
       "readonly": true,
       "repositories": [
         {
@@ -90,34 +90,34 @@
           "name": "SEAL-iCode/iCode-teams",
           "remote": "SEAL-iCode/iCode-teams",
           "branch": "main",
-          "description": "Client、Service、Control 在同一个代码仓中。"
+          "description": "Client, Service and Control live in the same repository."
         }
       ],
       "documents": [
         {
           "id": "design-library:teams:README.md",
-          "title": "开发指导",
+          "title": "Development guide",
           "path": "README.md",
-          "summary": "本地环境、源码调试、出包与升级。"
+          "summary": "Local environment, source debugging, packaging and upgrades."
         },
         {
           "id": "design-library:teams:docs/README.md",
-          "title": "架构与业务文档",
+          "title": "Architecture and business docs",
           "path": "docs/README.md",
-          "summary": "跨域架构、业务规范和开发文档索引。"
+          "summary": "Index of cross-domain architecture, business standards and development docs."
         },
         {
           "id": "design-library:teams:docs/product/teams-roadmap.md",
-          "title": "产品规划",
+          "title": "Product roadmap",
           "path": "docs/product/teams-roadmap.md",
-          "summary": "团队共享与协作能力的阶段目标。"
+          "summary": "Phased goals for team sharing and collaboration capabilities."
         }
       ]
     },
     {
       "id": "project-1a2b3c",
-      "name": "示例新建项目",
-      "description": "用户在 Teams 新建的项目",
+      "name": "Example new project",
+      "description": "A project the user created in Teams",
       "readonly": false,
       "repositories": [
         {
@@ -133,177 +133,177 @@
     {
       "id": "3f2a9c41d7e0",
       "memberId": "member",
-      "title": "返现明细查询：分页游标与重复记录",
+      "title": "Cashback detail query: pagination cursor and duplicate records",
       "updatedAt": "2026-10-26 18:42",
       "turns": 58,
       "agent": "Code Agent",
       "model": "deepseek-pro",
       "requirementId": "MKT-002",
       "projectId": "carddemo",
-      "memberName": "陈晨",
+      "memberName": "Chen Chen",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "8b61e05a3c92",
       "memberId": "member",
-      "title": "返现明细接口补充单元测试",
+      "title": "Add unit tests for the cashback detail API",
       "updatedAt": "2026-10-25 16:10",
       "turns": 24,
       "agent": "Code Agent",
       "model": "deepseek-flash",
       "requirementId": "MKT-002",
       "projectId": "carddemo",
-      "memberName": "陈晨",
+      "memberName": "Chen Chen",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "c47d1f80b2a6",
       "memberId": "su",
-      "title": "账单返现汇总与明细合计不一致排查",
+      "title": "Investigate statement cashback total not matching the sum of details",
       "updatedAt": "2026-10-26 15:37",
       "turns": 63,
       "agent": "Code Agent",
       "model": "deepseek-pro",
       "requirementId": "MKT-003",
       "projectId": "carddemo",
-      "memberName": "苏晴",
+      "memberName": "Su Qing",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "1e9b7d24f0c3",
       "memberId": "su",
-      "title": "按账单周期聚合返现记录",
+      "title": "Aggregate cashback records by statement cycle",
       "updatedAt": "2026-10-24 11:05",
       "turns": 41,
       "agent": "Code Agent",
       "model": "qwen3-coder",
       "requirementId": "MKT-003",
       "projectId": "carddemo",
-      "memberName": "苏晴",
+      "memberName": "Su Qing",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "a05c3e9d61b8",
       "memberId": "yang",
-      "title": "返现到账通知：关联交易摘要",
+      "title": "Cashback credited notification: linked transaction summary",
       "updatedAt": "2026-10-25 20:18",
       "turns": 37,
       "agent": "Code Agent",
       "model": "deepseek-flash",
       "requirementId": "MKT-004",
       "projectId": "carddemo",
-      "memberName": "杨帆",
+      "memberName": "Yang Fan",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "6d28f1b4e9a0",
       "memberId": "yang",
-      "title": "营销奖励重复评估与幂等入账",
+      "title": "Duplicate marketing reward evaluation and idempotent posting",
       "updatedAt": "2026-10-23 17:52",
       "turns": 71,
       "agent": "Code Agent",
       "model": "deepseek-pro",
       "projectId": "carddemo",
-      "memberName": "杨帆",
+      "memberName": "Yang Fan",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "f81c06a7d3e5",
       "memberId": "zhao",
-      "title": "历史权益查询：切换条件后保留旧筛选",
+      "title": "Benefit history query: old filters kept after changing conditions",
       "updatedAt": "2026-10-24 14:26",
       "turns": 19,
       "agent": "Code Agent",
       "model": "deepseek-flash",
       "requirementId": "MKT-005",
       "projectId": "carddemo",
-      "memberName": "赵宁",
+      "memberName": "Zhao Ning",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "29e4b8c0a17f",
       "memberId": "zhao",
-      "title": "历史权益按实际日期排序",
+      "title": "Sort benefit history by actual date",
       "updatedAt": "2026-10-22 10:48",
       "turns": 12,
       "agent": "Code Agent",
       "model": "deepseek-flash",
       "requirementId": "MKT-005",
       "projectId": "carddemo",
-      "memberName": "赵宁",
+      "memberName": "Zhao Ning",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "d3a75e1c08b4",
       "memberId": "wang",
-      "title": "营销奖励冲正与回滚处理",
+      "title": "Marketing reward reversal and rollback handling",
       "updatedAt": "2026-10-23 09:58",
       "turns": 52,
       "agent": "Code Agent",
       "model": "deepseek-pro",
       "projectId": "carddemo",
-      "memberName": "王晓",
+      "memberName": "Wang Xiao",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "7c0f92e6b5d1",
       "memberId": "wang",
-      "title": "解释 RewardCalculator 金额精度处理",
+      "title": "Explain RewardCalculator amount precision handling",
       "updatedAt": "2026-10-21 15:30",
       "turns": 9,
       "agent": "Q&A Agent",
       "model": "deepseek-flash",
       "projectId": "carddemo",
-      "memberName": "王晓",
+      "memberName": "Wang Xiao",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "b9e3047af2c6",
       "memberId": "owner",
-      "title": "梳理白金卡返现待确认事项",
+      "title": "Sort out open questions for platinum card cashback",
       "updatedAt": "2026-10-25 09:12",
       "turns": 16,
       "agent": "Q&A Agent",
       "model": "deepseek-pro",
       "requirementId": "DEMO-MKT-001",
       "projectId": "carddemo",
-      "memberName": "林悦",
+      "memberName": "Lin Yue",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "05d8c2f1a9e7",
       "memberId": "member",
-      "title": "营销活动资格策略 EligibilityPolicy 阅读",
+      "title": "Read the campaign eligibility policy EligibilityPolicy",
       "updatedAt": "2026-10-20 19:44",
       "turns": 14,
       "agent": "Q&A Agent",
       "model": "deepseek-flash",
       "projectId": "carddemo",
-      "memberName": "陈晨",
+      "memberName": "Chen Chen",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "e6b19a3d7c42",
       "memberId": "su",
-      "title": "账户服务：乐观锁冲突重试",
+      "title": "Account service: optimistic lock conflict retry",
       "updatedAt": "2026-10-20 13:21",
       "turns": 38,
       "agent": "Code Agent",
       "model": "deepseek-pro",
       "projectId": "carddemo",
-      "memberName": "苏晴",
+      "memberName": "Su Qing",
       "cwd": "workspace/carddemo-java-1025"
     },
     {
       "id": "4a7e0d5b2f91",
       "memberId": "yang",
-      "title": "Docker Compose 本地联调失败排查",
+      "title": "Investigate failed local Docker Compose integration",
       "updatedAt": "2026-10-19 21:06",
       "turns": 33,
       "agent": "Code Agent",
       "model": "deepseek-flash",
       "projectId": "carddemo",
-      "memberName": "杨帆",
+      "memberName": "Yang Fan",
       "cwd": "workspace/carddemo-java-1025"
     }
   ]

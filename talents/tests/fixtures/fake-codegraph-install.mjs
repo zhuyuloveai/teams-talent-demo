@@ -4,8 +4,8 @@ import { existsSync, writeFileSync } from 'node:fs';
 
 const marker = process.env.FAKE_MARKER;
 if (process.argv[2] === '--check') {
-  if (existsSync(marker)) { console.log('[icode-knowledge-codegraph] 自检通过：codegraph 1.6.0（codegraph）'); process.exit(0); }
-  console.error('[icode-knowledge-codegraph] 自检失败：在 iCode Knowledge 后端的 PATH 中找不到 codegraph。请按 README 安装后重试。');
+  if (existsSync(marker)) { console.log('[icode-knowledge-codegraph] Self-check passed: codegraph 1.6.0 (codegraph)'); process.exit(0); }
+  console.error('[icode-knowledge-codegraph] Self-check failed: codegraph not found in the PATH of the iCode Knowledge backend. Install it as described in the README and try again.');
   process.exit(1);
 }
 console.log('Downloading codegraph v1.6.0…');

@@ -79,7 +79,7 @@ test('Talents follows Teams: changes arrive by long polling, PRs target the boun
     await stop(teams);
     const offline = (await get('/api/teams?after=' + encodeURIComponent(update.teams.revision))).body;
     assert.deepEqual([offline.changed, offline.teams.online], [true, false]);
-    assert.match(offline.teams.error, /无法读取 iCode Teams 数据/);
+    assert.match(offline.teams.error, /Cannot read iCode Teams data/);
     assert.equal((await get('/api/pull-requests/target?project=carddemo')).status, 503);
     assert.equal((await get('/api/bootstrap')).body.teams.online, false);
   } finally {

@@ -29,16 +29,16 @@ test('a missing CodeGraph is installed, then passes its self-check', async () =>
   const i = await installer();
   const before = await i.state();
   assert.equal(before.status.state, 'missing');
-  assert.match(before.status.detail!, /找不到 codegraph/);
+  assert.match(before.status.detail!, /codegraph not found/);
   assert.match(before.command!, /fake-codegraph-install\.mjs install$/);
   assert.equal(i.install().status, 'running');
   assert.throws(() => i.install(), (e: any) => e.status === 409, 'one install at a time');
   const after = await ended(i);
   assert.deepEqual([after.install!.status, after.status.state, after.status.version], ['success', 'installed', '1.6.0']);
   const log = after.install!.logs.join('\n');
-  assert.match(log, /运行安装命令：/);
+  assert.match(log, /Running install command: /);
   assert.match(log, /^✓ Installed to ~\/\.local\/bin\/codegraph$/m, 'colour codes are removed');
-  assert.match(log, /自检通过：codegraph 1\.6\.0/);
+  assert.match(log, /Self-check passed: codegraph 1\.6\.0/);
 });
 
 test('a failed install leaves CodeGraph missing; an install is refused while a build runs', async () => {
@@ -46,9 +46,9 @@ test('a failed install leaves CodeGraph missing; an install is refused while a b
   failing.install();
   const after = await ended(failing);
   assert.deepEqual([after.install!.status, after.status.state], ['failed', 'missing']);
-  assert.match(after.install!.logs.join('\n'), /Could not resolve host[\s\S]*退出码 6[\s\S]*自检没有通过/);
-  const busy = await installer({ blocked: () => '有正在运行的代码图谱构建' });
-  assert.throws(() => busy.install(), (e: any) => e.status === 409 && /构建/.test(e.message));
+  assert.match(after.install!.logs.join('\n'), /Could not resolve host[\s\S]*exited with code 6[\s\S]*Self-check did not pass/);
+  const busy = await installer({ blocked: () => 'A code graph build is running. Wait for it to finish before installing.' });
+  assert.throws(() => busy.install(), (e: any) => e.status === 409 && /build/.test(e.message));
   const none = await installer({ install: null });
   assert.throws(() => none.install(), (e: any) => e.status === 422);
 });

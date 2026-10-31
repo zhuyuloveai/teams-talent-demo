@@ -14,8 +14,8 @@ const port = 45988, origin = `http://127.0.0.1:${port}`;
 const directory = await mkdtemp(join(tmpdir(), 'codegraph-browser-'));
 const teams = await fakeTeams(45979, { path: await codegraphRepository(join(directory, 'shop')) });
 const state = seedState();
-state.artifacts.unshift({ id: 'a-cg-shop', projectId: PROJECT_ID, cap: 'codegraph', name: 'shop 代码图谱', desc: '查询 shop 中的代码定义与调用关系。', sources: [REPO_ID], kind: 'index',
-  stats: [], mcpName: 'codegraph', published: { version: 1, at: '2026-10-26 02:05', note: '首次发布', delivery: 'cloud', agents: ['Code'], basis: null, auto: true }, draft: null });
+state.artifacts.unshift({ id: 'a-cg-shop', projectId: PROJECT_ID, cap: 'codegraph', name: 'shop code graph', desc: 'Query code definitions and call relationships in shop.', sources: [REPO_ID], kind: 'index',
+  stats: [], mcpName: 'codegraph', published: { version: 1, at: '2026-10-26 02:05', note: 'First publish', delivery: 'cloud', agents: ['Code'], basis: null, auto: true }, draft: null });
 await mkdir(join(directory, 'state'));
 await writeFile(join(directory, 'state', 'state.json'), JSON.stringify(state));
 const server = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], {
@@ -53,33 +53,33 @@ try {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(origin + '/talents/#/projects?project=carddemo&tab=review&id=a-cg-shop');
   await page.locator('.cg-canvas canvas').waitFor();
-  await page.getByRole('searchbox', { name: '搜索图谱' }).fill('OrderService');
+  await page.getByRole('searchbox', { name: 'Search the graph' }).fill('OrderService');
   await page.locator('.cg-results button').first().click();
   await page.locator('.cg-source').waitFor();
   assert.match(await page.locator('.cg-source').innerText(), /class OrderService/);
   await page.locator('.cg-detail h3', { hasText: /^OrderService$/ }).waitFor();
   // Choosing a search result shows its neighbourhood.
-  await page.locator('.cg-scope', { hasText: '邻域：' }).waitFor();
-  await page.getByRole('searchbox', { name: '搜索图谱' }).fill('place');
+  await page.locator('.cg-scope', { hasText: 'Neighbourhood:' }).waitFor();
+  await page.getByRole('searchbox', { name: 'Search the graph' }).fill('place');
   await page.locator('.cg-results button', { hasText: 'place' }).first().click();
   await page.locator('.cg-detail h3', { hasText: /^place$/ }).waitFor();
   await page.locator('.cg-connections button').first().waitFor();
-  await page.getByRole('button', { name: '取消聚焦' }).click();
-  await page.locator('.cg-scope', { hasText: '全部' }).waitFor();
+  await page.getByRole('button', { name: 'Clear focus' }).click();
+  await page.locator('.cg-scope', { hasText: 'All' }).waitFor();
   await page.screenshot({ path: '/tmp/codegraph-desktop.png', fullPage: true });
-  assert.equal(await page.getByText('服务概览', { exact: true }).count(), 0, 'graphs have no services');
-  await page.getByText('文件关系', { exact: true }).click();
+  assert.equal(await page.getByText('Services', { exact: true }).count(), 0, 'graphs have no services');
+  await page.getByText('File relations', { exact: true }).click();
   await page.locator('.cg-legend', { hasText: 'java' }).waitFor();
   // Directories open level by level, down to a file's symbols (this repository is small enough to show its files at once).
-  await page.getByText('目录结构', { exact: true }).click();
-  await page.locator('.cg-legend', { hasText: '文件' }).waitFor();
-  await page.getByRole('searchbox', { name: '搜索图谱' }).fill('OrderController.java');
+  await page.getByText('Directory structure', { exact: true }).click();
+  await page.locator('.cg-legend', { hasText: 'File' }).waitFor();
+  await page.getByRole('searchbox', { name: 'Search the graph' }).fill('OrderController.java');
   await page.locator('.cg-results button').first().click();
   await page.locator('.cg-detail h3', { hasText: /OrderController\.java$/ }).waitFor();
-  await page.getByRole('button', { name: '查看文件内符号' }).click();
+  await page.getByRole('button', { name: 'View symbols in this file' }).click();
   await page.locator('.cg-scope', { hasText: 'OrderController.java' }).waitFor();
   await page.locator('.cg-legend', { hasText: 'method' }).waitFor();
-  await page.getByRole('checkbox', { name: '包含测试', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Include tests', exact: true }).check();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '/tmp/codegraph-mobile.png', fullPage: true });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'mobile page overflows horizontally');
