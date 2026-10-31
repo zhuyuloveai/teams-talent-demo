@@ -1,6 +1,6 @@
 import { vt } from '../i18n.js'
 import type { ReactNode } from 'react'
-/** 页面名称由面包屑展示；此处只承载对象标题、说明、操作和页签。 */
+/** The page name is shown by the breadcrumb; this only holds the object title, description, actions and tabs. */
 export function PageHeader({ title, description, actions, tabs }: { title?: string; description?: string; actions?: ReactNode; tabs?: ReactNode }) {
   if (!title && !description && !actions && !tabs) return null
   return <header className="page-header">{(title || description || actions) && <div className="page-heading">{(title || description) && <div>{title && <h1>{title}</h1>}{description && <p>{description}</p>}</div>}{actions}</div>}{tabs}</header>

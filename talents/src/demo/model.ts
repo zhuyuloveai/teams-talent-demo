@@ -15,14 +15,14 @@ export const memberName = (st: TalentsState, id: string, fallback?: string) => m
 
 // ---------- Team and project levels ----------
 // A level is a project id, or null for the team. Sources, tasks and artifacts each belong to one level.
-export const levelName = (st: TalentsState, pid: string | null) => pid ? project(st, pid)?.name ?? pid : '团队';
+export const levelName = (st: TalentsState, pid: string | null) => pid ? project(st, pid)?.name ?? pid : 'Team';
 /** Repositories and document sets of the level. */
 export const levelSources = (st: TalentsState, pid: string | null) => st.sources.filter(s => s.type !== 'sessions' && (s.projectId ?? null) === pid);
 export const projectRepos = (st: TalentsState, pid: string) => levelSources(st, pid).filter(s => s.type === 'repo');
 /** Sessions a task of the level can analyse: the project's, or at team level those of every project. */
 export const levelSessions = (st: TalentsState, pid: string | null) => pid ? st.sessions.filter(s => s.projectId === pid) : st.sessions;
 
-/** Files of a development-pattern library: index, then per spec 范式总结, 代码分析报告, its PR records (PR mode)
+/** Files of a development-pattern library: index, then per spec pattern summary, code analysis report, its PR records (PR mode)
  *  or its mining metadata (diff mode: meta.json records the scenario, repository and engine; see content/miner). */
 export function minerFiles(names: string[]) {
   const map: Record<string, string> = JSON.parse(content('miner/pr-map.json') ?? '{}');
@@ -67,7 +67,7 @@ export function docChanges(src: Source, since?: string | null): DocChanges {
   return out;
 }
 export const changeCounts = (c: { added: string[]; modified: string[]; removed: string[] }) =>
-  ([['新增', c.added], ['修改', c.modified], ['删除', c.removed]] as const).filter(x => x[1].length).map(x => x[0] + ' ' + x[1].length).join('、');
+  ([['added', c.added], ['modified', c.modified], ['removed', c.removed]] as const).filter(x => x[1].length).map(x => x[1].length + ' ' + x[0]).join(', ');
 
 /** Where an artifact (or a run) starts from: the latest document version, or the current commit. */
 export function sourceState(src: Source | null): Basis | null {
@@ -85,13 +85,13 @@ export function changesSince(src: Source | null, basis: Basis | null | undefined
   if (src.type === 'repo') {
     if (!src.commit) return null;
     const n = basis.commit === src.commit.sha ? 0 : 3;
-    return { from: basis.commit, to: src.commit.sha, count: n, text: n ? n + ' 个新提交' : '' };
+    return { from: basis.commit, to: src.commit.sha, count: n, text: n ? n + ' new commits' : '' };
   }
   return null;
 }
 
 export function taskName(st: TalentsState, t: Pick<Task, 'name' | 'cap' | 'sources' | 'sessions'>) {
   if (t.name) return t.name;
-  const what = t.sessions ? t.sessions.length + ' 个会话' : t.sources.map(id => source(st, id)?.name ?? '已移除的来源').join('、');
-  return capability(st, t.cap).name + '：' + what;
+  const what = t.sessions ? t.sessions.length + (t.sessions.length === 1 ? ' session' : ' sessions') : t.sources.map(id => source(st, id)?.name ?? 'Removed source').join(', ');
+  return capability(st, t.cap).name + ': ' + what;
 }

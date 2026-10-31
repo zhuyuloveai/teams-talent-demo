@@ -1,5 +1,5 @@
-﻿// 总体规划：Talents 未来总体规划的介绍（原稿 carddemo/overview.html，正文在 src/overview/，配色改用 Talents 主题）。
-// 从右上角的书本图标进入。正文里的目录和交叉引用是 #<id> 锚点，会和 #/<page> 路由冲突，所以在这里拦下来改为滚动到对应位置。
+﻿// Roadmap: an introduction to the overall future plan for Talents (original draft carddemo/overview.html, body in src/overview/, recolored with the Talents theme).
+// Opened from the book icon at the top right. The table of contents and cross references in the body are #<id> anchors, which clash with #/<page> routes, so they are intercepted here and turned into scrolling to the target.
 import { useEffect, useRef, type MouseEvent } from 'react';
 import { Tag } from 'antd';
 import { PageHeader } from '../vendor/teams/components/page-layout.tsx';
@@ -10,8 +10,8 @@ import '../overview/overview.css';
 export function Overview() {
   const ref = useRef<HTMLDivElement>(null);
   const t = useT();
-  // 正文只在挂载时写入一次，不交给 React 渲染：路由连续更新时 React 可能重写 innerHTML，目录高亮就挂到了旧节点上。
-  // 目录高亮当前读到的一节：取顶端已滚过的最后一节。
+  // The body is written once on mount and not rendered by React: on repeated route updates React may rewrite innerHTML, leaving the TOC highlight attached to stale nodes.
+  // The TOC highlights the section being read: the last section that has scrolled past the top.
   useEffect(() => {
     const root = ref.current!, scroller = root.closest('.page-scroll')!;
     root.innerHTML = doc;

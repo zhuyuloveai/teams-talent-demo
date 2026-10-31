@@ -8,23 +8,23 @@ const portKeys = new Set(['DEMO_PORT', 'DEMO_TALENT_PORT', 'DEMO_TRACE_PORT']);
 /** Local machine configuration is optional. Invalid present files always fail explicitly. */
 export function loadLocalConfiguration(root: string, environment: NodeJS.ProcessEnv = process.env) {
   const file = environment.DEMO_LOCAL_CONFIG ?? join(root, '.local', 'config.json');
-  if (!isAbsolute(file)) throw new Error('DEMO_LOCAL_CONFIG 必须是绝对路径');
+  if (!isAbsolute(file)) throw new Error('DEMO_LOCAL_CONFIG must be an absolute path');
   let text: string;
   try { text = readFileSync(file, 'utf8'); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT' && environment.DEMO_LOCAL_CONFIG === undefined) return { file, loaded: false }; throw error; }
   let values: unknown;
-  try { values = JSON.parse(text); } catch { throw new Error('本机配置 JSON 无效：' + file); }
-  if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error('本机配置必须是键值对象：' + file);
+  try { values = JSON.parse(text); } catch { throw new Error('Invalid local configuration JSON: ' + file); }
+  if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error('Local configuration must be a key-value object: ' + file);
   for (const [key, value] of Object.entries(values)) {
     if (pathKeys.has(key)) {
-      if (typeof value !== 'string' || !isAbsolute(value) || value.includes('\0')) throw new Error('本机配置 ' + key + ' 必须是绝对路径');
+      if (typeof value !== 'string' || !isAbsolute(value) || value.includes('\0')) throw new Error('Local configuration ' + key + ' must be an absolute path');
     } else if (portKeys.has(key)) {
-      if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1024 || value > 65535) throw new Error('本机配置 ' + key + ' 必须是 1024–65535 的整数');
+      if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1024 || value > 65535) throw new Error('Local configuration ' + key + ' must be an integer from 1024 to 65535');
     } else if (key === 'DEMO_TRACE_ENDPOINT') {
-      if (typeof value !== 'string') throw new Error('DEMO_TRACE_ENDPOINT 必须是本机 trace 接收地址');
-      let url: URL; try { url = new URL(value); } catch { throw new Error('DEMO_TRACE_ENDPOINT 地址无效'); }
-      if (url.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || url.pathname !== '/v1/traces' || url.username || url.password || url.search || url.hash) throw new Error('DEMO_TRACE_ENDPOINT 必须是本机 HTTP /v1/traces 地址');
-    } else throw new Error('未知本机配置项：' + key);
+      if (typeof value !== 'string') throw new Error('DEMO_TRACE_ENDPOINT must be a local trace receiver address');
+      let url: URL; try { url = new URL(value); } catch { throw new Error('DEMO_TRACE_ENDPOINT is not a valid address'); }
+      if (url.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || url.pathname !== '/v1/traces' || url.username || url.password || url.search || url.hash) throw new Error('DEMO_TRACE_ENDPOINT must be a local HTTP /v1/traces address');
+    } else throw new Error('Unknown local configuration key: ' + key);
   }
   for (const [key, value] of Object.entries(values)) if (environment[key] === undefined) environment[key] = String(value);
   return { file, loaded: true };

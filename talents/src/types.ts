@@ -8,7 +8,7 @@ export type Role = 'admin' | 'dev';
 
 export interface Member { id: string; name: string; role: 'owner' | 'member'; status?: string; title: string }
 export interface Team { name: string; admin: string; me: string; members: Member[] }
-/** A project skill from Teams (项目可用 Skill); its SKILL.md is read on demand (api.getSkill). */
+/** A project skill from Teams (a Skill available to the project); its SKILL.md is read on demand (api.getSkill). */
 export interface ProjectSkill { id: string; name: string; version: string; description: string; path: string; sha256: string }
 /** readonly: imported into Teams from another instance and browsed there as a record (iCode Teams). */
 export interface Project { id: string; name: string; description?: string; readonly?: boolean; skills: ProjectSkill[] }

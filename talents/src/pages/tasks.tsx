@@ -1,5 +1,5 @@
-﻿// 知识任务：一个层级（团队或项目）的任务列表（当前任务分定时任务和一次性任务，另有已完成），任务详情与
-// 运行进度，新建任务（来源在单独的选择弹窗中选）。运行可以取消，任务可以删除，定时任务可以暂停。
+﻿// Knowledge tasks: the task list of one level (team or project) (current tasks split into scheduled and one-off, plus completed), task details and
+// run progress, and task creation (sources are picked in a separate dialog). Runs can be canceled, tasks deleted, and scheduled tasks paused.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Alert, App, Button, Checkbox, Collapse, Drawer, Input, InputNumber, Modal, Progress, Radio, Segmented, Select, Space, Steps, Table, Tag } from 'antd';
 import { PlusOutlined, StarOutlined } from '@ant-design/icons';
@@ -282,13 +282,13 @@ function PrPicker({ repoId, initial, onDone, onClose }: { repoId: string; initia
 }
 
 // ---------- Form ----------
-/** copy: a task whose settings the form starts from (复制为新任务); its name and time are not copied. */
+/** copy: a task whose settings the form starts from ("Copy as new task"); its name and time are not copied. */
 interface Preset { cap?: string; source?: string; from?: string; copy?: string }
-/** level: the team (null) or project the task belongs to; undefined lets the user choose (from 知识能力). */
+/** level: the team (null) or project the task belongs to; undefined lets the user choose (from Knowledge capabilities). */
 export function TaskForm({ level: fixed, preset, onClose, onCreated }: { level?: string | null; preset: Preset; onClose(): void; onCreated(id: string, started: boolean, level: string | null): void }) {
   const { state: st, update, focusProject, startCodegraph, toast, teamsLink } = useTalents();
   const t = useT();
-  // "重新提取" on an artifact: start from the task that built it.
+  // "Re-extract" on an artifact: start from the task that built it.
   const fromArtifact = artifact(st, preset.from);
   const copied = task(st, preset.copy);
   const fromTask = copied ?? (fromArtifact ? st.tasks.find(t => (t.produced ?? t.artifact) === fromArtifact.id) : undefined);

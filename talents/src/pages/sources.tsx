@@ -1,5 +1,5 @@
-// 来源：一个层级（团队或项目）的代码仓和文档集；项目另有成员共享的会话和项目 Skill。代码仓、设计文档、
-// 会话和 Skill 来自 iCode Teams，在这里只读；Talents 只登记本地文档目录。
+// Sources: the code repositories and document sets of one level (team or project); a project also has sessions shared by members and project Skills.
+// Repositories, design documents, sessions and Skills come from iCode Teams and are read-only here; Talents only registers local document directories.
 import { useEffect, useState, type ReactNode } from 'react';
 import { App, AutoComplete, Button, Collapse, Drawer, Form, Input, Modal, Space, Table, Tag, type TableColumnsType } from 'antd';
 import { ExportOutlined, PlusOutlined } from '@ant-design/icons';
@@ -248,8 +248,8 @@ function EditSource({ s, onClose }: { s: Source; onClose(): void }) {
 // ---------- Register a local document directory ----------
 interface Sample { path: string; files: number; ext: string; from: NonNullable<Source['from']>; tree: { dir: string; files: string[] }[] }
 const samples: Sample[] = [
-  { path: '/Volumes/team-share/carddemo/meeting-notes', files: 46, ext: 'md 46', from: { kind: 'shared' }, tree: [{ dir: '', files: ['2026-10-21 需求评审.md', '2026-10-14 架构评审.md', '2026-10-09 返现方案周会.md'] }] },
-  { path: '~/work/carddemo/requirements', files: 31, ext: 'md 18、docx 9、pdf 4', from: { kind: 'git', origin: 'git@code.bank.local:carddemo/carddemo-requirements.git', branch: 'main' }, tree: [{ dir: '2026Q3', files: ['分期还款需求说明.docx', '额度调整需求说明.md'] }, { dir: '2026Q4', files: ['营销活动二期需求.md', '账单分期改造.md'] }] },
+  { path: '/Volumes/team-share/carddemo/meeting-notes', files: 46, ext: 'md 46', from: { kind: 'shared' }, tree: [{ dir: '', files: ['2026-10-21 requirements-review.md', '2026-10-14 architecture-review.md', '2026-10-09 cashback-plan-weekly.md'] }] },
+  { path: '~/work/carddemo/requirements', files: 31, ext: 'md 18, docx 9, pdf 4', from: { kind: 'git', origin: 'git@code.bank.local:carddemo/carddemo-requirements.git', branch: 'main' }, tree: [{ dir: '2026Q3', files: ['installment-repayment-requirements.docx', 'credit-limit-adjustment-requirements.md'] }, { dir: '2026Q4', files: ['marketing-campaign-phase-2-requirements.md', 'statement-installment-revamp.md'] }] },
 ];
 /** Registers a local document directory in the level (team or project) the user is in. */
 function RegisterSource({ pid, onClose }: { pid: string | null; onClose(): void }) {

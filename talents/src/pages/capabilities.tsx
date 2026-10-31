@@ -1,6 +1,8 @@
-// 知识能力：按四类展示 Talents 提供的知识生成能力，点开卡片在右侧抽屉看一种能力的详细介绍和定义（engine.yaml）。
-// 从这里新建任务时，在表单中选择任务属于团队还是哪个项目。也可以导入自定义能力：选择一个定义包，校验声明后
-// 加入所选分类。演示只读取和校验声明，不执行其中的命令；CodeGraph 例外：卡片和详情中检测本机是否已安装，未安装时可以安装。
+// Knowledge capabilities: shows the knowledge-generation capabilities Talents provides in four categories; opening a card shows a
+// capability's details and definition (engine.yaml) in a drawer on the right. A task created from here picks, in the form, whether it
+// belongs to the team or to a project. Custom capabilities can also be imported: pick a definition package, validate its declaration,
+// and add it to the chosen category. The demo only reads and validates declarations and never runs their commands; CodeGraph is the
+// exception: the card and details check whether it is installed on this machine and offer to install it.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Alert, App, Button, Collapse, Drawer, Select, Spin, Tag, Tooltip, Upload } from 'antd';
 import { CheckCircleFilled, ImportOutlined, InboxOutlined } from '@ant-design/icons';
@@ -40,7 +42,7 @@ export function Capabilities() {
   </div>;
 }
 
-/** 增量更新 when the capability declares an update (its rule in the tooltip); 已导入 for an imported one. */
+/** "Incremental update" when the capability declares an update (its rule in the tooltip); "Imported" for an imported one. */
 const CapTags = ({ c }: { c: Capability }) => {
   const t = useT();
   return <span className="tags">
@@ -89,7 +91,6 @@ function CapabilityDetail({ cap, onClose, onCreate }: { cap: Capability; onClose
         </div>)}</div>
       </div>}
       <div className="field"><span className="label">{t('cap.output')}</span><p>{cap.detail.output}</p></div>
-      <div className="field"><span className="label">输出</span><p>{cap.detail.output}</p></div>
       {cap.id === 'codegraph' && <CodegraphInstallDetail />}
       {e && text && <Definition e={e} text={text} builtin={!cap.custom} />}
     </div>

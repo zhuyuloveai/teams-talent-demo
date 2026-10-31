@@ -1,5 +1,5 @@
-// 轨迹洞察的诊断工作台。诊断不走审阅发布：左侧是诊断报告和各条优化建议，中间是报告或一条建议的内容，
-// 右侧逐条提交改进 PR 或暂不采纳。Skill 建议修改项目 Skill 的文件；工具和任务指令建议向 AGENTS.md 补充规则。
+// Diagnosis workbench for trajectory insights. Diagnoses skip review and publishing: the left side lists the diagnosis report and each improvement suggestion, the middle shows the report or one suggestion,
+// and the right side submits an improvement PR per suggestion or declines it for now. Skill suggestions edit project Skill files; tool and task-instruction suggestions add rules to AGENTS.md.
 import { useState } from 'react';
 import { Button, Collapse, Input, Modal, Tag } from 'antd';
 import { PageHeader } from '../vendor/teams/components/page-layout.tsx';

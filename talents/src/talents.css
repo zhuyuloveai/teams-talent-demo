@@ -150,7 +150,7 @@ iframe{width:100%;height:100%;border:0;display:block;background:#fff}
 @media(max-width:1100px){.wb-body{grid-template-columns:180px minmax(0,1fr) 300px}.wb-body.no-files{grid-template-columns:minmax(0,1fr) 300px}}
 @media(max-width:820px){.preview-body{grid-template-columns:1fr}.preview-body .file-list{display:none}.wb-body,.wb-body.no-files{grid-template-columns:minmax(0,1fr)}.wb-body .file-list{display:none}.wb-side{border-left:0;border-top:1px solid var(--ui-color-divider)}}
 
-/* Tabs of a level (团队 / 项目), copied from the iCode Teams project toolbar (teams/src/project.css). */
+/* Tabs of a level (team / project), copied from the iCode Teams project toolbar (teams/src/project.css). */
 .framework-root .page-stack.level-page{gap:0}
 .level-page>.page-header{margin-bottom:0}
 .level-page>.toolbar{padding-block:var(--ui-space-3)}

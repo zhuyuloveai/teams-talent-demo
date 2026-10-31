@@ -1,4 +1,4 @@
-// CodeGraph on this machine, on its capability card and page: 已安装 when its self-check passes, else 安装, which runs the
+// CodeGraph on this machine, on its capability card and page: Installed when its self-check passes, else Install, which runs the
 // install command its engine.yaml declares (server/codegraph-install.ts) after the user confirms it.
 import { useEffect, useState } from 'react';
 import { App, Button, Collapse, Tag, Tooltip } from 'antd';
@@ -43,7 +43,7 @@ function useInstall() {
   });
 }
 
-/** On the capability card: 已安装, 安装中, or the 安装 button. */
+/** On the capability card: Installed, Installing, or the Install button. */
 export function CodegraphInstall() {
   const t = useT();
   const engine = useEngine(), install = useInstall();

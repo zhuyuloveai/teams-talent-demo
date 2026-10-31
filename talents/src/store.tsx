@@ -90,8 +90,8 @@ export function TalentsProvider({ boot, children }: { boot: Boot; children: Reac
         if (s.dirty) await save();
       } catch (e) {
         s.saving = null;
-        if (e instanceof ApiError && e.status === 409) { toast('数据已在另一页面更新，正在刷新'); setTimeout(() => location.reload(), 1200); return; }
-        toast('保存失败：' + (e as Error).message);
+        if (e instanceof ApiError && e.status === 409) { toast('Data was updated in another page. Refreshing.'); setTimeout(() => location.reload(), 1200); return; }
+        toast('Save failed: ' + (e as Error).message);
       }
     })();
     return s.saving;
@@ -204,7 +204,7 @@ export function TalentsProvider({ boot, children }: { boot: Boot; children: Reac
       const done = running.filter(t => runProgress(t).done).map(t => t.id);
       if (!done.length) return;
       const names = update(s => s.tasks.filter(t => done.includes(t.id)).map(t => { finishRun(s, t); return taskName(s, t); }));
-      names.forEach(name => toast('任务完成：' + name));
+      names.forEach(name => toast('Task completed: ' + name));
     }, 700);
     return () => clearInterval(timer);
   }, [update, toast]);

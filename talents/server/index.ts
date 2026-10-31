@@ -20,12 +20,12 @@ import { defaultTarget, submitPullRequest } from './pull-requests.ts';
 const store = new Store(); await store.init();
 const submissions = new Set<string>();
 const exporter = new KnowledgeExporter(sharedDir);
-const exportKnowledge = () => exporter.export(store.state).catch(error => console.error('Talents 知识导出失败：' + error.message));
+const exportKnowledge = () => exporter.export(store.state).catch(error => console.error('Talents knowledge export failed: ' + error.message));
 // CodeGraph builds run in the repositories bound in Teams; a build publishes the next version of the repository's code graph.
 // Installing CodeGraph and building with it exclude each other.
-const installer: CodegraphInstaller = new CodegraphInstaller({ blocked: (): string | null => codegraph.running() ? '有正在运行的代码图谱构建，请等它结束后再安装' : null });
+const installer: CodegraphInstaller = new CodegraphInstaller({ blocked: (): string | null => codegraph.running() ? 'A code graph build is running. Wait for it to finish before installing.' : null });
 const codegraph: CodegraphRunner = await new CodegraphRunner({ directory: join(runtimeDir, 'codegraph'), onChange: () => void exportKnowledge(),
-  blocked: (): string | null => installer.installing() ? '正在安装 CodeGraph，请等安装结束后再构建' : null,
+  blocked: (): string | null => installer.installing() ? 'CodeGraph is being installed. Wait for the installation to finish before building.' : null,
   nextVersion: (projectId, sourceId) => (codegraphArtifacts(store.state).find(a => a.cap === 'codegraph' && a.projectId === projectId && a.sources[0] === sourceId)?.published?.version ?? 0) + 1 }).init();
 setLiveCodegraph(codegraph);
 await exporter.export(store.state, true);
@@ -63,8 +63,8 @@ async function teamsUpdate(after: string | null, response: ServerResponse) {
 
 async function bodyJson(request: IncomingMessage) {
   const chunks: Buffer[] = []; let size = 0;
-  for await (const chunk of request) { size += chunk.length; if (size > 8 * 1024 * 1024) throw new HttpError('请求过大', 413); chunks.push(chunk); }
-  try { return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, any>; } catch { throw new HttpError('JSON 请求无效', 400); }
+  for await (const chunk of request) { size += chunk.length; if (size > 8 * 1024 * 1024) throw new HttpError('Request too large', 413); chunks.push(chunk); }
+  try { return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, any>; } catch { throw new HttpError('Invalid JSON request', 400); }
 }
 
 const TYPES: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
@@ -85,12 +85,12 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
     response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); response.end(JSON.stringify(value));
   };
   try {
-    if (request.headers.host !== '127.0.0.1:' + port) { json(403, { error: '请使用本机 127.0.0.1 地址' }); return; }
+    if (request.headers.host !== '127.0.0.1:' + port) { json(403, { error: 'Use the local 127.0.0.1 address' }); return; }
     const url = new URL(request.url ?? '/', origin), path = url.pathname, method = request.method ?? 'GET';
     if (path.startsWith('/api/')) {
       if (method !== 'GET') {
-        if (request.headers.origin && request.headers.origin !== origin) { json(403, { error: '请求来源不匹配' }); return; }
-        if (!request.headers['content-type']?.startsWith('application/json')) { json(415, { error: '请使用 JSON 请求' }); return; }
+        if (request.headers.origin && request.headers.origin !== origin) { json(403, { error: 'Request origin does not match' }); return; }
+        if (!request.headers['content-type']?.startsWith('application/json')) { json(415, { error: 'Use a JSON request' }); return; }
       }
       if (method === 'GET' && path === '/api/health') { json(200, { app: 'talents-carddemo', service: 'talents', workspaceRoot: root, stateRoot: runtimeDir, sharedDir, version: '0.1.0', pid: process.pid, origin, teamsOrigin }); return; }
       if (method === 'GET' && path === '/api/bootstrap') { json(200, await bootstrap()); return; }
@@ -98,7 +98,7 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
       // Content files too large to bundle into the page, e.g. a trajectory diagnosis report (see tools/bundle-content.mjs).
       if (method === 'GET' && path === '/api/content') {
         const key = url.searchParams.get('key') ?? '', text = readContent(key);
-        if (text == null) throw new HttpError('内容不存在', 404);
+        if (text == null) throw new HttpError('Content not found', 404);
         response.writeHead(200, { 'Content-Type': (TYPES[extname(key)] ?? 'text/plain') + '; charset=utf-8', 'Cache-Control': 'no-cache' }); response.end(text); return;
       }
       if (method === 'GET' && path === '/api/skill') { json(200, await readSkill(await onlineTeams(), url.searchParams.get('project') ?? '', url.searchParams.get('id') ?? '')); return; }
@@ -106,18 +106,18 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
       if (method === 'GET' && path === '/api/codegraph-runs') { json(200, codegraphUpdate(store.state)); return; }
       if (method === 'POST' && path === '/api/codegraph-runs') {
         const body = await bodyJson(request);
-        if (![body.taskId, body.projectId, body.sourceId].every(v => typeof v === 'string' && v)) throw new HttpError('缺少任务、项目或代码仓', 400);
+        if (![body.taskId, body.projectId, body.sourceId].every(v => typeof v === 'string' && v)) throw new HttpError('Missing task, project or repository', 400);
         const project = (await onlineTeams()).projects.find(p => p.id === body.projectId);
         const repo = project?.repositories.find(r => r.id === body.sourceId);
-        if (!project || !repo) throw new HttpError('iCode Teams 中没有这个代码仓', 404);
-        if (!repo.path) throw new HttpError('代码仓 ' + repo.name + ' 未在 iCode Teams 绑定本机目录', 400);
+        if (!project || !repo) throw new HttpError('This repository is not in iCode Teams', 404);
+        if (!repo.path) throw new HttpError('Repository ' + repo.name + ' has no local directory bound in iCode Teams', 400);
         codegraph.start({ taskId: body.taskId, projectId: project.id, sourceId: repo.id, repository: repo.path, repoName: repo.name });
         json(200, codegraphUpdate(store.state)); return;
       }
       // CodeGraph on this machine: whether its self-check passes (?check=1 checks again), and installing it.
       if (method === 'GET' && path === '/api/engines/codegraph') { json(200, await installer.state(url.searchParams.get('check') === '1')); return; }
       if (method === 'POST' && path === '/api/engines/codegraph/install') { await bodyJson(request); installer.install(); json(200, await installer.state()); return; }
-      // "应用": whether iCode's Code Agent has the codegraph MCP server, and adding it.
+      // "Apply": whether iCode's Code Agent has the codegraph MCP server, and adding it.
       if (method === 'GET' && path === '/api/codegraph-mcp') { json(200, await codegraphMcpStatus()); return; }
       if (method === 'POST' && path === '/api/codegraph-mcp') { await bodyJson(request); json(200, await applyCodegraphMcp()); return; }
       // A code graph: the repository's index as it is now (generated again when it changed).
@@ -129,12 +129,12 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
         let graph: StoredGraphSnapshot, notice: string | undefined;
         if (snapshot === null && !graphPath[2]) {
           const view = await codegraphView(projectId, sourceId, sourceId && await repositoryPath(projectId, sourceId));
-          if (!view) throw new HttpError('还没有代码图谱：在“知识任务”中新建 CodeGraph 任务构建', 404);
+          if (!view) throw new HttpError('No code graph yet: create a CodeGraph task in "Knowledge tasks" to build one', 404);
           ({ graph, notice } = view);
         } else {
           const current = codegraphSnapshot(projectId, sourceId);
-          if (!current) throw new HttpError('还没有代码图谱', 404);
-          if (snapshot !== current.metadata.snapshotId) throw new HttpError('图谱已更新，请刷新后重试', 409);
+          if (!current) throw new HttpError('No code graph yet', 404);
+          if (snapshot !== current.metadata.snapshotId) throw new HttpError('The code graph was updated. Refresh and try again.', 409);
           graph = current;
         }
         const param = (name: string) => url.searchParams.get(name) ?? undefined;
@@ -147,19 +147,19 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
         if (graphPath[2] === 'search') { json(200, searchGraph(graph, param('q') ?? '', param('tests') === '1')); return; }
         if (graphPath[2] === 'node') {
           const detail = nodeDetail(graph, param('id') ?? '');
-          if (!detail) throw new HttpError('符号不存在', 404);
+          if (!detail) throw new HttpError('Symbol not found', 404);
           json(200, detail); return;
         }
         const node = nodeDetail(graph, param('id') ?? '', 0)?.node;
-        if (!node) throw new HttpError('符号不存在', 404);
+        if (!node) throw new HttpError('Symbol not found', 404);
         const source = graph.sources[node.filePath];
-        if (source === undefined) throw new HttpError('快照中没有此源码', 404);
+        if (source === undefined) throw new HttpError('This source file is not in the snapshot', 404);
         const start = Math.max(1, node.startLine - 3), end = Math.min(source.split('\n').length, node.endLine + 3, start + 299);
         json(200, { filePath: node.filePath, startLine: start, endLine: end, content: source.split('\n').slice(start - 1, end).join('\n') }); return;
       }
       if (method === 'PUT' && path === '/api/state') {
         const body = await bodyJson(request);
-        if (!Number.isInteger(body.revision)) throw new HttpError('缺少 revision', 400);
+        if (!Number.isInteger(body.revision)) throw new HttpError('Missing revision', 400);
         const state = await store.mutate(body.revision, previous => withoutCodegraph(ownedState(body.state, previous), previous));
         await exportKnowledge();
         json(200, { revision: state.revision }); return;
@@ -174,9 +174,9 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
       if (method === 'POST' && path === '/api/pull-requests') {
         const body = await bodyJson(request);
         const key = body.artifactId + '/' + (body.suggestionId ?? '');
-        if (submissions.has(key)) throw new HttpError('正在提交，请稍候', 409);
+        if (submissions.has(key)) throw new HttpError('Submission in progress, please wait', 409);
         const artifact = store.state.artifacts.find(a => a.id === body.artifactId);
-        if (!artifact) throw new HttpError('产物不存在', 404);
+        if (!artifact) throw new HttpError('Artifact not found', 404);
         const existing = body.suggestionId ? artifact.suggestions?.find(s => s.id === body.suggestionId)?.submission : !artifact.draft && artifact.submission;
         if (existing) { json(200, await bootstrap()); return; }
         // One JSON line per step as it starts ({ step }), then { boot } or { error }, so the page can show progress.
@@ -200,27 +200,27 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
           send({ boot: await bootstrap() });
         } catch (error) {
           if (!(error instanceof HttpError)) console.error(error);
-          send({ error: error instanceof Error ? error.message : '提交失败' });
+          send({ error: error instanceof Error ? error.message : 'Submission failed' });
         } finally { submissions.delete(key); response.end(); }
         return;
       }
-      throw new HttpError('接口不存在', 404);
+      throw new HttpError('API not found', 404);
     }
-    if (method !== 'GET' && method !== 'HEAD') throw new HttpError('不支持的请求', 405);
+    if (method !== 'GET' && method !== 'HEAD') throw new HttpError('Unsupported request', 405);
     // Relative asset URLs in index.html need the trailing slash; the hash (#/page?project=…) survives the redirect.
     if (path === '/' || path === '/talent' || path === '/talents') { response.writeHead(302, { Location: '/talents/' + url.search }); response.end(); return; }
     if (path.startsWith('/talents/') && await staticFile(path, response)) return;
-    json(404, { error: '页面不存在' });
+    json(404, { error: 'Page not found' });
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
     if (status === 500) console.error(error);
-    json(status, { error: error instanceof Error ? error.message : '请求失败' });
+    json(status, { error: error instanceof Error ? error.message : 'Request failed' });
   }
 });
 server.on('error', error => { console.error(error.message); process.exitCode = 1; });
 server.listen(port, '127.0.0.1', () => {
-  if (localConfiguration.loaded) console.log('本机配置：' + localConfiguration.file);
+  if (localConfiguration.loaded) console.log('Local configuration: ' + localConfiguration.file);
   console.log('Talents: ' + origin + '/talents');
-  console.log('共享数据目录：' + sharedDir);
+  console.log('Shared data directory: ' + sharedDir);
 });
 for (const signal of ['SIGTERM', 'SIGINT'] as const) process.on(signal, () => { codegraph.stop(); installer.stop(); server.close(() => process.exit(0)); });

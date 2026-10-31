@@ -1,4 +1,4 @@
-// "应用" on a code graph: gives iCode's Code Agent the codegraph MCP server (server/icode-agent.ts).
+// "Apply" on a code graph: gives iCode's Code Agent the codegraph MCP server (server/icode-agent.ts).
 import { useEffect, useState } from 'react';
 import { Button, Tag, Tooltip } from 'antd';
 import { applyCodegraphMcp, codegraphMcp, type CodegraphMcp } from '../api.ts';

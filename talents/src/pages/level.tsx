@@ -1,5 +1,5 @@
-// 团队、项目：两个同级的层级，各自有产物管理、知识任务和来源，在顶部页签间切换。
-// 团队级的来源、任务和知识全团队通用，团队知识在每个项目中都可用；项目来自 iCode Teams。
+// Team and project: two sibling levels, each with its own artifact management, knowledge tasks and sources, switched with the tabs at the top.
+// Team-level sources, tasks and knowledge are shared across the team, and team knowledge is available in every project; projects come from iCode Teams.
 import type { ReactNode } from 'react';
 import { Badge, Button, Tabs, Tag } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
@@ -19,7 +19,7 @@ import { isDiagnosis, pendingCount } from '../demo/suggestions.ts';
 /** The tabs of the level, with the current tab's actions on the right. */
 export type Toolbar = (actions?: ReactNode) => ReactNode;
 /** What waits for the admin in a level: artifacts to review, and diagnosis suggestions to apply;
- *  artifacts counts both kinds of artifact once, as the 需要处理 section lists them. */
+ *  artifacts counts both kinds of artifact once, as the "Needs attention" section lists them. */
 function waiting(st: TalentsState, pid: string | null) {
   const mine = st.artifacts.filter(a => a.projectId === pid);
   const review = mine.filter(a => a.draft && !isDiagnosis(a)).length, diagnoses = mine.filter(a => pendingCount(a) > 0).length;

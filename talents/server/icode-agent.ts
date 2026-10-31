@@ -1,4 +1,4 @@
-// "应用" on a code graph: gives iCode's Code Agent the codegraph MCP server. ~/.chrys/agents/Code.yaml shadows the built-in
+// "Apply" on a code graph: gives iCode's Code Agent the codegraph MCP server. ~/.chrys/agents/Code.yaml shadows the built-in
 // Code Agent; the server is added to its tools.mcp, the rest of the file is kept as it is. Without that file, the built-in
 // profile is copied there first. codegraph serve --mcp answers about the repository an iCode session works in.
 import { execFile } from 'node:child_process';
@@ -43,12 +43,12 @@ async function builtinCodeProfile() {
       return await readFile(join(stdout.trim(), 'profiles', 'agents', 'builtins', 'Code.yaml'), 'utf8');
     } catch { /* try the next interpreter */ }
   }
-  throw new HttpError('找不到 iCode 安装包中的内置 Code Agent 配置，请确认已安装 iCode', 422);
+  throw new HttpError('Cannot find the built-in Code Agent configuration in the iCode installation. Make sure iCode is installed.', 422);
 }
 
 function parse(text: string, path: string) {
   const doc = parseDocument(text);
-  if (doc.errors.length || !isMap(doc.contents)) throw new HttpError(path + ' 不是有效的 Agent 配置' + (doc.errors[0] ? '：' + doc.errors[0].message : ''), 422);
+  if (doc.errors.length || !isMap(doc.contents)) throw new HttpError(path + ' is not a valid Agent configuration' + (doc.errors[0] ? ': ' + doc.errors[0].message : ''), 422);
   return doc;
 }
 /** A codegraph MCP server already in the profile: the one named for it, or any that runs codegraph serve --mcp. */
@@ -81,9 +81,9 @@ export async function applyCodegraphMcp(options: AgentOptions = {}) {
   const doc = parse(text ?? await (options.builtinProfile ?? builtinCodeProfile)(), path);
   if (configured(doc)) return { configured: true, changed: false, created: false, path };
   const tools = doc.get('tools');
-  if (tools !== undefined && !isMap(tools)) throw new HttpError(path + ' 中的 tools 不是映射，无法自动添加', 422);
+  if (tools !== undefined && !isMap(tools)) throw new HttpError(path + ': tools is not a mapping; cannot add the server automatically', 422);
   const mcp = doc.getIn(['tools', 'mcp']);
-  if (mcp !== undefined && mcp !== null && !isSeq(mcp)) throw new HttpError(path + ' 中的 tools.mcp 不是列表，无法自动添加', 422);
+  if (mcp !== undefined && mcp !== null && !isSeq(mcp)) throw new HttpError(path + ': tools.mcp is not a list; cannot add the server automatically', 422);
   if (isSeq(mcp)) mcp.add(doc.createNode(ENTRY));
   else doc.setIn(['tools', 'mcp'], doc.createNode([ENTRY]));
   if (!created) await copyFile(path, path + '.bak');

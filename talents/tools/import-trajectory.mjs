@@ -7,11 +7,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const [source, topic] = process.argv.slice(2);
-if (!source || !topic) throw new Error('用法：node tools/import-trajectory.mjs <report.html> <topic>');
+if (!source || !topic) throw new Error('Usage: node tools/import-trajectory.mjs <report.html> <topic>');
 const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'trajectory', topic);
 const html = readFileSync(source, 'utf8');
 const data = JSON.parse(/<script id="report-data" type="application\/json">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? 'null');
-if (!data?.improvements) throw new Error('不是轨迹诊断报告：缺少 report-data');
+if (!data?.improvements) throw new Error('Not a trajectory diagnosis report: report-data is missing');
 
 const list = value => Array.isArray(value) ? value : value ? [value] : [];
 const suggestions = data.improvements.map(i => ({
@@ -29,4 +29,4 @@ writeFileSync(join(dir, 'report.json'), JSON.stringify({
   title: data.overview.title, summary: data.overview.summary, generatedAt: data.generated_at,
   chains: data.chains.length, suggestions,
 }, null, 2) + '\n');
-console.log(`imported ${topic}: ${suggestions.length} 条建议（${suggestions.map(s => s.kind).join('、')}）`);
+console.log(`imported ${topic}: ${suggestions.length} suggestions (${suggestions.map(s => s.kind).join(', ')})`);

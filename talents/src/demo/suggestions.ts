@@ -25,8 +25,8 @@ export function proposedRule(topic: string | undefined, id: string) {
   const text = topic ? content('trajectory/' + topic + '/rules.json') : null;
   return (text ? JSON.parse(text)[id] : null) as string | null ?? '';
 }
-export const kindLabel: Record<Suggestion['kind'], string> = { tool: '工具调用', skill: 'Skill', prompt: '任务指令' };
-export const priorityLabel: Record<Suggestion['priority'], string> = { high: '高', medium: '中', low: '低' };
+export const kindLabel: Record<Suggestion['kind'], string> = { tool: 'Tool call', skill: 'Skill', prompt: 'Task instruction' };
+export const priorityLabel: Record<Suggestion['priority'], string> = { high: 'High', medium: 'Medium', low: 'Low' };
 
 export const isDiagnosis = (a: Artifact) => a.kind === 'diagnosis';
 export const stateOf = (a: Artifact, id: string): SuggestionState => a.suggestions?.find(s => s.id === id) ?? { id, status: 'pending' };
@@ -45,7 +45,7 @@ export const RULES_FILE = 'rules/AGENTS.md';
 /** Rules in a version of the AGENTS.md rules (all of them when no version is given). */
 export const rulesAt = (a: Artifact, version?: number) => (a.rules ?? []).filter(r => version === undefined || r.version <= version);
 export function rulesMarkdown(rules: Pick<AgentRule, 'text'>[]) {
-  return '# AGENTS.md 规则\n\n> 从会话轨迹诊断中沉淀的项目规则，应用后写入代码仓 AGENTS.md 的 iCode Talents 区块。\n\n' + rules.map((r, i) => (i + 1) + '. ' + r.text).join('\n') + '\n';
+  return '# AGENTS.md rules\n\n> Project rules distilled from session trajectory diagnosis. When applied, they are written to the iCode Talents block of the repository AGENTS.md.\n\n' + rules.map((r, i) => (i + 1) + '. ' + r.text).join('\n') + '\n';
 }
 export function decline(d: TalentsState, a: Artifact, id: string, reason: string) {
   settle(d, a, id, { status: 'declined', reason: reason.trim() || undefined });

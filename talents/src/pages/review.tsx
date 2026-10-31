@@ -1,4 +1,4 @@
-// 产物管理：一个层级（团队或项目）的产物列表（需要处理的在前，其余按能力分类分组，多的折叠），以及知识产物的审阅工作台（内容、与上次版本对比、提交 PR）。
+// Artifact management: the artifact list of one level (team or project) (items needing attention first, the rest grouped by capability category, long groups collapsed), plus the review workbench for knowledge artifacts (content, diff against the previous version, PR submission).
 import { useState } from 'react';
 import { Button, Segmented, Space, Tag, Tooltip } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
@@ -38,7 +38,7 @@ function basisRow(st: TalentsState, a: Artifact, basis: Basis | null | undefined
   return [currentT('rv.basedOn'), currentT('rv.basedOnValue', { name: src.name, version: basis.version ? versionLabel(basis.version) : currentT('rv.submitCommit', { commit: basis.commit ?? '' }) })];
 }
 
-/** A built code graph: not reviewed; "应用" gives the Code Agent its MCP server. */
+/** A built code graph: not reviewed; "Apply" gives the Code Agent its MCP server. */
 const isCodegraph = (a: Artifact) => a.cap === 'codegraph' && !!a.published;
 
 // Re-extract opens the task form prefilled from the task that built this artifact; it does not start a run.

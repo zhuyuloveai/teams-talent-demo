@@ -1,4 +1,4 @@
-// 个人设置：从侧边栏左下角的头像进入（与 iCode Teams 一致）。演示数据的重置放在这里，不在顶栏露出，演示时看不到。
+// Personal settings: opened from the avatar at the bottom left of the sidebar (as in iCode Teams). Resetting demo data lives here, not in the top bar, so it stays out of sight during a demo.
 import { Button, Popconfirm } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { FrameworkCard, PageHeader } from '../vendor/teams/components/page-layout.tsx';

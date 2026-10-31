@@ -1,6 +1,6 @@
 /**
- * iCode Teams 前端公共样式（设计变量 + 基础类）。
- * 数值规范见 engineering/docs/前端公共样式规范.md；--ui-* 变量同时是插件 uiApi 的样式契约，改名前必须检查插件使用方。
+ * iCode Teams shared frontend styles (design variables + base classes).
+ * Value rules: see the frontend shared style standard in engineering/docs; --ui-* variables are also the style contract of the plugin uiApi, so check plugin consumers before renaming any.
  */
 export const designSystemCss = `
 .framework-attentions{display:grid;gap:var(--ui-space-inner);padding:var(--ui-space-inner) var(--ui-block-padding-x)}.framework-attentions:empty{display:none}
@@ -23,7 +23,7 @@ export const designSystemCss = `
 --ui-border-block:1px solid var(--ui-color-border-block);
 --ui-radius:9px;--ui-radius-card:12px;--ui-radius-block:16px;
 }
-/* 暗色主题：色系取自 Chrys TUI（chrys/app/tui/theme.py），同名变量覆写、插件自动跟随 */
+/* Dark theme: palette taken from Chrys TUI (chrys/app/tui/theme.py); same-named variables are overridden and plugins follow automatically */
 :root[data-theme='dark']{
 --ui-color-workspace:#19191f;--ui-color-workspace-soft:#212128;--ui-color-workspace-text:#eeeef4;--ui-color-workspace-muted:#aaaab7;--ui-color-workspace-line:#383842;--ui-color-workspace-accent:#bca1ec;--ui-color-workspace-tint:#332b40;--ui-color-workspace-overlay:#08090b80;
 --ui-color-primary:#bca1ec;--ui-color-primary-hover:#ccb4f0;--ui-color-primary-deep:#d9caff;--ui-color-primary-soft:#332b40;--ui-color-primary-faint:#2b2635;--ui-color-primary-ghost:#24212c;--ui-color-ring:#5f5faf;
@@ -33,7 +33,7 @@ export const designSystemCss = `
 --ui-shadow-block:0 1px 2px #00000059;--ui-shadow-card:0 1px 2px #00000073,0 3px 12px #00000040;--ui-shadow-glow-primary:0 1px 12px #af87ff40;--ui-shadow-glow-success:0 1px 12px #5fd75f38;--ui-shadow-glow-warning:0 1px 12px #e3b34138;--ui-shadow-glow-info:0 1px 12px #6ab0f338;--ui-shadow-elevated:0 24px 80px #00000080;
 --ui-color-bg:#19191f;--ui-color-surface:#19191f;--ui-color-surface-sunken:#1e1e25;--ui-color-fill:#212128;
 --ui-color-border:#383842;--ui-color-border-block:#383842;--ui-color-divider:#383842;
-/* 字体族与亮色同源：暗色不换字体，但同名变量在这里同样声明，保证两套主题的变量清单一一对应 */
+/* Font families match the light theme: dark mode keeps the fonts, but the same-named variables are declared here too so both themes have matching variable lists */
 --ui-font-family-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
 }
 :root.theme-switching,:root.theme-switching *,:root.theme-switching *::before,:root.theme-switching *::after{transition:background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease,fill .2s ease,stroke .2s ease!important}
@@ -41,17 +41,17 @@ export const designSystemCss = `
 .ui-form{display:grid;gap:var(--ui-space-2)}.ui-field{display:grid;gap:5px;font-size:.8rem;font-weight:700}.ui-field input,.ui-field select{font:inherit;padding:9px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius)}.ui-actions{display:flex;gap:var(--ui-space-1);align-items:end;flex-wrap:wrap}.ui-note,.ui-empty{font-size:var(--ui-font-size-note);color:var(--ui-color-muted)}.ui-note.error{color:var(--ui-color-danger)}.ui-section{padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-card);background:var(--ui-color-surface)}
 .ui-split{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:var(--ui-space-block)}.ui-split-main,.ui-split-side{display:grid;align-content:start;gap:var(--ui-space-block);min-width:0}.ui-split-side{border-left:1px solid var(--ui-color-divider);padding-left:var(--ui-space-block)}@media(max-width:760px){.ui-split{grid-template-columns:minmax(0,1fr)}.ui-split-side{border-left:0;border-top:1px solid var(--ui-color-divider);padding-left:0;padding-top:var(--ui-space-block)}}
 .ui-button,.ui-button-primary,.ui-button-secondary,.ui-button-danger{font:inherit;font-size:var(--ui-font-size-note);font-weight:700;padding:4px 15px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius);background:var(--ui-color-surface);color:var(--ui-color-text);cursor:pointer}.ui-button:hover{border-color:var(--ui-color-ring)}.ui-button-primary{background:var(--ui-color-primary);border-color:var(--ui-color-primary);color:var(--ui-color-surface)}.ui-button-secondary{background:var(--ui-color-primary-soft);border-color:transparent;color:var(--ui-color-primary-deep)}.ui-button-danger{background:var(--ui-color-danger);border-color:var(--ui-color-danger);color:var(--ui-color-surface)}.ui-button:disabled,.ui-button-primary:disabled,.ui-button-secondary:disabled,.ui-button-danger:disabled{cursor:not-allowed;opacity:.5}.ui-list{display:grid;gap:var(--ui-space-inner)}.ui-stack{display:grid;gap:var(--ui-space-inner);justify-items:start}.ui-stack>.ui-list{justify-self:stretch}.ui-stack>p{margin:0}.ui-table{width:100%;border-collapse:collapse;font-size:var(--ui-font-size-note)}.ui-table th{text-align:left;font-weight:700;color:var(--ui-color-muted);padding:6px 10px;border-bottom:1px solid var(--ui-color-border);white-space:nowrap}.ui-table td{padding:8px 12px;border-bottom:1px solid var(--ui-color-border)}.ui-table tbody tr{cursor:pointer}.ui-table tbody tr:hover{background:var(--ui-color-primary-soft)}
-/* .ui-stack 的 justify-items:start 会把它直接子元素按内容宽度收缩（只有 >.ui-list 例外）。
-   凡是"整幅宽度的主体块"——两栏 .ui-split、页面标题行、整宽折叠区——都必须显式拉满，
-   否则会被压成内容宽度：表现为整体歪斜、右上角操作跑到左下、长路径文案被硬折行。
-   这是 .ui-stack 容器的通用布局契约，插件侧不需要（也无法）用内联样式绕过。 */
+/* justify-items:start on .ui-stack shrinks its direct children to content width (only >.ui-list is exempt).
+   Every "full-width body block" (two-column .ui-split, page title row, full-width collapsible section) must stretch explicitly,
+   otherwise it is squeezed to content width: the layout skews, top-right actions end up bottom-left, and long path text wraps hard.
+   This is the general layout contract of the .ui-stack container; plugins do not need to (and cannot) work around it with inline styles. */
 .ui-stack>.ui-split,.ui-stack>.ui-panel-head,.ui-stack>details{justify-self:stretch}
-/* 浏览器给 [hidden] 的 display:none 来自 UA 样式表，优先级低于作者样式表里的任何 display:
-   因此一旦元素带上了 .ui-dialog{display:flex} 这类规则，hidden 属性就再也藏不住它。
-   插件没有内联样式可用，只能靠这条契约规则兜住——凡是设了 hidden 的节点必须真的不可见。 */
+/* The browser's display:none for [hidden] comes from the UA stylesheet, which ranks below any display in author stylesheets,
+   so once an element gets a rule like .ui-dialog{display:flex}, the hidden attribute can no longer hide it.
+   Plugins have no inline styles, so this contract rule is the backstop: any node with hidden set must really be invisible. */
 [hidden]{display:none!important}
-/* 消息条目 tone 节点/标签与筛选 chips（数据开放 agent-session 消息流消费者）：
-   tone 映射：输入=主题紫、思考=警示琥珀、输出=成功绿、工具=信息蓝、未识别=中性。 */
+/* Message entry tone nodes/labels and filter chips (consumers of the open-data agent-session message stream):
+   tone mapping: input=theme purple, thinking=warning amber, output=success green, tool=info blue, unrecognized=neutral. */
 .ui-node-input{background:var(--ui-color-primary);box-shadow:var(--ui-shadow-glow-primary)}
 .ui-node-thinking{background:var(--ui-color-warning);box-shadow:var(--ui-shadow-glow-warning)}
 .ui-node-output{background:var(--ui-color-success);box-shadow:var(--ui-shadow-glow-success)}
@@ -67,13 +67,13 @@ export const designSystemCss = `
 .ui-msg-preview{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ui-color-muted);font-size:var(--ui-font-size-note)}
 .ui-msg-body{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--ui-font-size-note);line-height:1.55;color:var(--ui-color-text);max-height:280px;overflow-y:auto}
 .ui-msg-body-mono{font-family:var(--ui-font-family-mono);font-size:var(--ui-font-size-caption)}
-/* 消息视图深化（P2）：搜索框、命中高亮、轮次分隔行；复制小按钮。 */
+/* Message view enhancements (P2): search box, match highlight, turn separator rows; small copy button. */
 .ui-search-input{font:inherit;font-size:var(--ui-font-size-note);padding:6px 10px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius);background:var(--ui-color-surface);color:var(--ui-color-text);min-width:180px}
 .ui-mark{background:var(--ui-color-warning-soft);border-radius:2px}
 .ui-turn-head{padding-top:10px;margin-top:2px;border-top:1px solid var(--ui-color-divider);font-size:var(--ui-font-size-note);font-weight:700;color:var(--ui-color-muted)}
 .ui-turn-head:first-child{padding-top:0;border-top:0;margin-top:0}
 .ui-msg-copy{flex:none;font:inherit;font-size:var(--ui-font-size-caption);padding:2px 8px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius);background:var(--ui-color-surface);color:var(--ui-color-muted);cursor:pointer}
-/* 类型筛选 chips：未选中=中性描边，选中按 tone 着色；计数恒为全量口径。 */
+/* Type filter chips: unselected=neutral outline, selected=colored by tone; counts always cover the full set. */
 .ui-chip{font:inherit;font-size:var(--ui-font-size-caption);font-weight:700;padding:3px 10px;border:1px solid var(--ui-color-border);border-radius:999px;background:var(--ui-color-surface);color:var(--ui-color-muted);cursor:pointer}
 .ui-chip-on-primary{background:var(--ui-color-primary-soft);border-color:transparent;color:var(--ui-color-primary-deep)}
 .ui-chip-on-warning{background:var(--ui-color-warning-soft);border-color:transparent;color:var(--ui-color-warning)}
@@ -81,35 +81,35 @@ export const designSystemCss = `
 .ui-chip-on-info{background:var(--ui-color-info-soft);border-color:transparent;color:var(--ui-color-info)}
 .ui-chip-on-neutral{background:var(--ui-color-fill);border-color:transparent;color:var(--ui-color-text-secondary)}
 .ui-dialog{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,18,.36);z-index:1000}.ui-dialog-card{display:grid;gap:var(--ui-space-inner);width:min(420px,calc(100% - 2 * var(--ui-block-padding-x)));padding:var(--ui-block-padding-y) var(--ui-block-padding-x);background:var(--ui-color-surface);border:var(--ui-border-block);border-radius:var(--ui-radius-block);box-shadow:var(--ui-shadow-block)}.ui-dialog-card h3{margin:0}.ui-dialog-card p{margin:0;color:var(--ui-color-text-secondary)}.ui-dialog-card .ui-actions{justify-content:flex-end}
-/* 全量管理对话框：加宽卡片 + 独立标题/动作行；内部用 grid 撑满并允许滚动，避免内容把卡片顶出视口 */
+/* Full management dialog: wider card + separate title/action row; inside, a grid fills the space and scrolls so content never pushes the card out of the viewport */
 .ui-dialog-wide{width:min(760px,calc(100% - 2 * var(--ui-block-padding-x)));max-height:calc(100% - 2 * var(--ui-block-padding-y));overflow:auto;align-content:start}
 .ui-dialog-head{display:flex;gap:var(--ui-space-2);align-items:center;justify-content:space-between}
 .ui-dialog-foot{display:flex;gap:var(--ui-space-1);justify-content:flex-end;flex-wrap:wrap}
-/* 页面标题行：左标题、右操作区；无标题时操作区仍然靠右 */
+/* Page title row: title on the left, actions on the right; with no title the actions still sit on the right */
 .ui-panel-head{display:flex;gap:var(--ui-space-2);align-items:center;justify-content:space-between;flex-wrap:wrap}
-/* 页面右上角操作区：必须占满所在行，否则 flex-end 没有可推的空间，按钮会停在左侧 */
+/* Page top-right action area: must fill its row, otherwise flex-end has no room to push and the buttons stay on the left */
 .ui-toolbar-end{display:flex;gap:var(--ui-space-1);align-items:center;justify-content:flex-end;flex-wrap:wrap;width:100%}
-/* 会话卡标题行：标题占据剩余宽度，状态徽标不换行 */
+/* Session card title row: title takes the remaining width, status badge does not wrap */
 .ui-session-head{display:flex;gap:var(--ui-space-2);align-items:baseline;justify-content:space-between}.ui-session-head p{margin:0;min-width:0;overflow-wrap:anywhere}
-/* 同步状态徽标：四态各自一种底色（同步中=主题紫、已同步=成功绿、未上报=中性、无法判定=危险） */
+/* Sync status badge: each of the four states has its own background (syncing=theme purple, synced=success green, not reported=neutral, undeterminable=danger) */
 .ui-status{flex:none;font-size:var(--ui-font-size-caption);font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--ui-color-fill);color:var(--ui-color-muted)}
 .ui-status-synced{background:var(--ui-color-success-soft);color:var(--ui-color-success)}
 .ui-status-syncing{background:var(--ui-color-primary-soft);color:var(--ui-color-primary-deep)}
 .ui-status-unreported{background:var(--ui-color-fill);color:var(--ui-color-text-secondary)}
 .ui-status-unknown{background:var(--ui-color-danger-soft);color:var(--ui-color-danger)}
-/* 归因判决徽标（03 §13.6.5）：只表达判决，不表达来源；**不复用 .ui-status**（那是同步状态语义）。
-   caused=成功绿、partially_caused=主题紫、not_caused=中性填充（不是错误）、undetermined=危险红。 */
+/* Attribution verdict badge (03 §13.6.5): shows only the verdict, not the source; **does not reuse .ui-status** (that carries sync-status semantics).
+   caused=success green, partially_caused=theme purple, not_caused=neutral fill (not an error), undetermined=danger red. */
 .ui-verdict{flex:none;font-size:var(--ui-font-size-caption);font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--ui-color-fill);color:var(--ui-color-muted)}
 .ui-verdict-caused{background:var(--ui-color-success-soft);color:var(--ui-color-success)}
 .ui-verdict-partial{background:var(--ui-color-primary-soft);color:var(--ui-color-primary-deep)}
 .ui-verdict-none{background:var(--ui-color-fill);color:var(--ui-color-text-secondary)}
 .ui-verdict-undetermined{background:var(--ui-color-danger-soft);color:var(--ui-color-danger)}
-/* 行级来源标签：两种来源同形同口径，只用文案与配色区分（提交=成功绿、本地=主题紫、未归因=中性弱化） */
+/* Line-level source tags: both sources share shape and rules, distinguished only by text and color (commit=success green, local=theme purple, unattributed=muted neutral) */
 .ui-tag{flex:none;font-size:var(--ui-font-size-caption);font-weight:700;padding:1px 7px;border-radius:var(--ui-radius);white-space:nowrap;background:var(--ui-color-fill);color:var(--ui-color-muted)}
 .ui-tag-evidence{background:var(--ui-color-success-soft);color:var(--ui-color-success)}
 .ui-tag-local{background:var(--ui-color-primary-soft);color:var(--ui-color-primary-deep)}
 .ui-tag-muted{background:var(--ui-color-fill);color:var(--ui-color-faint)}
-/* 逐行视图：等宽字体、行号列固定宽、内容列不换行（横向滚动由 ui-line-list 承担，永不把一行折成两行） */
+/* Line-by-line view: monospace font, fixed-width line-number column, content column does not wrap (ui-line-list scrolls horizontally; a line is never split in two) */
 .ui-line-list{display:grid;gap:0;font-family:var(--ui-font-family-mono);font-size:var(--ui-font-size-caption);line-height:1.5;background:var(--ui-color-surface-sunken);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius);overflow:auto;max-height:420px}
 .ui-line-row{display:flex;align-items:baseline;gap:var(--ui-space-1);min-width:max-content;padding:1px var(--ui-space-1)}
 .ui-line-gutter{flex:none;width:5em;text-align:right;color:var(--ui-color-faint);user-select:none}

@@ -36,7 +36,7 @@ export function buildExport(state: TalentsState, dir = contentDir, exportedAt = 
     const list: ExportedFile[] = [];
     if (a.kind !== 'index') for (const path of p.files ?? a.files ?? []) {
       const text = publishedText(a, path, dir);
-      if (text == null) { console.warn(`Talents 导出：${a.id} v${p.version} 缺少文件 ${path}，已跳过`); continue; }
+      if (text == null) { console.warn(`Talents export: ${a.id} v${p.version} is missing file ${path}; skipped`); continue; }
       list.push({ path, text });
     }
     files.set(a.id + '/v' + p.version, list);

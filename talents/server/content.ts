@@ -13,7 +13,7 @@ export function readContent(key: string, dir = contentDir): string | null {
 function prMap(dir = contentDir): Record<string, string> {
   return JSON.parse(readContent('miner/pr-map.json', dir) ?? '{}');
 }
-/** Files of a development-pattern library: index, then per spec 范式总结, 代码分析报告, its PR records (PR mode)
+/** Files of a development-pattern library: index, then per spec pattern summary, code analysis report, its PR records (PR mode)
  *  or its mining metadata (diff mode: meta.json records the scenario, repository and engine). */
 export function minerFiles(specs: string[], dir = contentDir) {
   const map = prMap(dir), out = ['miner/index.md'];
@@ -31,22 +31,22 @@ export function minerIndex(specs: string[], dir = contentDir) {
   const rows: Record<string, string> = {};
   for (const line of text.split('\n')) { const m = /^\|\s*\[([^\]]+)\]/.exec(line); if (m) rows[m[1]] = line; }
   const head = text.split('\n').filter(line => /^#|^>/.test(line)).join('\n');
-  return head + '\n\n| 名称 | 描述 | 首次归档时间 |\n| --- | --- | --- |\n' + specs.map(n => rows[n] ?? `| [${n}](<./${n}/summary.md>) | — | — |`).join('\n') + '\n';
+  return head + '\n\n| Name | Description | First archived |\n| --- | --- | --- |\n' + specs.map(n => rows[n] ?? `| [${n}](<./${n}/summary.md>) | — | — |`).join('\n') + '\n';
 }
 /** A project's AGENTS.md rules as published (same rule as rulesMarkdown in src/demo/suggestions.ts). */
 export const RULES_FILE = 'rules/AGENTS.md';
 export function rulesMarkdown(rules: { text: string }[]) {
-  return '# AGENTS.md 规则\n\n> 从会话轨迹诊断中沉淀的项目规则，应用后写入代码仓 AGENTS.md 的 iCode Talents 区块。\n\n' + rules.map((r, i) => (i + 1) + '. ' + r.text).join('\n') + '\n';
+  return '# AGENTS.md rules\n\n> Project rules distilled from session trajectory diagnosis. When applied, they are written to the iCode Talents block of the repository AGENTS.md.\n\n' + rules.map((r, i) => (i + 1) + '. ' + r.text).join('\n') + '\n';
 }
 /** Human label of a file in an artifact (same rule as K.fileLabel). */
 export function fileLabel(key: string) {
-  if (key === RULES_FILE) return 'AGENTS.md 规则';
+  if (key === RULES_FILE) return 'AGENTS.md rules';
   const parts = key.split('/'), name = parts.pop() ?? key;
-  if (name === 'summary.md') return parts[1] ? parts[1] + '：范式总结' : '范式总结';
-  if (name === 'analyzer.md') return parts[1] ? parts[1] + '：代码分析报告' : '代码分析报告';
+  if (name === 'summary.md') return parts[1] ? parts[1] + ': Pattern summary' : 'Pattern summary';
+  if (name === 'analyzer.md') return parts[1] ? parts[1] + ': Code analysis report' : 'Code analysis report';
   if (name === 'metadata.json') return 'PR #' + parts.pop();
-  if (name === 'meta.json') return parts[1] ? parts[1] + '：挖掘元数据' : '挖掘元数据';
-  if (name === 'index.md') return parts[0] === 'miner' ? '范式索引' : '索引';
+  if (name === 'meta.json') return parts[1] ? parts[1] + ': Mining metadata' : 'Mining metadata';
+  if (name === 'index.md') return parts[0] === 'miner' ? 'Pattern index' : 'Index';
   if (name.startsWith('Skill Improvement - ')) return 'Skill improvement: ' + name.replace(/^Skill Improvement - |\.md$/g, '');
   return name.replace(/\.(md|html)$/, '');
 }

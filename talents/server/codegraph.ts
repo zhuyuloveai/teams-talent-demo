@@ -47,14 +47,14 @@ function liveOf(a: Artifact) {
 function shownLive(a: Artifact, { build, graph }: { build?: CodegraphBuild; graph?: SnapshotMetadata }): Artifact {
   const figures = graph ?? build!, commit = (graph?.revision || build?.commit || '').slice(0, 7);
   const at = graph ? localMinute(graph.indexedAt) : localMinute(new Date(build!.at).toISOString());
-  const published = build || a.published ? { version: build?.version ?? a.published!.version, at, note: '索引更新于 ' + at + (commit ? ' · 提交 ' + commit : ''),
+  const published = build || a.published ? { version: build?.version ?? a.published!.version, at, note: 'Index updated at ' + at + (commit ? ' · commit ' + commit : ''),
     delivery: 'cloud' as const, agents: a.published?.agents, basis: commit ? { commit } : null, auto: true } : null;
-  return { ...a, graphSnapshot: graph?.snapshotId ?? build!.snapshotId, stats: [['文件', count(figures.files)], ['节点', count(figures.nodes)], ['关系', count(figures.edges)]], draft: null, published };
+  return { ...a, graphSnapshot: graph?.snapshotId ?? build!.snapshotId, stats: [['Files', count(figures.files)], ['Nodes', count(figures.nodes)], ['Relations', count(figures.edges)]], draft: null, published };
 }
 /** The artifact of a repository's first build, until the page saves it. */
 function builtArtifact(b: CodegraphBuild): Artifact {
   return { id: 'a-cg-' + sourceKey(b.sourceId), projectId: b.projectId, cap: 'codegraph', sources: [b.sourceId], kind: 'index', mcpName: 'codegraph',
-    name: b.repoName + (/[\x21-\x7e]$/.test(b.repoName) ? ' ' : '') + '代码图谱', desc: '查询 ' + b.repoName + ' 中的代码定义与调用关系。', published: null, draft: null };
+    name: b.repoName + ' code graph', desc: 'Query code definitions and call relationships in ' + b.repoName + '.', published: null, draft: null };
 }
 const artifactOf = (artifacts: Artifact[], projectId: string, sourceId: string) =>
   artifacts.find(a => a.cap === 'codegraph' && a.projectId === projectId && a.sources[0] === sourceId);

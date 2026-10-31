@@ -50,7 +50,7 @@ export function ArtifactStatus({ a }: { a: Artifact }) {
   if (a.cap === 'codegraph') return <Tag color="success">{t('ui.built')}</Tag>;
   return <Tag color="success">{a.kind === 'index' ? t('ui.remoteIndex') : a.submission ? t('ui.prCreated') : t('ui.hasVersion')} · v{a.published!.version}</Tag>;
 }
-/** 新 / 改 / 删 markers next to file names. */
+/** New / Modified / Deleted markers next to file names. */
 export const FileMark = ({ kind }: { kind: 'new' | 'mod' | 'del' }) => {
   const t = useT();
   return <Tag className="file-mark" bordered={false} color={kind === 'new' ? 'success' : kind === 'del' ? 'error' : 'warning'}>{kind === 'new' ? t('ui.new') : kind === 'del' ? t('ui.del') : t('ui.mod')}</Tag>;

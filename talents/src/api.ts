@@ -8,7 +8,7 @@ export class ApiError extends Error { constructor(message: string, readonly stat
 async function api<T>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ApiError(data.error ?? '请求失败', response.status);
+  if (!response.ok) throw new ApiError(data.error ?? 'Request failed', response.status);
   return data as T;
 }
 
@@ -27,7 +27,7 @@ export async function submitPullRequest(request: SubmitRequest, onStep: (step: n
   const response = await fetch('/api/pull-requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
   if (!response.ok || !response.headers.get('Content-Type')?.includes('ndjson')) {
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new ApiError(data.error ?? '请求失败', response.status);
+    if (!response.ok) throw new ApiError(data.error ?? 'Request failed', response.status);
     return data as Boot;
   }
   const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader();
@@ -41,7 +41,7 @@ export async function submitPullRequest(request: SubmitRequest, onStep: (step: n
       else if ('error' in message) throw new ApiError(message.error, 400);
       else return message.boot as Boot;
     }
-    if (done) throw new ApiError('提交中断，请重试', 500);
+    if (done) throw new ApiError('Submission interrupted. Please try again.', 500);
   }
 }
 /** Where a project's PRs go by default (server/pull-requests.ts defaultTarget). */

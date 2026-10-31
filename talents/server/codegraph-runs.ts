@@ -46,7 +46,7 @@ const K = '[icode-knowledge]';
 const MAX_LOG_LINES = 3000;
 const git = promisify(execFile);
 const buildKey = (projectId: string, sourceId: string) => projectId + '\n' + sourceId;
-const seconds = (ms: number) => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? s + ' 秒' : Math.floor(s / 60) + ' 分 ' + String(s % 60).padStart(2, '0') + ' 秒'; };
+const seconds = (ms: number) => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? s + ' s' : Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s'; };
 export const durationText = (run: CodegraphRun) => seconds((run.endedAt ?? Date.now()) - run.startedAt);
 // eslint-disable-next-line no-control-regex
 const ANSI = /\x1b\[[0-9;?]*[A-Za-z]/g;
@@ -69,7 +69,7 @@ export function runLogged(command: string, args: string[], options: { cwd?: stri
     const kill = () => { try { if (group && child.pid) process.kill(-child.pid, 'SIGTERM'); else child.kill(); } catch { /* already gone */ } };
     options.started?.(kill);
     const limit = options.timeout ?? 30 * 60_000;
-    const timer = setTimeout(() => { options.log(K + ' 超过 ' + Math.round(limit / 60_000) + ' 分钟没有完成，已停止'); kill(); }, limit);
+    const timer = setTimeout(() => { options.log(K + ' Not finished after ' + Math.round(limit / 60_000) + ' minutes; stopped'); kill(); }, limit);
     const pending = { stdout: '', stderr: '' };
     const take = (stream: 'stdout' | 'stderr', text: string, end = false) => {
       const parts = (pending[stream] + text).split('\n');
@@ -81,7 +81,7 @@ export function runLogged(command: string, args: string[], options: { cwd?: stri
     const done = (code: number) => { clearTimeout(timer); options.ended?.(); resolve(code); };
     // A command that cannot start may not close.
     child.on('error', error => {
-      options.log(K + ' 无法启动 ' + command + '：' + ((error as NodeJS.ErrnoException).code === 'ENOENT' ? '在 PATH 中找不到' : error.message));
+      options.log(K + ' Cannot start ' + command + ': ' + ((error as NodeJS.ErrnoException).code === 'ENOENT' ? 'not found in PATH' : error.message));
       done(127);
     });
     child.on('close', code => { take('stdout', '', true); take('stderr', '', true); done(code ?? 1); });
@@ -105,7 +105,7 @@ export class CodegraphRunner {
     // A run the service did not see to its end failed with it.
     for (const run of Object.values(this.data.runs)) if (run.status === 'running') {
       run.status = 'failed'; run.endedAt ??= run.startedAt;
-      run.logs.push(K + ' 失败：Talents 服务在运行中停止，这次运行已中断；需要时重新运行。');
+      run.logs.push(K + ' Failed: the Talents service stopped during the run, so this run was interrupted; run it again if needed.');
     }
     await this.save();
     return this;
@@ -118,16 +118,16 @@ export class CodegraphRunner {
 
   /** Starts a build; the run goes on in the background. */
   start(request: StartRequest): CodegraphRun {
-    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,100}$/.test(request.projectId)) throw new HttpError('项目无效', 400);
+    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,100}$/.test(request.projectId)) throw new HttpError('Invalid project', 400);
     const blocked = this.options.blocked?.();
     if (blocked) throw new HttpError(blocked, 409);
     let repository: string;
-    try { repository = realpathSync(request.repository); if (!statSync(repository).isDirectory()) throw new Error('不是目录'); }
-    catch (error) { throw new HttpError('无法访问代码仓目录 ' + request.repository + '：' + (error as Error).message, 400); }
+    try { repository = realpathSync(request.repository); if (!statSync(repository).isDirectory()) throw new Error('not a directory'); }
+    catch (error) { throw new HttpError('Cannot access repository directory ' + request.repository + ': ' + (error as Error).message, 400); }
     const busy = this.runs().find(r => r.status === 'running' && (r.taskId === request.taskId || r.repository === repository));
-    if (busy) throw new HttpError(busy.taskId === request.taskId ? '任务正在运行' : '代码仓 ' + request.repoName + ' 正在构建代码图谱，请等这次运行结束', 409);
+    if (busy) throw new HttpError(busy.taskId === request.taskId ? 'The task is running' : 'A code graph is being built for repository ' + request.repoName + '; wait for that run to finish', 409);
     const sync = existsSync(join(repository, '.codegraph', 'codegraph.db'));
-    const run: CodegraphRun = { ...request, repository, status: 'running', startedAt: Date.now(), steps: ['自检', sync ? '同步索引' : '建立索引', '生成图谱数据'], step: 0, logs: [] };
+    const run: CodegraphRun = { ...request, repository, status: 'running', startedAt: Date.now(), steps: ['Self-check', sync ? 'Sync index' : 'Build index', 'Generate graph data'], step: 0, logs: [] };
     this.data.runs[request.taskId] = run;
     void this.save();
     void this.execute(run);
@@ -136,7 +136,7 @@ export class CodegraphRunner {
 
   /** Forgets every run, build and generated graph (the repositories' .codegraph indexes stay). */
   async clear() {
-    if (this.running()) throw new HttpError('有正在运行的代码图谱构建，请等它结束后再重置', 409);
+    if (this.running()) throw new HttpError('A code graph build is running; wait for it to finish before resetting', 409);
     this.data = { runs: {}, builds: {} };
     await this.saving;
     await rm(this.options.directory, { recursive: true, force: true });
@@ -147,12 +147,12 @@ export class CodegraphRunner {
 
   private save() {
     const next = this.saving.then(() => atomicJson(this.file, this.data));
-    this.saving = next.catch(error => console.error('CodeGraph 运行记录保存失败：' + error.message));
+    this.saving = next.catch(error => console.error('Failed to save CodeGraph run records: ' + error.message));
     return next;
   }
   private log(run: CodegraphRun, ...lines: string[]) {
     run.logs.push(...lines);
-    if (run.logs.length > MAX_LOG_LINES) run.logs.splice(0, run.logs.length - MAX_LOG_LINES, '（日志过长，只保留最近 ' + MAX_LOG_LINES + ' 行）');
+    if (run.logs.length > MAX_LOG_LINES) run.logs.splice(0, run.logs.length - MAX_LOG_LINES, '(log too long; only the last ' + MAX_LOG_LINES + ' lines are kept)');
   }
 
   private async execute(run: CodegraphRun) {
@@ -160,9 +160,9 @@ export class CodegraphRunner {
     const work = join(this.options.directory, 'runs', randomUUID());
     let outcome: CodegraphRun['status'] = 'failed';
     try {
-      this.log(run, K + ' 构建代码图谱：' + run.repoName, K + ' 代码仓目录：' + run.repository + '（按当前工作区构建，不切换分支、不拉取远端）');
-      this.log(run, K + ' 自检：' + python + ' run.py --check');
-      if (await this.spawn(run, python, [script, '--check']) !== 0) throw new Error('自检没有通过，请确认 python3 和 codegraph 已安装，codegraph 在 PATH 中');
+      this.log(run, K + ' Building code graph: ' + run.repoName, K + ' Repository directory: ' + run.repository + ' (built from the current working tree; no branch switch, no fetch from the remote)');
+      this.log(run, K + ' Self-check: ' + python + ' run.py --check');
+      if (await this.spawn(run, python, [script, '--check']) !== 0) throw new Error('The self-check did not pass; make sure python3 and codegraph are installed and codegraph is in PATH');
       run.step = 1;
       const previous = this.build(run.projectId, run.sourceId);
       const gitInfo = await this.gitInfo(run.repository, previous);
@@ -170,18 +170,18 @@ export class CodegraphRunner {
       await mkdir(work, { recursive: true });
       await writeFile(input, JSON.stringify({ input: { repositories: [{ sourceId: run.sourceId, path: run.repository, ...(gitInfo ? { git: gitInfo } : {}) }] },
         output: { index: { path: join(run.repository, '.codegraph') } } }, null, 2));
-      if (await this.spawn(run, python, [script, '--input-file', input]) !== 0) throw new Error('代码图谱构建失败，见上面的日志');
+      if (await this.spawn(run, python, [script, '--input-file', input]) !== 0) throw new Error('Code graph build failed; see the log above');
       run.step = 2;
-      this.log(run, K + ' 生成图谱数据');
+      this.log(run, K + ' Generating graph data');
       const metadata = await this.views.refresh(run.projectId, run.sourceId, run.repository);
       const version = this.options.nextVersion(run.projectId, run.sourceId);
       this.data.builds[buildKey(run.projectId, run.sourceId)] = { projectId: run.projectId, sourceId: run.sourceId, repoName: run.repoName, repository: run.repository, taskId: run.taskId,
         version, at: Date.now(), commit: metadata.revision, snapshotId: metadata.snapshotId, files: metadata.files, nodes: metadata.nodes, edges: metadata.edges };
-      this.log(run, K + ' 图谱：' + metadata.files.toLocaleString('en-US') + ' 个文件、' + metadata.nodes.toLocaleString('en-US') + ' 个节点、'
-        + metadata.edges.toLocaleString('en-US') + ' 条关系' + (metadata.revision ? '，提交 ' + metadata.revision.slice(0, 7) : ''), K + ' 完成：代码图谱已更新');
+      this.log(run, K + ' Graph: ' + metadata.files.toLocaleString('en-US') + ' files, ' + metadata.nodes.toLocaleString('en-US') + ' nodes, '
+        + metadata.edges.toLocaleString('en-US') + ' relations' + (metadata.revision ? ', commit ' + metadata.revision.slice(0, 7) : ''), K + ' Done: code graph updated');
       outcome = 'success';
     } catch (error) {
-      this.log(run, K + ' 失败：' + (error as Error).message);
+      this.log(run, K + ' Failed: ' + (error as Error).message);
     } finally {
       await rm(work, { recursive: true, force: true }).catch(() => undefined);
       // The run ends once nothing of it is left to clean up; its record is saved before a reset can remove the directory.

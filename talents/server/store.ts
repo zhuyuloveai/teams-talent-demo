@@ -15,9 +15,9 @@ export async function atomicText(path: string, value: string) {
 export async function atomicJson(path: string, value: unknown) { await atomicText(path, JSON.stringify(value, null, 2) + '\n'); }
 
 /** Seed artifacts renamed after demo data was stored: index artifacts are named for what they are, and the project
- *  document set is 设计文档 as in Teams. An artifact still carrying an old seed name takes the current name and description. */
+ *  document set is "Design documents" as in Teams. An artifact still carrying an old seed name takes the current name and description. */
 const RENAMED: Record<string, { from: string[]; name: string; desc: string }> = {
-  'a-docidx': { from: ['信用卡营销交付文档 RAG 检索', '信用卡营销交付文档检索索引'], name: '设计文档检索索引', desc: '按问题检索设计文档中的相关段落。' },
+  'a-docidx': { from: ['信用卡营销交付文档 RAG 检索', '信用卡营销交付文档检索索引', '设计文档检索索引'], name: 'Design document search index', desc: 'Searches the design documents for passages relevant to a question.' },
 };
 /** Seed data removed after demo data was stored: the code graph shown from an archived scan of carddemo-java-1025, and the
  *  task that stood for its build (a code graph now comes from a build in the bound repository). */
@@ -53,7 +53,7 @@ export class Store {
       // Demo data from an older seed: keep a copy, then start from the current seed.
       const backup = this.path.replace(/\.json$/, '') + '.seed-' + (stored.seedVersion ?? 'unknown') + '.json';
       await atomicJson(backup, stored);
-      console.log('Talents 演示数据来自旧版本，已备份到 ' + backup + ' 并恢复初始数据');
+      console.log('Talents demo data is from an older version; backed up to ' + backup + ' and restored the initial data');
     }
     this.state = seedState();
     await atomicJson(this.path, this.state);
@@ -61,7 +61,7 @@ export class Store {
   /** Runs `operation` on the current state when `revision` matches, then stores the result with the next revision. */
   mutate(revision: number | null, operation: (state: TalentsState) => TalentsState) {
     const next = this.queue.then(async () => {
-      if (revision !== null && revision !== this.state.revision) throw new HttpError('数据已在另一页面更新，请刷新后重试', 409);
+      if (revision !== null && revision !== this.state.revision) throw new HttpError('The data was updated on another page. Refresh and try again.', 409);
       const state = { ...operation(this.state), revision: this.state.revision + 1 };
       await atomicJson(this.path, state); this.state = state; return state;
     });

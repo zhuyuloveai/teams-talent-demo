@@ -1,23 +1,23 @@
-<div class="layout">
+<div class="layout" lang="en">
   <aside class="rail">
     <div class="rail__inner">
-      <strong>目录</strong>
+      <strong>Contents</strong>
       <ul>
-        <li><a href="#core-problem">一、核心问题</a></li>
-        <li><a href="#deliver">二、交付什么</a></li>
-        <li><a href="#deploy">三、怎么部署</a></li>
-        <li><a href="#compete">四、核心竞争力</a></li>
+        <li><a href="#core-problem">1. The core problem</a></li>
+        <li><a href="#deliver">2. What we deliver</a></li>
+        <li><a href="#deploy">3. How it is deployed</a></li>
+        <li><a href="#compete">4. Core strengths</a></li>
         <li class="sep" aria-hidden="true"></li>
-        <li><a href="#intro">五、RSI 的现状与机会</a></li>
-        <li><a href="#gaps">六、三大缺口</a></li>
-        <li><a href="#scenarios">七、四个使用场景</a></li>
-        <li><a href="#framework">八、完整框架</a></li>
-        <li><a href="#progress">九、已做的技术验证</a></li>
-        <li><a href="#collaboration">十、三方分工与生态</a></li>
-        <li><a href="#three-tiers">十一、进化三层</a></li>
-        <li><a href="#three-routes">十二、三条演进路径与双循环</a></li>
-        <li><a href="#nfr">十三、非功能需求</a></li>
-        <li><a href="#vision">十四、未来图景</a></li>
+        <li><a href="#intro">5. The state of RSI</a></li>
+        <li><a href="#gaps">6. Three major gaps</a></li>
+        <li><a href="#scenarios">7. Four usage scenarios</a></li>
+        <li><a href="#framework">8. The full framework</a></li>
+        <li><a href="#progress">9. Technical validation so far</a></li>
+        <li><a href="#collaboration">10. Roles and ecosystem</a></li>
+        <li><a href="#three-tiers">11. Three tiers of evolution</a></li>
+        <li><a href="#three-routes">12. Paths and the dual loop</a></li>
+        <li><a href="#nfr">13. Non-functional needs</a></li>
+        <li><a href="#vision">14. The future</a></li>
       </ul>
     </div>
   </aside>
@@ -26,245 +26,245 @@
 
 <section id="core-problem">
 
-<p class="lede">前四节回答四个问题：<strong>解决什么问题、交付什么、怎么部署、凭什么能做成</strong>。第五节起是来龙去脉：RSI 的现状、要补的缺口、场景、框架、已做的验证与路线。</p>
+<p class="lede">The first four sections answer four questions: <strong>what problem we solve, what we deliver, how it is deployed, and why we can pull it off</strong>. From Section 5 on is the background: the state of RSI, the gaps to close, the scenarios, the framework, the validation done so far, and the roadmap.</p>
 
-<h2 style="margin-top: var(--s-lg);">一、核心问题：最终解决什么，短期先做哪一类</h2>
+<h2 style="margin-top: var(--s-lg);">1. The core problem: the end goal, and what to tackle first</h2>
 
 <div class="callout">
-<div class="callout__label">一句话</div>
-<p style="margin-bottom:0;">Coding agent 在用户自己的仓上<strong>会反复犯同一类错误</strong>：用户纠正过，下次还犯；换一个基座模型，原来好用的地方悄悄掉点。今天修这些靠人——看抱怨、猜原因、改提示词、上线再看。本项目让这件事在 iCode 服务端<strong>自动发生</strong>：从用户已有的会话里把错误变成可复跑的题，自动找原因、提改动、配对验证，最后把一份可检查的「进化提案」交给用户确认。</p>
+<div class="callout__label">In one sentence</div>
+<p style="margin-bottom:0;">On a user's own repository, a coding agent <strong>keeps making the same kind of mistake</strong>: the user corrects it, and it does it again next time; switch to a new base model, and things that used to work quietly get worse. Today people fix this by hand: read the complaints, guess the cause, edit the prompts, ship, and watch again. This project makes that happen <strong>automatically</strong> on the iCode server: it turns mistakes from the user's existing sessions into replayable tasks, finds the cause, proposes a change, verifies it with paired runs, and finally hands the user an inspectable "evolution proposal" to approve.</p>
 </div>
 
-<h3>最终要解决的问题：让 agent 在真实使用里自己变好</h3>
+<h3>The end goal: let the agent improve itself through real use</h3>
 
-<p>落到 iCode 上是四个场景。它们走同一套流程，只在数据来源与评测侧重上不同（展开见<a href="#scenarios" style="color: var(--c-accent);">第七节</a>）：</p>
+<p>On iCode this takes four scenarios. They share one pipeline and differ only in data sources and evaluation focus (details in <a href="#scenarios" style="color: var(--c-accent);">Section 7</a>):</p>
 
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:13%">场景</th><th style="width:44%">用户遇到的情况（举例）</th><th style="width:43%">我们给出什么</th></tr>
+<tr><th style="width:13%">Scenario</th><th style="width:44%">What the user runs into (example)</th><th style="width:43%">What we provide</th></tr>
 </thead>
 <tbody>
-<tr><td style="white-space:nowrap"><strong>A 越用越好</strong></td><td>用户提醒过 agent「Gemini 那边的钩子是不是也要改」，下次改同类代码，它又只改了眼前这一处</td><td>把纠正过的这类错误变成可复跑的题，找到并验证让它不再复发的改动</td></tr>
-<tr><td style="white-space:nowrap"><strong>B 模型适配</strong></td><td>换了新基座，原来稳定的某类任务悄悄掉点，没人说得清掉在哪</td><td>固定回归集上新旧模型配对重跑，给出逐类掉点清单与针对性的 harness 修正</td></tr>
-<tr><td style="white-space:nowrap"><strong>C skill 管理</strong></td><td>团队为旧版本写的一批 skill，换版本后有的已经多余、有的反而干扰</td><td>每个 skill 一个「保留 / 失效 / 需调整」判定，附有无对照的证据</td></tr>
-<tr><td style="white-space:nowrap"><strong>D 能力迁移</strong></td><td>某个团队沉淀出好用的 skill 与工程规范，别的团队想用，但不知道哪些是通用的</td><td>抽出带适用边界的知识条目，在目标团队的题上验证不掉点</td></tr>
+<tr><td style="white-space:nowrap"><strong>A Better with use</strong></td><td>The user once reminded the agent, "Doesn't the Gemini hook need the same change?" The next time it edits similar code, it again changes only the one spot in front of it</td><td>Turn the corrected mistake into a replayable task; find and verify a change that stops it from recurring</td></tr>
+<tr><td style="white-space:nowrap"><strong>B Model adaptation</strong></td><td>After switching to a new base model, a class of tasks that used to be stable quietly regresses, and nobody can say where</td><td>Paired reruns of old and new models on a fixed regression set; a per-category regression list and targeted harness fixes</td></tr>
+<tr><td style="white-space:nowrap"><strong>C Skill management</strong></td><td>A set of skills the team wrote for an older version: after an upgrade some are redundant and some actually get in the way</td><td>A "keep / obsolete / needs adjustment" verdict for each skill, with with/without comparison evidence</td></tr>
+<tr><td style="white-space:nowrap"><strong>D Capability transfer</strong></td><td>One team has built up useful skills and engineering conventions; other teams want them but cannot tell which parts are general</td><td>Extract knowledge entries with clear scope limits and verify on the target team's tasks that nothing regresses</td></tr>
 </tbody>
 </table>
 </div>
 
-<h3 id="core-short">短期先做的一类：变更传播完备性——「改一处，漏一条路」</h3>
+<h3 id="core-short">The first class to tackle: change propagation completeness ("change one place, miss a path")</h3>
 
-<p>短期从场景 A 里取一类问题，把闭环完整走一遍、展示效果。这一类是：<strong>共享状态（或契约）有多条读写路径，agent 的变更只传播到其中一部分，路径之间随之失配。</strong>错误不在 agent 写下的代码里，而在它没写的地方，属于遗漏型缺陷（error of omission）。所以 agent 自查很难发现，只测改动点的验证器也很难发现。一位用户在会话开头就把这个机制说得很准：</p>
+<p>In the short term we take one class of problems from Scenario A, run the full loop end to end, and show the results. The class is: <strong>a piece of shared state (or a contract) has several read/write paths, the agent's change reaches only some of them, and the paths drift out of sync.</strong> The error is not in the code the agent wrote but in the code it did not write: an error of omission. That makes it hard for the agent to catch in self-review, and hard for a verifier that only tests the changed spot. One user described the mechanism precisely at the start of a session:</p>
 
-<blockquote class="q">"This creates an inconsistency where stale sessions are cleaned up in some code paths but not others."<br><span class="tr">（译：这造成了不一致：过期会话在一些代码路径里被清理了，在另一些路径里没有。）</span><br><span style="font-size:0.85rem;color:var(--c-text-dim)">——cli-task-19def0-stale-session，会话 ev0（逐字）</span></blockquote>
+<blockquote class="q">"This creates an inconsistency where stale sessions are cleaned up in some code paths but not others."<br><span style="font-size:0.85rem;color:var(--c-text-dim)">(cli-task-19def0-stale-session, session ev0, verbatim)</span></blockquote>
 
-<p>这是软件工程的老问题，叫变更传播（change propagation），代码结构上的表现叫散弹式修改（shotgun surgery）。Park 等人在 Eclipse 与 Mozilla 上实测发现，22%–33% 的 bug 修完还要再补修，而且漏改比写错更难被发现（<em>An Empirical Study of Supplementary Bug Fixes</em>，《补充性缺陷修复的实证研究》，MSR 2012，DOI 10.1109/MSR.2012.6224298）。放到 coding agent 上，问题换了一种形态：人类开发者靠经验和评审补全传播面，agent 只能看到上下文里的那一部分。</p>
+<p>This is an old software engineering problem called change propagation; in code structure it shows up as shotgun surgery. Park et al. measured Eclipse and Mozilla and found that 22%–33% of bugs need a supplementary fix after the first one, and that missed changes are harder to spot than wrong ones (<em>An Empirical Study of Supplementary Bug Fixes</em>, MSR 2012, DOI 10.1109/MSR.2012.6224298). With a coding agent the problem takes a new form: human developers rely on experience and code review to cover the full propagation surface, while an agent sees only what is in its context.</p>
 
-<p><strong>为什么先做这一类</strong>：在真实会话造出的题里，这类要求很常见，模型在上面明显更容易失败；而且错误出在 agent 没写的地方，自查和只测改动点的验证都难发现，正需要演进来补。按「另外那条路径是从哪来的」，这类问题分五种（失败率只算明确做对或做错的运行）：</p>
+<p><strong>Why this class first</strong>: in tasks built from real sessions this kind of requirement is common, and models clearly fail on it more often. Because the error sits where the agent wrote nothing, both self-review and verification that only tests the changed spot struggle to catch it, which is exactly what evolution is for. Grouped by "where the other path comes from", the class splits into five kinds (failure rates count only runs that were clearly right or clearly wrong):</p>
 
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:11%">种类</th><th style="width:30%">含义</th><th style="width:39%">例</th><th style="width:20%">模型失败率</th></tr>
+<tr><th style="width:11%">Kind</th><th style="width:30%">Meaning</th><th style="width:39%">Example</th><th style="width:20%">Model failure rate</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>多种实现</strong></td><td>同一流程有多种实现：多 agent、多平台、多配置</td><td>Claude 与 Gemini / OpenCode；桌面与无显示器 Linux</td><td>26 次挂 10 次（38%）</td></tr>
-<tr><td><strong>多个阶段</strong></td><td>同一状态在多个生命周期阶段被读写，或同一动作重入</td><td>TurnStart 与 TurnEnd；enable 与 disable；hook 重跑</td><td>30 次挂 8 次（27%）</td></tr>
-<tr><td><strong>多个入口</strong></td><td>同一状态有多个入口、调用方或读取视图</td><td>直接 Load 与包装函数；暂存区视图与工作区视图</td><td>46 次挂 11 次（24%）</td></tr>
-<tr><td><strong>已有另一份实现</strong></td><td>同一逻辑已有另一份实现，应当复用或保持一致</td><td>已有 <code>paths.RepoRoot()</code> 缓存却另写一套（408b8c）</td><td>16 次挂 1 次（6%）</td></tr>
-<tr><td><strong>多方同时读写</strong></td><td>多个并发参与者读写同一资源</td><td>两个配置项共用一把锁；另一进程尚未写完的文件</td><td>4 次挂 0 次</td></tr>
+<tr><td><strong>Multiple implementations</strong></td><td>The same flow has several implementations: multiple agents, platforms or configurations</td><td>Claude vs. Gemini / OpenCode; desktop vs. headless Linux</td><td>10 of 26 failed (38%)</td></tr>
+<tr><td><strong>Multiple stages</strong></td><td>The same state is read/written in several lifecycle stages, or the same action is re-entered</td><td>TurnStart vs. TurnEnd; enable vs. disable; hook rerun</td><td>8 of 30 failed (27%)</td></tr>
+<tr><td><strong>Multiple entry points</strong></td><td>The same state has several entry points, callers or read views</td><td>Direct Load vs. wrapper function; staging-area view vs. working-tree view</td><td>11 of 46 failed (24%)</td></tr>
+<tr><td><strong>Existing implementation</strong></td><td>The same logic already has another implementation that should be reused or kept consistent</td><td>A cache already exists in <code>paths.RepoRoot()</code>, yet a second one is written (408b8c)</td><td>1 of 16 failed (6%)</td></tr>
+<tr><td><strong>Concurrent access</strong></td><td>Several concurrent actors read and write the same resource</td><td>Two config entries share one lock; a file another process has not finished writing</td><td>0 of 4 failed</td></tr>
 </tbody>
 </table>
 </div>
 
-<h3 id="core-three-paths">三条路径怎么分工：何时查、查到哪、凭什么知道</h3>
+<h3 id="core-three-paths">How the three paths split the work: when to check, how far, and how we know</h3>
 
-<p>三条演进路径（定义见<a href="#three-routes" style="color: var(--c-accent);">第十二节</a>）在这一类问题上各管一段：<strong>A 管「何时查」</strong>，变更触及共享状态时触发检查；<strong>B 管「查到哪」</strong>，用代码定位与代码分析从改动点找出传播面上的每条路径，并逐条确认改到位；<strong>C 管「凭什么知道」</strong>，提供代码图谱、开发范式与文档里的依赖和约定，补上代码分析看不到的那部分。只做其中一条，都会以可预期的方式失败：</p>
+<p>The three evolution paths (defined in <a href="#three-routes" style="color: var(--c-accent);">Section 12</a>) each own one part of this problem: <strong>A owns "when to check"</strong>, triggering a check when a change touches shared state; <strong>B owns "how far to check"</strong>, using code location and code analysis to find every path on the propagation surface from the changed spot and confirm each one is updated; <strong>C owns "how we know"</strong>, supplying the dependencies and conventions from the code graph, development patterns and documents that code analysis cannot see. Doing only one of them fails in a predictable way:</p>
 
 <figure>
   <div class="figframe">
-<svg class="ifig" viewBox="0 0 1100 650" role="img" aria-label="变更传播问题上三条路径的分工与各自单独做时的失效方式">
+<svg class="ifig" viewBox="0 0 1100 650" role="img" aria-label="How the three paths split the work on change propagation, and how each fails on its own">
   <defs>
     <marker id="f11-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
 
-  <!-- 问题 -->
-  <rect class="bx-soft" x="180" y="16" width="740" height="92" rx="10"/>
-  <text class="t-big" x="550" y="52" text-anchor="middle">变更传播不完备：共享状态有多条读写路径，变更只传到一部分</text>
-  <text class="t-d" x="550" y="84" text-anchor="middle">Gemini rewind 七处写回路径只改五处 · Prompt-source 漏了延迟收尾 · Empty-repo 漏了 Gemini 钩子</text>
+  <!-- Problem -->
+  <rect class="bx-soft" x="60" y="16" width="980" height="92" rx="10"/>
+  <text class="t-big" x="550" y="52" text-anchor="middle">Incomplete change propagation: shared state has several read/write paths, the change reaches only some</text>
+  <text class="t-d" x="550" y="84" text-anchor="middle">Gemini rewind: 5 of 7 write-back paths changed · Prompt-source: deferred finalization missed · Empty-repo: Gemini hook missed</text>
 
-  <!-- 分流 -->
+  <!-- Split -->
   <path class="ln" d="M550,108 V134"/>
   <path class="ln" d="M185,134 H915"/>
   <path class="ln" d="M185,134 V160" marker-end="url(#f11-a)"/>
   <path class="ln" d="M550,134 V160" marker-end="url(#f11-a)"/>
   <path class="ln" d="M915,134 V160" marker-end="url(#f11-a)"/>
 
-  <!-- A Agent 组件 -->
+  <!-- A Agent components -->
   <rect class="bx" x="20" y="164" width="330" height="276" rx="10"/>
-  <text class="t-h" x="185" y="194" text-anchor="middle">A · Agent 组件：何时查</text>
-  <text class="t-b" x="38" y="228">在该查的时候触发检查</text>
-  <text class="t-d" x="38" y="254">变更触及共享状态 → 先做影响分析</text>
-  <text class="t-d" x="38" y="278">交付前 → 触发跨路径检查</text>
-  <text class="t" x="38" y="316">产出：skill、检查点、工作流钩子</text>
+  <text class="t-h" x="185" y="194" text-anchor="middle" style="font-size:15px">A · Agent components: when to check</text>
+  <text class="t-b" x="38" y="228">Trigger a check at the right moment</text>
+  <text class="t-d" x="38" y="254">Touches shared state → impact analysis first</text>
+  <text class="t-d" x="38" y="278">Before delivery → cross-path check</text>
+  <text class="t" x="38" y="316">Output: skills, checkpoints, workflow hooks</text>
   <rect class="bx" x="34" y="346" width="302" height="74" rx="8"/>
-  <text class="t-m" x="50" y="374">已做：408b8c v1–v7</text>
-  <text class="t-d" x="50" y="400">skill 能修「该查没查」的决策缺口</text>
+  <text class="t-m" x="50" y="374">Done: 408b8c v1–v7</text>
+  <text class="t-d" x="50" y="400">A skill can fix the "skipped the check" gap</text>
 
-  <!-- B 软件工程能力 -->
+  <!-- B Software engineering capabilities -->
   <rect class="bx" x="385" y="164" width="330" height="276" rx="10"/>
-  <text class="t-h" x="550" y="194" text-anchor="middle">B · 软件工程能力：查到哪</text>
-  <text class="t-b" x="403" y="228">代码定位与代码分析</text>
-  <text class="t-d" x="403" y="254">从改动点出发做变更影响分析：</text>
-  <text class="t-d" x="403" y="278">谁读写这份状态、接口有几个实现、</text>
-  <text class="t-d" x="403" y="302">错误值有哪些消费者</text>
-  <text class="t" x="403" y="340">再逐条路径确认改到位</text>
-  <text class="t-d" x="403" y="366">同一夹具走每条路径，结果须一致</text>
-  <text class="t" x="403" y="408">产出：可调用的分析与测试生成</text>
+  <text class="t-h" x="550" y="194" text-anchor="middle" style="font-size:15px">B · SE capabilities: how far to check</text>
+  <text class="t-b" x="403" y="228">Code location and code analysis</text>
+  <text class="t-d" x="403" y="254">Impact analysis from the changed spot:</text>
+  <text class="t-d" x="403" y="278">who reads/writes this state, how many</text>
+  <text class="t-d" x="403" y="302">implementations, who consumes the errors</text>
+  <text class="t" x="403" y="340">Then confirm each path is updated</text>
+  <text class="t-d" x="403" y="366">Same fixture on every path, same result</text>
+  <text class="t" x="403" y="408">Output: callable analysis, test generation</text>
 
-  <!-- C 知识工程 -->
+  <!-- C Knowledge engineering -->
   <rect class="bx" x="750" y="164" width="330" height="276" rx="10"/>
-  <text class="t-h" x="915" y="194" text-anchor="middle">C · 知识工程：凭什么知道</text>
-  <text class="t-b" x="768" y="228">补代码分析看不到的依赖</text>
-  <text class="t-d" x="768" y="254">代码图谱：状态读写边</text>
-  <text class="t-d" x="768" y="278">开发范式：函数级共变规律</text>
-  <text class="t-d" x="768" y="302">文档知识图谱：契约与不变量</text>
-  <text class="t-d" x="768" y="326">纠正经验：漏过哪条路</text>
-  <text class="t" x="768" y="408">产出：按改动点加载的知识</text>
+  <text class="t-h" x="915" y="194" text-anchor="middle" style="font-size:15px">C · Knowledge engineering: how we know</text>
+  <text class="t-b" x="768" y="228">Dependencies code analysis can't see</text>
+  <text class="t-d" x="768" y="254">Code graph: state read/write edges</text>
+  <text class="t-d" x="768" y="278">Dev patterns: function-level co-change</text>
+  <text class="t-d" x="768" y="302">Doc knowledge graph: contracts, invariants</text>
+  <text class="t-d" x="768" y="326">Corrections: which paths were missed</text>
+  <text class="t" x="768" y="408">Output: knowledge loaded per change</text>
 
-  <!-- 协作 -->
+  <!-- Collaboration -->
   <path class="ln" d="M350,300 H381" marker-end="url(#f11-a)"/>
-  <text class="t-d" x="366" y="290" text-anchor="middle">触发</text>
+  <text class="t-d" x="367" y="290" text-anchor="middle" style="font-size:10px">trigger</text>
   <path class="ln" d="M715,300 H746" marker-start="url(#f11-a)" marker-end="url(#f11-a)"/>
-  <text class="t-d" x="730" y="290" text-anchor="middle">查询</text>
-  <!-- 回写 -->
+  <text class="t-d" x="732" y="290" text-anchor="middle" style="font-size:10px">query</text>
+  <!-- Write back -->
   <path class="ln" d="M550,440 V462 H915 V444" marker-end="url(#f11-a)"/>
-  <text class="t-d" x="732" y="486" text-anchor="middle">评测与纠正里新发现的遗漏路径，回写知识库</text>
+  <text class="t-d" x="732" y="486" text-anchor="middle">Missed paths found in evaluation and corrections are written back to the knowledge base</text>
 
-  <!-- 单独做的失效方式 -->
+  <!-- Failure modes when done alone -->
   <rect class="bx-g" x="20" y="506" width="330" height="98" rx="10"/>
-  <text class="t-g" x="38" y="534">只有 A：有提醒，没有定位手段</text>
-  <text class="t-d" x="38" y="560">agent 去找了，但只按变量名找</text>
-  <text class="t-d" x="38" y="584">（Session-agent）</text>
+  <text class="t-g" x="38" y="534">A alone: a reminder, no way to locate</text>
+  <text class="t-d" x="38" y="560">The agent searched, but only by variable name</text>
+  <text class="t-d" x="38" y="584">(Session-agent)</text>
   <rect class="bx-g" x="385" y="506" width="330" height="98" rx="10"/>
-  <text class="t-g" x="403" y="534">只有 B：只沿显式依赖走</text>
-  <text class="t-d" x="403" y="560">调用图查不到经数据来源的依赖，</text>
-  <text class="t-d" x="403" y="584">Attribution 要沿数据来源走两跳</text>
+  <text class="t-g" x="403" y="534">B alone: follows explicit deps only</text>
+  <text class="t-d" x="403" y="560">The call graph misses data-source deps;</text>
+  <text class="t-d" x="403" y="584">Attribution needs 2 hops via data source</text>
   <rect class="bx-g" x="750" y="506" width="330" height="98" rx="10"/>
-  <text class="t-g" x="768" y="534">只有 C：能暴露，不保证被采用</text>
-  <text class="t-d" x="768" y="560">408b8c 读过 RepoRoot 全文，</text>
-  <text class="t-d" x="768" y="584">仍另写了一份缓存</text>
+  <text class="t-g" x="768" y="534">C alone: exposed, but may go unused</text>
+  <text class="t-d" x="768" y="560">408b8c read all of RepoRoot,</text>
+  <text class="t-d" x="768" y="584">yet still wrote a second cache</text>
 
-  <!-- 图例 -->
+  <!-- Legend -->
   <rect class="bx" x="20" y="622" width="28" height="18" rx="4"/>
-  <text class="t-d" x="58" y="636">紫：各路径负责什么</text>
+  <text class="t-d" x="58" y="636">Purple: what each path owns</text>
   <rect class="bx-g" x="300" y="622" width="28" height="18" rx="4"/>
-  <text class="t-d" x="338" y="636">橙：只做这一条时的失效方式</text>
+  <text class="t-d" x="338" y="636">Orange: how it fails when done alone</text>
   <path class="ln" d="M680,631 H728" marker-end="url(#f11-a)"/>
-  <text class="t-d" x="738" y="636">触发 / 查询 / 回写</text>
+  <text class="t-d" x="738" y="636">trigger / query / write back</text>
 </svg>
   </div>
-  <figcaption><strong>图 1</strong> 变更传播问题上三条路径的分工，按 A → B → C 排：A 决定何时查，B 用代码定位与分析查出传播面，C 提供 B 看不到的依赖；新发现的遗漏路径回写 C。下排是只做这一条时的失效方式。路径定义见第十二节。</figcaption>
+  <figcaption><strong>Figure 1</strong> How the three paths split the work on change propagation, in A → B → C order: A decides when to check, B uses code location and analysis to find the propagation surface, C supplies the dependencies B cannot see; newly found missed paths are written back to C. The bottom row shows how each fails when done alone. Paths are defined in Section 12.</figcaption>
 </figure>
 
-<p><strong>可行性</strong>：这一类问题的传播面大多是代码里显式存在的结构，B 的代码定位与分析能查出来。Gemini rewind 的七处写回各自拼路径，都是同一类写回调用；Stale-session 的七个入口都读同一份状态文件；Empty-repo 漏掉的 Gemini 钩子里，调用和错误信息与 Claude 钩子逐字相同。查不到的那部分恰好是 C 要补的：Attribution 一案，调用图查不到「归因读的内容要与 checkpoint 同源」这条依赖，要沿数据来源走两跳；而公开的代码图谱工作只有文件、类、函数节点和调用、继承边，没有「状态」节点与读写边。</p>
+<p><strong>Feasibility</strong>: most of the propagation surface for this class is structure that exists explicitly in the code, and B's code location and analysis can find it. In Gemini rewind, the seven write-backs each build their own path, but all are the same kind of write-back call; in Stale-session, the seven entry points all read the same state file; in Empty-repo, the missed Gemini hook has calls and error messages identical, word for word, to the Claude hook. What cannot be found is exactly what C has to supply: in the Attribution case the call graph cannot see the dependency "what attribution reads must come from the same source as the checkpoint", which takes two hops along the data source; and published code graph work only has file, class and function nodes with call and inheritance edges, with no "state" nodes or read/write edges.</p>
 
-<p>在六个案例各自的基准提交上，我们离线查过 C 的四类知识能否提前推出漏掉的路径：</p>
+<p>On the base commit of each of the six cases, we checked offline whether C's four kinds of knowledge could have predicted the missed path in advance:</p>
 
 <div class="table-wrap">
 <table>
 <thead>
-<tr><th style="width:20%">知识来源</th><th style="width:15%">能 / 部分 / 不能</th><th style="width:65%">说明</th></tr>
+<tr><th style="width:20%">Knowledge source</th><th style="width:15%">Yes / Partly / No</th><th style="width:65%">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>代码图谱式查询</td><td>5 / 1 / 0</td><td>最有效，与 B 的代码定位最接近；Attribution 一案要沿数据来源走两跳才查得到</td></tr>
-<tr><td>历史共变</td><td>2 / 3 / 1</td><td>次之。需要细到函数级（同文件漏改时文件级无效），过滤高频枢纽文件，并区分好坏范式</td></tr>
-<tr><td>轨迹经验</td><td>0 / 4 / 2</td><td>同题之外的复用信号还弱，要靠跨会话累积；用户纠正天然是「漏了哪条路」的监督信号</td></tr>
-<tr><td>仓库文档</td><td>0 / 2 / 4</td><td>最弱。这批题的文档几乎不写不变量，Prompt-source 的文档写的还是这次要去掉的旧行为</td></tr>
+<tr><td>Code-graph-style queries</td><td>5 / 1 / 0</td><td>Most effective, closest to B's code location; the Attribution case needs two hops along the data source to find it</td></tr>
+<tr><td>Historical co-change</td><td>2 / 3 / 1</td><td>Second. It must be function-level (file-level is useless when the miss is in the same file), filter out high-traffic hub files, and tell good patterns from bad</td></tr>
+<tr><td>Trajectory experience</td><td>0 / 4 / 2</td><td>Reuse signal beyond the same task is still weak and needs accumulation across sessions; user corrections are a natural supervision signal for "which path was missed"</td></tr>
+<tr><td>Repository docs</td><td>0 / 2 / 4</td><td>Weakest. The docs for these tasks barely state invariants; the Prompt-source docs still describe the very behavior this change removes</td></tr>
 </tbody>
 </table>
 </div>
-<p class="src">这是可行性检查，不是闭环实验：「代码图谱能查到」是用代码检索在基准提交上模拟的查询，共变只用基准之前的历史。</p>
+<p class="src">This is a feasibility check, not a closed-loop experiment: "the code graph can find it" means a query simulated with code search on the base commit, and co-change uses only history before the base commit.</p>
 
-<h3 id="core-loop">已走通的闭环：408b8c，v1→v7（这一类的边界题）</h3>
+<h3 id="core-loop">A loop already completed: 408b8c, v1→v7 (a boundary task for this class)</h3>
 
-<p>408b8c 是把「归因 → 提改动 → 配对重跑 → 判定」完整走通的一道题：用户要让 <code>GetWorktreePath</code> 像 <code>RepoRoot</code> 一样可缓存，iCode 三次都另建了一套缓存，用户纠正说 <span class="q">"paths.RepoRoot() already implements the same cwd-keyed caching"</span>（paths.RepoRoot() 已经实现了同样的按当前目录缓存）。它属于上表的「已有另一份实现」，是这一类的边界题：agent 读过已有实现仍另写一份，缺的是判断而不是信息，正好说明路径 A 的 skill 能修这种决策缺口。失败的版本也照列：</p>
+<p>408b8c is a task where the full "attribute → propose a change → paired rerun → decide" loop has been run: the user wanted <code>GetWorktreePath</code> to be cacheable like <code>RepoRoot</code>; all three times iCode built a separate cache, and the user corrected it: <span class="q">"paths.RepoRoot() already implements the same cwd-keyed caching"</span>. It belongs to the "existing implementation" kind in the table above and is a boundary task for this class: the agent read the existing implementation and still wrote another one, so what was missing was judgment, not information. That is exactly the kind of decision gap a path A skill can fix. Failed versions are listed too:</p>
 
 <div class="table-wrap">
 <table>
 <thead>
 <tr>
-<th style="width:9%">版本</th>
-<th style="width:28%">改了什么</th>
-<th style="width:30%">结果</th>
-<th style="width:33%">这一步说明了什么</th>
+<th style="width:9%">Version</th>
+<th style="width:28%">What changed</th>
+<th style="width:30%">Result</th>
+<th style="width:33%">What this step shows</th>
 </tr>
 </thead>
 <tbody>
-<tr><td>v0 基线</td><td>—</td><td>0.833×3，J1 0/3，+42/-1</td><td>起点：三次都自建缓存</td></tr>
-<tr><td>v1</td><td>新增 skill，但文件放错位置</td><td>0.833，J1 0/1</td><td>改动没被加载——「改了没生效」</td></tr>
-<tr><td>v2</td><td>修好结构，只改正文</td><td>0.833，J1 0/1</td><td>正文仍没被加载</td></tr>
-<tr><td>v3</td><td>改 description 触发词</td><td>1.0 / 1.0 / 0.333，J1 3/3，+4/-4</td><td>能触发了，但不稳定</td></tr>
-<tr><td>v4</td><td>换成无关示例，排除泄题</td><td>触发 2/2，未判分</td><td>确认不是靠泄题</td></tr>
-<tr><td>v5</td><td>扩大触发面</td><td>范围失守，未跑这道题</td><td>泛化过头</td></tr>
-<tr><td><strong>v6</strong></td><td>写明适用范围</td><td><strong>1.0×3，J1 9/9，+3/-7</strong></td><td>有效，但触发贴着题面措辞</td></tr>
-<tr><td><strong>v7</strong></td><td>改为 DRY 原则式判据（duplication-check）</td><td><strong>1.0×3，J1 9/9，+3/-7</strong></td><td>有效，且触发不再依赖题面句式</td></tr>
+<tr><td>v0 baseline</td><td>—</td><td>0.833×3, J1 0/3, +42/-1</td><td>Starting point: built its own cache all three times</td></tr>
+<tr><td>v1</td><td>Added a skill, but put the file in the wrong place</td><td>0.833, J1 0/1</td><td>The change was not loaded ("changed, but no effect")</td></tr>
+<tr><td>v2</td><td>Fixed the structure, changed only the body</td><td>0.833, J1 0/1</td><td>The body was still not loaded</td></tr>
+<tr><td>v3</td><td>Changed the trigger words in the description</td><td>1.0 / 1.0 / 0.333, J1 3/3, +4/-4</td><td>Now triggers, but not reliably</td></tr>
+<tr><td>v4</td><td>Swapped in an unrelated example to rule out answer leakage</td><td>Triggered 2/2, not scored</td><td>Confirmed it does not rely on leakage</td></tr>
+<tr><td>v5</td><td>Widened the trigger scope</td><td>Scope broke; this task not run</td><td>Overgeneralized</td></tr>
+<tr><td><strong>v6</strong></td><td>Stated the scope explicitly</td><td><strong>1.0×3, J1 9/9, +3/-7</strong></td><td>Works, but triggering hugs the task wording</td></tr>
+<tr><td><strong>v7</strong></td><td>Switched to a DRY-principle criterion (duplication-check)</td><td><strong>1.0×3, J1 9/9, +3/-7</strong></td><td>Works, and triggering no longer depends on the task's phrasing</td></tr>
 </tbody>
 </table>
 </div>
-<p class="src">J1 写法：「x/3」指运行次数，「x/9」指判词票数（3 次 × 3 个判官）。</p>
+<p class="src">J1 notation: "x/3" counts runs; "x/9" counts judge votes (3 runs × 3 judges).</p>
 
-<p>只用一条路径看，v1–v2 会被误判成「能力不行」（其实改动没被加载），v5 会被误判成「这个方向有效」（其实触发范围失守）。回归的 3 道题、5 次有效运行里，没有检查点因 v7 由过变挂。证据只有 1 道主题题、单个模型，远不足以说明这一类问题已经解决。</p>
+<p>Looking through only one path, v1–v2 would be misread as "not capable enough" (in fact the change was never loaded), and v5 would be misread as "this direction works" (in fact the trigger scope broke). Across 3 regression tasks and 5 valid runs, no checkpoint went from pass to fail because of v7. The evidence is one target task and a single model, far from enough to say this class of problem is solved.</p>
 
-<h3 id="core-route">短期路线</h3>
+<h3 id="core-route">Short-term roadmap</h3>
 
 <ol>
-<li><strong>题集</strong>：主题题是 Gemini rewind、Prompt-source、OpenCode-native、Session-agent、Attribution 五道，都属于这一类，而且模型会挂；Stale-session、Empty-repo 作对照。先去掉题面提示，做一版只给原始需求、不点名路径的题面，这样才能真正度量「补全传播面」的能力。</li>
-<li><strong>验证器</strong>：每道题都故意改坏其中一条路径，确认验证器能发现——验证器自己也会漏路径。</li>
-<li><strong>知识（离线，可以先做）</strong>：在 entireio/cli 上建状态读写图与函数级共变表，用六个案例做历史回放，看推出的传播面是否包含漏掉的路径。</li>
-<li><strong>闭环</strong>：A 加触发，B 接代码定位、变更影响分析与跨路径测试生成，C 接上述知识，在去掉提示的题面上比较 v0 与各种组合，留出题按子类分层。</li>
-<li><strong>外推</strong>：找 entireio/cli 以外的多变体产品会话（多平台、多协议版本、多租户配置）补题，检验「多种实现」这种问题是不是只是这个仓的特点。</li>
+<li><strong>Task set</strong>: the target tasks are Gemini rewind, Prompt-source, OpenCode-native, Session-agent and Attribution, all in this class and all failed by the model; Stale-session and Empty-repo serve as controls. First remove the hints from the task statements and make a version that gives only the original requirement without naming the paths; only then can we really measure the ability to "cover the propagation surface".</li>
+<li><strong>Verifiers</strong>: for every task, deliberately break one of the paths and confirm the verifier catches it; verifiers can miss paths too.</li>
+<li><strong>Knowledge (offline, can start now)</strong>: build a state read/write graph and a function-level co-change table on entireio/cli, replay history on the six cases, and see whether the predicted propagation surface includes the missed paths.</li>
+<li><strong>Closed loop</strong>: A adds triggers, B adds code location, change impact analysis and cross-path test generation, C adds the knowledge above; compare v0 against each combination on the hint-free task statements, with held-out tasks stratified by subclass.</li>
+<li><strong>Generalization</strong>: add tasks from multi-variant product sessions outside entireio/cli (multiple platforms, protocol versions, tenant configurations) to test whether "multiple implementations" is just a quirk of this one repo.</li>
 </ol>
 
 </section>
 
 <section id="deliver">
-<h2>二、交付什么：优化后的 agent 版本，连同能检查的证据</h2>
+<h2>2. What we deliver: an optimized agent version, with evidence you can check</h2>
 
-<p class="lede">本项目是 iCode 里的 <strong>iCode-Talents</strong> 模块。对外交付两样：给接入仓的用户 / 团队一个<strong>优化后的 agent 版本</strong>，附可逐条检查的证据；给 iCode-Core（agent 主线）<strong>带成绩单的 Agent 侧候选改动</strong>。两样都由我们建设的 Talents 平台产出。</p>
+<p class="lede">This project is the <strong>iCode-Talents</strong> module of iCode. It delivers two things: to users / teams who connect a repository, an <strong>optimized agent version</strong> with evidence that can be checked item by item; to iCode-Core (the agent mainline), <strong>agent-side candidate changes with scorecards</strong>. Both come out of the Talents platform we build.</p>
 
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:13%">交付给谁</th><th style="width:16%">交付物</th><th style="width:43%">具体内容</th><th style="width:28%">怎么用</th></tr>
+<tr><th style="width:13%">Delivered to</th><th style="width:16%">Deliverable</th><th style="width:43%">Contents</th><th style="width:28%">How it is used</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>接入仓的用户 / 团队</strong></td><td>进化提案 + 优化版本</td><td>新增 skill（全文与触发条件）、新增或修改的工具（接口 diff）、提示词修改（diff）、知识条目（内容与适用边界）；附证据：从本仓会话造出的任务集、新旧版本成绩单、进化过程（被拒的候选也列出）</td><td>在门户里逐条确认，按仓 / 团队生效，可一键回滚（第三节）</td></tr>
-<tr><td><strong>iCode-Core</strong><br><small>agent 主线</small></td><td>Agent 侧候选改动 + 成绩单</td><td>对所有用户生效的系统提示词、工具、循环逻辑改动；按任务类别的配对成绩与回归清单；换基座时的逐类掉点清单与适配改动；skill 的三档判定</td><td>作为发布门禁的依据，随 iCode 正式版本发布</td></tr>
+<tr><td><strong>Users / teams of connected repositories</strong></td><td>Evolution proposal + optimized version</td><td>New skills (full text and trigger conditions), new or modified tools (interface diff), prompt changes (diff), knowledge entries (content and scope); with evidence: the task set built from this repository's sessions, scorecards for the old and new versions, and the evolution history (rejected candidates included)</td><td>Confirmed item by item in the portal, applied per repository / team, one-click rollback (Section 3)</td></tr>
+<tr><td><strong>iCode-Core</strong><br><small>agent mainline</small></td><td>Agent-side candidate changes + scorecard</td><td>Changes to system prompts, tools and loop logic that apply to all users; paired scores and regression lists per task category; per-category regression lists and adaptation changes when the base model changes; three-level verdicts on skills</td><td>Used as evidence for the release gate; ships with official iCode releases</td></tr>
 
-<tr><td><strong>研究交流</strong></td><td>开源题集与方法</td><td>开源仓上造出的题集；判分协议与演进方法</td><td>开源题只用公开仓库与公开会话等公开信息构建，可以拿来与外部分享交流；产品仓的题只在域内使用</td></tr>
+<tr><td><strong>Research exchange</strong></td><td>Open task sets and methods</td><td>Task sets built from open-source repositories; scoring protocol and evolution methods</td><td>Open tasks are built only from public information such as public repositories and public sessions, so they can be shared externally; tasks from product repositories are used only inside the domain</td></tr>
 </tbody>
 </table>
 </div>
 
-<p><strong>Talents 平台</strong>是我们（iCode-Talents）自己建设、运维的系统，不是交付给别人的东西：七个组件（接入服务、轨迹库、造题流水线、评测集群、演进引擎、版本与产物库、进化提案门户）跟着 iCode 服务端部署，在后台持续产出上面两类交付（第三节）。</p>
+<p>The <strong>Talents platform</strong> is a system we (iCode-Talents) build and operate ourselves; it is not handed to anyone else. Its seven components (onboarding service, trajectory store, task-building pipeline, evaluation cluster, evolution engine, version and artifact store, evolution proposal portal) are deployed alongside the iCode server and keep producing the two deliverables above in the background (Section 3).</p>
 
-<h3>一份进化提案的五个视图</h3>
+<h3>Five views of an evolution proposal</h3>
 
-<p>用户不需要相信我们的结论，每一条改动都能回到证据上去看。穿刺实验已经按这个方式留证：逐题展开，被拒的版本也照列（第九节）。</p>
+<p>Users do not have to take our word for it: every change can be traced back to its evidence. The pilot experiments already keep evidence this way: task by task, with rejected versions listed too (Section 9).</p>
 
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:13%">视图</th><th style="width:33%">用户看到什么</th><th style="width:27%">用户能做什么</th><th style="width:27%">回到系统的什么地方</th></tr>
+<tr><th style="width:13%">View</th><th style="width:33%">What the user sees</th><th style="width:27%">What the user can do</th><th style="width:27%">Where it feeds back into the system</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>① 用户自己的任务集</strong></td><td>从用户自己的会话造出的题：来源会话（第几轮）、题面、每条验收检查点及其回指的用户原话、题的状态</td><td>认可 / 「这题不对」（选原因）/ 修改检查点</td><td>用户认可的检查点成为高可信判据，回灌判官校准；否决的题进健康度隔离</td></tr>
-<tr><td><strong>② 成绩单</strong></td><td>当前版本 vs 候选版本，按任务类别；每题 k 次的连续解率；回归题单独列出；token 与时长</td><td>展开看任一题的两次运行轨迹</td><td>—</td></tr>
-<tr><td><strong>③ 进化过程</strong></td><td>时间线：每一轮的归因（从哪一轮哪一步开始偏、根因归哪条路径）→ 候选改动 → 配对重跑结果 → 接受 / 拒绝及理由，<strong>含被拒的候选</strong></td><td>看任一轮的证据</td><td>—</td></tr>
-<tr><td><strong>④ 产物清单（diff）</strong></td><td>新增 skill（全文、触发条件、在哪些题上被触发）、新增 / 修改工具（接口 diff）、提示词修改（diff）、知识条目（内容、适用边界、来源会话）</td><td>逐条看证据：触发了几次、哪些题因它变好、有没有让别的题变差</td><td>—</td></tr>
-<tr><td><strong>⑤ 确认与生效</strong></td><td>逐条的采纳建议与风险提示</td><td>逐条采纳 / 拒绝（写原因）/ 先试用 N 天；选生效范围（本仓 / 本团队）；一键回滚</td><td>拒绝原因回灌演进引擎，作为负样本</td></tr>
+<tr><td><strong>① The user's own task set</strong></td><td>Tasks built from the user's own sessions: source session (which turn), task statement, each acceptance checkpoint with the user's original words it points back to, and task status</td><td>Approve / "this task is wrong" (pick a reason) / edit checkpoints</td><td>Approved checkpoints become high-confidence criteria and feed judge calibration; rejected tasks go to health quarantine</td></tr>
+<tr><td><strong>② Scorecard</strong></td><td>Current vs. candidate version, by task category; consecutive solve rate over k runs per task; regressed tasks listed separately; tokens and duration</td><td>Expand any task to see the trajectories of both runs</td><td>—</td></tr>
+<tr><td><strong>③ Evolution history</strong></td><td>A timeline: each round's attribution (from which turn and step it went wrong, which path the root cause belongs to) → candidate change → paired rerun results → accepted / rejected with reasons, <strong>rejected candidates included</strong></td><td>View the evidence for any round</td><td>—</td></tr>
+<tr><td><strong>④ Artifact list (diff)</strong></td><td>New skills (full text, trigger conditions, which tasks triggered them), new / modified tools (interface diff), prompt changes (diff), knowledge entries (content, scope, source session)</td><td>Check the evidence item by item: how often it triggered, which tasks got better because of it, whether it made any other task worse</td><td>—</td></tr>
+<tr><td><strong>⑤ Confirmation and rollout</strong></td><td>A per-item adoption recommendation and risk notes</td><td>Adopt / reject each item (with a reason) / trial for N days first; choose the scope (this repository / this team); one-click rollback</td><td>Rejection reasons feed back to the evolution engine as negative samples</td></tr>
 </tbody>
 </table>
 </div>
@@ -272,406 +272,410 @@
 </section>
 
 <section id="deploy">
-<h2>三、怎么部署：跟着 iCode 服务端，用户无感</h2>
+<h2>3. How it is deployed: alongside the iCode server, invisible to users</h2>
 
-<p class="lede">Talents 平台<strong>跟着 iCode 服务端部署</strong>（云端或域内），在 iCode 已经收到的轨迹上，于服务器侧自动触发演进，<strong>用户无感</strong>。用户只在两处参与：接入时提供能跑通主分支、测试全绿的运行环境；演进有结果后，在门户里检查并确认一份「进化提案」。</p>
+<p class="lede">The Talents platform is <strong>deployed alongside the iCode server</strong> (in the cloud or inside the customer domain). It triggers evolution automatically on the server side, using trajectories iCode already receives, and is <strong>invisible to users</strong>. Users take part in only two places: at onboarding, they provide a runtime environment where the main branch builds and all tests pass; once evolution has results, they review and confirm an "evolution proposal" in the portal.</p>
 
-<h3>为什么跟着 iCode 服务端部署</h3>
+<h3>Why deploy alongside the iCode server</h3>
 
 <div class="grid-2" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: var(--s-md);">
 <div class="card">
-<h4>轨迹本来就在服务端</h4>
-<p style="margin-bottom:0;">iCode 的会话、工具调用、模型请求都经过服务端与模型网关。Talents 部署在旁边，不需要用户导出、上传任何东西——这是「用户无感」的前提，也是数据不出域的前提。</p>
+<h4>Trajectories are already on the server</h4>
+<p style="margin-bottom:0;">iCode sessions, tool calls and model requests all pass through the server and the model gateway. With Talents deployed next to them, users do not export or upload anything. That is what makes it invisible to users, and what keeps data inside the domain.</p>
 </div>
 <div class="card">
-<h4>演进在服务端做</h4>
-<p style="margin-bottom:0;">造题、跑评测、试改动都是批量的容器任务，放在服务端的评测集群里，按租户预算、在空闲时段跑，不占用户的机器与时间。</p>
+<h4>Evolution runs on the server</h4>
+<p style="margin-bottom:0;">Building tasks, running evaluations and trying changes are batch container jobs. They run on the server-side evaluation cluster, within each tenant's budget and during idle hours, using none of the user's machines or time.</p>
 </div>
 <div class="card">
-<h4>改动在服务端生效</h4>
-<p style="margin-bottom:0;">用户确认的 skill、工具、提示词、知识条目作为「仓级 / 团队级配置」由服务端下发给 iCode 客户端，客户端不用升级。</p>
+<h4>Changes take effect from the server</h4>
+<p style="margin-bottom:0;">Skills, tools, prompts and knowledge entries the user confirms are pushed by the server to iCode clients as "repository-level / team-level configuration"; clients need no upgrade.</p>
 </div>
 </div>
 
-<p>部署分云端（随 iCode 云服务，按租户隔离）与域内（随 iCode 私有化部署，数据不出域）两种包；演进由新会话积累、新基座上线、skill 库变化或用户手动发起触发，全部在后台排队，<strong>用户唯一会感知到的是一份新的「进化提案」</strong>。</p>
+<p>There are two deployment packages: cloud (with the iCode cloud service, isolated per tenant) and in-domain (with private iCode deployments, data stays in the domain). Evolution is triggered by new sessions piling up, a new base model going live, changes to the skill library, or a manual request, and everything queues in the background: <strong>the only thing users notice is a new "evolution proposal"</strong>.</p>
 
-<h3 id="deploy-arch">部署架构</h3>
+<h3 id="deploy-arch">Deployment architecture</h3>
 
-<p>Talents 的七个组件与第八节的七个工作域一一对应（图中每个组件右上角标出对应的工作域）。它们和 iCode 服务端放在同一机房 / 同一域内，产出只有两条出口：用户确认过的用户侧配置回到 iCode 服务端按仓下发；Agent 侧候选连同成绩单交给 iCode-Core 的发布流水线。</p>
+<p>The seven Talents components map one to one onto the seven work domains in Section 8 (each component in the figure shows its work domain on the right). They sit in the same data center / domain as the iCode server and have only two outputs: user-side configuration confirmed by users goes back to the iCode server and is pushed per repository; agent-side candidates, with scorecards, go to the iCode-Core release pipeline.</p>
 
 <figure>
   <div class="figframe">
-<svg class="ifig" viewBox="0 0 1100 830" role="img" aria-label="部署架构：Talents 平台与 iCode 服务端同机房或同域部署">
+<svg class="ifig" viewBox="0 0 1100 830" role="img" aria-label="Deployment architecture: the Talents platform is deployed in the same data center or domain as the iCode server">
   <defs>
     <marker id="f81-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="f81-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-g" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
 
-  <!-- 列标题 -->
-  <text class="t-d" x="130" y="92" text-anchor="middle">用户侧</text>
-  <text class="t-d" x="405" y="92" text-anchor="middle">iCode（现有）</text>
+  <!-- Column headings -->
+  <text class="t-d" x="130" y="92" text-anchor="middle">User side</text>
+  <text class="t-d" x="405" y="92" text-anchor="middle">iCode (existing)</text>
 
-  <!-- 左：iCode 客户端 -->
+  <!-- Left: iCode client -->
   <rect class="bx" x="20" y="110" width="220" height="96" rx="10"/>
-  <text class="t-b" x="130" y="150" text-anchor="middle">iCode 客户端</text>
+  <text class="t-b" x="130" y="150" text-anchor="middle">iCode client</text>
   <text class="t-d" x="130" y="176" text-anchor="middle">IDE / CLI</text>
 
-  <!-- 中：iCode 服务端 + 模型网关 -->
+  <!-- Middle: iCode server + model gateway -->
   <rect class="bx" x="300" y="110" width="210" height="96" rx="10"/>
-  <text class="t-b" x="405" y="150" text-anchor="middle">iCode 服务端</text>
-  <text class="t-d" x="405" y="176" text-anchor="middle">会话 · 工具调用 · 模型请求</text>
+  <text class="t-b" x="405" y="144" text-anchor="middle">iCode server</text>
+  <text class="t-d" x="405" y="168" text-anchor="middle">Sessions · tool calls</text>
+  <text class="t-d" x="405" y="188" text-anchor="middle">model requests</text>
   <rect class="bx" x="300" y="262" width="210" height="60" rx="10"/>
-  <text class="t-b" x="405" y="298" text-anchor="middle">模型网关</text>
+  <text class="t-b" x="405" y="298" text-anchor="middle">Model gateway</text>
 
   <path class="ln" d="M240,158 H296" marker-end="url(#f81-a)"/>
-  <text class="t-d" x="268" y="148" text-anchor="middle">会话</text>
+  <text class="t-d" x="268" y="148" text-anchor="middle" style="font-size:12px">sessions</text>
   <path class="ln" d="M405,206 V258" marker-end="url(#f81-a)"/>
-  <text class="t-d" x="417" y="238">模型请求</text>
+  <text class="t-d" x="417" y="238">model requests</text>
 
-  <!-- 服务端 → 轨迹库 -->
+  <!-- Server → trajectory store -->
   <path class="ln" d="M510,167 H616" marker-end="url(#f81-a)"/>
-  <text class="t-d" x="553" y="157" text-anchor="middle">轨迹落盘</text>
+  <text class="t-d" x="555" y="157" text-anchor="middle" style="font-size:12px">trajectories</text>
+  <text class="t-d" x="555" y="185" text-anchor="middle" style="font-size:12px">saved</text>
 
-  <!-- 客户端提示 → 门户 -->
+  <!-- Client hint → portal -->
   <path class="ln-d" d="M60,206 V470" marker-end="url(#f81-a)"/>
-  <text class="t-d" x="74" y="300">客户端提示：</text>
-  <text class="t-d" x="74" y="322">「本仓有 N 条</text>
-  <text class="t-d" x="74" y="344">进化建议」</text>
-  <text class="t-d" x="74" y="366">点开跳转门户确认</text>
+  <text class="t-d" x="74" y="290">Client hint:</text>
+  <text class="t-d" x="74" y="312">"This repo has N</text>
+  <text class="t-d" x="74" y="334">evolution suggestions"</text>
+  <text class="t-d" x="74" y="356">Click to open the</text>
+  <text class="t-d" x="74" y="378">portal and confirm</text>
 
-  <!-- 左：进化提案门户（用户入口） -->
+  <!-- Left: evolution proposal portal (user entry) -->
   <rect class="bx-g" x="20" y="474" width="220" height="96" rx="10"/>
-  <text class="t-g" x="130" y="510" text-anchor="middle">进化提案门户</text>
-  <text class="t-d" x="130" y="534" text-anchor="middle">用户在网页里看提案</text>
-  <text class="t-d" x="130" y="556" text-anchor="middle">逐条确认</text>
+  <text class="t-g" x="130" y="510" text-anchor="middle" style="font-size:14px">Evolution proposal portal</text>
+  <text class="t-d" x="130" y="534" text-anchor="middle">Review proposals on the web</text>
+  <text class="t-d" x="130" y="556" text-anchor="middle">Confirm item by item</text>
   <path class="ln-g" d="M244,537 H616" marker-start="url(#f81-ag)" marker-end="url(#f81-ag)"/>
-  <text class="t-g" x="420" y="526" text-anchor="middle">看提案 · 逐条确认</text>
+  <text class="t-g" x="420" y="526" text-anchor="middle">View proposal · confirm item by item</text>
 
-  <!-- 右：Talents 平台 -->
+  <!-- Right: Talents platform -->
   <rect class="zone" x="600" y="20" width="480" height="568" rx="14"/>
-  <text class="t-m" x="840" y="46" text-anchor="middle">iCode-Talents 平台（同机房 / 同域）</text>
+  <text class="t-m" x="840" y="46" text-anchor="middle">iCode-Talents platform (same data center / domain)</text>
 
   <rect class="bx-g" x="620" y="62" width="440" height="62" rx="8"/>
-  <text class="t-g" x="636" y="88">① 接入服务</text>
-  <text class="t-d" x="1044" y="88" text-anchor="end">原料与数据 · 工程底座</text>
-  <text class="t-d" x="636" y="112">仓库登记 · 运行环境登记 · 绿基线验收</text>
+  <text class="t-g" x="636" y="88">① Onboarding service</text>
+  <text class="t-d" x="1044" y="88" text-anchor="end">Raw data · Engineering base</text>
+  <text class="t-d" x="636" y="112" style="font-size:13px">Register repo · register environment · green-baseline check</text>
 
   <rect class="bx" x="620" y="136" width="440" height="62" rx="8"/>
-  <text class="t-b" x="636" y="162">② 轨迹库</text>
-  <text class="t-d" x="1044" y="162" text-anchor="end">原料与数据</text>
-  <text class="t-d" x="636" y="186">按租户隔离，脱敏一次完成</text>
+  <text class="t-b" x="636" y="162">② Trajectory store</text>
+  <text class="t-d" x="1044" y="162" text-anchor="end">Raw data</text>
+  <text class="t-d" x="636" y="186" style="font-size:13px">Isolated per tenant; anonymized once, up front</text>
 
   <rect class="bx" x="620" y="210" width="440" height="62" rx="8"/>
-  <text class="t-b" x="636" y="236">③ 造题流水线</text>
-  <text class="t-d" x="1044" y="236" text-anchor="end">任务生产 · 任务资产</text>
-  <text class="t-d" x="636" y="260">切分 → 环境 → 题面 → 验收 → 健康度</text>
+  <text class="t-b" x="636" y="236">③ Task-building pipeline</text>
+  <text class="t-d" x="1044" y="236" text-anchor="end">Task production · Task assets</text>
+  <text class="t-d" x="636" y="260" style="font-size:13px">Slice → environment → task statement → acceptance → health</text>
 
   <rect class="bx" x="620" y="284" width="440" height="62" rx="8"/>
-  <text class="t-b" x="636" y="310">④ 评测集群</text>
-  <text class="t-d" x="1044" y="310" text-anchor="end">评测与诊断</text>
-  <text class="t-d" x="636" y="334">N 题 × k 次，环境错误与 agent 失败分开记</text>
+  <text class="t-b" x="636" y="310">④ Evaluation cluster</text>
+  <text class="t-d" x="1044" y="310" text-anchor="end">Evaluation &amp; diagnosis</text>
+  <text class="t-d" x="636" y="334" style="font-size:13px">N tasks × k runs; env errors logged apart from agent failures</text>
 
   <rect class="bx" x="620" y="358" width="440" height="62" rx="8"/>
-  <text class="t-b" x="636" y="384">⑤ 演进引擎</text>
-  <text class="t-d" x="1044" y="384" text-anchor="end">演进闭环</text>
-  <text class="t-d" x="636" y="408">归因 → 分流到三条路径 → 候选改动 → 配对验证 → 两级门</text>
+  <text class="t-b" x="636" y="384">⑤ Evolution engine</text>
+  <text class="t-d" x="1044" y="384" text-anchor="end">Evolution loop</text>
+  <text class="t-d" x="636" y="408" style="font-size:13px">Attribute → route to 3 paths → candidate → paired check → 2 gates</text>
 
   <rect class="bx" x="620" y="432" width="440" height="62" rx="8"/>
-  <text class="t-b" x="636" y="458">⑥ 版本与产物库</text>
-  <text class="t-d" x="1044" y="458" text-anchor="end">工程底座</text>
-  <text class="t-d" x="636" y="482">agent / 任务集 / 判官 / 模拟器 四个版本号</text>
+  <text class="t-b" x="636" y="458">⑥ Version &amp; artifact store</text>
+  <text class="t-d" x="1044" y="458" text-anchor="end">Engineering base</text>
+  <text class="t-d" x="636" y="482" style="font-size:13px">Four version numbers: agent / task set / judge / simulator</text>
 
   <rect class="bx-g" x="620" y="506" width="440" height="62" rx="8"/>
-  <text class="t-g" x="636" y="532">⑦ 进化提案门户</text>
-  <text class="t-d" x="1044" y="532" text-anchor="end">落地与反馈</text>
-  <text class="t-d" x="636" y="556">给用户看、让用户确认</text>
+  <text class="t-g" x="636" y="532">⑦ Evolution proposal portal</text>
+  <text class="t-d" x="1044" y="532" text-anchor="end">Rollout &amp; feedback</text>
+  <text class="t-d" x="636" y="556" style="font-size:13px">Shown to users for review and confirmation</text>
 
-  <!-- 两条出口 -->
+  <!-- Two outputs -->
   <path class="ln-g" d="M700,588 V620 H450 V664" marker-end="url(#f81-ag)"/>
-  <text class="t-g" x="462" y="646">用户确认的用户侧配置</text>
+  <text class="t-g" x="462" y="646">Confirmed user-side config</text>
   <rect class="bx-g" x="300" y="668" width="300" height="90" rx="10"/>
-  <text class="t-b" x="450" y="698" text-anchor="middle">iCode 服务端按仓 / 团队下发</text>
-  <text class="t-d" x="450" y="722" text-anchor="middle">skill · 知识 · 仓级提示词等配置包</text>
-  <text class="t-d" x="450" y="744" text-anchor="middle">客户端不用升级</text>
+  <text class="t-b" x="450" y="698" text-anchor="middle">iCode server pushes per repo / team</text>
+  <text class="t-d" x="450" y="722" text-anchor="middle">skills · knowledge · repo-level prompts</text>
+  <text class="t-d" x="450" y="744" text-anchor="middle">No client upgrade needed</text>
 
   <path class="ln" d="M920,588 V664" marker-end="url(#f81-a)"/>
-  <text class="t-m" x="908" y="634" text-anchor="end">Agent 侧候选 + 成绩单</text>
+  <text class="t-m" x="908" y="626" text-anchor="end">Agent-side candidates</text>
+  <text class="t-m" x="908" y="646" text-anchor="end">+ scorecard</text>
   <rect class="bx" x="760" y="668" width="320" height="90" rx="10"/>
-  <text class="t-b" x="920" y="698" text-anchor="middle">iCode-Core 发布流水线</text>
-  <text class="t-d" x="920" y="722" text-anchor="middle">iCode-Core 审核，成绩单作为发布依据</text>
-  <text class="t-d" x="920" y="744" text-anchor="middle">随 iCode 正式版本发布</text>
+  <text class="t-b" x="920" y="698" text-anchor="middle">iCode-Core release pipeline</text>
+  <text class="t-d" x="920" y="722" text-anchor="middle">Reviewed by iCode-Core, gated on scorecard</text>
+  <text class="t-d" x="920" y="744" text-anchor="middle">Ships with official iCode releases</text>
 
-  <!-- 图例 -->
+  <!-- Legend -->
   <rect class="bx" x="20" y="790" width="28" height="18" rx="4"/>
-  <text class="t-d" x="58" y="804">紫：组件与主数据流</text>
-  <rect class="bx-g" x="230" y="790" width="28" height="18" rx="4"/>
-  <text class="t-d" x="268" y="804">橙：门与用户确认点</text>
-  <rect class="zone" x="440" y="790" width="28" height="18" rx="4"/>
-  <text class="t-d" x="478" y="804">紫虚线框：同机房 / 同域部署边界</text>
-  <path class="ln-d" d="M760,799 H808" marker-end="url(#f81-a)"/>
-  <text class="t-d" x="818" y="804">紫虚线：客户端提示</text>
+  <text class="t-d" x="58" y="804">Purple: components, main data flow</text>
+  <rect class="bx-g" x="306" y="790" width="28" height="18" rx="4"/>
+  <text class="t-d" x="344" y="804">Orange: gates, user confirmation</text>
+  <rect class="zone" x="584" y="790" width="28" height="18" rx="4"/>
+  <text class="t-d" x="622" y="804">Dashed box: deployment boundary</text>
+  <path class="ln-d" d="M866,799 H904" marker-end="url(#f81-a)"/>
+  <text class="t-d" x="914" y="804">Dashed line: client hint</text>
 </svg>
   </div>
-  <figcaption><strong>图 2</strong> 部署架构。左：用户只接触 iCode 客户端与进化提案门户；中：iCode 现有的服务端与模型网关，轨迹（含工具返回、采纳行）在这里落盘；右：Talents 的七个组件，组件右侧标出对应的工作域。下方两条出口：用户确认的用户侧配置由 iCode 服务端按仓 / 团队下发；Agent 侧候选连同成绩单交给 iCode-Core 发布流水线审核。</figcaption>
+  <figcaption><strong>Figure 2</strong> Deployment architecture. Left: users only touch the iCode client and the evolution proposal portal. Middle: iCode's existing server and model gateway, where trajectories (including tool results and accepted lines) are saved. Right: the seven Talents components, each labeled with its work domain. Two outputs at the bottom: user-confirmed user-side configuration is pushed by the iCode server per repository / team; agent-side candidates, with scorecards, go to the iCode-Core release pipeline for review.</figcaption>
 </figure>
 
-<h3 id="deploy-onboard">用户怎么接入：提供环境，平台验收「绿基线」</h3>
+<h3 id="deploy-onboard">How users onboard: provide an environment, the platform checks the "green baseline"</h3>
 
 <div class="steps">
 <div class="card">
-<h4>① 登记仓库</h4>
-<p>仓库地址、主分支、只读授权。</p>
+<h4>① Register the repository</h4>
+<p>Repository URL, main branch, read-only access.</p>
 </div>
 <div class="card">
-<h4>② 提供运行环境</h4>
-<p>Docker 镜像（或 Dockerfile / devcontainer 配置），并声明构建命令与测试命令。</p>
+<h4>② Provide a runtime environment</h4>
+<p>A Docker image (or a Dockerfile / devcontainer config), plus the build command and test command.</p>
 </div>
 <div class="card gate">
-<h4>③ 平台验收绿基线</h4>
-<p>在主分支最新提交上，用用户的镜像构建成功、<strong>全部测试通过</strong>；连跑 3 次结果一致。不一致的测试列成清单交用户确认（修掉，或显式标为「不稳定、不参与判分」）。产出一份接入报告：构建耗时、测试数、不稳定测试清单。</p>
+<h4>③ Platform checks the green baseline</h4>
+<p>On the latest commit of the main branch, the user's image builds and <strong>all tests pass</strong>, with the same result on 3 consecutive runs. Inconsistent tests are listed for the user to resolve (fix them, or explicitly mark them "flaky, excluded from scoring"). The output is an onboarding report: build time, test count, list of flaky tests.</p>
 </div>
 <div class="card">
-<h4>④ 授权轨迹的使用范围</h4>
-<p>只用于本仓 / 本团队；是否允许脱敏后参与 Agent 侧的共性改进（<strong>默认否</strong>）。</p>
+<h4>④ Authorize how trajectories are used</h4>
+<p>Only for this repository / team; whether anonymized data may contribute to general agent-side improvements (<strong>off by default</strong>).</p>
 </div>
 </div>
 
-<p>完成后该仓状态变为「已接入」，平台开始从它的历史会话自动造题。</p>
+<p>Once done, the repository's status becomes "Connected", and the platform starts building tasks from its past sessions automatically.</p>
 
-<h3>从接入到生效</h3>
+<h3>From onboarding to rollout</h3>
 
 <figure>
   <div class="figframe">
-<svg class="ifig" viewBox="0 0 1100 410" role="img" aria-label="从接入到生效的流程：接入、后台演进、进化提案、用户确认、生效、回访与回滚">
+<svg class="ifig" viewBox="0 0 1100 410" role="img" aria-label="From onboarding to rollout: onboarding, background evolution, evolution proposal, user review, rollout, follow-up and rollback">
   <defs>
     <marker id="f82-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
 
-  <!-- 上方标签：谁在做 -->
-  <text class="t-g" x="90" y="40" text-anchor="middle">用户 · 一次性</text>
-  <text class="t-d" x="274" y="40" text-anchor="middle">后台 · 用户无感</text>
-  <text class="t-d" x="458" y="40" text-anchor="middle">门户</text>
-  <text class="t-g" x="642" y="40" text-anchor="middle">用户确认点</text>
-  <text class="t-d" x="826" y="40" text-anchor="middle">服务端</text>
-  <text class="t-d" x="1010" y="40" text-anchor="middle">后台</text>
+  <!-- Top labels: who does it -->
+  <text class="t-g" x="90" y="40" text-anchor="middle">User · one-time</text>
+  <text class="t-d" x="274" y="40" text-anchor="middle">Background · invisible</text>
+  <text class="t-d" x="458" y="40" text-anchor="middle">Portal</text>
+  <text class="t-g" x="642" y="40" text-anchor="middle">User checkpoint</text>
+  <text class="t-d" x="826" y="40" text-anchor="middle">Server</text>
+  <text class="t-d" x="1010" y="40" text-anchor="middle">Background</text>
 
-  <!-- ① 接入 -->
+  <!-- ① Onboarding -->
   <rect class="bx-g" x="12" y="56" width="156" height="170" rx="10"/>
-  <text class="t-hg" x="90" y="88" text-anchor="middle">① 接入</text>
-  <text class="t" x="90" y="120" text-anchor="middle">登记仓库</text>
-  <text class="t" x="90" y="144" text-anchor="middle">提供运行环境</text>
-  <text class="t" x="90" y="168" text-anchor="middle">平台验收绿基线</text>
-  <text class="t" x="90" y="192" text-anchor="middle">授权轨迹范围</text>
+  <text class="t-hg" x="90" y="88" text-anchor="middle" style="font-size:15px">① Onboarding</text>
+  <text class="t" x="90" y="120" text-anchor="middle" style="font-size:13px">Register repository</text>
+  <text class="t" x="90" y="144" text-anchor="middle" style="font-size:13px">Provide runtime env</text>
+  <text class="t" x="90" y="168" text-anchor="middle" style="font-size:13px">Green-baseline check</text>
+  <text class="t" x="90" y="192" text-anchor="middle" style="font-size:13px">Authorize data scope</text>
 
-  <!-- ② 后台演进 -->
+  <!-- ② Background evolution -->
   <rect class="bx" x="196" y="56" width="156" height="170" rx="10"/>
-  <text class="t-h" x="274" y="88" text-anchor="middle">② 后台演进</text>
-  <text class="t" x="274" y="120" text-anchor="middle">自动造题</text>
-  <text class="t" x="274" y="144" text-anchor="middle">评测 N 题 × k 次</text>
-  <text class="t" x="274" y="168" text-anchor="middle">归因 → 候选改动</text>
-  <text class="t" x="274" y="192" text-anchor="middle">配对验证 · 两级门</text>
+  <text class="t-h" x="274" y="88" text-anchor="middle" style="font-size:15px">② Evolution</text>
+  <text class="t" x="274" y="120" text-anchor="middle" style="font-size:13px">Auto-build tasks</text>
+  <text class="t" x="274" y="144" text-anchor="middle" style="font-size:13px">Evaluate N tasks × k</text>
+  <text class="t" x="274" y="168" text-anchor="middle" style="font-size:13px">Attribute → candidate</text>
+  <text class="t" x="274" y="192" text-anchor="middle" style="font-size:13px">Paired check · 2 gates</text>
 
-  <!-- ③ 进化提案 -->
+  <!-- ③ Evolution proposal -->
   <rect class="bx" x="380" y="56" width="156" height="170" rx="10"/>
-  <text class="t-h" x="458" y="88" text-anchor="middle">③ 进化提案</text>
-  <text class="t" x="458" y="120" text-anchor="middle">五个视图（第二节）：</text>
-  <text class="t" x="458" y="144" text-anchor="middle">任务集 · 成绩单</text>
-  <text class="t" x="458" y="168" text-anchor="middle">进化过程</text>
-  <text class="t" x="458" y="192" text-anchor="middle">产物 diff · 确认</text>
+  <text class="t-h" x="458" y="88" text-anchor="middle" style="font-size:15px">③ Proposal</text>
+  <text class="t" x="458" y="120" text-anchor="middle" style="font-size:13px">Five views (Sec. 2):</text>
+  <text class="t" x="458" y="144" text-anchor="middle" style="font-size:13px">Task set · scorecard</text>
+  <text class="t" x="458" y="168" text-anchor="middle" style="font-size:13px">Evolution history</text>
+  <text class="t" x="458" y="192" text-anchor="middle" style="font-size:13px">Artifact diff · confirm</text>
 
-  <!-- ④ 用户确认 -->
+  <!-- ④ User review -->
   <rect class="bx-g" x="564" y="56" width="156" height="170" rx="10"/>
-  <text class="t-hg" x="642" y="88" text-anchor="middle">④ 用户确认</text>
-  <text class="t" x="642" y="120" text-anchor="middle">逐条采纳 / 拒绝</text>
-  <text class="t" x="642" y="144" text-anchor="middle">拒绝要写原因</text>
-  <text class="t" x="642" y="168" text-anchor="middle">或先试用 N 天</text>
-  <text class="t" x="642" y="192" text-anchor="middle">选范围：本仓 / 团队</text>
+  <text class="t-hg" x="642" y="88" text-anchor="middle" style="font-size:15px">④ User review</text>
+  <text class="t" x="642" y="120" text-anchor="middle" style="font-size:13px">Adopt / reject each</text>
+  <text class="t" x="642" y="144" text-anchor="middle" style="font-size:13px">Reject with a reason</text>
+  <text class="t" x="642" y="168" text-anchor="middle" style="font-size:13px">or trial for N days</text>
+  <text class="t" x="642" y="192" text-anchor="middle" style="font-size:13px">Scope: repo / team</text>
 
-  <!-- ⑤ 生效 -->
+  <!-- ⑤ Rollout -->
   <rect class="bx" x="748" y="56" width="156" height="170" rx="10"/>
-  <text class="t-h" x="826" y="88" text-anchor="middle">⑤ 生效</text>
-  <text class="t" x="826" y="120" text-anchor="middle">服务端按仓下发</text>
-  <text class="t" x="826" y="144" text-anchor="middle">或提合并请求</text>
-  <text class="t" x="826" y="168" text-anchor="middle">合入 .icode/</text>
-  <text class="t" x="826" y="192" text-anchor="middle">客户端不用升级</text>
+  <text class="t-h" x="826" y="88" text-anchor="middle" style="font-size:15px">⑤ Rollout</text>
+  <text class="t" x="826" y="120" text-anchor="middle" style="font-size:13px">Server pushes per repo</text>
+  <text class="t" x="826" y="144" text-anchor="middle" style="font-size:13px">or a merge request</text>
+  <text class="t" x="826" y="168" text-anchor="middle" style="font-size:13px">into .icode/</text>
+  <text class="t" x="826" y="192" text-anchor="middle" style="font-size:13px">No client upgrade</text>
 
-  <!-- ⑥ 回访与回滚 -->
+  <!-- ⑥ Follow-up and rollback -->
   <rect class="bx-g" x="932" y="56" width="156" height="170" rx="10"/>
-  <text class="t-hg" x="1010" y="88" text-anchor="middle">⑥ 回访与回滚</text>
-  <text class="t" x="1010" y="120" text-anchor="middle">按周回访</text>
-  <text class="t" x="1010" y="144" text-anchor="middle">同类纠正、采纳率</text>
-  <text class="t" x="1010" y="168" text-anchor="middle">与离线成绩单对照</text>
-  <text class="t" x="1010" y="192" text-anchor="middle">低于阈值自动回滚</text>
+  <text class="t-hg" x="1010" y="88" text-anchor="middle" style="font-size:15px">⑥ Follow-up</text>
+  <text class="t" x="1010" y="120" text-anchor="middle" style="font-size:13px">Weekly follow-up</text>
+  <text class="t" x="1010" y="144" text-anchor="middle" style="font-size:13px">Corrections · adoption</text>
+  <text class="t" x="1010" y="168" text-anchor="middle" style="font-size:13px">vs. offline scorecard</text>
+  <text class="t" x="1010" y="192" text-anchor="middle" style="font-size:13px">Auto-rollback if too low</text>
 
-  <!-- 主流程箭头 -->
+  <!-- Main flow arrows -->
   <path class="ln" d="M168,141 H192" marker-end="url(#f82-a)"/>
   <path class="ln" d="M352,141 H376" marker-end="url(#f82-a)"/>
   <path class="ln" d="M536,141 H560" marker-end="url(#f82-a)"/>
   <path class="ln" d="M720,141 H744" marker-end="url(#f82-a)"/>
   <path class="ln" d="M904,141 H928" marker-end="url(#f82-a)"/>
 
-  <!-- 回流 -->
+  <!-- Feedback -->
   <path class="ln-d" d="M642,226 V266 H304 V230" marker-end="url(#f82-a)"/>
-  <text class="t-d" x="473" y="256" text-anchor="middle">拒绝原因回灌，作为负样本</text>
+  <text class="t-d" x="473" y="256" text-anchor="middle">Rejection reasons fed back as negative samples</text>
   <path class="ln-d" d="M1010,226 V322 H244 V230" marker-end="url(#f82-a)"/>
-  <text class="t-d" x="627" y="312" text-anchor="middle">回访：同类纠正是否减少、采纳率是否变化 → 回到后台</text>
+  <text class="t-d" x="627" y="312" text-anchor="middle">Follow-up: fewer repeat corrections? adoption rate changed? → back to background</text>
 
-  <!-- 图例 -->
+  <!-- Legend -->
   <rect class="bx" x="20" y="362" width="28" height="18" rx="4"/>
-  <text class="t-d" x="58" y="376">紫：主流程</text>
+  <text class="t-d" x="58" y="376">Purple: main flow</text>
   <rect class="bx-g" x="200" y="362" width="28" height="18" rx="4"/>
-  <text class="t-d" x="238" y="376">橙：门——绿基线、用户确认、自动回滚</text>
-  <path class="ln-d" d="M560,371 H608" marker-end="url(#f82-a)"/>
-  <text class="t-d" x="618" y="376">紫虚线：回流到后台</text>
+  <text class="t-d" x="238" y="376">Orange: gates (green baseline, user review, auto-rollback)</text>
+  <path class="ln-d" d="M700,371 H748" marker-end="url(#f82-a)"/>
+  <text class="t-d" x="758" y="376">Dashed purple: feedback to background</text>
 </svg>
   </div>
-  <figcaption><strong>图 3</strong> 从接入到生效。用户只在 ①（一次性接入）与 ④（确认提案）两处参与；②⑤⑥ 在后台自动进行。④ 的拒绝原因与 ⑥ 的回访结果都回到 ② 的演进引擎。</figcaption>
+  <figcaption><strong>Figure 3</strong> From onboarding to rollout. Users take part only at ① (one-time onboarding) and ④ (confirming the proposal); ②⑤⑥ run automatically in the background. Rejection reasons from ④ and follow-up results from ⑥ both go back to the evolution engine in ②.</figcaption>
 </figure>
 
-<p>用户侧改动（skill、知识条目、仓级提示词）由 iCode 服务端按仓下发，或以合并请求进用户仓库，可一键回滚；Agent 侧改动随 iCode 正式版本发布，由 iCode-Talents 与 iCode-Core 共同审核，不让单个用户确认。</p>
+<p>User-side changes (skills, knowledge entries, repository-level prompts) are pushed per repository by the iCode server, or land in the user's repository as a merge request, with one-click rollback. Agent-side changes ship with official iCode releases and are reviewed jointly by iCode-Talents and iCode-Core; a single user cannot approve them.</p>
 
 </section>
 
 <section id="compete">
-<h2>四、核心竞争力：不只是造题</h2>
+<h2>4. Core strengths: more than building tasks</h2>
 
-<p>竞争力来自整个项目几块积累的叠加：先是别人拿不到的原料，再是用好原料的方法与积累。下面按「别人难追上的程度」排：</p>
+<p>Our strengths come from several bodies of work stacked together: first, raw material others cannot get; then, the methods and experience to use it well. Ranked below by "how hard it is for others to catch up":</p>
 
 <ol class="rank-list">
 <li>
-<p><strong>我们的位置：私有产品仓、可执行环境、真实会话三样都在手里。</strong>做 RSI 要把真实用户的任务变成能反复跑、能自动判分的题，三样缺一不可，我们三样都有：</p>
+<p><strong>Our position: private product repositories, executable environments and real sessions, all in hand.</strong> RSI needs real user tasks turned into tasks that can be rerun and scored automatically, and that takes all three. We have all three:</p>
 <ul>
-<li><strong>私有产品仓</strong>：iCode 的会话就发生在公司自己的产品仓上。这些仓有完整的提交历史，能回到会话起点重建现场，题出自真实产品，而不是开源仓或合成任务。</li>
-<li><strong>可执行环境</strong>：用户接入时提供运行环境，平台验收「绿基线」（第三节），题能反复跑、自动判分。</li>
-<li><strong>真实会话</strong>：来自 iCode 的真实用户，含多轮交互与用户的纠正。题面和验收要求直接取自用户原话，判分对的是用户真正在意的东西。</li>
+<li><strong>Private product repositories</strong>: iCode sessions happen on the company's own product repositories. They have full commit history, so we can go back to the start of a session and rebuild the scene; tasks come from real products, not open-source repositories or synthetic tasks.</li>
+<li><strong>Executable environments</strong>: users provide a runtime environment at onboarding and the platform checks the "green baseline" (Section 3), so tasks can be rerun and scored automatically.</li>
+<li><strong>Real sessions</strong>: from real iCode users, with multi-turn interaction and user corrections. Task statements and acceptance requirements come straight from the users' own words, so scoring targets what users actually care about.</li>
 </ul>
-<p>其他人通常只占其中一部分：有用户轨迹的拿不到代码仓和环境，有代码仓的没有真实用户的轨迹。</p>
+<p>Others usually hold only part of this: those with user trajectories cannot get the repositories and environments, and those with repositories have no real user trajectories.</p>
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:15%">谁</th><th style="width:43%">怎么做</th><th style="width:11%">产品仓</th><th style="width:11%">用户会话</th><th style="width:20%">缺什么</th></tr>
+<tr><th style="width:15%">Who</th><th style="width:43%">What they do</th><th style="width:11%">Product repos</th><th style="width:11%">User sessions</th><th style="width:20%">What is missing</th></tr>
 </thead>
 <tbody>
-<tr><td>GitHub Copilot</td><td>个人版的交互数据默认用于训练：输入输出、代码片段、文件名、仓库结构（2026-04 起）</td><td>—</td><td>片段</td><td>不用私有仓代码，没有环境</td></tr>
-<tr><td>Anthropic</td><td>个人账户的会话（含 Claude Code）经用户同意可用于训练（2025-08 起）</td><td>—</td><td>有</td><td>没有代码仓与环境</td></tr>
-<tr><td>JetBrains</td><td>收集编辑历史、终端使用和 AI 交互训练自家模型（2025-09 起）</td><td>—</td><td>片段</td><td>没有整仓，也没有环境</td></tr>
-<tr><td>Cursor</td><td>把用户接受或拒绝当奖励做在线强化学习；另用自家工程师的会话做内部评测集 CursorBench</td><td>只有自家仓</td><td>有</td><td>线上信号不复现环境；评测集的用户只是自家工程师</td></tr>
-<tr><td>某 Z 厂</td><td>AI 编程客户端被发现默认上传用户代码仓（含 Git 历史），随后官方删除数据、下线上传（2026-09）</td><td>—</td><td>有</td><td>代码仓在用户本地，复现不了；拿仓的方式越了界</td></tr>
-<tr><td>Meta · REAP</td><td>内部 coding 助手的生产会话做成 132 道可执行题</td><td>1 个内部仓</td><td>有，单轮</td><td>只有一个仓、只取单轮</td></tr>
-<tr><td>Scale · SWE-Bench Pro</td><td>从 18 家创业公司买私有仓，造了 276 道题</td><td>买来的仓</td><td>—</td><td>没有用户会话；贵，规模小</td></tr>
-<tr><td>Google · GITS-Eval</td><td>内部 issue 系统里的 178 个 bug 做评测</td><td>内部仓</td><td>—</td><td>不是 agent 会话</td></tr>
-<tr><td>SWE-bench Verified</td><td>开源仓的 issue / PR，500 题</td><td>—</td><td>—</td><td>没有产品仓，没有用户会话</td></tr>
-<tr><td><strong>本项目</strong></td><td>iCode 真实用户在公司产品仓上的多轮会话，回到起点重建环境</td><td><strong>有</strong></td><td><strong>有，多轮</strong></td><td><strong>三样齐备</strong></td></tr>
+<tr><td>GitHub Copilot</td><td>Interaction data from individual plans is used for training by default: inputs and outputs, code snippets, file names, repository structure (since 2026-04)</td><td>—</td><td>Snippets</td><td>No private repository code, no environment</td></tr>
+<tr><td>Anthropic</td><td>Sessions from personal accounts (including Claude Code) may be used for training with user consent (since 2025-08)</td><td>—</td><td>Yes</td><td>No repositories or environments</td></tr>
+<tr><td>JetBrains</td><td>Collects edit history, terminal usage and AI interactions to train its own models (since 2025-09)</td><td>—</td><td>Snippets</td><td>No full repositories, no environments</td></tr>
+<tr><td>Cursor</td><td>Uses users' accepts and rejects as rewards for online reinforcement learning; separately builds the internal eval set CursorBench from its own engineers' sessions</td><td>Own repos only</td><td>Yes</td><td>Online signals do not reproduce environments; the eval set's users are only its own engineers</td></tr>
+<tr><td>Vendor Z</td><td>Its AI coding client was found uploading users' repositories (including Git history) by default; the company then deleted the data and turned off the upload (2026-09)</td><td>—</td><td>Yes</td><td>Repositories live on users' machines and cannot be reproduced; the way it got them crossed the line</td></tr>
+<tr><td>Meta · REAP</td><td>Turned production sessions of an internal coding assistant into 132 executable tasks</td><td>1 internal repo</td><td>Yes, single-turn</td><td>Only one repository, single turns only</td></tr>
+<tr><td>Scale · SWE-Bench Pro</td><td>Bought private repositories from 18 startups and built 276 tasks</td><td>Purchased repos</td><td>—</td><td>No user sessions; expensive, small scale</td></tr>
+<tr><td>Google · GITS-Eval</td><td>Evaluates on 178 bugs from an internal issue system</td><td>Internal repos</td><td>—</td><td>Not agent sessions</td></tr>
+<tr><td>SWE-bench Verified</td><td>Issues / PRs from open-source repositories, 500 tasks</td><td>—</td><td>—</td><td>No product repositories, no user sessions</td></tr>
+<tr><td><strong>This project</strong></td><td>Multi-turn sessions of real iCode users on company product repositories, with environments rebuilt from the starting point</td><td><strong>Yes</strong></td><td><strong>Yes, multi-turn</strong></td><td><strong>All three in place</strong></td></tr>
 </tbody>
 </table>
 </div>
-<p class="src" style="margin:var(--s-sm) 0 0;">出处：各家官方博客与公告；REAP arXiv 2604.01527；SWE-Bench Pro arXiv 2509.16941；GITS-Eval arXiv 2501.07531。</p>
+<p class="src" style="margin:var(--s-sm) 0 0;">Sources: official blogs and announcements of each company; REAP arXiv 2604.01527; SWE-Bench Pro arXiv 2509.16941; GITS-Eval arXiv 2501.07531.</p>
 </li>
 <li>
-<p><strong>三条路径融合，从 coding 问题本身出发。</strong>业界公开的演进实践基本是单个 agent 的视角：沿着这个 agent 的组件由外到内改（第五节的六个层级，全是 agent 组件）。我们把一次 coding 失败拆成「没用上（Agent 组件）/ 不会（软件工程能力）/ 不知道（知识）」三类，分流到三条路径，再在同一批题上验证组合（短期这一类问题上的分工见<a href="#core-three-paths" style="color: var(--c-accent);">第一节图 1</a>）。</p>
-<p style="margin-bottom:0;">收益不能直接相加——叠在已进化 harness 上的补丁可以 −15.7（HarnessBank，arXiv 2607.13683，2026-07）——所以融合本身需要分流与判据，是能力而不是堆叠。下面三条前期工作，正好各自对应一条路径。</p>
+<p><strong>Three paths combined, starting from the coding problem itself.</strong> Published evolution practice in industry is almost always single-agent: change that agent's components from the outside in (the six levels in Section 5 are all agent components). We split a coding failure into three kinds, "didn't use it (agent components) / can't do it (software engineering capability) / didn't know (knowledge)", route them to three paths, and then verify combinations on the same batch of tasks (for how the work splits on the short-term problem class, see <a href="#core-three-paths" style="color: var(--c-accent);">Figure 1 in Section 1</a>).</p>
+<p style="margin-bottom:0;">Gains do not simply add up: a patch stacked on an already-evolved harness can score −15.7 (HarnessBank, arXiv 2607.13683, 2026-07). So combining the paths needs routing and criteria of its own; it is a capability, not stacking. The three bodies of prior work below each map to one path.</p>
 </li>
 <li>
-<p><strong>路径 A · 自演进方向的前期工作：从零走通一条闭环。</strong>闭环的每一环都有团队自己的工作，串起来就是从环境、造题到归因、优化、训练的完整链路：</p>
+<p><strong>Path A · Prior work on self-evolution: a loop built from scratch.</strong> Every link of the loop has the team's own work behind it; chained together they form the full pipeline from environments and task building to attribution, optimization and training:</p>
 <ul>
-<li><strong>造题与环境</strong>：Change2Task（arXiv 2607.28591，2026-07，ICLR 2027 投稿中）把历史改动反向注入当前健康版本造题，构造成功率 79.6%（900/1,130），环境时长 −58.4%、存储 −71.2%；正好解决「绿基线在主分支、会话在旧提交」这个部署难点（第三节）。</li>
-<li><strong>归因</strong>：DoVer（arXiv 2512.06749，ICLR 2026），干预式故障定位。</li>
-<li><strong>优化</strong>：AutoSaddler（arXiv 2608.23041，2026-08，预印本），harness 自动优化，即路径 A 本身。</li>
-<li><strong>训练</strong>：Agent Lightning（arXiv 2608.17528），agentic RL 框架，对应模型侧的大闭环。</li>
+<li><strong>Task building and environments</strong>: Change2Task (arXiv 2607.28591, 2026-07, under submission to ICLR 2027) builds tasks by injecting historical changes in reverse into the current healthy version, with a 79.6% construction success rate (900/1,130), −58.4% environment time and −71.2% storage. It solves exactly the deployment problem of "green baseline on the main branch, session on an old commit" (Section 3).</li>
+<li><strong>Attribution</strong>: DoVer (arXiv 2512.06749, ICLR 2026), interventional fault localization.</li>
+<li><strong>Optimization</strong>: AutoSaddler (arXiv 2608.23041, 2026-08, preprint), automatic harness optimization, i.e. path A itself.</li>
+<li><strong>Training</strong>: Agent Lightning (arXiv 2608.17528), an agentic RL framework, corresponding to the larger model-side loop.</li>
 </ul>
-<p style="margin-bottom:0;">RepoLaunch、SWE-bench-Live 作为参考工作。408b8c 的 v1→v7（第一节）就是这条链路在一道题上的实跑。</p>
+<p style="margin-bottom:0;">RepoLaunch and SWE-bench-Live serve as reference work. 408b8c's v1→v7 (Section 1) is this pipeline run for real on one task.</p>
 </li>
 <li>
-<p><strong>路径 B · 软件工程方向的前期工作。</strong>路径 B 要的代码定位、代码分析、测试生成、判分，正是团队软件工程方向的积累，覆盖需求、测试生成、判分、轨迹诊断、代码演化与复用、代码可靠性几个方向。代表作：</p>
+<p><strong>Path B · Prior work in software engineering.</strong> The code location, code analysis, test generation and scoring that path B needs are exactly what the team has built up in software engineering, covering requirements, test generation, scoring, trajectory diagnosis, code evolution and reuse, and code reliability. Representative work:</p>
 <ul>
-<li><strong>代码演化</strong>：Evolution-aware Constraint Derivation for Software Remodularization（面向重新模块化的演化感知约束推导，TOSEM 2024）——变更影响分析与依赖约束，短期这一类问题直接用得上。</li>
-<li><strong>测试生成</strong>：Beyond Coverage（超越覆盖率：用大模型增强测试套件的有效性，OOPSLA 2026）——逐条路径确认改到位。</li>
-<li><strong>需求</strong>：A Unified Issue Resolution Benchmark for Requirement Clarification, Planning, and Code Generation for Coding Agents（面向 coding agent 的需求澄清、规划与代码生成统一基准，arXiv 2608.09072）。</li>
-<li><strong>判分</strong>：Can LLMs Replace Human Evaluators?（大模型能取代人类评审吗？ISSTA 2025）。</li>
-<li><strong>轨迹诊断</strong>：What Resolve Rate Hides（解决率掩盖了什么：coding agent 的轨迹结构诊断，arXiv 2607.06184）。</li>
+<li><strong>Code evolution</strong>: Evolution-aware Constraint Derivation for Software Remodularization (TOSEM 2024): change impact analysis and dependency constraints, directly usable for the short-term problem class.</li>
+<li><strong>Test generation</strong>: Beyond Coverage (using LLMs to improve test suite effectiveness, OOPSLA 2026): confirming each path is updated.</li>
+<li><strong>Requirements</strong>: A Unified Issue Resolution Benchmark for Requirement Clarification, Planning, and Code Generation for Coding Agents (arXiv 2608.09072).</li>
+<li><strong>Scoring</strong>: Can LLMs Replace Human Evaluators? (ISSTA 2025).</li>
+<li><strong>Trajectory diagnosis</strong>: What Resolve Rate Hides (structural trajectory diagnosis for coding agents, arXiv 2607.06184).</li>
 </ul>
 </li>
 <li>
-<p><strong>路径 C · 知识工程方向的前期工作。</strong>团队在知识工程上主要做过三件事，正好是短期这一类问题需要的三种知识来源：<strong>代码图谱</strong>（代码实体与依赖关系，补上状态读写边就能直接推传播面）、<strong>代码开发范式挖掘</strong>（从提交历史里挖「改这里通常也要改那里」的共变规律）、<strong>基于文档 / 文本知识图谱的 RAG</strong>（把文档里的契约与约定结构化后检索）。</p>
-<p style="margin-bottom:0;">在此之上，我们对知识工程做了六份深读调研，收敛出几条约束：写入要增量追加、由确定性代码合并——整份重写会让知识库一步之内塌掉（ACE 实测从 18,282 token / 66.7 分跌到 122 token / 57.1 分；<em>ACE: Agentic Context Engineering</em>，arXiv 2510.04618，ICLR 2026）；每条知识必须自带适用边界与触发条件；知识是模型与病理特化的，跨场景迁移是真正的瓶颈。</p>
+<p><strong>Path C · Prior work in knowledge engineering.</strong> The team has done three main things in knowledge engineering, which are exactly the three knowledge sources the short-term problem class needs: <strong>code graphs</strong> (code entities and dependencies; add state read/write edges and the propagation surface can be derived directly), <strong>development pattern mining</strong> (mining co-change rules like "when you change this, you usually also change that" from commit history), and <strong>RAG over document / text knowledge graphs</strong> (structuring the contracts and conventions in documents for retrieval).</p>
+<p style="margin-bottom:0;">On top of that we did six in-depth literature reviews on knowledge engineering and arrived at a few constraints: writes must be incremental appends merged by deterministic code, because rewriting the whole thing can collapse a knowledge base in a single step (ACE measured a drop from 18,282 tokens / 66.7 points to 122 tokens / 57.1 points; <em>ACE: Agentic Context Engineering</em>, arXiv 2510.04618, ICLR 2026); every piece of knowledge must carry its own scope and trigger conditions; knowledge is specific to the model and the failure pattern, and transfer across scenarios is the real bottleneck.</p>
 </li>
 <li>
-<p><strong>演进机制本身也会变好：双循环。</strong>一阶每轮改 agent 的做法；二阶每隔若干轮复盘一阶，改进它「怎么提改动、怎么判改动有没有用」；后续再用二阶的纠偏信号训练过程评判模型（第十二节）。改进演进循环本身在学术界已有工作，共同的结论是必须固定一个 agent 改不动的锚；我们的锚是测试、同起点对照与人工抽检，都来自真实仓库。</p>
-<p style="margin-bottom:0;"><strong>状态</strong>：一阶在 408b8c 上走通；二阶目前由人工复盘完成；训练过程评判模型是后续工作。</p>
+<p><strong>The evolution mechanism itself improves: the dual loop.</strong> The first-order loop changes how the agent works every round; the second-order loop reviews the first-order loop every few rounds and improves "how it proposes changes and how it judges whether they help"; later, the second-order correction signals train a process judge model (Section 12). Academia already has work on improving the evolution loop itself, and the shared conclusion is that there must be a fixed anchor the agent cannot change. Our anchors are tests, same-start comparisons and manual spot checks, all from real repositories.</p>
+<p style="margin-bottom:0;"><strong>Status</strong>: the first-order loop has run end to end on 408b8c; the second-order loop is currently done by manual review; the process judge model is future work.</p>
 </li>
 <li>
-<p style="margin-bottom:0;"><strong>可信判据。</strong>造出的每道题都要过 D1–D9 门禁；判分由看不到参考 patch 的 verify agent 按检查点现场写测试（第九节）；产品仓上还能用行级采纳（用户最终留下了 agent 写的哪几行）反过来检验任务集是否可信。</p>
+<p style="margin-bottom:0;"><strong>Trustworthy criteria.</strong> Every task built must pass the D1–D9 gates; scoring is done by a verify agent that cannot see the reference patch and writes tests on the spot from the checkpoints (Section 9); on product repositories, line-level adoption (which lines the agent wrote that the user finally kept) can also be used in reverse to check whether the task set is trustworthy.</p>
 </li>
 <li>
-<p style="margin-bottom:0;"><strong>不止看「能不能跑」。</strong>现有 RSI 工作大都只看功能正确；代码写完之后还要人长期维护，我们把可维护性、可读性等非功能维度从用户的话里提出来，纳入评测（第十三节）。</p>
+<p style="margin-bottom:0;"><strong>More than "does it run".</strong> Most RSI work looks only at functional correctness, but code needs long-term human maintenance after it is written. We extract non-functional dimensions such as maintainability and readability from what users say and include them in evaluation (Section 13).</p>
 </li>
 <li>
-<p style="margin-bottom:0;"><strong>部署位置。</strong>跟着 iCode 服务端，轨迹天然可得、用户无感；每接入一个仓，题与判据就多一份，且越用越准（见<a href="#deploy" style="color: var(--c-accent);">第三节</a>）。</p>
+<p style="margin-bottom:0;"><strong>Where it is deployed.</strong> Alongside the iCode server, trajectories are naturally available and users notice nothing; every connected repository adds more tasks and criteria, which get more accurate with use (see <a href="#deploy" style="color: var(--c-accent);">Section 3</a>).</p>
 </li>
 </ol>
 
 <div class="callout success">
-<div class="callout__label">✅ 另外几个前提</div>
+<div class="callout__label">✅ A few more preconditions</div>
 <ul>
-<li><strong>时机对</strong>：模型能力刚刚够用，工业界刚开始规模应用</li>
-<li><strong>问题真</strong>：填补工业界的三大缺口，解决真实痛点</li>
-<li><strong>方法实</strong>：不依赖公开基准，从真实轨迹提取任务</li>
-<li><strong>团队全</strong>：三方协同，职责清晰，生态健康</li>
+<li><strong>Right timing</strong>: models are just capable enough, and industry has just started using them at scale</li>
+<li><strong>Real problem</strong>: closes industry's three major gaps and solves real pain points</li>
+<li><strong>Grounded method</strong>: does not rely on public benchmarks; extracts tasks from real trajectories</li>
+<li><strong>Complete team</strong>: three parties working together, clear responsibilities, a healthy ecosystem</li>
 </ul>
 </div>
 
 </section>
 
 <section id="intro">
-<h2>五、从哪里来：RSI 的现状与机会窗口</h2>
+<h2>5. Where it comes from: the state of RSI and the window of opportunity</h2>
 
-<p><strong>RSI</strong>（Recursive Self-Improvement，递归自我改进）指 AI 系统修改自己的代码、配置或策略，且改动持久化、影响后续版本，形成复合增长的改进循环。单轮内的自我修正、人工决定每一步的优化都不算。</p>
+<p><strong>RSI</strong> (Recursive Self-Improvement) means an AI system modifies its own code, configuration or strategy, with the changes persisted and affecting later versions, forming a compounding improvement loop. Self-correction within a single round, or optimization where a human decides every step, does not count.</p>
 
 <div class="grid-2">
 <div class="card">
-<h4>学术界：设计空间已经铺开，规模没跟上</h4>
-<p style="margin-bottom:0;">从单层优化（2024：DSPy、OPRO 改提示词）走到 harness 整体优化（2026），技能库、记忆、拓扑、权重都有人做。但实验规模停在数百题；泛化大幅缩水（同分布 +14，分布外只剩 +5）；没有生产可用的安全防御，也没有成本核算。</p>
+<h4>Academia: the design space is mapped out, scale has not kept up</h4>
+<p style="margin-bottom:0;">From single-layer optimization (2024: DSPy and OPRO tuning prompts) to whole-harness optimization (2026), people have worked on skill libraries, memory, topology and weights. But experiments stay at a few hundred tasks; generalization shrinks sharply (+14 in-distribution, only +5 out of distribution); there are no production-ready safety defenses and no cost accounting.</p>
 </div>
 <div class="card">
-<h4>工业界：各家都在演进，没有一家全自动合并</h4>
-<p style="margin-bottom:0;">我们按六个层级（下表）调研了 16 家公司的公开实践。三条模式多源交叉后仍成立：先把线上修正与用户反馈整理成评测题，再让 agent 提候选改动；离线评测与线上 A/B 必须同时过关；候选可以自动生成、开草稿，但发布仍保留人工门槛。</p>
+<h4>Industry: everyone is evolving, nobody merges fully automatically</h4>
+<p style="margin-bottom:0;">We surveyed the public practice of 16 companies along six levels (table below). Three patterns hold up after cross-checking multiple sources: first turn online fixes and user feedback into evaluation tasks, then let the agent propose candidate changes; offline evaluation and online A/B tests must both pass; candidates can be generated and drafted automatically, but releases still keep a human gate.</p>
 </div>
 </div>
 
 <div class="table-wrap">
 <table>
-    <caption>本页用来对照的六个层级（改动的对象由外到内）</caption>
-    <thead><tr><th>层级</th><th>改的是什么</th><th>例子</th></tr></thead>
+    <caption>The six levels used for comparison on this page (what is changed, from the outside in)</caption>
+    <thead><tr><th>Level</th><th>What changes</th><th>Examples</th></tr></thead>
     <tbody>
-      <tr><td><b>① 用户提示词</b></td><td>仓库说明文件、需求补全、项目知识</td><td>CLAUDE.md、AGENTS.md、.cursor/rules、QWEN.md</td></tr>
-      <tr><td><b>② 系统提示词</b></td><td>agent 的行为规则与做事流程</td><td>删减规则、逐模型改提示、输出压缩</td></tr>
-      <tr><td><b>③ 上下文与记忆</b></td><td>记住什么、何时取出、如何压缩</td><td>自动记忆、跨会话记忆、compaction、按需加载</td></tr>
-      <tr><td><b>④ 工具与技能</b></td><td>新增、修改、淘汰工具与 skill</td><td>工具描述、skill 文件、工具按需加载</td></tr>
-      <tr><td><b>⑤ harness 核心代码</b></td><td>agent 循环、控制逻辑、子 agent、编排</td><td>子 agent、委派策略、reasoning effort、沙箱</td></tr>
-      <tr><td><b>⑥ 演进循环本身</b></td><td>怎么改「怎么改」：评测、判据、搜索、发布</td><td>离线评测集、线上 A/B、自动爬分、回归补录</td></tr>
+      <tr><td><b>① User prompts</b></td><td>Repository instruction files, requirement completion, project knowledge</td><td>CLAUDE.md, AGENTS.md, .cursor/rules, QWEN.md</td></tr>
+      <tr><td><b>② System prompts</b></td><td>The agent's behavior rules and workflow</td><td>Trimming rules, per-model prompt edits, output compression</td></tr>
+      <tr><td><b>③ Context and memory</b></td><td>What to remember, when to retrieve it, how to compress it</td><td>Auto memory, cross-session memory, compaction, on-demand loading</td></tr>
+      <tr><td><b>④ Tools and skills</b></td><td>Adding, changing and retiring tools and skills</td><td>Tool descriptions, skill files, on-demand tool loading</td></tr>
+      <tr><td><b>⑤ Harness core code</b></td><td>Agent loop, control logic, sub-agents, orchestration</td><td>Sub-agents, delegation strategy, reasoning effort, sandbox</td></tr>
+      <tr><td><b>⑥ The evolution loop itself</b></td><td>Changing "how to change": evaluation, criteria, search, release</td><td>Offline eval sets, online A/B tests, automatic hill-climbing, backfilling regressions</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="callout">
-<div class="callout__label">为什么是 coding agent，为什么是现在</div>
-<p style="margin-bottom:0;">代码能执行、能测试，对错可以客观判定，是 RSI 最好的试验场。模型能力刚刚够用（太弱则优化无效，太强则无改进空间），agent 框架已经稳定，工业界有了海量真实轨迹。缺的是基础设施：从轨迹到任务的方法、可靠的判据、多维度的优化框架——这正是下一节的三个缺口。</p>
+<div class="callout__label">Why coding agents, and why now</div>
+<p style="margin-bottom:0;">Code can be executed and tested, and right and wrong can be judged objectively, which makes it the best testbed for RSI. Models are just capable enough (too weak and optimization does nothing, too strong and there is no room to improve), agent frameworks have stabilized, and industry has huge volumes of real trajectories. What is missing is infrastructure: a method to go from trajectories to tasks, reliable criteria, and a multi-dimensional optimization framework. These are the three gaps in the next section.</p>
 </div>
 
 </section>
 
 <section id="gaps">
-<h2>六、要补的三大缺口</h2>
+<h2>6. The three major gaps to close</h2>
 
-<p>工业界落地 RSI，卡住的不是算法不够优雅，而是缺少可落地的基础设施：</p>
+<p>What holds back RSI in industry is not that the algorithms lack elegance, but that the deployable infrastructure is missing:</p>
 
 <div class="table-wrap">
 <table class="wide">
-<thead><tr><th style="width:16%">缺口</th><th style="width:42%">现状</th><th style="width:42%">我们怎么补</th></tr></thead>
+<thead><tr><th style="width:16%">Gap</th><th style="width:42%">Today</th><th style="width:42%">How we close it</th></tr></thead>
 <tbody>
-<tr><td><strong>1 · 真实的环境与任务</strong></td><td>公开基准规模小（SWE-bench Verified 500 题），且被训练数据污染、判别力随时间衰减；工业界缺少从用户轨迹到可复现任务的系统方法</td><td>从真实会话自动造题：每道题由环境、题面、验收三部分组成，回到会话起点重建现场</td></tr>
-<tr><td><strong>2 · 可靠的判据</strong></td><td>人工写测试成本高；测试绑定固定实现，接口对不上就判错；agent 学会「过测试」而不是解决问题</td><td>验收检查点取自用户原话；看不到参考答案的 verify agent 按被测代码的接口现场写测试；判官单独校准</td></tr>
-<tr><td><strong>3 · 有效的优化维度</strong></td><td>学术界方法覆盖全但规模停在数百题；工业界有规模，缺「改了什么 → 怎么验证 → 凭什么留」的完整循环</td><td>失败分流到三条路径，配对重跑验证，两级门决定保留还是回滚</td></tr>
+<tr><td><strong>1 · Real environments and tasks</strong></td><td>Public benchmarks are small (SWE-bench Verified has 500 tasks), contaminated by training data, and lose discriminating power over time; industry lacks a systematic way to turn user trajectories into reproducible tasks</td><td>Build tasks automatically from real sessions: each task has an environment, a task statement and acceptance criteria, with the scene rebuilt from the start of the session</td></tr>
+<tr><td><strong>2 · Reliable criteria</strong></td><td>Hand-written tests are expensive; tests are tied to a fixed implementation, so a mismatched interface is judged wrong; agents learn to "pass the tests" instead of solving the problem</td><td>Acceptance checkpoints come from the user's own words; a verify agent that cannot see the reference answer writes tests on the spot against the interface of the code under test; judges are calibrated separately</td></tr>
+<tr><td><strong>3 · Effective optimization dimensions</strong></td><td>Academic methods are broad but stuck at a few hundred tasks; industry has scale but lacks the full loop of "what changed → how it is verified → why it stays"</td><td>Failures are routed to three paths, verified with paired reruns, and a two-level gate decides whether to keep or roll back</td></tr>
 </tbody>
 </table>
 </div>
@@ -679,38 +683,38 @@
 </section>
 
 <section id="scenarios">
-<h2>七、四个使用场景：统一框架，场景特化</h2>
+<h2>7. Four usage scenarios: one framework, specialized per scenario</h2>
 
-<p>四个场景走同一套流程（轨迹采集 → 任务提取 → 环境构建 → 评测运行 → 失败归类 → 演进决策 → 进化上线），只在数据来源与评测侧重上调整：</p>
+<p>All four scenarios follow the same pipeline (trajectory collection → task extraction → environment building → evaluation runs → failure classification → evolution decision → rollout), adjusting only the data sources and evaluation focus:</p>
 
 <div class="table-wrap">
 <table class="wide">
-<thead><tr><th style="width:12%">场景</th><th style="width:22%">任务从哪来</th><th style="width:22%">怎么评测</th><th style="width:22%">判什么</th><th style="width:22%">目标</th></tr></thead>
+<thead><tr><th style="width:12%">Scenario</th><th style="width:22%">Where tasks come from</th><th style="width:22%">How it is evaluated</th><th style="width:22%">What is judged</th><th style="width:22%">Goal</th></tr></thead>
 <tbody>
-<tr><td><strong>A 越用越好</strong></td><td>多来源轨迹：产品仓、AI4AI、硬件适配、外部用户</td><td>按任务类型分层评测</td><td>改动后同类问题是否不再复发</td><td>按类型成功率 + 跨类型泛化</td></tr>
-<tr><td><strong>B 模型适配</strong></td><td>固定回归集</td><td>新旧模型双版本配对重跑</td><td>按退步类型归类（提示词理解、工具调用、推理深度）</td><td>新基座上线前逐类不掉点</td></tr>
-<tr><td><strong>C skill 管理</strong></td><td>三组对照：该触发 / 不该触发 / 边界题</td><td>有 skill 与无 skill 配对</td><td>有效性 + 副作用 + 鲁棒性</td><td>保留 / 失效 / 需调整 三档判定</td></tr>
-<tr><td><strong>D 能力迁移</strong></td><td>源系统的历史轨迹，标注适用边界</td><td>源域与目标域都验证</td><td>迁移后目标域有无回归</td><td>迁移 / 不迁移；外挂（用户侧）或纳入 agent</td></tr>
+<tr><td><strong>A Better with use</strong></td><td>Trajectories from many sources: product repositories, AI4AI, hardware adaptation, external users</td><td>Stratified by task type</td><td>Whether the same kind of problem stops recurring after the change</td><td>Success rate per type + cross-type generalization</td></tr>
+<tr><td><strong>B Model adaptation</strong></td><td>A fixed regression set</td><td>Paired reruns of the old and new model</td><td>Classified by regression type (prompt understanding, tool calls, reasoning depth)</td><td>No per-category regression before a new base model goes live</td></tr>
+<tr><td><strong>C Skill management</strong></td><td>Three control groups: should trigger / should not trigger / boundary tasks</td><td>Paired with and without the skill</td><td>Effectiveness + side effects + robustness</td><td>Three-level verdict: keep / obsolete / needs adjustment</td></tr>
+<tr><td><strong>D Capability transfer</strong></td><td>Historical trajectories of the source system, with scope annotated</td><td>Verified in both the source and target domains</td><td>Whether the target domain regresses after transfer</td><td>Transfer or not; as an add-on (user side) or built into the agent</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>场景 B 有行业依据：Anthropic 为 Claude 5 代删掉 80% 以上系统提示词，Cursor 跨模型族删掉约 66% 系统提示词，OpenAI 换 GPT-6 Astra 时重写技能与提示，GitHub 工具迁移后 Copilot code review 退化、重写工具说明才恢复（均为各家 2026 年官方博客）。新基座整体更强，掉点几乎都来自 harness 与新模型不匹配，这正是 harness 改动确定有收益的地方。</p>
+<p>Scenario B has industry precedent: Anthropic cut more than 80% of its system prompt for the Claude 5 generation, Cursor cut about 66% of its system prompt across model families, OpenAI rewrote skills and prompts when switching to GPT-6 Astra, and Copilot code review regressed after GitHub migrated its tools and only recovered once the tool descriptions were rewritten (all from the companies' official 2026 blogs). New base models are stronger overall, and almost all regressions come from a mismatch between the harness and the new model, which is exactly where harness changes reliably pay off.</p>
 
 </section>
 
 <section id="framework">
-<h2>八、完整框架：从轨迹到进化的七个工作域</h2>
+<h2>8. The full framework: seven work domains from trajectories to evolution</h2>
 
-<p>无论是哪个场景，都走这套完整的流程。每个模块解决一个核心问题，模块之间通过明确的接口连接。</p>
+<p>Whatever the scenario, it goes through this full pipeline. Each module solves one core problem, and modules connect through well-defined interfaces.</p>
 
 <div class="callout">
-<div class="callout__label">如何填补三大缺口</div>
-<p>第六节提出的三大缺口，通过以下工作域系统性地填补：</p>
+<div class="callout__label">How the three gaps are closed</div>
+<p>The three gaps from Section 6 are closed systematically by these work domains:</p>
 <ul>
-<li><strong>缺口1（真实的环境与任务）</strong> → 工作域 1-4：轨迹采集、任务合成、环境构建、评测运行</li>
-<li><strong>缺口2（可靠的判据）</strong> → 工作域 5：判分可靠性（两类错误率测量、题健康度巡检、盲化生成测试）</li>
-<li><strong>缺口3（有效的优化维度）</strong> → 工作域 6-7：演进闭环（三条路径）、版本上线（闭环反馈）</li>
+<li><strong>Gap 1 (real environments and tasks)</strong> → work domains 1–4: trajectory collection, task synthesis, environment building, evaluation runs</li>
+<li><strong>Gap 2 (reliable criteria)</strong> → work domain 5: scoring reliability (measuring both error rates, task health inspection, blinded test generation)</li>
+<li><strong>Gap 3 (effective optimization dimensions)</strong> → work domains 6–7: evolution loop (three paths), version rollout (closed-loop feedback)</li>
 </ul>
 </div>
 
@@ -727,301 +731,304 @@
     </marker>
   </defs>
 
-  <!-- 图例 -->
-  <text x="20" y="25" font-size="11px" font-weight="600" fill="#9CA3AF">图例：颜色区分模块特性</text>
-  <rect x="160" y="16" width="16" height="16" rx="3" class="sv-framework-research-box"/>
-  <text x="182" y="28" font-size="10px" fill="#10B981">绿色 = 偏研究（核心算法）</text>
-  <rect x="370" y="16" width="16" height="16" rx="3" class="sv-framework-engineering-box"/>
-  <text x="392" y="28" font-size="10px" fill="#9CA3AF">灰色 = 偏工程（底座·评测）</text>
-  <rect x="590" y="16" width="16" height="16" rx="3" class="sv-framework-business-box"/>
-  <text x="612" y="28" font-size="10px" fill="#06B6D4">蓝色 = 业务/用户侧（数据·反馈）</text>
-  <line x1="860" y1="24" x2="900" y2="24" class="sv-framework-arrow"/>
-  <text x="908" y="28" font-size="10px" fill="#9CA3AF">数据流向</text>
-  <line x1="990" y1="24" x2="1030" y2="24" class="sv-framework-backflow"/>
-  <text x="1038" y="28" font-size="10px" fill="#F59E0B">回流</text>
+  <!-- Legend -->
+  <text x="20" y="28" font-size="11px" font-weight="600" fill="#9CA3AF">Legend (color = module type):</text>
+  <rect x="200" y="16" width="16" height="16" rx="3" class="sv-framework-research-box"/>
+  <text x="222" y="28" font-size="10px" fill="#10B981">Green = research-leaning (core algorithms)</text>
+  <rect x="440" y="16" width="16" height="16" rx="3" class="sv-framework-engineering-box"/>
+  <text x="462" y="28" font-size="10px" fill="#9CA3AF">Gray = engineering-leaning (foundation · evaluation)</text>
+  <rect x="740" y="16" width="16" height="16" rx="3" class="sv-framework-business-box"/>
+  <text x="762" y="28" font-size="10px" fill="#06B6D4">Blue = business / user side (data · feedback)</text>
+  <line x1="1020" y1="24" x2="1060" y2="24" class="sv-framework-arrow"/>
+  <text x="1068" y="28" font-size="10px" fill="#9CA3AF">Data flow</text>
+  <line x1="1140" y1="24" x2="1180" y2="24" class="sv-framework-backflow"/>
+  <text x="1188" y="28" font-size="10px" fill="#F59E0B">Feedback</text>
 
-  <!-- ========== 域 7：落地与反馈 ========== -->
-  <text x="20" y="80" class="sv-framework-domain-label">7 · 落地与反馈</text>
+  <!-- ========== Domain 7: Rollout and feedback ========== -->
+  <text x="20" y="80" class="sv-framework-domain-label">7 · Rollout &amp;</text>
+  <text x="20" y="97" class="sv-framework-domain-label">feedback</text>
 
   <rect x="180" y="60" width="420" height="70" rx="6" class="sv-framework-engineering-box"/>
-  <text x="200" y="82" class="sv-framework-module-title">版本接入</text>
-  <text x="200" y="100" class="sv-framework-module-desc">每次迭代带评测报告作为发布依据</text>
-  <text x="200" y="118" class="sv-framework-team-label">工程</text>
+  <text x="200" y="82" class="sv-framework-module-title">Version integration</text>
+  <text x="200" y="100" class="sv-framework-module-desc">Each iteration ships with an eval report as the release basis</text>
+  <text x="200" y="118" class="sv-framework-team-label">Engineering</text>
 
   <rect x="620" y="60" width="420" height="70" rx="6" class="sv-framework-business-box"/>
-  <text x="640" y="82" class="sv-framework-module-title">线上反馈采集</text>
-  <text x="640" y="100" class="sv-framework-module-desc">采纳率与新轨迹 → 回流到底层</text>
-  <text x="640" y="118" class="sv-framework-team-label">业务/用户侧</text>
+  <text x="640" y="82" class="sv-framework-module-title">Online feedback collection</text>
+  <text x="640" y="100" class="sv-framework-module-desc">Adoption rate and new trajectories → fed back to the lower layers</text>
+  <text x="640" y="118" class="sv-framework-team-label">Business / user side</text>
 
-  <!-- 箭头：从演进闭环向上 -->
+  <!-- Arrow: up from the evolution loop -->
   <line x1="700" y1="180" x2="700" y2="135" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 6：演进闭环 ========== -->
-  <text x="20" y="220" class="sv-framework-domain-label">6 · 演进闭环</text>
+  <!-- ========== Domain 6: Evolution loop ========== -->
+  <text x="20" y="220" class="sv-framework-domain-label">6 · Evolution loop</text>
 
-  <!-- 第一行：三条路径 + 接受判据 -->
+  <!-- Row 1: three paths + acceptance criteria -->
   <rect x="180" y="190" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="200" y="212" class="sv-framework-module-title">路径 A：Agent 组件</text>
-  <text x="200" y="230" class="sv-framework-module-desc">循环·提示词·工具编排</text>
-  <text x="200" y="253" class="sv-framework-team-label">研究</text>
+  <text x="200" y="212" class="sv-framework-module-title">Path A: Agent components</text>
+  <text x="200" y="230" class="sv-framework-module-desc">Loop · prompts · tool orchestration</text>
+  <text x="200" y="253" class="sv-framework-team-label">Research</text>
 
   <rect x="400" y="190" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="420" y="212" class="sv-framework-module-title">路径 B：软工能力</text>
-  <text x="420" y="230" class="sv-framework-module-desc">需求澄清·定位·测试·重构</text>
-  <text x="420" y="253" class="sv-framework-team-label">研究</text>
+  <text x="420" y="212" class="sv-framework-module-title">Path B: SE capabilities</text>
+  <text x="420" y="230" class="sv-framework-module-desc">Requirement clarification ·</text>
+  <text x="420" y="243" class="sv-framework-module-desc">location · testing · refactoring</text>
+  <text x="420" y="258" class="sv-framework-team-label">Research</text>
 
   <rect x="620" y="190" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="640" y="212" class="sv-framework-module-title">路径 C：知识工程</text>
-  <text x="640" y="230" class="sv-framework-module-desc">抽取→入库→注入</text>
-  <text x="640" y="253" class="sv-framework-team-label">研究</text>
+  <text x="640" y="212" class="sv-framework-module-title">Path C: Knowledge engineering</text>
+  <text x="640" y="230" class="sv-framework-module-desc">Extract → store → inject</text>
+  <text x="640" y="253" class="sv-framework-team-label">Research</text>
 
   <rect x="840" y="190" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="860" y="212" class="sv-framework-module-title">接受判据</text>
-  <text x="860" y="230" class="sv-framework-module-desc">硬门+统计门两级</text>
-  <text x="860" y="253" class="sv-framework-team-label">研究</text>
+  <text x="860" y="212" class="sv-framework-module-title">Acceptance criteria</text>
+  <text x="860" y="230" class="sv-framework-module-desc">Hard gate + statistical gate</text>
+  <text x="860" y="253" class="sv-framework-team-label">Research</text>
 
-  <!-- 第二行：支撑模块 -->
-  <!-- 研究聚在左侧 -->
+  <!-- Row 2: supporting modules -->
+  <!-- Research on the left -->
   <rect x="180" y="285" width="240" height="70" rx="6" class="sv-framework-research-box"/>
-  <text x="200" y="307" class="sv-framework-module-title">提议·证据·搜索</text>
-  <text x="200" y="325" class="sv-framework-module-desc">micro-batch 选题与采样</text>
-  <text x="200" y="343" class="sv-framework-team-label">研究</text>
+  <text x="200" y="307" class="sv-framework-module-title">Proposal · evidence · search</text>
+  <text x="200" y="325" class="sv-framework-module-desc">Micro-batch task selection and sampling</text>
+  <text x="200" y="343" class="sv-framework-team-label">Research</text>
 
   <rect x="440" y="285" width="200" height="70" rx="6" class="sv-framework-research-box"/>
-  <text x="460" y="307" class="sv-framework-module-title">多轮组合验证</text>
-  <text x="460" y="325" class="sv-framework-module-desc">Pareto 前沿</text>
-  <text x="460" y="343" class="sv-framework-team-label">研究</text>
+  <text x="460" y="307" class="sv-framework-module-title">Multi-round verification</text>
+  <text x="460" y="325" class="sv-framework-module-desc">Pareto frontier of combinations</text>
+  <text x="460" y="343" class="sv-framework-team-label">Research</text>
 
-  <!-- 工程聚在右侧 -->
+  <!-- Engineering on the right -->
   <rect x="660" y="285" width="200" height="70" rx="6" class="sv-framework-engineering-box"/>
-  <text x="680" y="307" class="sv-framework-module-title">过拟合防线</text>
-  <text x="680" y="325" class="sv-framework-module-desc">留出集每季换题</text>
-  <text x="680" y="343" class="sv-framework-team-label">工程</text>
+  <text x="680" y="307" class="sv-framework-module-title">Overfitting guard</text>
+  <text x="680" y="325" class="sv-framework-module-desc">Held-out set refreshed quarterly</text>
+  <text x="680" y="343" class="sv-framework-team-label">Engineering</text>
 
   <rect x="880" y="285" width="160" height="70" rx="6" class="sv-framework-engineering-box"/>
-  <text x="900" y="307" class="sv-framework-module-title">不可变内核</text>
-  <text x="900" y="325" class="sv-framework-module-desc">评测函数·运行验证</text>
-  <text x="900" y="343" class="sv-framework-team-label">工程</text>
+  <text x="900" y="307" class="sv-framework-module-title">Immutable kernel</text>
+  <text x="900" y="325" class="sv-framework-module-desc">Scoring · run checks</text>
+  <text x="900" y="343" class="sv-framework-team-label">Engineering</text>
 
-  <!-- 箭头：从评测向上 -->
+  <!-- Arrow: up from evaluation -->
   <line x1="700" y1="405" x2="700" y2="360" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 5：评测与诊断 ========== -->
-  <text x="20" y="445" class="sv-framework-domain-label">5 · 评测与诊断</text>
+  <!-- ========== Domain 5: Evaluation and diagnosis ========== -->
+  <text x="20" y="445" class="sv-framework-domain-label">5 · Evaluation &amp;</text>
+  <text x="20" y="462" class="sv-framework-domain-label">diagnosis</text>
 
-  <!-- 工程聚在左侧 -->
+  <!-- Engineering on the left -->
   <rect x="180" y="415" width="200" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="200" y="437" class="sv-framework-module-title">批量运行</text>
-  <text x="200" y="455" class="sv-framework-module-desc">每题 k 次·容器编排</text>
-  <text x="200" y="471" class="sv-framework-module-desc">周转 ≤ 24h</text>
-  <text x="200" y="493" class="sv-framework-team-label">工程</text>
+  <text x="200" y="437" class="sv-framework-module-title">Batch runs</text>
+  <text x="200" y="455" class="sv-framework-module-desc">k runs per task · containers</text>
+  <text x="200" y="471" class="sv-framework-module-desc">Turnaround ≤ 24h</text>
+  <text x="200" y="493" class="sv-framework-team-label">Engineering</text>
 
   <rect x="400" y="415" width="200" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="420" y="437" class="sv-framework-module-title">成绩单</text>
-  <text x="420" y="455" class="sv-framework-module-desc">按类别切开的分布</text>
-  <text x="420" y="471" class="sv-framework-module-desc">连续解率 + 方差</text>
-  <text x="420" y="493" class="sv-framework-team-label">工程</text>
+  <text x="420" y="437" class="sv-framework-module-title">Scorecard</text>
+  <text x="420" y="455" class="sv-framework-module-desc">Distribution split by category</text>
+  <text x="420" y="471" class="sv-framework-module-desc">Consecutive solve rate + variance</text>
+  <text x="420" y="493" class="sv-framework-team-label">Engineering</text>
 
-  <!-- 研究聚在右侧 -->
+  <!-- Research on the right -->
   <rect x="620" y="415" width="200" height="90" rx="6" class="sv-framework-research-box"/>
-  <text x="640" y="437" class="sv-framework-module-title">判分与校准</text>
-  <text x="640" y="455" class="sv-framework-module-desc">执行优先·判官兜底</text>
-  <text x="640" y="471" class="sv-framework-module-desc">两评审模型异族</text>
-  <text x="640" y="493" class="sv-framework-team-label">研究</text>
+  <text x="640" y="437" class="sv-framework-module-title">Scoring and calibration</text>
+  <text x="640" y="455" class="sv-framework-module-desc">Execution first · judge fallback</text>
+  <text x="640" y="471" class="sv-framework-module-desc">Reviewers from 2 model families</text>
+  <text x="640" y="493" class="sv-framework-team-label">Research</text>
 
   <rect x="840" y="415" width="200" height="90" rx="6" class="sv-framework-research-box"/>
-  <text x="860" y="437" class="sv-framework-module-title">失败归因</text>
-  <text x="860" y="455" class="sv-framework-module-desc">轮次→步骤→模块</text>
-  <text x="860" y="471" class="sv-framework-module-desc">按故障类型切开</text>
-  <text x="860" y="493" class="sv-framework-team-label">研究</text>
+  <text x="860" y="437" class="sv-framework-module-title">Failure attribution</text>
+  <text x="860" y="455" class="sv-framework-module-desc">Turn → step → module</text>
+  <text x="860" y="471" class="sv-framework-module-desc">Split by failure type</text>
+  <text x="860" y="493" class="sv-framework-team-label">Research</text>
 
-  <!-- 箭头：从任务资产向上 -->
+  <!-- Arrow: up from task assets -->
   <line x1="700" y1="555" x2="700" y2="510" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 4：任务资产 ========== -->
-  <text x="20" y="595" class="sv-framework-domain-label">4 · 任务资产</text>
+  <!-- ========== Domain 4: Task assets ========== -->
+  <text x="20" y="595" class="sv-framework-domain-label">4 · Task assets</text>
 
   <rect x="180" y="565" width="260" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="200" y="587" class="sv-framework-module-title">任务库</text>
-  <text x="200" y="605" class="sv-framework-module-desc">单轮题/单轮组/多轮题</text>
-  <text x="200" y="621" class="sv-framework-module-desc">公网/半公开/产品自有</text>
-  <text x="200" y="637" class="sv-framework-module-desc">带门禁标签与血缘</text>
-  <text x="200" y="650" class="sv-framework-team-label">工程</text>
+  <text x="200" y="587" class="sv-framework-module-title">Task library</text>
+  <text x="200" y="605" class="sv-framework-module-desc">Single-turn / turn group / multi-turn</text>
+  <text x="200" y="621" class="sv-framework-module-desc">Public / semi-public / product-owned</text>
+  <text x="200" y="637" class="sv-framework-module-desc">With gate labels and lineage</text>
+  <text x="200" y="650" class="sv-framework-team-label">Engineering</text>
 
   <rect x="460" y="565" width="260" height="90" rx="6" class="sv-framework-research-box"/>
-  <text x="480" y="587" class="sv-framework-module-title">切分与留出</text>
-  <text x="480" y="605" class="sv-framework-module-desc">按能力切，不随机切</text>
-  <text x="480" y="621" class="sv-framework-module-desc">演进集/留出集</text>
-  <text x="480" y="637" class="sv-framework-module-desc">每季度换一批</text>
-  <text x="480" y="650" class="sv-framework-team-label">研究</text>
+  <text x="480" y="587" class="sv-framework-module-title">Splits and held-out sets</text>
+  <text x="480" y="605" class="sv-framework-module-desc">Split by capability, not at random</text>
+  <text x="480" y="621" class="sv-framework-module-desc">Evolution set / held-out set</text>
+  <text x="480" y="637" class="sv-framework-module-desc">Swap in a new batch every quarter</text>
+  <text x="480" y="650" class="sv-framework-team-label">Research</text>
 
   <rect x="740" y="565" width="300" height="90" rx="6" class="sv-framework-research-box"/>
-  <text x="760" y="587" class="sv-framework-module-title">知识库</text>
-  <text x="760" y="605" class="sv-framework-module-desc">条目：触发/步骤/证据/边界/角色</text>
-  <text x="760" y="621" class="sv-framework-module-desc">按病理索引，增量写入</text>
-  <text x="760" y="637" class="sv-framework-module-desc">降权不删</text>
-  <text x="760" y="650" class="sv-framework-team-label">研究</text>
+  <text x="760" y="587" class="sv-framework-module-title">Knowledge base</text>
+  <text x="760" y="605" class="sv-framework-module-desc">Entry: trigger / steps / evidence / scope / role</text>
+  <text x="760" y="621" class="sv-framework-module-desc">Indexed by failure pattern, incremental writes</text>
+  <text x="760" y="637" class="sv-framework-module-desc">Down-weight, never delete</text>
+  <text x="760" y="650" class="sv-framework-team-label">Research</text>
 
-  <!-- 箭头：从任务生产向上 -->
+  <!-- Arrow: up from task production -->
   <line x1="700" y1="705" x2="700" y2="660" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 3：任务生产 ========== -->
-  <text x="20" y="745" class="sv-framework-domain-label">3 · 任务生产</text>
+  <!-- ========== Domain 3: Task production ========== -->
+  <text x="20" y="745" class="sv-framework-domain-label">3 · Task production</text>
 
-  <!-- 第一行 -->
+  <!-- Row 1 -->
   <rect x="180" y="715" width="200" height="75" rx="6" class="sv-framework-engineering-box"/>
-  <text x="200" y="737" class="sv-framework-module-title">环境构建</text>
-  <text x="200" y="755" class="sv-framework-module-desc">平台 + 产品示例</text>
-  <text x="200" y="770" class="sv-framework-module-desc">用户可贡献仓库与环境</text>
-  <text x="200" y="783" class="sv-framework-team-label">工程+用户</text>
+  <text x="200" y="737" class="sv-framework-module-title">Environment building</text>
+  <text x="200" y="755" class="sv-framework-module-desc">Platform + product examples</text>
+  <text x="200" y="770" class="sv-framework-module-desc">Users can add repos and envs</text>
+  <text x="200" y="783" class="sv-framework-team-label">Engineering + users</text>
 
   <rect x="400" y="715" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="420" y="737" class="sv-framework-module-title">查询构建</text>
-  <text x="420" y="755" class="sv-framework-module-desc">切分意图·还原需求</text>
-  <text x="420" y="778" class="sv-framework-team-label">研究</text>
+  <text x="420" y="737" class="sv-framework-module-title">Query building</text>
+  <text x="420" y="755" class="sv-framework-module-desc">Split intents · restore requirements</text>
+  <text x="420" y="778" class="sv-framework-team-label">Research</text>
 
   <rect x="620" y="715" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="640" y="737" class="sv-framework-module-title">验证构建</text>
-  <text x="640" y="755" class="sv-framework-module-desc">盲化测试·检查点</text>
-  <text x="640" y="778" class="sv-framework-team-label">研究</text>
+  <text x="640" y="737" class="sv-framework-module-title">Verification building</text>
+  <text x="640" y="755" class="sv-framework-module-desc">Blinded tests · checkpoints</text>
+  <text x="640" y="778" class="sv-framework-team-label">Research</text>
 
   <rect x="840" y="715" width="200" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="860" y="737" class="sv-framework-module-title">题健康度</text>
-  <text x="860" y="755" class="sv-framework-module-desc">饱和/退化/污染</text>
-  <text x="860" y="778" class="sv-framework-team-label">研究</text>
+  <text x="860" y="737" class="sv-framework-module-title">Task health</text>
+  <text x="860" y="755" class="sv-framework-module-desc">Saturation / decay / contamination</text>
+  <text x="860" y="778" class="sv-framework-team-label">Research</text>
 
-  <!-- 第二行 -->
+  <!-- Row 2 -->
   <rect x="180" y="810" width="420" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="200" y="832" class="sv-framework-module-title">轨迹分析</text>
-  <text x="200" y="850" class="sv-framework-module-desc">切分协议·意图分类·三桶抽取</text>
-  <text x="200" y="873" class="sv-framework-team-label">研究</text>
+  <text x="200" y="832" class="sv-framework-module-title">Trajectory analysis</text>
+  <text x="200" y="850" class="sv-framework-module-desc">Slicing protocol · intent classification · three-bucket extraction</text>
+  <text x="200" y="873" class="sv-framework-team-label">Research</text>
 
   <rect x="620" y="810" width="420" height="75" rx="6" class="sv-framework-research-box"/>
-  <text x="640" y="832" class="sv-framework-module-title">多轮协议</text>
-  <text x="640" y="850" class="sv-framework-module-desc">用户模拟器·纠正分两路</text>
-  <text x="640" y="873" class="sv-framework-team-label">研究（阶段二）</text>
+  <text x="640" y="832" class="sv-framework-module-title">Multi-turn protocol</text>
+  <text x="640" y="850" class="sv-framework-module-desc">User simulator · corrections handled two ways</text>
+  <text x="640" y="873" class="sv-framework-team-label">Research (phase 2)</text>
 
-  <!-- 箭头：从工程底座向上 -->
+  <!-- Arrow: up from the engineering base -->
   <line x1="700" y1="935" x2="700" y2="890" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 2：工程底座 ========== -->
-  <text x="20" y="975" class="sv-framework-domain-label">2 · 工程底座</text>
+  <!-- ========== Domain 2: Engineering base ========== -->
+  <text x="20" y="975" class="sv-framework-domain-label">2 · Engineering base</text>
 
   <rect x="180" y="945" width="280" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="200" y="967" class="sv-framework-module-title">数据契约与版本谱系</text>
-  <text x="200" y="985" class="sv-framework-module-desc">五个正式类型 + 状态机</text>
-  <text x="200" y="1001" class="sv-framework-module-desc">每个字段带自校验</text>
-  <text x="200" y="1017" class="sv-framework-module-desc">四个版本号一起落盘</text>
-  <text x="200" y="1030" class="sv-framework-team-label">工程</text>
+  <text x="200" y="967" class="sv-framework-module-title">Data contracts and version lineage</text>
+  <text x="200" y="985" class="sv-framework-module-desc">Five formal types + state machine</text>
+  <text x="200" y="1001" class="sv-framework-module-desc">Self-validation on every field</text>
+  <text x="200" y="1017" class="sv-framework-module-desc">Four version numbers saved together</text>
+  <text x="200" y="1030" class="sv-framework-team-label">Engineering</text>
 
   <rect x="480" y="945" width="280" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="500" y="967" class="sv-framework-module-title">确定性重放与沙箱</text>
-  <text x="500" y="985" class="sv-framework-module-desc">检查点恢复·决策替换</text>
-  <text x="500" y="1001" class="sv-framework-module-desc">容器级隔离</text>
-  <text x="500" y="1023" class="sv-framework-team-label">工程</text>
+  <text x="500" y="967" class="sv-framework-module-title">Deterministic replay and sandbox</text>
+  <text x="500" y="985" class="sv-framework-module-desc">Checkpoint restore · decision replacement</text>
+  <text x="500" y="1001" class="sv-framework-module-desc">Container-level isolation</text>
+  <text x="500" y="1023" class="sv-framework-team-label">Engineering</text>
 
   <rect x="780" y="945" width="260" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="800" y="967" class="sv-framework-module-title">全链路观测</text>
-  <text x="800" y="985" class="sv-framework-module-desc">工具调用与返回·文件改动</text>
-  <text x="800" y="1001" class="sv-framework-module-desc">行级采纳归因·脱敏</text>
-  <text x="800" y="1023" class="sv-framework-team-label">工程</text>
+  <text x="800" y="967" class="sv-framework-module-title">End-to-end observability</text>
+  <text x="800" y="985" class="sv-framework-module-desc">Tool calls and results · file changes</text>
+  <text x="800" y="1001" class="sv-framework-module-desc">Line-level adoption attribution · redaction</text>
+  <text x="800" y="1023" class="sv-framework-team-label">Engineering</text>
 
-  <!-- 箭头：从原料向上 -->
+  <!-- Arrow: up from raw data -->
   <line x1="700" y1="1085" x2="700" y2="1040" class="sv-framework-arrow"/>
 
-  <!-- ========== 域 1：原料与数据 ========== -->
-  <text x="20" y="1125" class="sv-framework-domain-label">1 · 原料与数据</text>
+  <!-- ========== Domain 1: Raw data ========== -->
+  <text x="20" y="1125" class="sv-framework-domain-label">1 · Raw data</text>
 
   <rect x="180" y="1095" width="200" height="90" rx="6" class="sv-framework-business-box"/>
-  <text x="200" y="1117" class="sv-framework-module-title">产品代码仓</text>
-  <text x="200" y="1135" class="sv-framework-module-desc">历史改动可注入</text>
-  <text x="200" y="1151" class="sv-framework-module-desc">内部依赖·专有 CI</text>
-  <text x="200" y="1173" class="sv-framework-team-label">业务/用户侧</text>
+  <text x="200" y="1117" class="sv-framework-module-title">Product repositories</text>
+  <text x="200" y="1135" class="sv-framework-module-desc">Past changes can be injected</text>
+  <text x="200" y="1151" class="sv-framework-module-desc">Internal deps · proprietary CI</text>
+  <text x="200" y="1173" class="sv-framework-team-label">Business / user side</text>
 
   <rect x="400" y="1095" width="200" height="90" rx="6" class="sv-framework-business-box"/>
-  <text x="420" y="1117" class="sv-framework-module-title">用户轨迹</text>
-  <text x="420" y="1135" class="sv-framework-module-desc">多轮·工具调用</text>
-  <text x="420" y="1151" class="sv-framework-module-desc">最终采纳的代码行</text>
-  <text x="420" y="1173" class="sv-framework-team-label">业务/用户侧</text>
+  <text x="420" y="1117" class="sv-framework-module-title">User trajectories</text>
+  <text x="420" y="1135" class="sv-framework-module-desc">Multi-turn · tool calls</text>
+  <text x="420" y="1151" class="sv-framework-module-desc">Code lines finally adopted</text>
+  <text x="420" y="1173" class="sv-framework-team-label">Business / user side</text>
 
   <rect x="620" y="1095" width="200" height="90" rx="6" class="sv-framework-engineering-box"/>
-  <text x="640" y="1117" class="sv-framework-module-title">公网语料</text>
-  <text x="640" y="1135" class="sv-framework-module-desc">公开多轮会话数据集</text>
-  <text x="640" y="1151" class="sv-framework-module-desc">开源仓历史 PR</text>
-  <text x="640" y="1173" class="sv-framework-team-label">工程</text>
+  <text x="640" y="1117" class="sv-framework-module-title">Public corpora</text>
+  <text x="640" y="1135" class="sv-framework-module-desc">Public multi-turn session data</text>
+  <text x="640" y="1151" class="sv-framework-module-desc">Past PRs of open-source repos</text>
+  <text x="640" y="1173" class="sv-framework-team-label">Engineering</text>
 
   <rect x="840" y="1095" width="200" height="90" rx="6" class="sv-framework-research-box"/>
-  <text x="860" y="1117" class="sv-framework-module-title">产品文档</text>
-  <text x="860" y="1135" class="sv-framework-module-desc">知识工程原料</text>
-  <text x="860" y="1151" class="sv-framework-module-desc">可离线沉淀</text>
-  <text x="860" y="1173" class="sv-framework-team-label">研究</text>
+  <text x="860" y="1117" class="sv-framework-module-title">Product documentation</text>
+  <text x="860" y="1135" class="sv-framework-module-desc">Input for knowledge engineering</text>
+  <text x="860" y="1151" class="sv-framework-module-desc">Can be built up offline</text>
+  <text x="860" y="1173" class="sv-framework-team-label">Research</text>
 
-  <!-- ========== 右侧回流通道 ========== -->
+  <!-- ========== Feedback channel on the right ========== -->
   <rect x="1100" y="60" width="280" height="1125" rx="8" fill="none" stroke="#6B7280" stroke-opacity="0.3" stroke-dasharray="8 6"/>
-  <text x="1120" y="90" font-size="12px" font-weight="650" fill="#F59E0B">回流通道</text>
+  <text x="1120" y="90" font-size="12px" font-weight="650" fill="#F59E0B">Feedback channel</text>
 
-  <!-- 主回流线：从上到下 -->
+  <!-- Main feedback line: top to bottom -->
   <line x1="1240" y1="110" x2="1240" y2="1150" class="sv-framework-backflow"/>
 
-  <!-- 四条回流标注 -->
+  <!-- Four feedback labels -->
   <circle cx="1240" cy="320" r="5" fill="#F59E0B"/>
-  <text x="1260" y="315" font-size="10px" font-weight="650" fill="#F59E0B">① 分掉了</text>
-  <text x="1260" y="332" font-size="9px" fill="#D1D5DB">→ 演进闭环</text>
-  <text x="1260" y="347" font-size="9px" fill="#9CA3AF">回归率下降</text>
+  <text x="1256" y="315" font-size="10px" font-weight="650" fill="#F59E0B">① Score dropped</text>
+  <text x="1256" y="332" font-size="9px" fill="#D1D5DB">→ Evolution loop</text>
+  <text x="1256" y="347" font-size="9px" fill="#9CA3AF">regression rate goes down</text>
   <line x1="1230" y1="320" x2="1060" y2="320" class="sv-framework-backflow"/>
 
   <circle cx="1240" cy="610" r="5" fill="#F59E0B"/>
-  <text x="1260" y="605" font-size="10px" font-weight="650" fill="#F59E0B">② 线上不符</text>
-  <text x="1260" y="622" font-size="9px" fill="#D1D5DB">→ 任务资产</text>
-  <text x="1260" y="637" font-size="9px" fill="#9CA3AF">题与真实脱节</text>
+  <text x="1256" y="605" font-size="10px" font-weight="650" fill="#F59E0B">② Online mismatch</text>
+  <text x="1256" y="622" font-size="9px" fill="#D1D5DB">→ Task assets</text>
+  <text x="1256" y="637" font-size="9px" fill="#9CA3AF">tasks drift from reality</text>
   <line x1="1230" y1="610" x2="1060" y2="610" class="sv-framework-backflow"/>
 
   <circle cx="1240" cy="830" r="5" fill="#F59E0B"/>
-  <text x="1260" y="825" font-size="10px" font-weight="650" fill="#F59E0B">③ 题坏了</text>
-  <text x="1260" y="842" font-size="9px" fill="#D1D5DB">→ 任务生产</text>
-  <text x="1260" y="857" font-size="9px" fill="#9CA3AF">坏题率超阈值</text>
+  <text x="1256" y="825" font-size="10px" font-weight="650" fill="#F59E0B">③ Broken tasks</text>
+  <text x="1256" y="842" font-size="9px" fill="#D1D5DB">→ Task production</text>
+  <text x="1256" y="857" font-size="9px" fill="#9CA3AF">bad-task rate too high</text>
   <line x1="1230" y1="830" x2="1060" y2="830" class="sv-framework-backflow"/>
 
   <circle cx="1240" cy="1140" r="5" fill="#F59E0B"/>
-  <text x="1260" y="1135" font-size="10px" font-weight="650" fill="#F59E0B">④ 新轨迹</text>
-  <text x="1260" y="1152" font-size="9px" fill="#D1D5DB">→ 原料数据</text>
-  <text x="1260" y="1167" font-size="9px" fill="#9CA3AF">持续补进原料</text>
+  <text x="1256" y="1135" font-size="10px" font-weight="650" fill="#F59E0B">④ New trajectories</text>
+  <text x="1256" y="1152" font-size="9px" fill="#D1D5DB">→ Raw data</text>
+  <text x="1256" y="1167" font-size="9px" fill="#9CA3AF">keep adding raw data</text>
   <line x1="1230" y1="1140" x2="1060" y2="1140" class="sv-framework-backflow"/>
 
-  <!-- ========== 底部说明 ========== -->
+  <!-- ========== Notes at the bottom ========== -->
   <line x1="20" y1="1240" x2="1080" y2="1240" stroke="#6B7280" stroke-opacity="0.2"/>
 
-  <text x="20" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">架构原则</text>
-  <text x="20" y="1292" font-size="10px" fill="#D1D5DB">· 自下而上：底层越稳定，越难补</text>
-  <text x="20" y="1310" font-size="10px" fill="#D1D5DB">· 接口契约：模块间只交换五种类型</text>
+  <text x="20" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">Architecture principles</text>
+  <text x="20" y="1292" font-size="10px" fill="#D1D5DB">· Bottom up: lower layers are harder to fix</text>
+  <text x="20" y="1310" font-size="10px" fill="#D1D5DB">· Contracts: modules exchange only 5 types</text>
 
-  <text x="300" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">模块特性</text>
-  <text x="300" y="1292" font-size="10px" fill="#10B981">· 绿色 = 偏研究（核心算法与方法）</text>
-  <text x="300" y="1310" font-size="10px" fill="#9CA3AF">· 灰色 = 偏工程（底座·评测·资产管理）</text>
-  <text x="300" y="1328" font-size="10px" fill="#06B6D4">· 蓝色 = 业务/用户侧（数据源与线上反馈）</text>
+  <text x="300" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">Module types</text>
+  <text x="300" y="1292" font-size="10px" fill="#10B981">· Green = research-leaning (core algorithms, methods)</text>
+  <text x="300" y="1310" font-size="10px" fill="#9CA3AF">· Gray = engineering-leaning (foundation · eval · assets)</text>
+  <text x="300" y="1328" font-size="10px" fill="#06B6D4">· Blue = business / user side (data sources, feedback)</text>
 
-  <text x="640" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">判据位置</text>
-  <text x="640" y="1292" font-size="10px" fill="#D1D5DB">· LLM 负责提议与解释</text>
-  <text x="640" y="1310" font-size="10px" fill="#D1D5DB">· 确定性检查负责决定</text>
+  <text x="640" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">Where decisions sit</text>
+  <text x="640" y="1292" font-size="10px" fill="#D1D5DB">· LLMs propose and explain</text>
+  <text x="640" y="1310" font-size="10px" fill="#D1D5DB">· Deterministic checks decide</text>
 
-  <text x="900" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">阶段性</text>
-  <text x="900" y="1292" font-size="10px" fill="#D1D5DB">· 原料与任务生产先立住</text>
-  <text x="900" y="1310" font-size="10px" fill="#D1D5DB">· 其余按季补齐</text>
+  <text x="900" y="1270" font-size="11px" font-weight="650" fill="#9CA3AF">Phasing</text>
+  <text x="900" y="1292" font-size="10px" fill="#D1D5DB">· Raw data and task production first</text>
+  <text x="900" y="1310" font-size="10px" fill="#D1D5DB">· The rest filled in quarter by quarter</text>
 
-  <!-- 图底说明 -->
-  <text x="20" y="1360" font-size="11px" font-weight="650" fill="#9CA3AF">读图说明</text>
-  <text x="20" y="1382" font-size="10px" fill="#D1D5DB">自下而上读：原料（1）→ 底座（2）→ 任务生产（3）→ 资产（4）→ 评测（5）→ 演进（6）→ 落地（7）；灰色实线箭头逐层向上，橙色虚线回流到右侧通道</text>
-  <text x="20" y="1400" font-size="10px" fill="#D1D5DB">绿色边框 = 偏研究的模块（核心算法与方法，技术创新所在）；灰色边框 = 偏工程的模块（底座·评测·资产管理，稳定性保障）</text>
-  <text x="20" y="1418" font-size="10px" fill="#D1D5DB">业务/用户侧提供数据源（产品代码仓、用户轨迹）与线上反馈，颜色只区分模块特性，不代表由哪个团队来做</text>
-  <text x="20" y="1436" font-size="10px" fill="#D1D5DB">环境构建：先搭平台并提供产品示例，之后用户可直接贡献代码仓与环境配置</text>
+  <!-- How to read -->
+  <text x="20" y="1360" font-size="11px" font-weight="650" fill="#9CA3AF">How to read this figure</text>
+  <text x="20" y="1382" font-size="10px" fill="#D1D5DB">Read bottom up: raw data (1) → foundation (2) → task production (3) → assets (4) → evaluation (5) → evolution (6) → rollout (7); solid gray arrows go up layer by layer, dashed orange lines flow back to the channel on the right</text>
+  <text x="20" y="1400" font-size="10px" fill="#D1D5DB">Green border = research-leaning modules (core algorithms and methods, where the innovation is); gray border = engineering-leaning modules (foundation · evaluation · asset management, for stability)</text>
+  <text x="20" y="1418" font-size="10px" fill="#D1D5DB">The business / user side provides data sources (product repositories, user trajectories) and online feedback; colors only show module type, not which team does the work</text>
+  <text x="20" y="1436" font-size="10px" fill="#D1D5DB">Environment building: first build the platform and provide product examples; later, users can contribute repositories and environment configs directly</text>
 </svg>
   </div>
-  <figcaption><b>图 4</b> 自下而上的七个工作域与三十个模块。<b>颜色区分模块特性</b>：绿色偏研究（核心算法与方法），灰色偏工程（底座·评测·资产管理），业务/用户侧用文字标注（数据源与线上反馈）；颜色不代表由哪个团队来做。<b>从下往上读</b>：最底层是原料与数据（已有的、造不出来的），往上是工程底座（契约、重放、观测），再往上是任务生产 → 任务资产 → 评测与诊断，最上面两层是演进闭环与落地反馈。竖直向上箭头是数据流向；右侧回流通道包含四条回流：① 分掉了→演进闭环、② 线上不符→任务资产、③ 题坏了→任务生产、④ 新轨迹→原料数据。环境构建：先搭平台并提供产品示例，之后用户可直接贡献代码仓与环境配置。</figcaption>
+  <figcaption><b>Figure 4</b> Seven work domains and thirty modules, from the bottom up. <b>Color shows module type</b>: green is research-leaning (core algorithms and methods), gray is engineering-leaning (foundation · evaluation · asset management), and the business / user side is labeled in text (data sources and online feedback); color does not indicate which team does the work. <b>Read from the bottom up</b>: the lowest layer is raw data (what already exists and cannot be manufactured); above it is the engineering base (contracts, replay, observability); then task production → task assets → evaluation and diagnosis; the top two layers are the evolution loop and rollout and feedback. Vertical upward arrows show data flow; the feedback channel on the right holds four feedback flows: ① score dropped → evolution loop, ② online mismatch → task assets, ③ broken tasks → task production, ④ new trajectories → raw data. Environment building: first build the platform and provide product examples; later, users can contribute repositories and environment configs directly.</figcaption>
 </figure>
 
-<h3>从场景到挑战：完整映射</h3>
+<h3>From scenarios to challenges: the full mapping</h3>
 
-<p>四个使用场景产生 6 个核心挑战，每个挑战直接对应一个研究课题；其中 C4–C6 既是核心挑战，也就是三条演进路线：</p>
+<p>The four usage scenarios give rise to 6 core challenges, each mapping directly to one research topic; C4–C6 are both core challenges and the three evolution paths:</p>
 
 <figure>
 <svg style="display:block; width:100%; height:auto; max-width:1200px; margin:0 auto;" viewBox="0 0 1200 850" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,-apple-system,sans-serif">
@@ -1035,119 +1042,119 @@
 </marker>
 </defs>
 
-<!-- 标题 -->
-<text x="600" y="35" text-anchor="middle" class="sv-scenario-challenge-mapping-header-text">从使用场景到核心挑战的映射关系</text>
-<text x="600" y="58" text-anchor="middle" class="sv-scenario-challenge-mapping-subheader-text">业务价值 → 技术挑战（1:1 对应研究课题）</text>
+<!-- Title -->
+<text x="600" y="35" text-anchor="middle" class="sv-scenario-challenge-mapping-header-text">Mapping usage scenarios to core challenges</text>
+<text x="600" y="58" text-anchor="middle" class="sv-scenario-challenge-mapping-subheader-text">Business value → technical challenge (1:1 with research topics)</text>
 
-<!-- 左侧：场景列 -->
-<text x="140" y="105" text-anchor="middle" class="sv-scenario-challenge-mapping-section-label">使用场景</text>
+<!-- Left: scenario column -->
+<text x="140" y="105" text-anchor="middle" class="sv-scenario-challenge-mapping-section-label">Usage scenarios</text>
 
-<!-- 场景 A -->
+<!-- Scenario A -->
 <rect x="30" y="130" width="220" height="80" rx="8" class="sv-scenario-challenge-mapping-scene-box"/>
-<text x="140" y="155" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">场景 A · 越用越好</text>
-<text x="50" y="178" class="sv-scenario-challenge-mapping-scene-text">用户仓库上持续进化</text>
-<text x="50" y="198" class="sv-scenario-challenge-mapping-scene-text">新版本明显优于旧版本</text>
+<text x="140" y="155" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">A · Better with use</text>
+<text x="50" y="178" class="sv-scenario-challenge-mapping-scene-text">Keeps evolving on user repos</text>
+<text x="50" y="198" class="sv-scenario-challenge-mapping-scene-text">New version clearly beats the old</text>
 
-<!-- 场景 B -->
+<!-- Scenario B -->
 <rect x="30" y="230" width="220" height="80" rx="8" class="sv-scenario-challenge-mapping-scene-box"/>
-<text x="140" y="255" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">场景 B · 模型适配</text>
-<text x="50" y="278" class="sv-scenario-challenge-mapping-scene-text">模型更新后快速找出</text>
-<text x="50" y="298" class="sv-scenario-challenge-mapping-scene-text">退步点并验证修改</text>
+<text x="140" y="255" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">B · Model adaptation</text>
+<text x="50" y="278" class="sv-scenario-challenge-mapping-scene-text">After a model update, find</text>
+<text x="50" y="298" class="sv-scenario-challenge-mapping-scene-text">regressions and verify fixes</text>
 
-<!-- 场景 C -->
+<!-- Scenario C -->
 <rect x="30" y="330" width="220" height="80" rx="8" class="sv-scenario-challenge-mapping-scene-box"/>
-<text x="140" y="355" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">场景 C · skill 管理</text>
-<text x="50" y="378" class="sv-scenario-challenge-mapping-scene-text">识别失效/有效/需调</text>
-<text x="50" y="398" class="sv-scenario-challenge-mapping-scene-text">整的 skill</text>
+<text x="140" y="355" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">C · Skill management</text>
+<text x="50" y="378" class="sv-scenario-challenge-mapping-scene-text">Tell obsolete, effective and</text>
+<text x="50" y="398" class="sv-scenario-challenge-mapping-scene-text">needs-adjustment skills apart</text>
 
-<!-- 场景 D -->
+<!-- Scenario D -->
 <rect x="30" y="430" width="220" height="80" rx="8" class="sv-scenario-challenge-mapping-scene-box"/>
-<text x="140" y="455" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">场景 D · 能力迁移</text>
-<text x="50" y="478" class="sv-scenario-challenge-mapping-scene-text">将优秀团队的能力</text>
-<text x="50" y="498" class="sv-scenario-challenge-mapping-scene-text">迁移到其他系统</text>
+<text x="140" y="455" text-anchor="middle" class="sv-scenario-challenge-mapping-scene-title">D · Capability transfer</text>
+<text x="50" y="478" class="sv-scenario-challenge-mapping-scene-text">Bring a strong team's capabilities</text>
+<text x="50" y="498" class="sv-scenario-challenge-mapping-scene-text">to other systems</text>
 
-<!-- 右侧：挑战列（竖排一列，避免交叉） -->
-<text x="775" y="105" text-anchor="middle" class="sv-scenario-challenge-mapping-section-label">核心挑战（= 研究课题；C4–C6 即三条演进路线）</text>
+<!-- Right: challenge column (a single column to avoid crossing lines) -->
+<text x="775" y="105" text-anchor="middle" class="sv-scenario-challenge-mapping-section-label">Core challenges (= research topics; C4–C6 are the three evolution paths)</text>
 
-<!-- C1 - 核心挑战 -->
+<!-- C1 - core challenge -->
 <rect x="380" y="130" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="155" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C1 · 可信任务合成</text>
-<text x="400" y="175" class="sv-scenario-challenge-mapping-challenge-desc">轨迹→任务三件套，环境构建 — 从数万条轨迹提取数百道可执行任务</text>
-<text x="400" y="190" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">核心：能否从真实轨迹自动生成高质量任务</text>
+<text x="775" y="155" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C1 · Trustworthy task synthesis</text>
+<text x="400" y="175" class="sv-scenario-challenge-mapping-challenge-desc">Trajectory → three-part task, environment building: extract hundreds of executable tasks from tens of thousands of trajectories</text>
+<text x="400" y="190" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Core question: can high-quality tasks be generated automatically from real trajectories?</text>
 
-<!-- C2 - 核心挑战 -->
+<!-- C2 - core challenge -->
 <rect x="380" y="215" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="240" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C2 · 判分可靠性</text>
-<text x="400" y="260" class="sv-scenario-challenge-mapping-challenge-desc">判官校准、快速对比 — 假通过率 &lt;2%，退步定位 &lt;10min</text>
-<text x="400" y="275" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">核心：验证是否准确且快速</text>
+<text x="775" y="240" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C2 · Scoring reliability</text>
+<text x="400" y="260" class="sv-scenario-challenge-mapping-challenge-desc">Judge calibration, fast comparison: false pass rate &lt;2%, regressions located in &lt;10 min</text>
+<text x="400" y="275" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Core question: is verification accurate and fast?</text>
 
-<!-- C3 - 核心挑战 -->
+<!-- C3 - core challenge -->
 <rect x="380" y="300" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="325" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C3 · 演进决策</text>
-<text x="400" y="345" class="sv-scenario-challenge-mapping-challenge-desc">接受判据，双层门控，micro-batch 策略 — 连续解率提升 ≥ δ，回归率 &lt;5%</text>
-<text x="400" y="360" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">核心：什么时候接受改动、什么时候拒绝</text>
+<text x="775" y="325" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C3 · Evolution decisions</text>
+<text x="400" y="345" class="sv-scenario-challenge-mapping-challenge-desc">Acceptance criteria, two-level gating, micro-batch strategy: consecutive solve rate up ≥ δ, regression rate &lt;5%</text>
+<text x="400" y="360" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Core question: when to accept a change and when to reject it</text>
 
-<!-- C4 - 演进路径 -->
+<!-- C4 - evolution path -->
 <rect x="380" y="385" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="410" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C4 · Agent 组件演进</text>
-<text x="400" y="430" class="sv-scenario-challenge-mapping-challenge-desc">路径 A：skill、调度策略、工具链 — 触发率、改进效率</text>
-<text x="400" y="445" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">改进：agent 循环本身的优化</text>
+<text x="775" y="410" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C4 · Agent component evolution</text>
+<text x="400" y="430" class="sv-scenario-challenge-mapping-challenge-desc">Path A: skills, scheduling strategy, toolchain; measured by trigger rate and improvement efficiency</text>
+<text x="400" y="445" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Improves: the agent loop itself</text>
 
-<!-- C5 - 演进路径 -->
+<!-- C5 - evolution path -->
 <rect x="380" y="470" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="495" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C5 · 软工能力演进</text>
-<text x="400" y="515" class="sv-scenario-challenge-mapping-challenge-desc">路径 B：代码定位、代码分析、测试生成等能力 — 单点解率、跨题迁移</text>
-<text x="400" y="530" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">改进：提升通用能力而非单题特化</text>
+<text x="775" y="495" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C5 · SE capability evolution</text>
+<text x="400" y="515" class="sv-scenario-challenge-mapping-challenge-desc">Path B: code location, code analysis, test generation and similar capabilities; measured by targeted solve rate and cross-task transfer</text>
+<text x="400" y="530" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Improves: general capability, not specialization for a single task</text>
 
-<!-- C6 - 核心挑战 -->
+<!-- C6 - core challenge -->
 <rect x="380" y="555" width="790" height="70" rx="8" class="sv-scenario-challenge-mapping-challenge-core"/>
-<text x="775" y="580" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C6 · 知识工程</text>
-<text x="400" y="600" class="sv-scenario-challenge-mapping-challenge-desc">路径 C：抽取、边界、失效 — 知识覆盖率、干扰率</text>
-<text x="400" y="615" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">改进：从文档/轨迹中提取、索引、管理知识</text>
+<text x="775" y="580" text-anchor="middle" class="sv-scenario-challenge-mapping-challenge-title-core">C6 · Knowledge engineering</text>
+<text x="400" y="600" class="sv-scenario-challenge-mapping-challenge-desc">Path C: extraction, scope, obsolescence; measured by knowledge coverage and interference rate</text>
+<text x="400" y="615" class="sv-scenario-challenge-mapping-challenge-desc" opacity="0.7">Improves: extracting, indexing and managing knowledge from documents / trajectories</text>
 
-<!-- 连接线：从左到右，现在没有交叉了 -->
-<!-- 场景 A → C1, C2, C3（主要） -->
+<!-- Connectors: left to right, no crossings -->
+<!-- Scenario A → C1, C2, C3 (primary) -->
 <path d="M250,170 Q315,167 380,167" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 <path d="M250,170 Q315,250 380,250" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 <path d="M250,170 Q315,335 380,335" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 
-<!-- 场景 B → C2, C3（主要） -->
+<!-- Scenario B → C2, C3 (primary) -->
 <path d="M250,270 Q315,250 380,250" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 <path d="M250,270 Q315,335 380,335" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 
-<!-- 场景 C → C3, C4, C5, C6（主要C4/C5，次要C3/C6） -->
+<!-- Scenario C → C3, C4, C5, C6 (primary C4/C5, secondary C3/C6) -->
 <path d="M250,370 Q315,335 380,335" class="sv-scenario-challenge-mapping-line-secondary" marker-end="url(#sv-scenario-challenge-mapping-arrow-secondary)"/>
 <path d="M250,370 Q315,420 380,420" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 <path d="M250,370 Q315,505 380,505" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 <path d="M250,370 Q315,590 380,590" class="sv-scenario-challenge-mapping-line-secondary" marker-end="url(#sv-scenario-challenge-mapping-arrow-secondary)"/>
 
-<!-- 场景 D → C6（主要） -->
+<!-- Scenario D → C6 (primary) -->
 <path d="M250,470 Q315,590 380,590" class="sv-scenario-challenge-mapping-line-main" marker-end="url(#sv-scenario-challenge-mapping-arrow-main)"/>
 
-<!-- 底部说明 -->
+<!-- Notes at the bottom -->
 <rect x="50" y="680" width="1100" height="110" rx="8" class="sv-scenario-challenge-mapping-note-box"/>
 <text x="600" y="710" text-anchor="middle" class="sv-scenario-challenge-mapping-note-text">
-<tspan font-weight="600" fill="#55c2ba">挑战 = 课题</tspan>：六个挑战直接对应六个子课题，挑战的数量与研究投入成正比。
+<tspan font-weight="600" fill="#55c2ba">Challenge = topic</tspan>: the six challenges map directly to six sub-topics, and the number of challenges is proportional to the research investment.
 </text>
 <text x="600" y="735" text-anchor="middle" class="sv-scenario-challenge-mapping-note-text">
-<tspan fill="#55c2ba">实线</tspan> = 主要映射，<tspan fill="#55c2ba">虚线</tspan> = 次要关联。四个场景都依赖 C1–C3，再按问题类型分流到 C4–C6。
+<tspan fill="#55c2ba">Solid line</tspan> = primary mapping, <tspan fill="#55c2ba">dashed line</tspan> = secondary link. All four scenarios rely on C1–C3, then route to C4–C6 by problem type.
 </text>
 <text x="600" y="760" text-anchor="middle" class="sv-scenario-challenge-mapping-note-text">
-C1–C3 是三条路径共用的底座；C4–C6 既是核心挑战，也是三条演进路线（A / B / C）。
+C1–C3 are the shared foundation of the three paths; C4–C6 are both core challenges and the three evolution paths (A / B / C).
 </text>
 </svg>
-<figcaption><strong>图 5</strong> 从使用场景到核心挑战的映射关系。四个场景产生六个核心挑战，每个挑战 1:1 对应一个研究课题。箭头从左（场景）指向右（挑战），体现业务价值到技术挑战的映射。<strong>粗实线</strong>表示主要映射，<strong>细虚线</strong>表示次要关联。</figcaption>
+<figcaption><strong>Figure 5</strong> Mapping usage scenarios to core challenges. The four scenarios give rise to six core challenges, each mapping 1:1 to a research topic. Arrows point from left (scenarios) to right (challenges), showing how business value maps to technical challenges. <strong>Thick solid lines</strong> are primary mappings; <strong>thin dashed lines</strong> are secondary links.</figcaption>
 </figure>
 
 </section>
 
 <section id="progress">
-<h2>九、我们已经做了什么：从 0 到 1 的技术验证</h2>
+<h2>9. What we have done so far: technical validation from 0 to 1</h2>
 
-<p>在构建完整系统之前，我们用穿刺实验把闭环拆成 S0–S7 七个阶段逐一走通。无论哪个场景，核心都是「归因 → 提议 → 验证 → 决策」这个小闭环。</p>
+<p>Before building the full system, we used pilot experiments to split the loop into seven stages, S0–S7, and ran through each one. Whatever the scenario, the core is the small loop "attribute → propose → verify → decide".</p>
 
 <figure style="margin: 2rem 0;">
-<svg style="display:block; width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 790" role="img" aria-label="完整演进闭环：S0-S7 详细流程与闭环反馈">
+<svg style="display:block; width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 790" role="img" aria-label="Full evolution loop: S0-S7 detailed flow and closed-loop feedback">
   <defs>
     <marker id="sv-evolution-loop-detailed-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0,0 L10,5 L0,10 z" fill="#55c2ba"/>
@@ -1157,146 +1164,146 @@ C1–C3 是三条路径共用的底座；C4–C6 既是核心挑战，也是三�
     </marker>
   </defs>
 
-  <text x="700" y="30" text-anchor="middle" fill="#dde7ea" font-size="18" font-weight="700">完整演进闭环：Prod2Task → 归因 → 提议 → 验证 → 决策 → 上线</text>
-  <text x="700" y="52" text-anchor="middle" fill="#9fb1b8" font-size="13">S0-S7 七阶段流程 · 三条演进路径 · 飞轮反馈</text>
+  <text x="700" y="30" text-anchor="middle" fill="#dde7ea" font-size="18" font-weight="700">Full evolution loop: Prod2Task → attribute → propose → verify → decide → release</text>
+  <text x="700" y="52" text-anchor="middle" fill="#9fb1b8" font-size="13">S0-S7 seven-stage flow · three evolution paths · flywheel feedback</text>
 
-  <!-- S0: Prod2Task 造题 -->
+  <!-- S0: Prod2Task task building -->
   <rect x="50" y="80" width="240" height="120" rx="8" class="sv-evolution-loop-detailed-box-stage"/>
-  <text x="170" y="105" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">S0 · Prod2Task 造题</text>
-  <text x="70" y="130" class="sv-evolution-loop-detailed-text-main">输入：用户轨迹 JSON</text>
-  <text x="70" y="148" class="sv-evolution-loop-detailed-text-main">输出：环境 + 查询 + 验证</text>
-  <rect x="70" y="162" width="180" height="28" rx="4" fill="#1a252a" opacity="0.6"/>
-  <text x="160" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-detail" font-size="10.5">切分协议 / Docker / verify</text>
+  <text x="170" y="105" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">S0 · Prod2Task task building</text>
+  <text x="70" y="130" class="sv-evolution-loop-detailed-text-main">Input: user trajectory JSON</text>
+  <text x="70" y="148" class="sv-evolution-loop-detailed-text-main">Output: env + query + verify</text>
+  <rect x="70" y="162" width="200" height="28" rx="4" fill="#1a252a" opacity="0.6"/>
+  <text x="170" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-detail" font-size="10.5">Slicing protocol / Docker / verify</text>
 
   <!-- S1-S4: Baseline -->
   <rect x="320" y="80" width="240" height="120" rx="8" class="sv-evolution-loop-detailed-box-stage"/>
   <text x="440" y="105" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">S1-S4 · Baseline</text>
-  <text x="340" y="130" class="sv-evolution-loop-detailed-text-main">输入：任务三件套</text>
-  <text x="340" y="148" class="sv-evolution-loop-detailed-text-main">输出：baseline + 轨迹</text>
-  <rect x="340" y="162" width="180" height="28" rx="4" fill="#1a252a" opacity="0.6"/>
-  <text x="430" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-detail" font-size="10.5">运行 agent × 3 + 判分</text>
+  <text x="340" y="130" class="sv-evolution-loop-detailed-text-main">Input: three-part task</text>
+  <text x="340" y="148" class="sv-evolution-loop-detailed-text-main">Output: baseline + trajectories</text>
+  <rect x="340" y="162" width="200" height="28" rx="4" fill="#1a252a" opacity="0.6"/>
+  <text x="440" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-detail" font-size="10.5">Run agent × 3 + scoring</text>
 
   <path d="M290,140 L320,140" class="sv-evolution-loop-detailed-arrow"/>
 
-  <!-- S5: 失败归因与分流 -->
+  <!-- S5: Failure attribution and routing -->
   <rect x="590" y="80" width="760" height="120" rx="8" class="sv-evolution-loop-detailed-box-decision"/>
-  <text x="970" y="105" text-anchor="middle" class="sv-evolution-loop-detailed-text-subtitle">S5 · 失败归因与分流</text>
-  <text x="610" y="130" class="sv-evolution-loop-detailed-text-main">输入：失败轨迹 + baseline</text>
-  <text x="610" y="148" class="sv-evolution-loop-detailed-text-main">输出：根因标签 + 分流路径</text>
+  <text x="970" y="105" text-anchor="middle" class="sv-evolution-loop-detailed-text-subtitle">S5 · Failure attribution and routing</text>
+  <text x="610" y="130" class="sv-evolution-loop-detailed-text-main">Input: failed trajectories + baseline</text>
+  <text x="610" y="148" class="sv-evolution-loop-detailed-text-main">Output: root-cause label + routed path</text>
   <rect x="610" y="162" width="720" height="28" rx="4" fill="#1a252a" opacity="0.7"/>
-  <text x="970" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-main" font-size="11">失败归因分流：A (Agent 组件) / B (软工能力) / C (知识工程)</text>
+  <text x="970" y="180" text-anchor="middle" class="sv-evolution-loop-detailed-text-main" font-size="11">Route failures by attribution: A (Agent components) / B (SE capabilities) / C (Knowledge engineering)</text>
 
   <path d="M560,140 L590,140" class="sv-evolution-loop-detailed-arrow"/>
 
-  <!-- S6: 改动提议 + 配对重跑 -->
+  <!-- S6: Change proposal + paired rerun -->
   <rect x="50" y="230" width="560" height="140" rx="8" class="sv-evolution-loop-detailed-box-stage"/>
-  <text x="330" y="255" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">S6 · 改动提议 + 配对重跑（v1-v7 迭代）</text>
+  <text x="330" y="255" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">S6 · Change proposal + paired rerun (v1-v7 iterations)</text>
 
   <rect x="70" y="272" width="250" height="85" rx="6" fill="#0f131c"/>
-  <text x="195" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">① 改动提议</text>
-  <text x="85" y="312" class="sv-evolution-loop-detailed-text-detail">• 根据路径生成候选改动</text>
-  <text x="85" y="328" class="sv-evolution-loop-detailed-text-detail">• LLM 建议 vs schema</text>
-  <text x="85" y="344" class="sv-evolution-loop-detailed-text-detail">• micro-batch（3-5 题）</text>
+  <text x="195" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">① Change proposal</text>
+  <text x="85" y="312" class="sv-evolution-loop-detailed-text-detail">• Generate candidates per path</text>
+  <text x="85" y="328" class="sv-evolution-loop-detailed-text-detail">• LLM suggestions vs. schema</text>
+  <text x="85" y="344" class="sv-evolution-loop-detailed-text-detail">• Micro-batch (3-5 tasks)</text>
 
   <rect x="340" y="272" width="250" height="85" rx="6" fill="#0f131c"/>
-  <text x="465" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">② 配对重跑</text>
-  <text x="355" y="312" class="sv-evolution-loop-detailed-text-detail">• 新旧版本对比 × 3</text>
-  <text x="355" y="328" class="sv-evolution-loop-detailed-text-detail">• 隔离执行 + 生成测试</text>
-  <text x="355" y="344" class="sv-evolution-loop-detailed-text-detail">• 监测三条路径指标</text>
+  <text x="465" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">② Paired rerun</text>
+  <text x="355" y="312" class="sv-evolution-loop-detailed-text-detail">• Old vs. new version × 3</text>
+  <text x="355" y="328" class="sv-evolution-loop-detailed-text-detail">• Isolated runs + generated tests</text>
+  <text x="355" y="344" class="sv-evolution-loop-detailed-text-detail">• Track metrics for all three paths</text>
 
   <path d="M970,200 L970,220 L330,220 L330,230" class="sv-evolution-loop-detailed-arrow"/>
 
-  <!-- S7: 两级决策门 -->
+  <!-- S7: Two-level decision gate -->
   <rect x="640" y="230" width="710" height="140" rx="8" class="sv-evolution-loop-detailed-box-decision"/>
-  <text x="995" y="255" text-anchor="middle" class="sv-evolution-loop-detailed-text-subtitle">S7 · 两级决策门</text>
+  <text x="995" y="255" text-anchor="middle" class="sv-evolution-loop-detailed-text-subtitle">S7 · Two-level decision gate</text>
 
   <rect x="660" y="272" width="320" height="85" rx="6" fill="#1a252a" opacity="0.7"/>
-  <text x="820" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">硬门（确定性）</text>
-  <text x="680" y="312" class="sv-evolution-loop-detailed-text-detail">✓ 改动被验证无回归</text>
-  <text x="680" y="328" class="sv-evolution-loop-detailed-text-detail">✓ 改动 × 回退集合</text>
-  <text x="680" y="344" class="sv-evolution-loop-detailed-text-detail">✓ 回退 ≥ 阈值</text>
+  <text x="820" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">Hard gate (deterministic)</text>
+  <text x="680" y="312" class="sv-evolution-loop-detailed-text-detail">✓ Change verified with no regression</text>
+  <text x="680" y="328" class="sv-evolution-loop-detailed-text-detail">✓ Change × rollback set</text>
+  <text x="680" y="344" class="sv-evolution-loop-detailed-text-detail">✓ Rollback ≥ threshold</text>
 
   <rect x="1000" y="272" width="320" height="85" rx="6" fill="#1a252a" opacity="0.7"/>
-  <text x="1160" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">统计门（增益）</text>
-  <text x="1020" y="312" class="sv-evolution-loop-detailed-text-detail">✓ 连续解率 ↑ δ</text>
+  <text x="1160" y="292" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">Statistical gate (gain)</text>
+  <text x="1020" y="312" class="sv-evolution-loop-detailed-text-detail">✓ Consecutive solve rate ↑ δ</text>
   <text x="1020" y="328" class="sv-evolution-loop-detailed-text-detail">✓ pass@k ↑ > v</text>
-  <text x="1020" y="344" class="sv-evolution-loop-detailed-text-detail">✓ 方差在控</text>
+  <text x="1020" y="344" class="sv-evolution-loop-detailed-text-detail">✓ Variance under control</text>
 
   <path d="M610,315 L640,315" class="sv-evolution-loop-detailed-arrow"/>
 
-  <!-- 反馈回路（门不过） -->
+  <!-- Feedback loop (gate failed) -->
   <path d="M995,370 Q995,410 330,410 Q330,380 330,370" class="sv-evolution-loop-detailed-arrow-feedback"/>
-  <text x="630" y="425" text-anchor="middle" fill="#d5a94a" font-size="11.5">✗ 门不过 → 返回 S6 重新提议</text>
+  <text x="630" y="425" text-anchor="middle" fill="#d5a94a" font-size="11.5">✗ Gate failed → back to S6 for a new proposal</text>
 
-  <!-- 版本上线 -->
+  <!-- Version rollout -->
   <rect x="640" y="450" width="710" height="80" rx="8" class="sv-evolution-loop-detailed-box-stage"/>
-  <text x="995" y="475" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">版本上线 · A/B 测试</text>
-  <text x="660" y="500" class="sv-evolution-loop-detailed-text-main">工程：版本管理 + 发布流水线 + 灰度策略 + 监控告警</text>
-  <text x="660" y="518" class="sv-evolution-loop-detailed-text-main">业务/用户：验收效果 + 提供线上采纳率反馈</text>
+  <text x="995" y="475" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">Version rollout · A/B test</text>
+  <text x="660" y="500" class="sv-evolution-loop-detailed-text-main">Engineering: version management + release pipeline + canary strategy + monitoring and alerts</text>
+  <text x="660" y="518" class="sv-evolution-loop-detailed-text-main">Business / users: accept the results + report online adoption rates</text>
 
   <path d="M995,370 L995,450" class="sv-evolution-loop-detailed-arrow"/>
-  <text x="1010" y="410" fill="#55c2ba" font-size="12" font-weight="600">✓ 通过</text>
+  <text x="1010" y="410" fill="#55c2ba" font-size="12" font-weight="600">✓ Pass</text>
 
-  <!-- 飞轮反馈（形成闭环，从左侧外围绕行） -->
+  <!-- Flywheel feedback (closes the loop around the left edge) -->
   <path d="M640,510 L22,510 L22,100 L48,100" class="sv-evolution-loop-detailed-arrow-loop"/>
-  <text x="8" y="250" fill="#55c2ba" font-size="13" font-weight="650" writing-mode="tb" glyph-orientation-vertical="0">飞轮反馈</text>
-  <text x="240" y="500" fill="#9fb1b8" font-size="10">新版本上线 · 产生新轨迹 · 持续优化</text>
+  <text x="16" y="305" text-anchor="middle" fill="#55c2ba" font-size="13" font-weight="650" transform="rotate(-90 16 305)">Flywheel feedback</text>
+  <text x="240" y="500" fill="#9fb1b8" font-size="10">New version live · new trajectories · continuous optimization</text>
 
-  <!-- 三条路径监测指标 -->
+  <!-- Monitoring metrics for the three paths -->
   <rect x="50" y="610" width="1300" height="140" rx="8" fill="#0d1519" stroke="#55c2ba" stroke-width="2" opacity="0.9"/>
-  <text x="700" y="638" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">三条路径的监测指标</text>
+  <text x="700" y="638" text-anchor="middle" class="sv-evolution-loop-detailed-text-title">Monitoring metrics for the three paths</text>
 
   <g transform="translate(80, 658)">
     <rect x="0" y="0" width="380" height="75" rx="6" fill="#0f131c" stroke="#55c2ba" stroke-width="1.5"/>
-    <text x="190" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">路径 A · Agent 组件演进</text>
-    <text x="15" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">敏捷率</tspan>：改动是否被触发</text>
-    <text x="15" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">改进效率</tspan>：触发后提升幅度</text>
-    <text x="15" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">溢出率</tspan>：是否影响无关场景</text>
+    <text x="190" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">Path A · Agent component evolution</text>
+    <text x="15" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Trigger rate</tspan>: whether the change gets triggered</text>
+    <text x="15" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Improvement efficiency</tspan>: gain once triggered</text>
+    <text x="15" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">Spillover rate</tspan>: whether unrelated scenarios are affected</text>
 
     <rect x="410" y="0" width="380" height="75" rx="6" fill="#0f131c" stroke="#55c2ba" stroke-width="1.5"/>
-    <text x="600" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">路径 B · 软工能力演进</text>
-    <text x="425" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">单点解率</tspan>：目标技能提升</text>
-    <text x="425" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">跨题泛化</tspan>：不同场景迁移</text>
-    <text x="425" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">过拟合检查</tspan>：只对单题有效</text>
+    <text x="600" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">Path B · SE capability evolution</text>
+    <text x="425" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Targeted solve rate</tspan>: gain on the target skill</text>
+    <text x="425" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Cross-task generalization</tspan>: transfer to other scenarios</text>
+    <text x="425" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">Overfitting check</tspan>: works only on a single task?</text>
 
     <rect x="820" y="0" width="380" height="75" rx="6" fill="#0f131c" stroke="#55c2ba" stroke-width="1.5"/>
-    <text x="1010" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">路径 C · 知识工程演进</text>
-    <text x="835" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">知识覆盖</tspan>：匹配度、召回率</text>
-    <text x="835" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">手册技效</tspan>：引入后提升幅度</text>
-    <text x="835" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">跨域泛化</tspan>：不同仓库适用性</text>
+    <text x="1010" y="20" text-anchor="middle" class="sv-evolution-loop-detailed-text-main">Path C · Knowledge engineering evolution</text>
+    <text x="835" y="40" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Knowledge coverage</tspan>: match rate, recall</text>
+    <text x="835" y="55" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#55c2ba">Knowledge effect</tspan>: gain after it is introduced</text>
+    <text x="835" y="70" class="sv-evolution-loop-detailed-text-detail"><tspan fill="#d5a94a">Cross-domain generalization</tspan>: fit for other repositories</text>
   </g>
 
-  <!-- 图例 -->
+  <!-- Legend -->
   <g transform="translate(50, 770)">
     <line x1="0" y1="0" x2="30" y2="0" class="sv-evolution-loop-detailed-arrow"/>
-    <text x="40" y="5" fill="#9fb1b8" font-size="10">主流程</text>
+    <text x="40" y="5" fill="#9fb1b8" font-size="10">Main flow</text>
 
     <line x1="120" y1="0" x2="150" y2="0" class="sv-evolution-loop-detailed-arrow-feedback"/>
-    <text x="160" y="5" fill="#9fb1b8" font-size="10">失败反馈</text>
+    <text x="160" y="5" fill="#9fb1b8" font-size="10">Failure feedback</text>
 
     <line x1="250" y1="0" x2="280" y2="0" class="sv-evolution-loop-detailed-arrow-loop"/>
-    <text x="290" y="5" fill="#9fb1b8" font-size="10">飞轮闭环</text>
+    <text x="290" y="5" fill="#9fb1b8" font-size="10">Flywheel loop</text>
 
     <rect x="380" y="-8" width="18" height="16" rx="3" class="sv-evolution-loop-detailed-box-stage"/>
-    <text x="404" y="5" fill="#9fb1b8" font-size="10">流程环节</text>
+    <text x="404" y="5" fill="#9fb1b8" font-size="10">Process step</text>
 
     <rect x="490" y="-8" width="18" height="16" rx="3" class="sv-evolution-loop-detailed-box-decision"/>
-    <text x="514" y="5" fill="#9fb1b8" font-size="10">决策环节</text>
+    <text x="514" y="5" fill="#9fb1b8" font-size="10">Decision step</text>
   </g>
 </svg>
 <figcaption style="text-align: center; margin-top: 1rem; font-size: 0.95em; color: var(--text-muted);">
-<strong>图 6</strong> 完整演进闭环：S0-S7 七阶段流程。S0 从轨迹造题，S1-S4 建立 baseline，S5 失败归因与分流（三条路径），S6 改动提议并配对重跑（v1-v7 迭代），S7 两级决策门（硬门 + 统计门）。底部展示三条路径的监测指标以及穿刺实验（cli-task-408b8c）的完整迭代过程。<strong>颜色含义</strong>：紫色 = 主流程环节，橙色 = 决策门与分流点。
+<strong>Figure 6</strong> Full evolution loop: the S0-S7 seven-stage flow. S0 builds tasks from trajectories, S1-S4 establish the baseline, S5 attributes and routes failures (three paths), S6 proposes changes and runs paired reruns (v1-v7 iterations), and S7 is the two-level decision gate (hard gate + statistical gate). The bottom shows the monitoring metrics for the three paths and the full iteration of the pilot experiment (cli-task-408b8c). <strong>Colors</strong>: purple = main flow steps, orange = decision gates and routing points.
 </figcaption>
 </figure>
 
 <div class="table-wrap">
 <table class="wide">
-<thead><tr><th style="width:16%">验证了什么</th><th style="width:52%">走通到哪一步</th><th style="width:32%">边界</th></tr></thead>
+<thead><tr><th style="width:16%">What was validated</th><th style="width:52%">How far it got</th><th style="width:32%">Limits</th></tr></thead>
 <tbody>
-<tr><td><strong>演进闭环</strong></td><td>408b8c 上归因 → 提改动 → 配对重跑 → 判定完整走通：0.833×3 → 1.000×3，改动从另建一套缓存（+42/-1）变为复用已有实现（+3/-7）；回归无检查点由过变挂（第一节）</td><td>1 道主题题 + 3 道回归题，单个模型；尚未进入 iCode 正式版本</td></tr>
-<tr><td><strong>造题</strong></td><td>开源轨迹 → 可执行任务的全流程：轨迹规范化 → 会话切分 → 意图分类 → 环境、题面、验收三桶抽取 → 测试生成 → D1–D9 门禁</td><td>目前在开源仓上；产品仓按第三节的接入流程推进</td></tr>
-<tr><td><strong>盲化判分</strong></td><td>verify agent 看不到参考 patch，按检查点现场写测试，过门的题都按这套流程判</td><td>判官两类错误率的基线还没有测出</td></tr>
-<tr><td><strong>轨迹分析</strong></td><td>统一的轨迹格式、按用户意图的切分协议、意图体系（原始问题 / 追加任务 / 用户反馈），带内网可移植的适配器模板</td><td>开源轨迹</td></tr>
+<tr><td><strong>Evolution loop</strong></td><td>On 408b8c, attribute → propose a change → paired rerun → decide ran end to end: 0.833×3 → 1.000×3, and the change went from building a separate cache (+42/-1) to reusing the existing implementation (+3/-7); in regression, no checkpoint went from pass to fail (Section 1)</td><td>1 target task + 3 regression tasks, single model; not yet in an official iCode release</td></tr>
+<tr><td><strong>Task building</strong></td><td>The full pipeline from open-source trajectories to executable tasks: trajectory normalization → session slicing → intent classification → three-bucket extraction of environment, task statement and acceptance → test generation → D1–D9 gates</td><td>So far on open-source repositories; product repositories follow the onboarding flow in Section 3</td></tr>
+<tr><td><strong>Blinded scoring</strong></td><td>The verify agent cannot see the reference patch and writes tests on the spot from the checkpoints; every task that passes the gates is scored this way</td><td>The baseline for the judges' two error rates has not been measured yet</td></tr>
+<tr><td><strong>Trajectory analysis</strong></td><td>A unified trajectory format, a slicing protocol based on user intent, an intent taxonomy (original problem / follow-up task / user feedback), with adapter templates portable to the intranet</td><td>Open-source trajectories</td></tr>
 </tbody>
 </table>
 </div>
@@ -1304,44 +1311,44 @@ C1–C3 是三条路径共用的底座；C4–C6 既是核心挑战，也是三�
 </section>
 
 <section id="collaboration">
-<h2>十、三方分工与生态共建</h2>
+<h2>10. Roles and ecosystem: three parties working together</h2>
 
-<p>规模化需要三方协同。清晰的边界让每一方只做自己擅长的事：</p>
+<p>Scaling up takes three parties working together. Clear boundaries let each party do only what it is good at:</p>
 
 <div class="table-wrap">
 <table class="wide">
-<thead><tr><th style="width:12%">角色</th><th style="width:36%">提供什么</th><th style="width:26%">参与哪些环节</th><th style="width:26%">不需要做</th></tr></thead>
+<thead><tr><th style="width:12%">Role</th><th style="width:36%">What it provides</th><th style="width:26%">Where it takes part</th><th style="width:26%">What it does not need to do</th></tr></thead>
 <tbody>
-<tr><td><strong>业务 / 用户</strong></td><td>代码仓访问权限、历史会话、采纳数据、关键失败 case 标注</td><td>接入时提供环境；确认进化提案</td><td>手工造题、写评测代码、理解演进算法</td></tr>
-<tr><td><strong>工程</strong></td><td>评测平台（调度、容器）、版本管理与发布、数据流水线、监控告警</td><td>平台搭建与维护、评测调度、新版本部署</td><td>设计演进算法、分析失败根因</td></tr>
-<tr><td><strong>研究</strong></td><td>任务合成方法、三条路径的演进算法、判分可靠性、根因定位</td><td>方法设计、算法实现、分析报告</td><td>搭建评测平台、维护生产环境</td></tr>
+<tr><td><strong>Business / users</strong></td><td>Repository access, past sessions, adoption data, labels for key failure cases</td><td>Provide the environment at onboarding; confirm evolution proposals</td><td>Build tasks by hand, write evaluation code, understand the evolution algorithms</td></tr>
+<tr><td><strong>Engineering</strong></td><td>Evaluation platform (scheduling, containers), version management and release, data pipelines, monitoring and alerts</td><td>Building and maintaining the platform, evaluation scheduling, deploying new versions</td><td>Design evolution algorithms, analyze failure root causes</td></tr>
+<tr><td><strong>Research</strong></td><td>Task synthesis methods, evolution algorithms for the three paths, scoring reliability, root-cause localization</td><td>Method design, algorithm implementation, analysis reports</td><td>Build the evaluation platform, maintain production environments</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>关键是标准化接口、自助服务（业务方自己提交评测、查看成绩单）、一周内出成绩单的反馈节奏，以及每个改动的影响都可追溯。</p>
+<p>The keys are standardized interfaces, self-service (business teams submit evaluations and view scorecards themselves), a feedback cadence of a scorecard within one week, and traceable impact for every change.</p>
 
 </section>
 
 <section id="three-tiers">
-<h2>十一、进化三层：用户侧、Agent侧、模型侧</h2>
+<h2>11. Three tiers of evolution: user side, agent side, model side</h2>
 
-<p><strong>三层是落地位置</strong>，回答「改动对谁生效」；<strong>三条路径</strong>（见第十二节）回答「改的是什么」。这是两个独立的维度，每条路径的改动都按适用范围决定落在哪一层：</p>
+<p><strong>The three tiers are where a change lands</strong>, answering "who does the change apply to"; <strong>the three paths</strong> (see Section 12) answer "what is changed". These are two independent dimensions, and each path's changes land in a tier according to their scope:</p>
 
 <ul>
-<li><strong>路径 A（Agent 组件）</strong>改的是有了 agent 才有的组件：用户提示词、系统提示词、skill、工具、harness、记忆。同一类组件既可以只对一个仓或一个团队生效（用户侧，如仓库说明文件、项目级 skill），也可以进 agent 主线、对所有用户生效（Agent 侧，如系统提示词、内置工具）。</li>
-<li><strong>路径 B（软件工程能力）</strong>改的是需求工程、代码定位、测试生成、变更影响分析这类能力。它们在 agent 出现之前就有人在用、在研究，独立于 agent 体系；现在用 agent 来实现它们，或者用它们辅助提升 agent。通用的能力进 Agent 侧，只对某个仓成立的（如某个仓的测试约定）留在用户侧。</li>
-<li><strong>路径 C（知识工程）</strong>同理：每条知识按自带的适用边界，决定留在用户侧还是进 Agent 侧。</li>
-<li>模型侧进化是独立的（agentic RL、特定能力微调），框架可提，2627 不做；第十二节双循环里后续要训的是过程评判模型，不是基模型。</li>
+<li><strong>Path A (agent components)</strong> changes components that exist only because there is an agent: user prompts, system prompts, skills, tools, the harness, memory. The same kind of component can apply only to one repository or team (user side, such as repository instruction files or project-level skills) or go into the agent mainline and apply to all users (agent side, such as system prompts or built-in tools).</li>
+<li><strong>Path B (software engineering capabilities)</strong> changes capabilities such as requirements engineering, code location, test generation and change impact analysis. People used and studied them before agents existed, and they are independent of the agent stack; now agents implement them, or they help improve agents. General capabilities go to the agent side; those that hold only for one repository (such as one repository's test conventions) stay on the user side.</li>
+<li><strong>Path C (knowledge engineering)</strong> works the same way: each piece of knowledge goes to the user side or the agent side according to its own scope.</li>
+<li>Model-side evolution is separate (agentic RL, fine-tuning for specific capabilities). The framework can accommodate it, but it is not planned for 2026–27; what the dual loop in Section 12 will train later is a process judge model, not the base model.</li>
 </ul>
 
 <div class="table-wrap">
 <table>
-<thead><tr><th style="width:14%">层次</th><th style="width:30%">对谁生效</th><th style="width:56%">怎么演进</th></tr></thead>
+<thead><tr><th style="width:14%">Tier</th><th style="width:30%">Who it applies to</th><th style="width:56%">How it evolves</th></tr></thead>
 <tbody>
-<tr><td><strong>用户侧</strong></td><td>只对一个仓或一个团队，不出域</td><td>从该用户的轨迹抽取成功模式，标注适用边界，匹配时才加载</td></tr>
-<tr><td><strong>Agent 侧</strong></td><td>所有用户，进 agent 主线，版本化可回滚</td><td>从多个用户的轨迹提炼共性问题，留出集验证泛化，配对重跑与回归确认无负面影响</td></tr>
-<tr><td><strong>模型侧</strong></td><td>所有使用该模型的 agent</td><td>同一批任务与轨迹做奖励信号训练权重；框架可提，2627 不做</td></tr>
+<tr><td><strong>User side</strong></td><td>Only one repository or team; stays inside the domain</td><td>Extract success patterns from that user's trajectories, annotate their scope, load them only on a match</td></tr>
+<tr><td><strong>Agent side</strong></td><td>All users; goes into the agent mainline, versioned and reversible</td><td>Distill common problems from many users' trajectories, verify generalization on a held-out set, confirm no negative impact with paired reruns and regression runs</td></tr>
+<tr><td><strong>Model side</strong></td><td>Every agent that uses the model</td><td>Train weights with reward signals from the same tasks and trajectories; the framework can accommodate it, but it is not planned for 2026–27</td></tr>
 </tbody>
 </table>
 </div>
@@ -1349,165 +1356,167 @@ C1–C3 是三条路径共用的底座；C4–C6 既是核心挑战，也是三�
 </section>
 
 <section id="three-routes">
-<h2>十二、三条演进路径与双循环</h2>
+<h2>12. Three evolution paths and the dual loop</h2>
 
-<p>三条路径按「改的是什么」划分。<strong>A 改 agent 自己的组件</strong>：提示词、skill、工具、harness、记忆，离开 agent 这些概念就不存在。<strong>B 改软件工程能力</strong>：需求工程、代码定位、测试生成等，它们早于 agent，独立于 agent 体系，agent 是实现它们的一种方式，也是它们服务的对象。<strong>C 改 agent 可用的知识。</strong></p>
+<p>The three paths are divided by "what is changed". <strong>A changes the agent's own components</strong>: prompts, skills, tools, the harness, memory; without the agent these concepts do not exist. <strong>B changes software engineering capabilities</strong>: requirements engineering, code location, test generation and so on. They predate agents and are independent of the agent stack; an agent is one way to implement them, and also something they serve. <strong>C changes the knowledge the agent can use.</strong></p>
 
-<p>三条路径并行推进，因为它们的做法与失效方式完全不同；后期在同一批任务上验证是否真的互补——<strong>收益不能直接相加</strong>。</p>
+<p>The three paths move forward in parallel because their methods and failure modes are completely different; later we verify on the same batch of tasks whether they really complement each other, since <strong>gains do not simply add up</strong>.</p>
 
 <table>
 <thead>
 <tr>
-<th style="width:12%">路径</th>
-<th style="width:22%">改什么</th>
-<th style="width:20%">原料从哪来</th>
-<th style="width:14%">一轮的代价</th>
-<th style="width:32%">典型失效（决定怎么监测）</th>
+<th style="width:12%">Path</th>
+<th style="width:22%">What it changes</th>
+<th style="width:20%">Where the raw material comes from</th>
+<th style="width:14%">Cost per round</th>
+<th style="width:32%">Typical failure (determines how it is monitored)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>A · Agent<br>组件</strong></td>
-<td>有了 agent 才有的组件：用户提示词、系统提示词、skill、工具、harness（agent 循环与编排）、记忆</td>
-<td>本轮失败轨迹</td>
-<td>低：改完即可重跑</td>
-<td><strong>改了没生效</strong>（改动从未被触发），或<strong>溢出到无关场景</strong>（文本规则泛化过头）</td>
+<td><strong>A · Agent<br>components</strong></td>
+<td>Components that exist only because there is an agent: user prompts, system prompts, skills, tools, the harness (agent loop and orchestration), memory</td>
+<td>This round's failed trajectories</td>
+<td>Low: rerun right after the change</td>
+<td><strong>Changed, but no effect</strong> (the change is never triggered), or <strong>spillover into unrelated scenarios</strong> (a text rule overgeneralizes)</td>
 </tr>
 <tr>
-<td><strong>B · 软件<br>工程能力</strong></td>
-<td>需求工程、代码定位、测试生成、变更影响分析、重构与性能等能力；没有 agent 时就在用、在研究，现在用 agent 实现，或用来辅助 agent</td>
-<td>本轮失败轨迹<br>+ 对应能力清单</td>
-<td>中：要接入、要单独验证</td>
-<td><strong>单点变强但整体不涨</strong>——能力接错了位置，或只在特定题面上被触发</td>
+<td><strong>B · Software<br>engineering capabilities</strong></td>
+<td>Capabilities such as requirements engineering, code location, test generation, change impact analysis, refactoring and performance; used and studied before agents, now implemented with agents or used to assist them</td>
+<td>This round's failed trajectories<br>+ the matching capability list</td>
+<td>Medium: needs integration and separate verification</td>
+<td><strong>Stronger at one point, no overall gain</strong>: the capability is plugged in at the wrong place, or only triggers on specific task wording</td>
 </tr>
 <tr>
-<td><strong>C · 知识<br>工程</strong></td>
-<td>agent 手里可检索的知识、技能与规则：抽取 → 成条（带适用边界）→ 入库（按「治什么病」索引）→ 注入</td>
-<td>历史轨迹、产品文档、代码仓本身——<strong>不必等评测跑完</strong></td>
-<td>低：可离线持续做</td>
-<td><strong>知识本身不对或不该用</strong>：过时、与当前病理不匹配、条目爆炸后互相干扰</td>
+<td><strong>C · Knowledge<br>engineering</strong></td>
+<td>Knowledge, skills and rules the agent can retrieve: extract → write as entries (with scope) → store (indexed by "which failure it treats") → inject</td>
+<td>Past trajectories, product documentation, the repository itself; <strong>no need to wait for evaluation to finish</strong></td>
+<td>Low: can run offline continuously</td>
+<td><strong>The knowledge itself is wrong or should not be used</strong>: outdated, mismatched with the current failure pattern, or entries interfering with each other once they multiply</td>
 </tr>
 </tbody>
 </table>
 
-<h3 id="dual-loop">演进闭环的双循环架构</h3>
+<h3 id="dual-loop">The dual-loop architecture of the evolution loop</h3>
 
-<p>三条路径回答「改什么」；双循环回答另一个问题：<strong>谁来提改动、谁来判它有没有用，以及这两件事本身怎么变好</strong>。一阶每轮改进 Executor（被进化的 agent）的做法；二阶每 n 轮复盘一阶，改进一阶提议与验证改动的方式。</p>
+<p>The three paths answer "what to change"; the dual loop answers another question: <strong>who proposes changes, who judges whether they help, and how those two jobs themselves get better</strong>. The first-order loop improves the strategy of the Executor (the agent being evolved) every round; the second-order loop reviews the first-order loop every n rounds and improves how it proposes and verifies changes.</p>
 
 <figure>
   <div class="figframe">
-<svg class="ifig" viewBox="0 0 1100 640" role="img" aria-label="双循环架构：一阶每轮改 Executor 的做法，二阶每 n 轮改一阶的提议与验证方式，后续训练过程评判模型">
+<svg class="ifig" viewBox="0 0 1100 640" role="img" aria-label="Dual-loop architecture: the first order changes the Executor's strategy every round, the second order changes how the first order proposes and verifies every n rounds, and later a process judge model is trained">
   <defs>
     <marker id="f12-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="f12-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-g" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
 
-  <!-- 一阶 -->
+  <!-- First order -->
   <rect class="zone" x="16" y="16" width="664" height="414" rx="14"/>
-  <text class="t-h" x="36" y="46">一阶 · 每轮：改 Executor 的做法</text>
-  <text class="t-d" x="660" y="46" text-anchor="end">当前实现：通用模型 + 经验库</text>
+  <text class="t-h" x="36" y="44">First order · every round: change the Executor's strategy</text>
+  <text class="t-d" x="660" y="423" text-anchor="end" style="font-size:12px">Now: general model + experience store</text>
 
   <rect class="bx" x="36" y="70" width="270" height="84" rx="10"/>
-  <text class="t-b" x="171" y="104" text-anchor="middle">Executor + 做法 v<tspan baseline-shift="sub" font-size="11">k</tspan></text>
-  <text class="t-d" x="171" y="132" text-anchor="middle">每轮从同一起点跑同一批任务</text>
+  <text class="t-b" x="171" y="104" text-anchor="middle">Executor + strategy v<tspan baseline-shift="sub" font-size="11">k</tspan></text>
+  <text class="t-d" x="171" y="132" text-anchor="middle">Same tasks, same start, every round</text>
 
   <rect class="bx" x="390" y="70" width="270" height="84" rx="10"/>
   <text class="t-b" x="525" y="104" text-anchor="middle">Evaluator</text>
-  <text class="t-d" x="525" y="132" text-anchor="middle">测试 · 检查点 · 判官</text>
+  <text class="t-d" x="525" y="132" text-anchor="middle">Tests · checkpoints · judges</text>
 
   <path class="ln" d="M306,112 H386" marker-end="url(#f12-a)"/>
-  <text class="t-d" x="346" y="98" text-anchor="middle">结果</text>
-  <text class="t-d" x="346" y="134" text-anchor="middle">轨迹</text>
+  <text class="t-d" x="346" y="98" text-anchor="middle" style="font-size:12px">results</text>
+  <text class="t-d" x="346" y="134" text-anchor="middle" style="font-size:12px">trajectories</text>
 
   <rect class="bx-g" x="390" y="200" width="270" height="96" rx="10"/>
   <text class="t-g" x="525" y="230" text-anchor="middle">Verifier</text>
-  <text class="t" x="525" y="256" text-anchor="middle">上次修改是否有效</text>
-  <text class="t-d" x="525" y="280" text-anchor="middle">保留 / 回滚 + 诊断</text>
+  <text class="t" x="525" y="256" text-anchor="middle">Did the last change work?</text>
+  <text class="t-d" x="525" y="280" text-anchor="middle">Keep / roll back + diagnosis</text>
   <path class="ln" d="M525,154 V196" marker-end="url(#f12-a)"/>
-  <text class="t-d" x="537" y="180">评估结果</text>
+  <text class="t-d" x="537" y="180">evaluation</text>
 
   <rect class="bx" x="36" y="200" width="270" height="96" rx="10"/>
   <text class="t-b" x="171" y="230" text-anchor="middle">Reflector</text>
-  <text class="t" x="171" y="256" text-anchor="middle">提出下次修改</text>
-  <text class="t-d" x="171" y="280" text-anchor="middle">落到三条路径之一</text>
+  <text class="t" x="171" y="256" text-anchor="middle">Proposes the next change</text>
+  <text class="t-d" x="171" y="280" text-anchor="middle">Lands on one of the three paths</text>
   <path class="ln" d="M390,248 H310" marker-end="url(#f12-a)"/>
-  <text class="t-d" x="350" y="238" text-anchor="middle">诊断</text>
+  <text class="t-d" x="350" y="238" text-anchor="middle" style="font-size:12px">diagnosis</text>
 
   <path class="ln" d="M171,200 V158" marker-end="url(#f12-a)"/>
-  <text class="t-m" x="183" y="184">Δ做法</text>
+  <text class="t-m" x="183" y="184">Δstrategy</text>
 
   <rect class="bx-soft" x="36" y="336" width="624" height="74" rx="10"/>
-  <text class="t-b" x="348" y="366" text-anchor="middle">一阶 n 轮记录</text>
-  <text class="t-d" x="348" y="392" text-anchor="middle">每轮追加：做法版本 · 轨迹 · 评估 · 保留 / 回滚与诊断</text>
+  <text class="t-b" x="348" y="366" text-anchor="middle">First-order log over n rounds</text>
+  <text class="t-d" x="348" y="392" text-anchor="middle" style="font-size:13px">Appended each round: strategy version · trajectories · evaluation · keep / roll back and diagnosis</text>
   <path class="ln-d" d="M525,296 V332" marker-end="url(#f12-a)"/>
 
-  <!-- 二阶 -->
+  <!-- Second order -->
   <rect class="zone" x="720" y="16" width="364" height="414" rx="14"/>
-  <text class="t-h" x="740" y="46">二阶 · 每 n 轮：改一阶</text>
-  <text class="t-d" x="740" y="68">当前：通用模型 + 经验库（PoC 中由人工复盘）</text>
+  <text class="t-h" x="740" y="44">Second order · every n rounds</text>
+  <text class="t-b" x="740" y="66">Changes the first order</text>
+  <text class="t-d" x="740" y="88">Now: general model + experience store</text>
+  <text class="t-d" x="740" y="106">(reviewed manually in the PoC)</text>
 
   <rect class="bx-g" x="740" y="314" width="324" height="96" rx="10"/>
-  <text class="t-g" x="902" y="344" text-anchor="middle">复盘</text>
-  <text class="t" x="902" y="370" text-anchor="middle">找出一阶判断好坏的原因</text>
-  <text class="t-d" x="902" y="394" text-anchor="middle">上次二阶修改：改后 n 轮更好才保留</text>
+  <text class="t-g" x="902" y="344" text-anchor="middle">Review</text>
+  <text class="t" x="902" y="370" text-anchor="middle">Diagnose first-order judgment quality</text>
+  <text class="t-d" x="902" y="394" text-anchor="middle">Kept only if the next n rounds improve</text>
   <path class="ln" d="M660,373 H736" marker-end="url(#f12-a)"/>
-  <text class="t-d" x="698" y="363" text-anchor="middle">触发</text>
+  <text class="t-d" x="700" y="363" text-anchor="middle" style="font-size:10px">trigger</text>
 
   <rect class="bx" x="740" y="170" width="324" height="96" rx="10"/>
-  <text class="t-b" x="902" y="200" text-anchor="middle">改进</text>
-  <text class="t" x="902" y="226" text-anchor="middle">调整一阶的提议与验证方式</text>
-  <text class="t-d" x="902" y="250" text-anchor="middle">偏差来源 + 修改方向</text>
+  <text class="t-b" x="902" y="200" text-anchor="middle">Improve</text>
+  <text class="t" x="902" y="226" text-anchor="middle">Adjust how first order proposes / verifies</text>
+  <text class="t-d" x="902" y="250" text-anchor="middle">Source of bias + direction of change</text>
   <path class="ln" d="M902,314 V270" marker-end="url(#f12-a)"/>
 
   <path class="ln" d="M902,170 V120 H700 V248 H664" marker-end="url(#f12-a)"/>
-  <text class="t-m" x="820" y="110" text-anchor="middle">ΔReflector · ΔVerifier</text>
+  <text class="t-m" x="894" y="150" text-anchor="end">ΔReflector · ΔVerifier</text>
 
-  <!-- 后续 RSI² -->
+  <!-- Later: RSI² -->
   <rect class="bx-gd" x="16" y="456" width="1068" height="120" rx="12"/>
-  <text class="t-hg" x="36" y="486">后续 RSI²：把两阶换成训练出来的过程评判模型</text>
-  <text class="t" x="36" y="516">一阶模型（Reflector + Verifier）的 label：好坏来自 Evaluator，方向来自二阶的纠偏信号</text>
-  <text class="t" x="36" y="542">二阶模型的 label：改后一阶 n 轮是否比改前好——样本少且贵，最顶层的锚是人工或一套固定测试集</text>
-  <text class="t-d" x="36" y="566">训练对象是过程评判模型；Executor 底下的基模型不动</text>
+  <text class="t-hg" x="36" y="486">Later, RSI²: replace both loops with trained process judge models</text>
+  <text class="t" x="36" y="516">First-order model (Reflector + Verifier) labels: good / bad from the Evaluator, direction from second-order correction signals</text>
+  <text class="t" x="36" y="542">Second-order labels: did n first-order rounds improve after the change? Few, costly samples; the top anchor is humans or a fixed test set</text>
+  <text class="t-d" x="36" y="566">What gets trained is the process judge model; the base model under the Executor stays unchanged</text>
 
-  <!-- 图例 -->
+  <!-- Legend -->
   <rect class="bx" x="20" y="604" width="28" height="18" rx="4"/>
-  <text class="t-d" x="58" y="618">紫：现在的机制</text>
-  <rect class="bx-g" x="220" y="604" width="28" height="18" rx="4"/>
-  <text class="t-d" x="258" y="618">橙实线：判定点（保留 / 回滚）</text>
-  <rect class="bx-gd" x="520" y="604" width="28" height="18" rx="4"/>
-  <text class="t-d" x="558" y="618">橙虚线：后续工作</text>
-  <rect class="zone" x="740" y="604" width="28" height="18" rx="4"/>
-  <text class="t-d" x="778" y="618">紫虚线框：一个循环</text>
+  <text class="t-d" x="58" y="618">Purple: current mechanism</text>
+  <rect class="bx-g" x="250" y="604" width="28" height="18" rx="4"/>
+  <text class="t-d" x="288" y="618">Solid orange: decision point (keep / roll back)</text>
+  <rect class="bx-gd" x="630" y="604" width="28" height="18" rx="4"/>
+  <text class="t-d" x="668" y="618">Dashed orange: future work</text>
+  <rect class="zone" x="862" y="604" width="28" height="18" rx="4"/>
+  <text class="t-d" x="900" y="618">Dashed box: one loop</text>
 </svg>
   </div>
-  <figcaption><strong>图 7</strong> 双循环架构。左：一阶每轮从同一起点跑任务，Verifier 判断上次修改、Reflector 提出下次修改；一阶 n 轮的记录触发二阶。右：二阶复盘一阶，给出 ΔReflector 与 ΔVerifier。下：后续把两阶都换成训练出来的过程评判模型。</figcaption>
+  <figcaption><strong>Figure 7</strong> Dual-loop architecture. Left: the first order runs tasks from the same start every round; the Verifier judges the last change and the Reflector proposes the next one; the log of n first-order rounds triggers the second order. Right: the second order reviews the first order and produces ΔReflector and ΔVerifier. Bottom: later, both loops are replaced with trained process judge models.</figcaption>
 </figure>
-<p class="src">原架构图的 strategy 在本文译为「做法」，指三条路径产出的 skill、工具、提示词、知识条目等可改部件。</p>
+<p class="src">"Strategy" here means the modifiable parts produced by the three paths: skills, tools, prompts, knowledge entries and so on.</p>
 
 <div class="table-wrap">
 <table class="wide">
 <thead>
-<tr><th style="width:11%"></th><th style="width:9%">多久一次</th><th style="width:19%">改什么</th><th style="width:22%">保留 / 回滚的依据</th><th style="width:39%">在 408b8c 上对应什么</th></tr>
+<tr><th style="width:11%"></th><th style="width:9%">How often</th><th style="width:19%">What changes</th><th style="width:22%">Basis for keep / roll back</th><th style="width:39%">What it corresponds to on 408b8c</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>一阶</strong></td><td>每轮</td><td>Executor 的做法：skill、工具、提示词、知识条目</td><td>同起点配对重跑，Verifier 判断上次修改是否有效</td><td>v1→v7 每一版：提改动 → 配对重跑 → 保留或回滚。v1–v2 没被加载，v3 能触发但不稳定，v6 起 1.0×3</td></tr>
-<tr><td><strong>二阶</strong></td><td>每 n 轮</td><td>一阶的 Reflector 与 Verifier：怎么提议、怎么验证</td><td>改后一阶 n 轮是否比改前好</td><td>由人工复盘完成。S5 把这题的定性从「题面不完整」订正为「agent 的真实能力缺口」（改的是一阶的诊断）；v6→v7 发现触发贴着题面措辞，把提议方式从「按题面写触发」改成「按 DRY 原则写判据」（改的是一阶的提议）</td></tr>
-<tr><td><strong>后续 RSI²</strong></td><td>—</td><td>一阶、二阶各训练一个过程评判模型</td><td>一阶看 Evaluator + 二阶纠偏信号；二阶看改后 n 轮是否变好</td><td>未开始</td></tr>
+<tr><td><strong>First order</strong></td><td>Every round</td><td>The Executor's strategy: skills, tools, prompts, knowledge entries</td><td>Paired reruns from the same start; the Verifier judges whether the last change worked</td><td>Each version v1→v7: propose a change → paired rerun → keep or roll back. v1–v2 were not loaded, v3 triggered but unreliably, from v6 on 1.0×3</td></tr>
+<tr><td><strong>Second order</strong></td><td>Every n rounds</td><td>The first order's Reflector and Verifier: how to propose, how to verify</td><td>Whether n first-order rounds are better after the change than before</td><td>Done by manual review. S5 corrected this task's characterization from "incomplete task statement" to "a real capability gap in the agent" (a change to first-order diagnosis); at v6→v7 we found triggering hugged the task wording, and switched the proposal approach from "write triggers from the task statement" to "write criteria from the DRY principle" (a change to first-order proposing)</td></tr>
+<tr><td><strong>Later: RSI²</strong></td><td>—</td><td>Train one process judge model each for the first and second order</td><td>First order: Evaluator + second-order correction signals; second order: whether n rounds improve after the change</td><td>Not started</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>这套双循环的锚是测试、同起点对照与人工抽检：一阶的判断由二阶复盘来审，二阶给出的修改方向写进训练之前，先从同一起点重跑确认确实更好。训练对象是过程评判模型，Executor 底下的基模型不动。</p>
+<p>The anchors of this dual loop are tests, same-start comparisons and manual spot checks: first-order judgments are audited by the second-order review, and before any change direction from the second order goes into training, a rerun from the same start must first confirm it really is better. What gets trained is the process judge model; the base model under the Executor stays unchanged.</p>
 
 </section>
 
 <section id="nfr">
-<h2>十三、超越功能正确性：非功能需求维度</h2>
+<h2>13. Beyond functional correctness: non-functional requirements</h2>
 
 <p class="lede">
-现有 RSI 工作大都强调任务完成的<strong>成功率/准确性</strong>（功能正确），
-而忽略了软件的<strong>非功能需求</strong>。我们的代码写出来之后，比较长一段时间内还是需要人负责的。
-所以软件的非功能需求非常重要。<strong>这是我们与现有工作的重要差异点。</strong>
+Most existing RSI work focuses on the <strong>success rate / accuracy</strong> of task completion (functional correctness)
+and ignores software's <strong>non-functional requirements</strong>. Once our code is written, people remain responsible for it for a long time,
+so non-functional requirements matter a great deal. <strong>This is a key difference between our work and existing work.</strong>
 </p>
 
 
@@ -1515,136 +1524,136 @@ C1–C3 是三条路径共用的底座；C4–C6 既是核心挑战，也是三�
 <table>
 <thead>
 <tr>
-<th style="width:18%">维度</th>
-<th style="width:35%">定义</th>
-<th style="width:27%">如何从轨迹中提取</th>
-<th style="width:20%">如何检查</th>
+<th style="width:18%">Dimension</th>
+<th style="width:35%">Definition</th>
+<th style="width:27%">How it is extracted from trajectories</th>
+<th style="width:20%">How it is checked</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>可靠性</strong></td>
-<td>稳定性、容错、边界处理</td>
-<td>用户提及"经常崩溃"、"边界情况没处理"</td>
-<td>异常处理覆盖、边界检查</td>
+<td><strong>Reliability</strong></td>
+<td>Stability, fault tolerance, edge-case handling</td>
+<td>The user mentions "it keeps crashing", "edge cases aren't handled"</td>
+<td>Exception handling coverage, boundary checks</td>
 </tr>
 <tr>
-<td><strong>可用性</strong></td>
-<td>易用、符合习惯、接口设计</td>
-<td>用户提及"不好用"、"接口不直观"</td>
-<td>接口设计规范、参数合理性</td>
+<td><strong>Usability</strong></td>
+<td>Easy to use, follows conventions, interface design</td>
+<td>The user mentions "hard to use", "the interface isn't intuitive"</td>
+<td>Interface design guidelines, sensible parameters</td>
 </tr>
 <tr>
-<td><strong>可维护性</strong></td>
-<td>易改、易扩展、模块化</td>
-<td>用户提及"改起来太麻烦"、"逻辑太复杂"</td>
-<td>圈复杂度、重复代码、模块耦合度</td>
+<td><strong>Maintainability</strong></td>
+<td>Easy to change, easy to extend, modular</td>
+<td>The user mentions "too painful to change", "the logic is too complex"</td>
+<td>Cyclomatic complexity, duplicate code, module coupling</td>
 </tr>
 <tr>
-<td><strong>可读性</strong></td>
-<td>易懂、有注释、命名清晰</td>
-<td>用户提及"看不懂"、"缺少注释"</td>
-<td>命名规范、注释完整性、代码风格</td>
+<td><strong>Readability</strong></td>
+<td>Easy to understand, commented, clear naming</td>
+<td>The user mentions "can't follow it", "missing comments"</td>
+<td>Naming conventions, comment completeness, code style</td>
 </tr>
 <tr>
-<td><strong>性能</strong></td>
-<td>时间效率、空间效率</td>
-<td>用户提及"太慢了"、"内存占用太高"</td>
-<td>时间复杂度、内存占用、热点分析</td>
+<td><strong>Performance</strong></td>
+<td>Time efficiency, space efficiency</td>
+<td>The user mentions "too slow", "uses too much memory"</td>
+<td>Time complexity, memory usage, hotspot analysis</td>
 </tr>
 <tr>
-<td><strong>安全性</strong></td>
-<td>输入验证、权限检查、敏感信息保护</td>
-<td>用户提及"安全问题"、"权限没检查"</td>
-<td>静态分析（SQL 注入、XSS）、权限检查</td>
+<td><strong>Security</strong></td>
+<td>Input validation, permission checks, protection of sensitive data</td>
+<td>The user mentions "security issue", "permissions aren't checked"</td>
+<td>Static analysis (SQL injection, XSS), permission checks</td>
 </tr>
 </tbody>
 </table>
 
-<p>做法是从用户的对话与修改行为里提取这些关注点，做相应检查（如圈复杂度、重复代码、命名与注释、异常与边界处理），并提取专门针对非功能需求的任务，用于评测与演进。</p>
+<p>The approach is to extract these concerns from what users say and how they edit code, run the matching checks (such as cyclomatic complexity, duplicate code, naming and comments, exception and edge-case handling), and extract tasks aimed specifically at non-functional requirements for evaluation and evolution.</p>
 
 </section>
 
 <section id="vision">
-<h2>十四、未来图景：3 年后的 Coding Agent</h2>
+<h2>14. The future: coding agents three years from now</h2>
 
-<p>如果做成了，2028 年的 coding agent 在用户自己的仓上越用越好，不再重复犯纠正过的错误，写出的代码不仅能跑而且好维护；新模型发布后一周内完成适配验证；skill 库失效的自动下线、有效的自动推广。</p>
+<p>If this works, the coding agent of 2028 gets better the more it is used on the user's own repository, no longer repeats mistakes it has been corrected on, and writes code that not only runs but is easy to maintain; adaptation to a new model is verified within a week of its release; obsolete skills in the skill library are retired automatically and effective ones promoted automatically.</p>
 
-<h3>实现路径（2026-2028）</h3>
+<h3>Roadmap (2026-2028)</h3>
 
 <table>
 <thead>
 <tr>
-<th style="width:15%">阶段</th>
-<th style="width:30%">核心目标</th>
-<th style="width:30%">关键指标</th>
-<th style="width:25%">风险与应对</th>
+<th style="width:15%">Phase</th>
+<th style="width:30%">Core goals</th>
+<th style="width:30%">Key metrics</th>
+<th style="width:25%">Risks and mitigations</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>2026 Q4</strong></td>
 <td>
-• 开源 60-100 道题<br>
-• 首轮闭环完成<br>
-• 方法验证
+• 60-100 open-source tasks<br>
+• First full loop completed<br>
+• Method validated
 </td>
 <td>
-• 可判分率 ≥ 80%<br>
-• 首批改动进版本
+• Scorable rate ≥ 80%<br>
+• First changes shipped in a release
 </td>
 <td>
-<strong>风险</strong>：环境构建困难<br>
-<strong>应对</strong>：同仓复用
+<strong>Risk</strong>: environments are hard to build<br>
+<strong>Mitigation</strong>: reuse within the same repository
 </td>
 </tr>
 <tr>
 <td><strong>2027 H1</strong></td>
 <td>
-• 开源 250 道 + 产品 50 道<br>
-• 多轮协议<br>
-• 1 周周转
+• 250 open-source + 50 product tasks<br>
+• Multi-turn protocol<br>
+• 1-week turnaround
 </td>
 <td>
-• 产品仓数 ≥ 10<br>
-• 判分可靠性验证
+• ≥ 10 product repositories<br>
+• Scoring reliability verified
 </td>
 <td>
-<strong>风险</strong>：内网轨迹不可达<br>
-<strong>应对</strong>：降低产品题目标
+<strong>Risk</strong>: intranet trajectories unreachable<br>
+<strong>Mitigation</strong>: lower the product task target
 </td>
 </tr>
 <tr>
 <td><strong>2027 H2</strong></td>
 <td>
-• 开源 500 道 + 产品 300 道<br>
-• 三路线融合<br>
-• 周级节拍
+• 500 open-source + 300 product tasks<br>
+• Three paths combined<br>
+• Weekly cadence
 </td>
 <td>
-• 多轮题占比 ≥ 50%<br>
-• 组合演进验证
+• Multi-turn tasks ≥ 50%<br>
+• Combined evolution verified
 </td>
 <td>
-<strong>风险</strong>：路径收益不叠加<br>
-<strong>应对</strong>：分层验证
+<strong>Risk</strong>: path gains don't stack<br>
+<strong>Mitigation</strong>: layered verification
 </td>
 </tr>
 <tr>
 <td><strong>2028+</strong></td>
 <td>
-• 规模化部署<br>
-• 基于公开信息的题集与方法对外交流<br>
-• 行业标准
+• Deployment at scale<br>
+• External exchange of task sets and methods built on public information<br>
+• Industry standards
 </td>
 <td>
-• 多产品线落地<br>
-• 论文与专利<br>
-• 社区活跃度
+• Adopted across multiple product lines<br>
+• Papers and patents<br>
+• Community activity
 </td>
 <td>
-<strong>风险</strong>：竞争加剧<br>
-<strong>应对</strong>：持续创新
+<strong>Risk</strong>: competition intensifies<br>
+<strong>Mitigation</strong>: keep innovating
 </td>
 </tr>
 </tbody>

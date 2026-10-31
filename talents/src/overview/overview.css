@@ -1,15 +1,17 @@
-/* 总体规划页（overview.html 的正文）：原稿是独立的深色页面，这里改用 iCode Teams 的设计变量，跟随 Talents 的亮色 / 暗色主题。
-   原稿的颜色 / 间距变量名仍被片段里的内联样式引用，在 .overview-doc 上映射到 --ui-*。 */
+/* Overview page (body of overview.html): the original was a standalone dark page; here it uses the iCode Teams design variables and follows the Talents light / dark theme.
+   The original color / spacing variable names are still referenced by inline styles in the fragment, so they are mapped to --ui-* on .overview-doc.
+   The page is English-only, so it uses its own Latin font stack (--ov-font) instead of the shared stack that lists CJK fonts. */
 .overview-doc{
   --c-text:var(--ui-color-text);--c-text-dim:var(--ui-color-muted);--text-muted:var(--ui-color-muted);
   --c-accent:var(--ui-color-primary);--c-bg-2:var(--ui-color-surface-sunken);
   --s-xs:4px;--s-sm:8px;--s-md:12px;--s-lg:16px;--s-xl:24px;--s-2xl:32px;
-  /* 图的语义色：主流程 = 主题紫，门 / 决策 / 回流 = 警示琥珀，研究 = 成功绿，业务 / 用户侧 = 信息蓝 */
+  /* Semantic figure colors: main flow = theme purple, gates / decisions / feedback = warning amber, research = success green, business / user side = info blue */
   --fig-main:var(--ui-color-primary);--fig-main-soft:var(--ui-color-primary-faint);
   --fig-gate:var(--ui-color-warning);
   --fig-ink:var(--ui-color-text);--fig-sub:var(--ui-color-text-secondary);--fig-dim:var(--ui-color-muted);--fig-line:var(--ui-color-faint);
   --fig-box:var(--ui-color-surface);
-  font-size:var(--ui-font-size-body);line-height:1.75;color:var(--ui-color-text)
+  --ov-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-family:var(--ov-font);font-size:var(--ui-font-size-body);line-height:1.75;color:var(--ui-color-text)
 }
 .overview-doc h2{font-size:19px;line-height:1.4;font-weight:600;margin:0 0 var(--s-lg);padding-bottom:var(--s-sm);border-bottom:1px solid var(--ui-color-divider)}
 .overview-doc h3{font-size:15px;line-height:1.5;font-weight:600;margin:var(--s-xl) 0 var(--s-sm)}
@@ -24,7 +26,7 @@
 .overview-doc li{margin-bottom:var(--s-xs)}
 .overview-doc small{color:var(--ui-color-muted)}
 
-/* 目录在右侧，随正文滚动保持可见；窄屏放到正文上方 */
+/* Table of contents on the right, kept visible while the body scrolls; above the body on narrow screens */
 .overview-doc .layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:var(--s-xl);align-items:start}
 .overview-doc .shell{min-width:0;grid-column:1;grid-row:1}
 .overview-doc .rail{grid-column:2;grid-row:1;position:sticky;top:0;max-height:calc(100vh - 140px);overflow-y:auto}
@@ -46,7 +48,7 @@
   .overview-doc .rail a{margin-left:0;border-left:0;padding:2px 0}
 }
 
-/* 每一节一张卡片，与 Talents 其他页面的分区卡片一致 */
+/* One card per section, matching the section cards on other Talents pages */
 .overview-doc .shell section{background:var(--ui-color-surface);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-card);box-shadow:var(--ui-shadow-block);padding:var(--ui-block-padding-y) var(--ui-block-padding-x);margin-bottom:var(--ui-space-block)}
 .overview-doc section[id],.overview-doc h3[id]{scroll-margin-top:var(--s-md)}
 .overview-doc .lede{font-size:15px;color:var(--ui-color-text)}
@@ -94,18 +96,18 @@
 .overview-doc td.q{font-family:var(--ui-font-family-mono);font-size:var(--ui-font-size-caption);color:var(--ui-color-text-secondary)}
 .overview-doc span.q{font-family:var(--ui-font-family-mono);font-size:.92em;color:var(--ui-color-text-secondary)}
 .overview-doc blockquote.q{margin:var(--s-md) 0;padding:var(--s-sm) var(--s-md);border-left:3px solid var(--ui-color-warning);background:var(--ui-color-warning-soft);border-radius:var(--ui-radius);font-family:var(--ui-font-family-mono);font-size:var(--ui-font-size-note);color:var(--ui-color-text-secondary)}
-.overview-doc blockquote.q span{font-family:var(--ui-font-family)}
-.overview-doc .tr{font-family:var(--ui-font-family);color:var(--ui-color-muted);font-size:var(--ui-font-size-caption)}
+.overview-doc blockquote.q span{font-family:var(--ov-font)}
+.overview-doc .tr{font-family:var(--ov-font);color:var(--ui-color-muted);font-size:var(--ui-font-size-caption)}
 
-/* 图：白底卡片，窄屏横向滚动，保留图内文字的可读字号 */
+/* Figures: surface-colored card, horizontal scroll on narrow screens to keep figure text readable */
 .overview-doc figure{margin:var(--s-xl) 0}
 .overview-doc .figframe{background:var(--ui-color-surface);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-card);padding:var(--s-lg);overflow-x:auto}
-.overview-doc figure svg{display:block;width:100%;height:auto;max-width:100%;color:var(--ui-color-text);font-family:var(--ui-font-family)}
+.overview-doc figure svg{display:block;width:100%;height:auto;max-width:100%;color:var(--ui-color-text);font-family:var(--ov-font)}
 .overview-doc figure svg text{fill:var(--fig-ink)}
 .overview-doc figcaption{margin-top:var(--s-sm);font-size:var(--ui-font-size-note);color:var(--ui-color-muted);text-align:center;line-height:1.7}
 .overview-doc figcaption strong,.overview-doc figcaption b{color:var(--ui-color-text-secondary)}
 
-/* 开篇四问的内联图 */
+/* Inline figures for the opening four questions */
 .overview-doc figure svg.ifig{min-width:960px}
 .overview-doc .ifig .bx{fill:var(--fig-box);stroke:var(--fig-main);stroke-width:2}
 .overview-doc .ifig .bx-g{fill:var(--fig-box);stroke:var(--fig-gate);stroke-width:2.4}
@@ -127,7 +129,7 @@
 .overview-doc .ifig .t-g{fill:var(--fig-gate);font-size:15px;font-weight:600}
 .overview-doc .ifig .t-m{fill:var(--fig-main);font-size:15px;font-weight:600}
 
-/* 图 4 完整框架：绿 = 偏研究，灰 = 偏工程，蓝 = 业务 / 用户侧 */
+/* Figure 4, full framework: green = research-leaning, gray = engineering-leaning, blue = business / user side */
 .overview-doc .sv-framework-domain-label{font-size:13px;font-weight:700;fill:var(--fig-dim)}
 .overview-doc .sv-framework-module-title{font-size:11px;font-weight:650;fill:var(--fig-ink)}
 .overview-doc .sv-framework-module-desc{font-size:10px;fill:var(--fig-sub)}
@@ -138,7 +140,7 @@
 .overview-doc .sv-framework-arrow{stroke:var(--fig-line);stroke-width:2;fill:none;marker-end:url(#sv-framework-arrow-tip)}
 .overview-doc .sv-framework-backflow{stroke:var(--fig-gate);stroke-width:2;stroke-dasharray:6 4;fill:none;marker-end:url(#sv-framework-arrow-tip-orange)}
 
-/* 图 5 场景与挑战的映射 */
+/* Figure 5, scenario-to-challenge mapping */
 .overview-doc .sv-scenario-challenge-mapping-scene-box{fill:var(--fig-box);stroke:var(--fig-main);stroke-width:2}
 .overview-doc .sv-scenario-challenge-mapping-scene-title{fill:var(--fig-main);font-weight:600;font-size:14px}
 .overview-doc .sv-scenario-challenge-mapping-scene-text{fill:var(--fig-sub);font-size:12px}
@@ -153,7 +155,7 @@
 .overview-doc .sv-scenario-challenge-mapping-note-box{fill:var(--fig-box);stroke:var(--fig-main);stroke-width:1}
 .overview-doc .sv-scenario-challenge-mapping-note-text{fill:var(--fig-sub);font-size:12px}
 
-/* 图 6 完整演进闭环：紫 = 主流程，橙 = 决策 */
+/* Figure 6, full evolution loop: purple = main flow, orange = decisions */
 .overview-doc .sv-evolution-loop-detailed-box-stage{fill:var(--fig-box);stroke:var(--fig-main);stroke-width:2.2}
 .overview-doc .sv-evolution-loop-detailed-box-decision{fill:var(--fig-box);stroke:var(--fig-gate);stroke-width:3}
 .overview-doc .sv-evolution-loop-detailed-text-title{fill:var(--fig-main);font-size:14px;font-weight:700}
@@ -164,7 +166,7 @@
 .overview-doc .sv-evolution-loop-detailed-arrow-feedback{stroke:var(--fig-gate);stroke-width:2.2;stroke-dasharray:6,4;fill:none;marker-end:url(#sv-evolution-loop-detailed-arrow-feedback)}
 .overview-doc .sv-evolution-loop-detailed-arrow-loop{stroke:var(--fig-main);stroke-width:2.5;stroke-dasharray:6,4;fill:none;marker-end:url(#sv-evolution-loop-detailed-arrow)}
 
-/* 原稿在图里直接写的深色色值（fill / stroke 属性），按语义改成主题变量；CSS 规则优先于 SVG 的展示属性 */
+/* Dark color values hard-coded in the original figures (fill / stroke attributes), remapped to theme variables by meaning; CSS rules take precedence over SVG presentation attributes */
 .overview-doc svg [fill="#55c2ba"]{fill:var(--fig-main)}
 .overview-doc svg [stroke="#55c2ba"]{stroke:var(--fig-main)}
 .overview-doc svg [fill="#06B6D4"]{fill:var(--ui-color-info)}

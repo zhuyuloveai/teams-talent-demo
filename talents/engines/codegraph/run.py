@@ -25,13 +25,13 @@ PREFIX = '[icode-knowledge-codegraph]'
 STATUS_LIMIT = 1024 * 1024
 GIT_REDIRECTS = ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE',
                  'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_NAMESPACE')
-RECOVERY_HINT = ('请先停止该仓库相关的构建、同步及 MCP 进程（包括 iCode 中打开该仓库的 codegraph MCP），'
-                 '再在 iCode Knowledge 之外手动恢复索引（例如在仓库根目录运行 codegraph index）；'
-                 'iCode Knowledge 不会自动重建、解锁或删除索引文件。')
+RECOVERY_HINT = ('First stop the builds, syncs and MCP processes that use this repository (including a codegraph MCP in iCode that has it open), '
+                 'then restore the index by hand outside iCode Knowledge (for example, run codegraph index in the repository root); '
+                 'iCode Knowledge never rebuilds, unlocks or deletes index files by itself.')
 # codegraph index cannot start without codegraph.db, so the only way back is a fresh build.
-MISSING_DB_HINT = ('codegraph index 在缺少 codegraph.db 时无法恢复。请先停止该仓库相关的构建、同步及 MCP 进程'
-                   '（包括 iCode 中打开该仓库的 codegraph MCP），再删除整个 .codegraph/ 目录（其中的配置会一并删除，需要时先备份），'
-                   '然后用 iCode Knowledge 重新构建；iCode Knowledge 不会自动删除索引文件。')
+MISSING_DB_HINT = ('codegraph index cannot recover without codegraph.db. First stop the builds, syncs and MCP processes that use this repository '
+                   '(including a codegraph MCP in iCode that has it open), then delete the whole .codegraph/ directory (its configuration is deleted too; back it up first if needed), '
+                   'and build again with iCode Knowledge; iCode Knowledge never deletes index files by itself.')
 
 
 class Failure(Exception):
@@ -49,7 +49,7 @@ def codegraph_command():
     directly, as codegraph's own npm shim does on Windows."""
     found = shutil.which('codegraph')
     if found is None:
-        raise Failure('在 iCode Knowledge 后端的 PATH 中找不到 codegraph。请按 README 安装后重试。')
+        raise Failure('codegraph not found in the PATH of the iCode Knowledge backend. Install it as described in the README and try again.')
     if not WINDOWS:
         return ['codegraph']
     if found.lower().endswith('.exe'):
@@ -58,8 +58,8 @@ def codegraph_command():
     node = os.path.join(root, 'node.exe')
     entry = os.path.join(root, 'lib', 'dist', 'bin', 'codegraph.js')
     if not found.lower().endswith('.cmd') or not os.path.isfile(node) or not os.path.isfile(entry):
-        raise Failure('PATH 中的 codegraph 是 %s，不是 install.ps1 安装的 codegraph 安装包（应有 %s 和 %s）。'
-                      'Windows 上只支持 install.ps1 安装的 codegraph，npm 全局安装的不支持；请按 README 安装后重试。' % (found, node, entry))
+        raise Failure('The codegraph in PATH is %s, not the codegraph package installed by install.ps1 (expected %s and %s). '
+                      'On Windows only codegraph installed by install.ps1 is supported, not a global npm install; install it as described in the README and try again.' % (found, node, entry))
     return [node] + WINDOWS_NODE_FLAGS + [entry]
 
 
@@ -89,41 +89,41 @@ def strict_json(text, what):
     try:
         return json.loads(text, object_pairs_hook=no_duplicates, parse_constant=reject_constant)
     except ValueError as error:
-        raise Failure('%s 不是合法 JSON：%s' % (what, error))
+        raise Failure('%s is not valid JSON: %s' % (what, error))
 
 
 def read_input(argv):
     if len(argv) != 2 or argv[0] != '--input-file' or not os.path.isabs(argv[1]):
-        raise Failure('用法：run.py --input-file <绝对路径>')
+        raise Failure('Usage: run.py --input-file <absolute path>')
     try:
         with open(argv[1], 'rb') as handle:
             raw = handle.read()
-        document = strict_json(raw.decode('utf-8'), '输入文件')
+        document = strict_json(raw.decode('utf-8'), 'input file')
     except (OSError, UnicodeDecodeError) as error:
-        raise Failure('无法读取输入文件 %s：%s' % (argv[1], error))
+        raise Failure('Cannot read input file %s: %s' % (argv[1], error))
     if not isinstance(document, dict) or set(document) != {'input', 'output'}:
-        raise Failure('输入文件必须只包含 input 与 output')
+        raise Failure('The input file must contain only input and output')
     data, output = document['input'], document['output']
     if not isinstance(data, dict) or set(data) not in ({'repositories'}, {'repositorySet'}):
-        raise Failure('input 必须只包含 repositories 或 repositorySet 之一')
+        raise Failure('input must contain exactly one of repositories or repositorySet')
     member = None
     git = None
     if 'repositories' in data:
         repositories = data['repositories']
         if not isinstance(repositories, list) or len(repositories) != 1:
-            raise Failure('codegraph 每次执行必须恰好一个仓库')
+            raise Failure('Each codegraph run must have exactly one repository')
         repository = repositories[0]
         if not isinstance(repository, dict) or set(repository) - {'git'} != {'sourceId', 'path'} or not isinstance(repository['path'], str):
-            raise Failure('仓库项必须包含 sourceId 与 path，另可有 git')
+            raise Failure('A repository entry must contain sourceId and path, and may contain git')
         repo = repository['path']
-        git = read_git(repository.get('git'), '仓库项的 git')
+        git = read_git(repository.get('git'), 'the repository entry git')
     else:
         member = read_member(data['repositorySet'])
         repo = member['path']
         git = member['git']
     if not isinstance(output, dict) or set(output) != {'index'} or not isinstance(output['index'], dict) \
             or set(output['index']) != {'path'} or not isinstance(output['index']['path'], str):
-        raise Failure('output 必须只包含 index.path')
+        raise Failure('output must contain only index.path')
     return repo, output['index']['path'], member, git
 
 
@@ -138,10 +138,10 @@ def read_git(value, label):
         return None
     if not isinstance(value, dict) or set(value) != {'branch', 'sync', 'commit', 'previous'} \
             or not isinstance(value['branch'], str) or value['sync'] not in ('pull', 'local') or not isinstance(value['commit'], str):
-        raise Failure('%s 必须包含 branch、sync、commit 与 previous' % label)
+        raise Failure('%s must contain branch, sync, commit and previous' % label)
     previous = value['previous']
     if previous is not None and (not isinstance(previous, dict) or not isinstance(previous.get('commit'), str)):
-        raise Failure('%s.previous 必须为 null 或包含 commit 的对象' % label)
+        raise Failure('%s.previous must be null or an object containing commit' % label)
     return value
 
 
@@ -150,48 +150,48 @@ def read_member(repository_set):
     in members at its position. Returns the member with the set root added."""
     if not isinstance(repository_set, dict) or set(repository_set) != {'sourceId', 'path', 'members', 'member'} \
             or not isinstance(repository_set['path'], str):
-        raise Failure('repositorySet 必须只包含 sourceId、path、members 与 member')
+        raise Failure('repositorySet must contain only sourceId, path, members and member')
     members = repository_set['members']
     if not isinstance(members, list) or not members or any(
             not isinstance(item, dict) or set(item) != {'name', 'path'} or not isinstance(item['name'], str) or not isinstance(item['path'], str)
             for item in members):
-        raise Failure('repositorySet.members 必须是由 name 与 path 组成的非空列表')
+        raise Failure('repositorySet.members must be a non-empty list of name and path')
     member = repository_set['member']
     if not isinstance(member, dict) or set(member) - {'git'} != {'name', 'path', 'index', 'total'} \
             or not isinstance(member['name'], str) or not isinstance(member['path'], str) \
             or not positive(member['index']) or not positive(member['total']):
-        raise Failure('repositorySet.member 必须包含 name、path、index 与 total，另可有 git')
+        raise Failure('repositorySet.member must contain name, path, index and total, and may contain git')
     member = dict(member, git=read_git(member.get('git'), 'repositorySet.member.git'))
     if member['total'] != len(members) or member['index'] > member['total'] \
             or members[member['index'] - 1] != {'name': member['name'], 'path': member['path']}:
-        raise Failure('repositorySet.member 与 members 中第 %r 个子仓不一致' % member['index'])
+        raise Failure('repositorySet.member does not match member repository %r in members' % member['index'])
     if member['path'] != os.path.join(repository_set['path'], member['name']):
-        raise Failure('子仓 %s 的路径 %s 不在集合根目录 %s 下' % (member['name'], member['path'], repository_set['path']))
+        raise Failure('Member repository %s has path %s, which is not under the set root %s' % (member['name'], member['path'], repository_set['path']))
     return dict(member, root=repository_set['path'])
 
 
 def check_environment():
     if 'CODEGRAPH_DIR' in os.environ:
-        raise Failure('检测到环境变量 CODEGRAPH_DIR（值：%r）。首版只使用仓库内默认 .codegraph 目录；'
-                      '请从 iCode Knowledge 后端的启动环境中取消该变量后重试。未运行任何 codegraph 命令。' % os.environ['CODEGRAPH_DIR'])
+        raise Failure('Environment variable CODEGRAPH_DIR is set (value: %r). The first version only uses the default .codegraph directory in the repository; '
+                      'unset it in the environment that starts the iCode Knowledge backend and try again. No codegraph command was run.' % os.environ['CODEGRAPH_DIR'])
     present = [name for name in GIT_REDIRECTS if name in os.environ]
     if present:
-        raise Failure('检测到会让 git 读取其他仓库的环境变量：%s。请从 iCode Knowledge 后端的启动环境中取消后重试；'
-                      '脚本不会删除或改写这些变量。未运行任何 codegraph 命令。' % ', '.join(present))
+        raise Failure('Environment variables that make git read another repository are set: %s. Unset them in the environment that starts the iCode Knowledge backend and try again; '
+                      'the script never removes or rewrites them. No codegraph command was run.' % ', '.join(present))
 
 
 def check_repository(repo, index):
     if not os.path.isabs(repo) or os.path.realpath(repo) != repo:
-        raise Failure('仓库路径不是规范的绝对路径：%s' % repo)
+        raise Failure('The repository path is not a canonical absolute path: %s' % repo)
     try:
         info = os.lstat(repo)
     except OSError as error:
-        raise Failure('无法访问仓库 %s：%s' % (repo, error))
+        raise Failure('Cannot access repository %s: %s' % (repo, error))
     if not stat.S_ISDIR(info.st_mode):
-        raise Failure('仓库路径不是目录：%s' % repo)
+        raise Failure('The repository path is not a directory: %s' % repo)
     expected = os.path.join(repo, '.codegraph')
     if index != expected:
-        raise Failure('产物路径 %s 与本仓索引目录 %s 不一致' % (index, expected))
+        raise Failure('The artifact path %s does not match the index directory %s of this repository' % (index, expected))
 
 
 def index_state(index):
@@ -201,9 +201,9 @@ def index_state(index):
     except FileNotFoundError:
         return 'init'
     except OSError as error:
-        raise Failure('无法读取索引目录 %s：%s' % (index, error))
+        raise Failure('Cannot read index directory %s: %s' % (index, error))
     if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
-        raise Failure('索引位置 %s 不是普通目录（可能是文件或软链接）；不会自动处理。%s' % (index, RECOVERY_HINT))
+        raise Failure('The index location %s is not a plain directory (it may be a file or a symlink); it is left as is. %s' % (index, RECOVERY_HINT))
     database = os.path.join(index, 'codegraph.db')
     try:
         db_info = os.lstat(database)
@@ -211,27 +211,27 @@ def index_state(index):
         try:
             entries = sorted(os.listdir(index))
         except OSError as error:
-            raise Failure('无法读取索引目录 %s：%s；不会当作空目录处理。' % (index, error))
+            raise Failure('Cannot read index directory %s: %s; it is not treated as empty.' % (index, error))
         if entries:
             shown = ', '.join(entries[:10]) + (' …' if len(entries) > 10 else '')
-            raise Failure('索引目录 %s 非空但缺少 codegraph.db（现有：%s）；不会自动初始化或删除任何文件。%s' % (index, shown, MISSING_DB_HINT))
+            raise Failure('Index directory %s is not empty but has no codegraph.db (found: %s); nothing is initialized or deleted. %s' % (index, shown, MISSING_DB_HINT))
         return 'init'
     except OSError as error:
-        raise Failure('无法读取索引数据库 %s：%s' % (database, error))
+        raise Failure('Cannot read index database %s: %s' % (database, error))
     if not stat.S_ISREG(db_info.st_mode):
-        raise Failure('索引数据库 %s 不是普通文件；%s' % (database, RECOVERY_HINT))
+        raise Failure('Index database %s is not a regular file; %s' % (database, RECOVERY_HINT))
     return 'existing'
 
 
 def run_native(command, args, repo):
     """init/sync: output goes straight to the platform log; non-zero fails immediately."""
-    say('运行：codegraph %s' % ' '.join(args))
+    say('Running: codegraph %s' % ' '.join(args))
     try:
         completed = subprocess.run(command + args, cwd=repo, stdin=subprocess.DEVNULL, shell=False)
     except OSError as error:
-        raise Failure('无法启动 codegraph：%s' % error)
+        raise Failure('Cannot start codegraph: %s' % error)
     if completed.returncode != 0:
-        raise Failure('codegraph %s 失败，退出码 %d；不会重试、重建或调用 index。' % (args[0], completed.returncode))
+        raise Failure('codegraph %s failed with exit code %d; not retrying, rebuilding or running index.' % (args[0], completed.returncode))
 
 
 def read_status(command, repo):
@@ -240,7 +240,7 @@ def read_status(command, repo):
         process = subprocess.Popen(command + ['status', repo, '--json'], cwd=repo, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE, shell=False)
     except OSError as error:
-        raise Failure('无法启动 codegraph status：%s' % error)
+        raise Failure('Cannot start codegraph status: %s' % error)
     captured = bytearray()
     overflow = False
     while True:
@@ -253,60 +253,60 @@ def read_status(command, repo):
             captured.extend(chunk)
     code = process.wait()
     if code != 0:
-        raise Failure('codegraph status 失败，退出码 %d（数据库可能无法打开、被锁或已损坏）；%s' % (code, RECOVERY_HINT))
+        raise Failure('codegraph status failed with exit code %d (the database may not open, be locked or be corrupt); %s' % (code, RECOVERY_HINT))
     if overflow:
-        raise Failure('codegraph status 的输出超过 1 MiB，不符合状态合同。')
+        raise Failure('codegraph status output exceeds 1 MiB, which breaks the status contract.')
     try:
         text = captured.decode('utf-8')
     except UnicodeDecodeError as error:
-        raise Failure('codegraph status 的输出不是合法 UTF-8：%s' % error)
-    value = strict_json(text, 'codegraph status 输出')
+        raise Failure('codegraph status output is not valid UTF-8: %s' % error)
+    value = strict_json(text, 'codegraph status output')
     if not isinstance(value, dict):
-        raise Failure('codegraph status 输出必须是一个 JSON 对象')
+        raise Failure('codegraph status output must be a JSON object')
     return value
 
 
 def count(value, name):
     if type(value) is not int or value < 0:
-        raise Failure('status 字段 %s 必须是非负整数，实际为 %r' % (name, value))
+        raise Failure('status field %s must be a non-negative integer, got %r' % (name, value))
     return value
 
 
 def check_identity(status, repo, index):
     if status.get('initialized') is not True:
-        raise Failure('status 显示本仓未初始化（initialized=%r）' % status.get('initialized'))
+        raise Failure('status shows this repository is not initialized (initialized=%r)' % status.get('initialized'))
     if not same_path(status.get('projectPath'), repo):
-        raise Failure('status 的 projectPath %r 与本仓 %s 不一致（可能命中了父仓索引）' % (status.get('projectPath'), repo))
+        raise Failure('status projectPath %r does not match this repository %s (it may have hit a parent repository index)' % (status.get('projectPath'), repo))
     if not same_path(status.get('indexPath'), index):
-        raise Failure('status 的 indexPath %r 与产物路径 %s 不一致' % (status.get('indexPath'), index))
+        raise Failure('status indexPath %r does not match the artifact path %s' % (status.get('indexPath'), index))
     details = status.get('index')
     if not isinstance(details, dict):
-        raise Failure('status 缺少 index 对象')
+        raise Failure('status has no index object')
     return details
 
 
 def verify(status, repo, index, synced):
     details = check_identity(status, repo, index)
     if details.get('state') != 'complete':
-        raise Failure('索引状态为 %r，不是 complete。%s' % (details.get('state'), RECOVERY_HINT))
+        raise Failure('Index state is %r, not complete. %s' % (details.get('state'), RECOVERY_HINT))
     pending_refs = count(details.get('pendingRefs'), 'index.pendingRefs')
     changes = status.get('pendingChanges')
     if not isinstance(changes, dict):
-        raise Failure('status 缺少 pendingChanges 对象')
+        raise Failure('status has no pendingChanges object')
     added, modified, removed = (count(changes.get(key), 'pendingChanges.' + key) for key in ('added', 'modified', 'removed'))
     reindex = details.get('reindexRecommended')
     if type(reindex) is not bool:
-        raise Failure('status 字段 index.reindexRecommended 必须是布尔值，实际为 %r' % (reindex,))
+        raise Failure('status field index.reindexRecommended must be a boolean, got %r' % (reindex,))
     if pending_refs != 0:
-        raise Failure('仍有 %d 个待解析引用（pendingRefs），索引不完整；不会循环同步或重建。' % pending_refs)
+        raise Failure('%d references are still unresolved (pendingRefs), so the index is incomplete; not syncing again or rebuilding.' % pending_refs)
     if added or modified or removed:
-        say('提示：仍有待同步变化（新增 %d、修改 %d、删除 %d）。' % (added, modified, removed))
+        say('Note: changes are still waiting to sync (%d added, %d modified, %d deleted).' % (added, modified, removed))
         if synced:
-            say('可能有改动尚未同步：可能另一同步正在进行，或运行期间又有新改动，可稍后再次更新。')
+            say('Some changes may not be synced yet: another sync may be running, or new changes arrived during this run. Update again later.')
     if reindex:
-        say('提示：codegraph 建议重建索引（reindexRecommended=true）；本次仍按成功处理，不会自动重建。')
+        say('Note: codegraph recommends a reindex (reindexRecommended=true); this run still counts as a success and nothing is rebuilt.')
     if status.get('fileCount') == 0:
-        say('提示：索引中没有文件。这可能是合法的空索引，取决于 codegraph 支持的语言与采集规则。')
+        say('Note: the index has no files. This may be a valid empty index, depending on the languages and collection rules codegraph supports.')
 
 
 def self_check():
@@ -318,13 +318,13 @@ def self_check():
         try:
             result = subprocess.run(command + ['--version'], stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=30)
         except (OSError, subprocess.TimeoutExpired) as error:
-            raise Failure('无法运行 codegraph --version：%s' % error)
+            raise Failure('Cannot run codegraph --version: %s' % error)
         if result.returncode != 0:
-            raise Failure('codegraph --version 以退出码 %d 结束：%s' % (result.returncode, (result.stderr or result.stdout).strip()))
-        say('自检通过：codegraph %s（%s）' % (result.stdout.strip(), ' '.join(command)))
+            raise Failure('codegraph --version ended with exit code %d: %s' % (result.returncode, (result.stderr or result.stdout).strip()))
+        say('Self-check passed: codegraph %s (%s)' % (result.stdout.strip(), ' '.join(command)))
         return 0
     except Failure as failure:
-        print('%s 自检失败：%s' % (PREFIX, failure), file=sys.stderr, flush=True)
+        print('%s Self-check failed: %s' % (PREFIX, failure), file=sys.stderr, flush=True)
         return 1
 
 
@@ -334,10 +334,10 @@ def main(argv):
     try:
         repo, index, member, git = read_input(argv)
         if member is not None:
-            say('子仓 %s（第 %d/%d 个），集合根目录 %s' % (member['name'], member['index'], member['total'], member['root']))
+            say('Member repository %s (%d of %d), set root %s' % (member['name'], member['index'], member['total'], member['root']))
         if git is not None:
             previous = git['previous']
-            say('代码版本：分支 %s，提交 %s；上次成功的构建或更新：%s' % (git['branch'], git['commit'][:12], previous['commit'][:12] if previous else '无记录'))
+            say('Code version: branch %s, commit %s; last successful build or update: %s' % (git['branch'], git['commit'][:12], previous['commit'][:12] if previous else 'none'))
         check_environment()
         check_repository(repo, index)
         command = codegraph_command()
@@ -345,21 +345,21 @@ def main(argv):
         synced = False
         if state == 'init':
             if os.environ.get('CODEGRAPH_NO_WATCH') == '1':
-                raise Failure('CODEGRAPH_NO_WATCH=1 会让 init 安装 Git hooks 回退；首版不初始化。请从 iCode Knowledge 后端的启动环境中取消该变量后重试。')
+                raise Failure('CODEGRAPH_NO_WATCH=1 makes init fall back to installing Git hooks; the first version does not initialize in that case. Unset it in the environment that starts the iCode Knowledge backend and try again.')
             run_native(command, ['init', repo, '--yes'], repo)
         else:
             details = check_identity(read_status(command, repo), repo, index)
             if details.get('state') != 'complete':
-                raise Failure('已有索引状态为 %r，不会自动重建或调用 index。%s' % (details.get('state'), RECOVERY_HINT))
+                raise Failure('The existing index state is %r; not rebuilding or running index. %s' % (details.get('state'), RECOVERY_HINT))
             run_native(command, ['sync', repo], repo)
             synced = True
         if index_state(index) != 'existing':
-            raise Failure('codegraph 退出 0，但本仓 %s 中没有 codegraph.db。' % index)
+            raise Failure('codegraph exited 0, but there is no codegraph.db in %s.' % index)
         verify(read_status(command, repo), repo, index, synced)
-        say('完成：%s 的索引已校验通过（%s）。' % (repo, 'sync' if synced else 'init'))
+        say('Done: the index of %s passed verification (%s).' % (repo, 'sync' if synced else 'init'))
         return 0
     except Failure as failure:
-        print('%s 失败：%s' % (PREFIX, failure), file=sys.stderr, flush=True)
+        print('%s Failed: %s' % (PREFIX, failure), file=sys.stderr, flush=True)
         return 1
 
 

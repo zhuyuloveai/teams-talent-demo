@@ -19,7 +19,7 @@ export function minerIndex(specs: string[] = []) {
   const rows: Record<string, string> = {};
   text.split(/\r?\n/).forEach(l => { const m = /^\|\s*\[([^\]]+)\]/.exec(l); if (m) rows[m[1]] = l; });
   const head = text.split(/\r?\n/).filter(l => /^#|^>/.test(l)).join('\n');
-  return head + '\n\n| 名称 | 描述 | 首次归档时间 |\n| --- | --- | --- |\n' + specs.map(n => rows[n] ?? '| [' + n + '](<./' + n + '/summary.md>) | — | — |').join('\n') + '\n';
+  return head + '\n\n| Name | Description | First archived |\n| --- | --- | --- |\n' + specs.map(n => rows[n] ?? '| [' + n + '](<./' + n + '/summary.md>) | — | — |').join('\n') + '\n';
 }
 function baseText(a: Artifact, which: Which, key: string) {
   if (key === 'miner/index.md') return minerIndex(specsOf(a, which));
@@ -36,17 +36,17 @@ export function text(a: Artifact, which: Which, key: string) {
   return baseText(a, which === 'published' ? 'published' : 'original', key);
 }
 export function fileLabel(key: string) {
-  if (key === RULES_FILE) return 'AGENTS.md 规则';
+  if (key === RULES_FILE) return 'AGENTS.md rules';
   const parts = key.split('/');
   const name = parts.pop()!;
-  if (name === 'summary.md') return '范式总结';
-  if (name === 'analyzer.md') return '代码分析报告';
+  if (name === 'summary.md') return 'Pattern summary';
+  if (name === 'analyzer.md') return 'Code analysis report';
   if (name === 'metadata.json') return 'PR #' + parts.pop();
-  if (name === 'meta.json') return parts[1] ? parts[1] + '：挖掘元数据' : '挖掘元数据';
-  if (name === 'index.md') return parts[0] === 'miner' ? '范式索引' : '索引';
+  if (name === 'meta.json') return parts[1] ? parts[1] + ': Mining metadata' : 'Mining metadata';
+  if (name === 'index.md') return parts[0] === 'miner' ? 'Pattern index' : 'Index';
   return name.replace(/\.(md|html)$/, '');
 }
-/** Miner artifacts list files per spec: 范式总结, 代码分析报告, then PR records (PR mode) or mining metadata (diff mode). */
+/** Miner artifacts list files per spec: pattern summary, code analysis report, then PR records (PR mode) or mining metadata (diff mode). */
 export function fileGroups(a: Artifact, list: string[]) {
   if (a.folder !== 'miner') return [{ title: '', items: list }];
   const groups: { title: string; items: string[] }[] = [{ title: '', items: list.filter(f => f === 'miner/index.md') }], by: Record<string, { title: string; items: string[] }> = {};

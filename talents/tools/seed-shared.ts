@@ -9,4 +9,4 @@ import { buildExport, writeExport } from '../server/export.ts';
 const data = buildExport(seedState(), undefined, '2026-10-26T02:32:00.000Z');
 await writeExport(seedDir, data);
 const files = [...data.files.values()].reduce((n, list) => n + list.length, 0);
-console.log(`wrote ${relative(repositoryRoot, join(seedDir, 'talents'))}: ${data.knowledge.artifacts.length} 个已发布产物，${files} 个文件`);
+console.log(`wrote ${relative(repositoryRoot, join(seedDir, 'talents'))}: ${data.knowledge.artifacts.length} published artifacts, ${files} files`);

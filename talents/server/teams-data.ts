@@ -13,7 +13,7 @@ export type TeamsData = { online: true; revision: string; snapshot: TeamsSnapsho
 export type TeamsGet = (path: string, signal: AbortSignal) => Promise<any>;
 const teamsGet: TeamsGet = async (path, signal) => {
   const response = await fetch(teamsOrigin + path, { signal });
-  if (!response.ok) throw new Error('iCode Teams 返回 ' + response.status);
+  if (!response.ok) throw new Error('iCode Teams returned ' + response.status);
   return response.json();
 };
 
@@ -23,10 +23,10 @@ const EMPTY: TeamsSnapshot = { schemaVersion: 1, exportedAt: '', team: { name: '
 export async function readTeamsData(get: TeamsGet = teamsGet): Promise<TeamsData> {
   try {
     const { revision, snapshot } = await get('/api/shared/teams', AbortSignal.timeout(5000)) as SharedTeams;
-    if (typeof revision !== 'string' || snapshot?.schemaVersion !== 1 || !Array.isArray(snapshot.projects) || !Array.isArray(snapshot.team?.members)) throw new Error('iCode Teams 数据格式无效');
+    if (typeof revision !== 'string' || snapshot?.schemaVersion !== 1 || !Array.isArray(snapshot.projects) || !Array.isArray(snapshot.team?.members)) throw new Error('Invalid iCode Teams data format');
     return { online: true, revision, snapshot: { ...snapshot, sessions: snapshot.sessions ?? [] } };
   } catch (error) {
-    return { online: false, revision: null, snapshot: EMPTY, error: '无法读取 iCode Teams 数据：' + (error as Error).message };
+    return { online: false, revision: null, snapshot: EMPTY, error: 'Cannot read iCode Teams data: ' + (error as Error).message };
   }
 }
 /** Waits (long polling) until Teams' revision differs from `after`, or about 25 s pass; null when Teams cannot be reached. */
@@ -36,7 +36,7 @@ export async function teamsRevision(after: string, signal: AbortSignal, get: Tea
 }
 
 // ---------- Mapping ----------
-export const SESSIONS_SOURCE: Source = { id: 's-sessions', type: 'sessions', name: '团队会话', path: 'iCode Teams 中成员共享的会话', auto: true };
+export const SESSIONS_SOURCE: Source = { id: 's-sessions', type: 'sessions', name: 'Team sessions', path: 'Sessions shared by members in iCode Teams', auto: true };
 export const docSetId = (projectId: string) => 'docset:' + projectId;
 /** 2026-10-27T03:35:12.000Z -> 2026-10-27 11:35 (local time), the format the front-end uses everywhere. */
 export function localMinute(iso: string) {
@@ -69,13 +69,13 @@ function repoSources(project: SharedProject, meta: Record<string, SourceMeta>): 
       branch: repo.branch ?? 'main', origin: repo.remote ?? '', commit: m.commit ?? null, ...(m.prs === undefined ? {} : { prs: m.prs }) };
   });
 }
-/** A project's design documents become one document set named "<project>文档". */
+/** A project's design documents become one document set named "Design documents". */
 function docSet(project: SharedProject, meta: Record<string, SourceMeta>, exportedAt: string): Source[] {
   if (!project.documents.length) return [];
   const id = docSetId(project.id), m = meta[id] ?? {};
   const paths = project.documents.map(doc => doc.path);
-  return [{ id, type: 'docs', name: '设计文档', path: commonDir(paths) || 'iCode Teams 已对接的 ' + paths.length + ' 份设计文档', fromTeams: true, projectId: project.id,
-    desc: project.documents.map(doc => doc.title).join('、'),
+  return [{ id, type: 'docs', name: 'Design documents', path: commonDir(paths) || paths.length + ' design documents connected in iCode Teams', fromTeams: true, projectId: project.id,
+    desc: project.documents.map(doc => doc.title).join(', '),
     files: paths.length, tree: tree(paths), titles: Object.fromEntries(project.documents.map(doc => [doc.path, doc.title])),
     from: { kind: 'teams', project: project.name },
     lastCheck: m.lastCheck ?? localMinute(exportedAt),
@@ -102,7 +102,7 @@ export function teamsModel(snapshot: TeamsSnapshot, meta: Record<string, SourceM
   const visible = new Set(projects.map(p => p.id));
   return {
     team: { name: snapshot.team.name, admin: owner?.id ?? '', me: me?.id ?? '',
-      members: members.map(m => ({ id: m.id, name: m.name, role: m.role, status: m.status, title: m.role === 'owner' ? 'Owner' : '成员' })) },
+      members: members.map(m => ({ id: m.id, name: m.name, role: m.role, status: m.status, title: m.role === 'owner' ? 'Owner' : 'Member' })) },
     projects: projects.map(p => ({ id: p.id, name: p.name, description: p.description, readonly: p.readonly, skills: (p.skills ?? []).map(({ content, ...skill }) => skill) })),
     sources,
     sessions: snapshot.sessions.filter(s => visible.has(s.projectId)).map(session),
@@ -117,12 +117,12 @@ export function teamsView(snapshot: TeamsSnapshot, meta: Record<string, SourceMe
 /** SKILL.md of a project skill: the content Teams sends, else read from the path Teams gives (relative to the repository root). */
 export async function readSkill(snapshot: TeamsSnapshot, projectId: string, skillId: string, root = repositoryRoot) {
   const skill = snapshot.projects.find(p => p.id === projectId)?.skills?.find(s => s.id === skillId);
-  if (!skill) throw new HttpError('项目 Skill 不存在', 404);
+  if (!skill) throw new HttpError('Project Skill not found', 404);
   if (skill.content !== undefined) return { ...skill, content: skill.content };
   const path = resolve(root, skill.path);
-  if (relative(root, path).startsWith('..')) throw new HttpError('Skill 路径无效', 400);
+  if (relative(root, path).startsWith('..')) throw new HttpError('Invalid Skill path', 400);
   try { return { ...skill, content: await readFile(path, 'utf8') }; }
-  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new HttpError('找不到 Skill 文件：' + skill.path, 404); throw error; }
+  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new HttpError('Skill file not found: ' + skill.path, 404); throw error; }
 }
 
 /** The state the front-end works on: Talents state merged with the Teams-derived team, projects, sources and sessions. */
@@ -138,7 +138,7 @@ export function clientState(state: TalentsState, snapshot: TeamsSnapshot) {
  * about Teams sources and the local document sources are kept.
  */
 export function ownedState(client: Record<string, any>, previous: TalentsState): TalentsState {
-  if (!client || typeof client !== 'object' || !Array.isArray(client.sources) || !Array.isArray(client.projects) || !Array.isArray(client.artifacts) || !Array.isArray(client.tasks)) throw new HttpError('状态格式无效', 400);
+  if (!client || typeof client !== 'object' || !Array.isArray(client.sources) || !Array.isArray(client.projects) || !Array.isArray(client.artifacts) || !Array.isArray(client.tasks)) throw new HttpError('Invalid state format', 400);
   const next = structuredClone(previous);
   for (const key of CLIENT_OWNED_KEYS) if (client[key] !== undefined) (next as any)[key] = client[key];
   const sourceMeta = { ...previous.sourceMeta }, localSources: LocalSource[] = [];
