@@ -32,7 +32,7 @@
         {
           "path": "templates/adr-template.md",
           "executable": true,
-          "sha256": "6fff4c48339726340a5d72e5eb6b7ab3e1f776435f3b2cd9fecc29ba790b1dfe"
+          "sha256": "47ed7afa24febd959221506aa8449d2c4b8c98fa3c1f5ee801e632971ac7a3fc"
         }
       ]
     },
