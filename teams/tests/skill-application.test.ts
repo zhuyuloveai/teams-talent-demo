@@ -17,17 +17,17 @@ test('subscription package preserves exact attachments and permissions; duplicat
     const installed=await installSkillPackage(root,pkg);assert.equal(installed.status,'applied');
     for(const file of pkg.files){assert.deepEqual(await readFile(join(installed.skillDirectory,file.path)),file.bytes);if(process.platform!=='win32')assert.equal(!!((await lstat(join(installed.skillDirectory,file.path))).mode&0o111),file.executable);}
     const before=(await lstat(join(installed.skillDirectory,'SKILL.md'))).mtimeMs;assert.equal((await installSkillPackage(root,pkg)).status,'already-applied');assert.equal((await lstat(join(installed.skillDirectory,'SKILL.md'))).mtimeMs,before);
-    await writeFile(join(installed.skillDirectory,'references/rules.md'),'user modification');await assert.rejects(installSkillPackage(root,pkg),/未覆盖/);assert.equal(await readFile(join(installed.skillDirectory,'references/rules.md'),'utf8'),'user modification');
+    await writeFile(join(installed.skillDirectory,'references/rules.md'),'user modification');await assert.rejects(installSkillPackage(root,pkg),/not overwritten/);assert.equal(await readFile(join(installed.skillDirectory,'references/rules.md'),'utf8'),'user modification');
   }finally{await rm(root,{recursive:true,force:true});}
 });
 test('untrusted package paths, tampered bytes, duplicate names and symbolic target paths are rejected',async()=>{
   const root=await mkdtemp(join(tmpdir(),'skill-paths-')),outside=await mkdtemp(join(tmpdir(),'skill-outside-')),pkg=packageFixture();
   try{
-    for(const path of ['../escape','/absolute','scripts/../../escape','scripts\\escape','CON','a/./b'])await assert.rejects(installSkillPackage(root,{...pkg,files:[...pkg.files,{path,bytes:Buffer.from('x'),executable:false,sha256:sha256('x')}]}),/路径|内容/);
-    await assert.rejects(installSkillPackage(root,{...pkg,sha256:'f'.repeat(64)}),/完整包摘要/);
-    await assert.rejects(installSkillPackage(root,{...pkg,files:pkg.files.map((file,index)=>index?file:{...file,bytes:Buffer.from('tampered')})}),/校验/);
-    await assert.rejects(installSkillPackage(root,{...pkg,files:[...pkg.files,{...pkg.files[0],path:'skill.md'}]}),/校验/);
-    await symlink(outside,join(root,pkg.name),process.platform==='win32'?'junction':'dir');await assert.rejects(installSkillPackage(root,pkg),/符号链接/);assert.deepEqual(await import('node:fs/promises').then(fs=>fs.readdir(outside)),[]);
+    for(const path of ['../escape','/absolute','scripts/../../escape','scripts\\escape','CON','a/./b'])await assert.rejects(installSkillPackage(root,{...pkg,files:[...pkg.files,{path,bytes:Buffer.from('x'),executable:false,sha256:sha256('x')}]}),/path or content/);
+    await assert.rejects(installSkillPackage(root,{...pkg,sha256:'f'.repeat(64)}),/package digest check failed/);
+    await assert.rejects(installSkillPackage(root,{...pkg,files:pkg.files.map((file,index)=>index?file:{...file,bytes:Buffer.from('tampered')})}),/check failed/);
+    await assert.rejects(installSkillPackage(root,{...pkg,files:[...pkg.files,{...pkg.files[0],path:'skill.md'}]}),/check failed/);
+    await symlink(outside,join(root,pkg.name),process.platform==='win32'?'junction':'dir');await assert.rejects(installSkillPackage(root,pkg),/symbolic link/);assert.deepEqual(await import('node:fs/promises').then(fs=>fs.readdir(outside)),[]);
   }finally{await rm(root,{recursive:true,force:true});await rm(outside,{recursive:true,force:true});}
 });
 test('application pins subscription and project, never writes without confirmation, and retains original request identity',async()=>{
@@ -37,7 +37,7 @@ test('application pins subscription and project, never writes without confirmati
   const scope={projectId:'project',resourceId:pkg.id,version:pkg.version,sha256:pkg.sha256};
   try{
     const plan=await service.plan('member',scope);assert.equal(plan.canApply,true);assert.equal((await inspectSkillTarget(project,pkg)).existing,'none');await assert.rejects(service.plan('owner',scope),/no subscription/);
-    changed=true;await assert.rejects(service.apply('member',{...scope,requestId:randomUUID(),planToken:plan.planToken}),/已变化/);changed=false;
+    changed=true;await assert.rejects(service.apply('member',{...scope,requestId:randomUUID(),planToken:plan.planToken}),/changed; confirm again/);changed=false;
     const body={...scope,requestId:randomUUID(),planToken:plan.planToken},one=await service.apply('member',body),again=await service.apply('member',body);assert.deepEqual(again,one);assert.equal(reads,1);
     assert.equal((await service.apply('member',{...body,requestId:randomUUID()})).status,'already-applied');assert.equal(reads,2);subscribed=false;await assert.rejects(service.apply('member',body),/no subscription/);
   }finally{await rm(root,{recursive:true,force:true});}
@@ -48,7 +48,7 @@ test('native read cannot report success when an installed attachment changes dur
   try{
     const installed=await installSkillPackage(root,pkg);
     assert.equal(await readUnchangedSkillPackage(root,pkg,async()=>'verified'),'verified');
-    await assert.rejects(readUnchangedSkillPackage(root,pkg,async()=>{await writeFile(join(installed.skillDirectory,'references/rules.md'),'changed during native read');return 'must not succeed';}),/不同内容/);
+    await assert.rejects(readUnchangedSkillPackage(root,pkg,async()=>{await writeFile(join(installed.skillDirectory,'references/rules.md'),'changed during native read');return 'must not succeed';}),/different content already exists/);
   }finally{await rm(root,{recursive:true,force:true});}
 });
 test('failed native discovery retries the same request without rewriting installed files',async()=>{

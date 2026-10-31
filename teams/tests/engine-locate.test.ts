@@ -33,13 +33,13 @@ test('missing official launcher is none while a missing explicit override is fai
   try {
     const missing = await locateChrysEngine({ platform: 'win32', env: { LOCALAPPDATA: join(root, 'local') }, home: root, materialRoot: root });
     assert.equal(missing.engine.state, 'none');
-    assert.match(missing.engine.reason ?? '', /未找到可用的 iCode/);
+    assert.match(missing.engine.reason ?? '', /No usable iCode found/);
 
     const override = join(root, 'explicit', 'icode.exe');
     const failed = await locateChrysEngine({ platform: 'win32', env: { DEMO_ICODE_BINARY: override, LOCALAPPDATA: join(root, 'local') }, home: root, materialRoot: root });
     assert.equal(failed.engine.state, 'failed');
     assert.equal(failed.engine.entry, override);
-    assert.match(failed.engine.reason ?? '', /显式配置/);
+    assert.match(failed.engine.reason ?? '', /explicitly configured iCode/);
   } finally { await done(); }
 });
 
@@ -50,13 +50,13 @@ test('a probe failure is failed and a missing native environment keeps the locat
     await file(entry);
     const failed = await locateChrysEngine({ platform: 'win32', env: { LOCALAPPDATA: local }, home: root, materialRoot: root, probe: async () => { throw new Error('broken launcher'); } });
     assert.equal(failed.engine.state, 'failed');
-    assert.match(failed.engine.reason ?? '', /版本探测失败/);
+    assert.match(failed.engine.reason ?? '', /Version probe failed/);
 
     const fallback = await locateChrysEngine({ platform: 'win32', env: { LOCALAPPDATA: local, APPDATA: join(root, 'roaming') }, home: root, materialRoot: root, probe: async () => '0.32.0', environment: async () => { throw new Error('python unavailable'); } });
     assert.equal(fallback.engine.state, 'ready');
     assert.equal(fallback.engine.config, join(root, 'roaming', 'chrys'));
     assert.equal(fallback.engine.sessionRoot, join(root, 'roaming', 'chrys', 'sessions'));
-    assert.ok(fallback.engine.notes?.some(note => note.includes('平台默认位置')));
+    assert.ok(fallback.engine.notes?.some(note => note.includes('platform default location')));
   } finally { await done(); }
 });
 

@@ -38,37 +38,37 @@ test('native scoped copies include binary attachments; restoration is byte-for-b
  const child=spawn(process.execPath,['-e','']);await new Promise<void>(resolve=>child.on('exit',()=>resolve()));const run=join(f.runtime,'work-contexts',f.runId+'.native');
  await put(join(run,'manifest.json'),{runId:f.runId,scope:f.scope});await put(join(run,'native-session.json'),{...f.scope,runId:f.runId,sessionId:f.sessionId,pid:child.pid,startedAt:at});await put(join(run,'result.json'),{status:'completed'});const binary=Buffer.from([255,0,128,254]);await put(join(run,'attachment.bin'),binary);
  const plan=await planTaskReset(f.options);assert.deepEqual(plan.blockers,[]);const {backup}=await applyTaskReset(plan);await absent(join(run,'attachment.bin'));await restoreTaskReset(backup,true);assert.deepEqual(await readFile(join(run,'attachment.bin')),binary);
- f.state.workspace.collaboration!.events[1].sessionId=f.sessionId;await put(join(f.runtime,'state.json'),f.state);assert.match((await planTaskReset(f.options)).blockers.join(';'),/另一需求/);
+ f.state.workspace.collaboration!.events[1].sessionId=f.sessionId;await put(join(f.runtime,'state.json'),f.state);assert.match((await planTaskReset(f.options)).blockers.join(';'),/Another requirement references this run or session/);
 }));
 test('active or accepted-but-unidentified native launch is a blocker, never inferred dead from missing PID',async()=>fixture(async f=>{
- const run=join(f.runtime,'work-contexts',f.runId+'.native');await put(join(run,'manifest.json'),{runId:f.runId,scope:f.scope});await put(join(run,'terminal-receipt.json'),{status:'terminal-requested'});assert.match((await planTaskReset(f.options)).blockers.join(';'),/会话身份/);
- const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)']);try{await put(join(run,'native-session.json'),{...f.scope,runId:f.runId,sessionId:f.sessionId,pid:child.pid,startedAt:new Date().toISOString()});await put(join(run,'process.json'),{pid:child.pid,startedAt:new Date().toISOString()});const plan=await planTaskReset(f.options);assert.match(plan.blockers.join(';'),/仍活动/);await assert.rejects(applyTaskReset(plan),/仍活动/);}finally{child.kill();await new Promise<void>(resolve=>child.on('exit',()=>resolve()));}
+ const run=join(f.runtime,'work-contexts',f.runId+'.native');await put(join(run,'manifest.json'),{runId:f.runId,scope:f.scope});await put(join(run,'terminal-receipt.json'),{status:'terminal-requested'});assert.match((await planTaskReset(f.options)).blockers.join(';'),/no verifiable session identity/);
+ const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)']);try{await put(join(run,'native-session.json'),{...f.scope,runId:f.runId,sessionId:f.sessionId,pid:child.pid,startedAt:new Date().toISOString()});await put(join(run,'process.json'),{pid:child.pid,startedAt:new Date().toISOString()});const plan=await planTaskReset(f.options);assert.match(plan.blockers.join(';'),/is still active/);await assert.rejects(applyTaskReset(plan),/is still active/);}finally{child.kill();await new Promise<void>(resolve=>child.on('exit',()=>resolve()));}
 }));
 test('write failure rolls back; concurrent source/state changes and corrupted backup refuse destructive operations',async()=>fixture(async f=>{
- const before=await readFile(join(f.runtime,'state.json'));await assert.rejects(applyTaskReset(await planTaskReset(f.options),{beforeWrite:async i=>{if(i===1)throw Error('injected disk failure');}}),/已回退/);assert.deepEqual(await readFile(join(f.runtime,'state.json')),before);assert.equal(await readFile(f.document,'utf8'),'任务生成说明');
- const plan=await planTaskReset(f.options);await writeFile(f.document,'user edit');await assert.rejects(verifyTaskResetPlan(plan),/变化/);await put(f.document,'任务生成说明');const result=await applyTaskReset(await planTaskReset(f.options));await writeFile(join(f.runtime,'state.json'),'{}');await assert.rejects(restoreTaskReset(result.backup,true),/又被修改/);
+ const before=await readFile(join(f.runtime,'state.json'));await assert.rejects(applyTaskReset(await planTaskReset(f.options),{beforeWrite:async i=>{if(i===1)throw Error('injected disk failure');}}),/Cleanup failed and was rolled back/);assert.deepEqual(await readFile(join(f.runtime,'state.json')),before);assert.equal(await readFile(f.document,'utf8'),'任务生成说明');
+ const plan=await planTaskReset(f.options);await writeFile(f.document,'user edit');await assert.rejects(verifyTaskResetPlan(plan),/File changed after preview/);await put(f.document,'任务生成说明');const result=await applyTaskReset(await planTaskReset(f.options));await writeFile(join(f.runtime,'state.json'),'{}');await assert.rejects(restoreTaskReset(result.backup,true),/modified again after cleanup/);
 }));
 test('regenerated snapshot timestamp alone permits restore, but other shared changes are protected',async()=>fixture(async f=>{
  const {backup}=await applyTaskReset(await planTaskReset(f.options)),path=join(f.shared,'teams/snapshot.json');const snapshot=JSON.parse(await readFile(path,'utf8'));snapshot.exportedAt=new Date().toISOString();await put(path,snapshot);await restoreTaskReset(backup,true);
- const second=await applyTaskReset(await planTaskReset(f.options));const changed=JSON.parse(await readFile(path,'utf8'));changed.projects.push({id:'new-project'});await put(path,changed);await assert.rejects(restoreTaskReset(second.backup,true),/又被修改/);
+ const second=await applyTaskReset(await planTaskReset(f.options));const changed=JSON.parse(await readFile(path,'utf8'));changed.projects.push({id:'new-project'});await put(path,changed);await assert.rejects(restoreTaskReset(second.backup,true),/modified again after cleanup/);
 }));
 test('symlinks are refused and --remove only removes the exact newly-created requirement',async t=>fixture(async f=>{
  // Windows only creates symlinks with Developer Mode or the create-symlink privilege; where that is refused the
  // refusal behaviour is exercised on the platforms that allow it instead of failing the fixture.
  const canSymlink=async()=>{const probe=join(f.root,'symlink-probe.md');try{await symlink(f.tracked,probe,process.platform==='win32'?'file':undefined);await rm(probe,{force:true});return true;}catch{return false;}};
- if(await canSymlink()){await rm(f.document);await symlink(f.tracked,f.document,process.platform==='win32'?'file':undefined);await assert.rejects(planTaskReset(f.options),/软链接/);await rm(f.document);}
+ if(await canSymlink()){await rm(f.document);await symlink(f.tracked,f.document,process.platform==='win32'?'file':undefined);await assert.rejects(planTaskReset(f.options),/Symbolic links are not allowed/);await rm(f.document);}
  else t.diagnostic('symlink creation is refused on this machine, so the symlink-refusal assertion is skipped here');
  await put(f.document,'任务生成说明');const {backup}=await applyTaskReset(await planTaskReset({...f.options,remove:true}));const state=JSON.parse(await readFile(join(f.runtime,'state.json'),'utf8'));assert.deepEqual(state.workspace.deliveryRequirements.map((item:any)=>item.id),[f.other.id]);await restoreTaskReset(backup,true);
 }));
 test('writer lease excludes service and maintenance races; help does not read local configuration or state',async()=>fixture(async f=>{
- const release=await acquireTaskMaintenance(f.runtime,'service');await assert.rejects(acquireTaskMaintenance(f.runtime,'reset'),/正在由/);await release();const reset=await acquireTaskMaintenance(f.runtime,'reset');await assert.rejects(acquireTaskMaintenance(f.runtime,'service'),/正在由/);await reset();
- const {stdout}=await exec(process.execPath,['--import','tsx','scripts/reset-task.ts','--help'],{cwd:resolve('.'),env:{...process.env,DEMO_LOCAL_CONFIG:join(f.root,'does-not-exist.json')}});assert.match(stdout,/默认只预览/);
+ const release=await acquireTaskMaintenance(f.runtime,'service');await assert.rejects(acquireTaskMaintenance(f.runtime,'reset'),/is in use by/);await release();const reset=await acquireTaskMaintenance(f.runtime,'reset');await assert.rejects(acquireTaskMaintenance(f.runtime,'service'),/is in use by/);await reset();
+ const {stdout}=await exec(process.execPath,['--import','tsx','scripts/reset-task.ts','--help'],{cwd:resolve('.'),env:{...process.env,DEMO_LOCAL_CONFIG:join(f.root,'does-not-exist.json')}});assert.match(stdout,/Preview only by default/);
 }));
 
 test('public project documents and other task frozen/cached inputs protect untracked output references',async()=>fixture(async f=>{
  f.state.workspace.project.assets.push({id:'public',kind:'design',title:'公共资料',location:f.document,origin:'manual'} as any);
  let plan=await planTaskReset(f.options);assert.equal(plan.counts.documents,1,'in-memory edits do not replace authoritative file');
- await put(join(f.runtime,'state.json'),f.state);plan=await planTaskReset(f.options);assert.equal(plan.counts.documents,0);assert.ok(plan.preserved.some(item=>item.path===f.document&&item.reason.includes('公共')));
+ await put(join(f.runtime,'state.json'),f.state);plan=await planTaskReset(f.options);assert.equal(plan.counts.documents,0);assert.ok(plan.preserved.some(item=>item.path===f.document&&item.reason.includes('Shared project material')));
  f.state.workspace.project.assets.pop();f.state.workspace.taskAutomation=[{...f.otherScope,sessions:[],nodeKnowledge:{develop:{id:randomUUID(),nodeId:'develop',status:'queued',delayMs:20000,attempts:0,startedAt:at,finishedAt:null,upstream:[{id:'shared-reference',title:'共享输入',kind:'local-file',value:f.document,sourceLabel:'已登记',description:'reference'} as any]}}}];await put(join(f.runtime,'state.json'),f.state);assert.equal((await planTaskReset(f.options)).counts.documents,0);
 }));
 
@@ -79,7 +79,7 @@ test('main reset also clears legacy delivery fields while retaining project know
 }));
 
 test('restore rechecks each file and rolls back its own partial writes on failure',async()=>fixture(async f=>{
- const {backup}=await applyTaskReset(await planTaskReset(f.options)),after=await readFile(join(f.runtime,'state.json'));await assert.rejects(restoreTaskReset(backup,true,{beforeWrite:async index=>{if(index===1)throw Error('restore disk failure');}}),/已撤回/);await absent(f.document);assert.deepEqual(await readFile(join(f.runtime,'state.json')),after);await restoreTaskReset(backup,true);assert.equal(await readFile(f.document,'utf8'),'任务生成说明');
+ const {backup}=await applyTaskReset(await planTaskReset(f.options)),after=await readFile(join(f.runtime,'state.json'));await assert.rejects(restoreTaskReset(backup,true,{beforeWrite:async index=>{if(index===1)throw Error('restore disk failure');}}),/writes of this restore were reverted/);await absent(f.document);assert.deepEqual(await readFile(join(f.runtime,'state.json')),after);await restoreTaskReset(backup,true);assert.equal(await readFile(f.document,'utf8'),'任务生成说明');
 }));
 
 test('registered code-change manifest documents are archived, while source files stay intact',async()=>fixture(async f=>{

@@ -35,7 +35,7 @@ test('future actual execution times reject the entire result before any state or
  for(const executedAt of ['2026-10-28T07:10:00+08:00','2026-10-28T07:14:00+08:00','2026-10-27T22:58:07.015Z']){
   const beforeMemory=JSON.stringify(store.state),beforeDisk=await readFile(path);let clockReads=0;
   await assert.rejects(collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:withTime(input,executedAt)},{now:()=>{clockReads++;return receivedAt;}}),error=>{
-   assert.equal((error as {status:number}).status,400);assert.match((error as Error).message,/evidence\[2\]\.execution\.runs\[0\]\.executedAt.*服务器接收时点/);return true;
+   assert.equal((error as {status:number}).status,400);assert.match((error as Error).message,/evidence\[2\]\.execution\.runs\[0\]\.executedAt.*cannot be later than the server receive time/);return true;
   });
   assert.equal(clockReads,1);assert.equal(JSON.stringify(store.state),beforeMemory);assert.deepEqual(await readFile(path),beforeDisk);
  }
@@ -53,6 +53,6 @@ test('future actual progress evidence is also rejected, and preset cannot disgui
  const future=withTime(input,'2026-10-28T07:10:00+08:00');const before=await readFile(path);
  await assert.rejects(collaborationWrite(store,data,{kind:'progress.add',role:'member',operationId:randomUUID(),input:{...future,phase:'blocked',blocker:'fixture'}},{now:()=>receivedAt}),/executedAt/);
  future.evidence.find((item:any)=>item.artifact==='unit-test-result').source='preset';
- await assert.rejects(collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:future},{now:()=>receivedAt}),/仅检查报告可声明为预置/);
+ await assert.rejects(collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:future},{now:()=>receivedAt}),/Only check reports can be declared as preset/);
  assert.deepEqual(await readFile(path),before);
 }));

@@ -33,8 +33,8 @@ test('four exact scopes expose compact full-document references and real version
    for(const skill of input.skills)assert.deepEqual(skill,await registeredTaskSkill(skill.id));
    assert.ok(input.knowledge.assets.every(a=>a.sourceRecordId===task.id&&!a.detail.includes('US-001')));
   }
-  const cases=enterpriseTestCaseReferences(data,task);assert.equal(cases.length,8);assert.ok(cases.every(c=>c.testCase?.id.startsWith(scenario.businessId)));assert.ok(cases.every(c=>c.source==='preset'&&c.sourceLabel.includes('未执行')));
-  assert.ok(cases.every(c=>c.description.includes('本次执行同时应用独立 test-profile-v1；')&&!c.description.includes('test-profile-v2')),'v1 test definitions retain their pinned profile label');
+  const cases=enterpriseTestCaseReferences(data,task);assert.equal(cases.length,8);assert.ok(cases.every(c=>c.testCase?.id.startsWith(scenario.businessId)));assert.ok(cases.every(c=>c.source==='preset'&&c.sourceLabel.includes('not executed')));
+  assert.ok(cases.every(c=>c.description.includes('This run also applies the separate test-profile-v1;')&&!c.description.includes('test-profile-v2')),'v1 test definitions retain their pinned profile label');
  }
  assert.deepEqual(state,before);
 });
@@ -47,8 +47,8 @@ test('wrong project, source fingerprint and business identity never select anoth
 test('missing publication, corrupt text and changed Skill version cannot silently substitute inputs',async()=>{
  const s=fourRequirementScenarios[0],task=tasks[0];
  const absent=await talentNodeInputs({state,project},data,task.id,'prepare','local',registeredTaskSkill,[],read);assert.equal(absent.selection.status,'not-configured');assert.equal(absent.skills.length,0);
- await assert.rejects(fourRequirementKnowledge(s,published,'prepare',async(id,v,path)=>({...await read(id,v,path),...(path===s.files.requirement?{content:'changed'}:{})})),/正文摘要/);
- await assert.rejects(talentNodeInputs({state,project},data,task.id,'prepare','local',async(id,binding)=>({...await registeredTaskSkill(id,binding),version:'fake-2'}),published,read),/包版本/);
+ await assert.rejects(fourRequirementKnowledge(s,published,'prepare',async(id,v,path)=>({...await read(id,v,path),...(path===s.files.requirement?{content:'changed'}:{})})),/content digest does not match/);
+ await assert.rejects(talentNodeInputs({state,project},data,task.id,'prepare','local',async(id,binding)=>({...await registeredTaskSkill(id,binding),version:'fake-2'}),published,read),/Skill package version/);
 });
 test('adopted node snapshot survives changed publication and loader without mutation',async()=>{
  const task=tasks[0],input=await talentNodeInputs({state,project},data,task.id,'develop','local',registeredTaskSkill,published,read);
@@ -75,7 +75,7 @@ test('fresh v2 tasks pin explicit profile while v1 tasks and adopted snapshots r
    assert.deepEqual(input.skills.map(k=>k.id),fourRequirementNodes[node].skills);
   }
   const cases=enterpriseTestCaseReferences(data,task);assert.equal(cases.length,8);assert.ok(cases.every(c=>c.version===s.casesVersion));
-  assert.ok(cases.every(c=>c.description.includes('本次执行同时应用独立 test-profile-v2；')&&!c.description.includes('test-profile-v1')),'v2 test definitions expose v2 consistently in the UI/CLI reference body');
+  assert.ok(cases.every(c=>c.description.includes('This run also applies the separate test-profile-v2;')&&!c.description.includes('test-profile-v1')),'v2 test definitions expose v2 consistently in the UI/CLI reference body');
   if(s.businessId==='REQ-2026-001'){const five=s.cases.find(c=>c.id.endsWith('US-005'))!;assert.match(five.given,/900\.00.*600\.00/);assert.match(five.expected,/606\.00/);}
  }
  const legacyTask=createDeliveryRequirement(isolated,'owner',{projectId:'carddemo',id:'REQ-'+randomUUID(),title:fourRequirementScenarios[0].title,description:fourRequirementScenarios[0].creationDescription,assigneeId:'member'},'2026-10-28T00:00:00Z');
@@ -89,7 +89,7 @@ test('v2 missing publication or mismatched profile does not use v1 or generic in
  const s=fourRequirementScenariosV2[0],isolated=initialState(),task=createDeliveryRequirement(isolated,'owner',{projectId:'carddemo',id:'REQ-'+randomUUID(),title:s.title,description:s.creationDescription,assigneeId:'member'},'2026-10-28T00:00:00Z');
  const notPublished=await talentNodeInputs({state:isolated,project},data,task.id,'prepare','local',registeredTaskSkill,published,read);assert.equal(notPublished.selection.status,'not-configured');assert.equal(notPublished.skills.length,0);assert.equal(notPublished.knowledge.assets.length,0);
  task.description=task.description.replace(fourRequirementProfileV2Sha256,'0'.repeat(64));assert.equal(fourRequirementScenario('carddemo',task),undefined);
- await assert.rejects(talentNodeInputs({state:isolated,project},data,task.id,'prepare','local',registeredTaskSkill,published,read),/口径标记/);
+ await assert.rejects(talentNodeInputs({state:isolated,project},data,task.id,'prepare','local',registeredTaskSkill,published,read),/test profile markers do not match/);
  const dual=buildExport(appendFourRequirements(appendFourRequirements(seedState()).state,2).state).knowledge.artifacts;
- await assert.rejects(fourRequirementKnowledge(s,dual,'prepare',async(id,v,path)=>{const output=await read(id,v,path);if(path===s.manifest){const m=JSON.parse(output.content);m.testProfile.sha256='0'.repeat(64);return {...output,content:JSON.stringify(m)};}return output;}),/口径版本或摘要/);
+ await assert.rejects(fourRequirementKnowledge(s,dual,'prepare',async(id,v,path)=>{const output=await read(id,v,path);if(path===s.manifest){const m=JSON.parse(output.content);m.testProfile.sha256='0'.repeat(64);return {...output,content:JSON.stringify(m)};}return output;}),/test profile version or digest does not match/);
 });

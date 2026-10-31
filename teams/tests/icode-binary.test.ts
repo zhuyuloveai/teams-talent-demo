@@ -24,7 +24,7 @@ test('explicit DEMO_ICODE_BINARY wins and a missing override does not fall throu
     const failed = resolveICodeBinary({ platform: 'win32', env: { DEMO_ICODE_BINARY: missing, LOCALAPPDATA: join(root, 'local') }, home: root, materialRoot: root });
     assert.equal(failed.path, missing);
     assert.equal(failed.source, 'override');
-    assert.ok(failed.notes.some(note => note.includes('不存在或不可用')));
+    assert.ok(failed.notes.some(note => note.includes('does not exist or is unusable')));
   } finally { await done(); }
 });
 
@@ -63,7 +63,7 @@ test('official macOS/Linux launcher and the repository bundle are ordered after 
       const fallback = resolveICodeBinary({ platform: 'linux', env: {}, home: empty, materialRoot: empty });
       assert.equal(fallback.path, bundled);
       assert.equal(fallback.source, 'bundled');
-      assert.ok(fallback.notes.some(note => note.includes('开发包')));
+      assert.ok(fallback.notes.some(note => note.includes('development package')));
     } finally { await doneEmpty(); }
   } finally { await done(); }
 });
@@ -74,7 +74,7 @@ test('missing launcher is reported with the official candidates instead of throw
     const resolved = resolveICodeBinary({ platform: 'win32', env: { LOCALAPPDATA: join(root, 'local') }, home: root, materialRoot: root });
     assert.equal(resolved.source, 'missing');
     assert.equal(resolved.path, join(root, 'local', 'chrys', 'bin', 'icode.exe'));
-    assert.ok(resolved.notes.some(note => note.includes('官方安装位置')));
+    assert.ok(resolved.notes.some(note => note.includes('official install locations')));
   } finally { await done(); }
 });
 
@@ -100,7 +100,7 @@ test('a launcher outside the official location is found through PATH', async () 
     const resolved = resolveICodeBinary({ platform: 'win32', env: windowsEnv(root, { PATH: [join(root, 'empty'), tools].join(';') }), home: root, materialRoot: root });
     assert.equal(resolved.path, entry);
     assert.equal(resolved.source, 'path');
-    assert.ok(resolved.notes.some(note => note.includes('官方安装位置')));
+    assert.ok(resolved.notes.some(note => note.includes('official install locations')));
   } finally { await done(); }
 });
 
@@ -120,7 +120,7 @@ test('a uv tool receipt contributes the launcher it actually installed, and stal
     await writeFile(join(tool, 'uv-receipt.toml'), `entrypoints = [{ name = "chrys", install-path = "${stale}" }]\n`);
     const broken = resolveICodeBinary({ platform: 'win32', env: windowsEnv(root, { PATH: '' }), home: root, materialRoot: root });
     assert.equal(broken.source, 'missing');
-    assert.ok(broken.notes.some(note => note.includes('uv 安装回执指向的 iCode 不存在')));
+    assert.ok(broken.notes.some(note => note.includes('The iCode referenced by the uv install receipt does not exist')));
   } finally { await done(); }
 });
 

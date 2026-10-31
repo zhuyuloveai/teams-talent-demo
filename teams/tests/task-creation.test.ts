@@ -40,7 +40,7 @@ test('creation validates content, dates, roles, project membership and stable ID
   const state = initialState(), input = requirement('teams'), before = JSON.stringify(state);
   for (const fields of [{ title: '  ' }, { description: '' }, { title: 'x'.repeat(161) }, { description: '\u0000' }, { due: '2026-02-30' }, { due: 'today' }, { id: 'T104' }, { assigneeId: 'A' }, { skillIds: ['bad/id'] }]) assert.throws(() => createDeliveryRequirement(state, 'owner', { ...input, ...fields }, at));
   assert.throws(() => createDeliveryRequirement(state, 'member', input, at), /Owner/);
-  assert.throws(() => createDeliveryRequirement(state, 'owner', { ...input, projectId: 'unknown' }, at), /项目不存在/);
+  assert.throws(() => createDeliveryRequirement(state, 'owner', { ...input, projectId: 'unknown' }, at), /Project not found/);
   assert.equal(JSON.stringify(state), before);
 });
 
@@ -48,10 +48,10 @@ test('creation replay preserves the current assignment; conflicting payload cann
   const state = initialState(), input = requirement('teams'), task = createDeliveryRequirement(state, 'owner', input, at);
   assignDeliveryRequirement(state, 'owner', { projectId: 'teams', taskId: task.id, assigneeId: 'owner' }, at);
   const before = JSON.stringify(state); assert.equal(createDeliveryRequirement(state, 'owner', input, at), task); assert.equal(JSON.stringify(state), before);
-  assert.throws(() => createDeliveryRequirement(state, 'owner', { ...input, title: 'overwrite' }, at), /不同创建内容/);
+  assert.throws(() => createDeliveryRequirement(state, 'owner', { ...input, title: 'overwrite' }, at), /different creation content/);
   assert.throws(() => assignDeliveryRequirement(state, 'member', { projectId: 'teams', taskId: task.id, assigneeId: 'member' }, at), /Owner/);
-  assert.throws(() => assignDeliveryRequirement(state, 'owner', { projectId: 'carddemo', taskId: task.id, assigneeId: 'member' }, at), /不存在/);
-  task.nodes.prepare.status = 'running'; assert.throws(() => assignDeliveryRequirement(state, 'owner', { projectId: 'teams', taskId: task.id, assigneeId: 'member' }, at), /已经开始/);
+  assert.throws(() => assignDeliveryRequirement(state, 'owner', { projectId: 'carddemo', taskId: task.id, assigneeId: 'member' }, at), /not found/);
+  task.nodes.prepare.status = 'running'; assert.throws(() => assignDeliveryRequirement(state, 'owner', { projectId: 'teams', taskId: task.id, assigneeId: 'member' }, at), /has started/);
 });
 
 test('local issues persist explicit Teams origin and contribute to only their project list and open count', () => {
@@ -64,7 +64,7 @@ test('local issues persist explicit Teams origin and contribute to only their pr
     assert.equal(next.issues.find(item => item.source.sourceRecordId === input.id)!.source.origin, 'teams-task');
     assert.deepEqual(projectOverview(state, data, project === 'teams' ? 'carddemo' : 'teams'), other);
     assert.equal(updateWorkspace(state, 'issue.create', 'owner', input), state);
-    assert.throws(() => updateWorkspace(state, 'issue.create', 'owner', { ...input, title: 'changed' }), /不同创建内容/);
+    assert.throws(() => updateWorkspace(state, 'issue.create', 'owner', { ...input, title: 'changed' }), /different creation content/);
   }
   validateProjectIssues(state); const before = JSON.stringify(state);
   assert.throws(() => createProjectIssue(state, 'member', issue('teams'), at), /Owner/);

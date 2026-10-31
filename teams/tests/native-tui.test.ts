@@ -19,7 +19,7 @@ test('scoped TUI hooks preserve existing configuration, back it up, remain idemp
     const after = await readFile(path, 'utf8'), parsed = parse(after); assert.match(after, /existing manager rules/); assert.deepEqual(parsed.hooks[0], parse(original).hooks[0]); assert.deepEqual(parsed.settings, parse(original).settings); assert.equal(parsed.hooks.length, 3);
     assert.equal(await readFile(join(backups, createHash('sha256').update(original).digest('hex') + '.yaml'), 'utf8'), original);
     assert.equal((await ensureNativeTuiHooks(hook, backups, config)).changed, false); assert.equal(await readFile(path, 'utf8'), after);
-    await assert.rejects(ensureNativeTuiHooks('/unrelated/hook.mjs', backups, config), /同名配置不同/); assert.equal(await readFile(path, 'utf8'), after);
+    await assert.rejects(ensureNativeTuiHooks('/unrelated/hook.mjs', backups, config), /differs from an existing hook with the same name/); assert.equal(await readFile(path, 'utf8'), after);
     const relocated=join(directory,'teams/scripts/native/tui-work-hook.mjs');assert.equal((await ensureNativeTuiHooks(relocated,backups,config,hook)).changed,true);const moved=parse(await readFile(path,'utf8'));assert.deepEqual(moved.hooks[0],parsed.hooks[0]);assert.deepEqual(moved.settings,parsed.settings);assert.deepEqual(moved.hooks.slice(1).map((item:any)=>item.run.argv),[[process.execPath,relocated],[process.execPath,relocated]]);assert.equal(await readFile(join(backups,createHash('sha256').update(after).digest('hex')+'.yaml'),'utf8'),after);assert.equal((await ensureNativeTuiHooks(relocated,backups,config,hook)).changed,false);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
@@ -46,12 +46,12 @@ test('native TUI Hook is inert outside Teams; scoped prompt gets exact context r
     const resumedDirectory=join(directory,'resumed');await mkdir(resumedDirectory);const resumedRun=randomUUID(),resumedManifest=join(resumedDirectory,'manifest.json');
     await writeFile(resumedManifest,JSON.stringify({version:1,executionMode:'interactive',runId:resumedRun,scope:{...scope,nodeId:'verify'},directory,taskFile,taskSha256:createHash('sha256').update(task).digest('hex')}));
     await exec(process.execPath,[hook],{env:{...env,TEAMS_TUI_MANIFEST:resumedManifest}});const resumed=JSON.parse(await readFile(resultPath,'utf8'));assert.match(resumed.system_reminder,/initial launch node verify/);assert.ok(resumed.system_reminder.includes(taskFile));assert.equal(JSON.parse(await readFile(join(resumedDirectory,'tui-context-injected.json'),'utf8')).reminderMode,'initial');
-    await writeFile(join(directory,'tui-context-injected.json'),'{bad');await assert.rejects(exec(process.execPath,[hook],{env}),/Hook 失败/);await writeFile(join(directory,'tui-context-injected.json'),JSON.stringify(receipt));
+    await writeFile(join(directory,'tui-context-injected.json'),'{bad');await assert.rejects(exec(process.execPath,[hook],{env}),/hook failed/);await writeFile(join(directory,'tui-context-injected.json'),JSON.stringify(receipt));
     await writeFile(payloadPath, JSON.stringify({ ...payload, session_id: randomUUID() })); await assert.rejects(exec(process.execPath, [hook], { env }), /different native session/);
     await writeFile(payloadPath, JSON.stringify(payload)); await writeFile(taskFile, 'changed'); await assert.rejects(exec(process.execPath, [hook], { env }), /changed after confirmation/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
 test('interactive wrapper refuses pipe/NUL transport before creating a runtime or launching an executable', async () => {
-  await assert.rejects(exec(process.execPath, [resolve('scripts/native/run-project-tui.mjs'), '/nonexistent/manifest.json']), /stdin\/stdout\/stderr 均需 TTY/);
+  await assert.rejects(exec(process.execPath, [resolve('scripts/native/run-project-tui.mjs'), '/nonexistent/manifest.json']), /stdin\/stdout\/stderr must all be TTYs/);
 });

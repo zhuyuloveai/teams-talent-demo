@@ -28,22 +28,22 @@ test('all 59 source files and full package manifests use their real metadata ver
   }
   assert.equal(attachments,286);assert.equal(resourceVersion(initialState(),'audit-evidence'),'2.0.0');
   const frontend=catalog.find(item=>item.id==='dev-frontend-ui')!;
-  await assert.rejects(loadNativeSkillPackage(frontend.id,'1.1.0',frontend.sha256),/版本.*不匹配/);
-  await assert.rejects(loadNativeSkillPackage(frontend.id,frontend.version,'0'.repeat(64)),/不存在/);
+  await assert.rejects(loadNativeSkillPackage(frontend.id,'1.1.0',frontend.sha256),/version does not match/);
+  await assert.rejects(loadNativeSkillPackage(frontend.id,frontend.version,'0'.repeat(64)),/content package does not exist/);
 });
 test('publishing is explicit, preserves selected skills, and separates Owner and resource-library shares',()=>{
   const initial=initialState();assert.equal(resourcePublications(initial).length,0);
-  assert.throws(()=>updateWorkspace(initial,'resource.publish-all','member',{},[],skillCatalog),/无权/);
-  assert.throws(()=>updateWorkspace(initial,'resource.publish-all','owner',{},[],skillCatalog.slice(1)),/未就绪/);
+  assert.throws(()=>updateWorkspace(initial,'resource.publish-all','member',{},[],skillCatalog),/not allowed/);
+  assert.throws(()=>updateWorkspace(initial,'resource.publish-all','owner',{},[],skillCatalog.slice(1)),/is not ready/);
   const s=published();assert.equal(resourcePublications(s).length,59);assert.equal(resourcePublications(s).filter(item=>item.publisher==='owner').length,13);
   assert.deepEqual(s.workspace.selectedSkills,projectSkillIds);assert.equal(s.context,null);assert.equal(s.published,false);
   assert.equal(updateWorkspace(s,'resource.publish-all','owner',{},[],skillCatalog),s);validateResourceState(s);
-  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui',version:'1.1.0'},[],skillCatalog),/没有对应内容包/);
+  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui',version:'1.1.0'},[],skillCatalog),/has no content package/);
 });
 test('subscriptions are actor-scoped, fixed and idempotent; additional skills require the selecting actor subscription',async()=>{
   let s=published();const item=skillCatalog.find(item=>item.id==='audit-evidence')!;
-  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:[item.id]}),/当前用户订阅/);
-  await assert.rejects(getPublishedSkillPackage(s,'member',item.id,item.version,item.sha256),/尚未订阅/);
+  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:[item.id]}),/subscribed by the current user/);
+  await assert.rejects(getPublishedSkillPackage(s,'member',item.id,item.version,item.sha256),/has not subscribed/);
   s=updateWorkspace(s,'resource.acquire','owner',{name:item.id});assert.ok(availableSkillIdsFor(s,'owner').includes(item.id));assert.ok(!availableSkillIdsFor(s,'member').includes(item.id));
   s=updateWorkspace(s,'resource.acquire','member',{name:item.id,version:item.version,sha256:item.sha256});
   const pinned=structuredClone(resourceSubscriptions(s,'member'));assert.equal(pinned[0].version,'2.0.0');assert.equal(pinned[0].sha256,item.sha256);
@@ -54,7 +54,7 @@ test('subscriptions are actor-scoped, fixed and idempotent; additional skills re
   const future={...item,version:'2.1.0',sha256:sha256('future package'),contentSha256:sha256('future SKILL body')};
   s=updateWorkspace(s,'resource.publish','owner',{id:item.id},[],[future]);assert.equal(resourcePublications(s).find(record=>record.id===item.id)?.version,'2.1.0');
   assert.equal(resourcePublicationHistory(s).filter(record=>record.id===item.id).length,2);
-  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:item.id}),/固定旧版本/);
+  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:item.id}),/pinned to an older version/);
   assert.deepEqual(resourceSubscriptions(s,'member'),pinned);assert.deepEqual(s.context,frozen);
   assert.equal((await getPublishedSkillPackage(s,'member',item.id,item.version,item.sha256)).version,item.version);
   assert.equal(s.security,'unverified');assert.equal(s.stage,'assigned');validateResourceState(s);
@@ -64,7 +64,7 @@ test('unattributed legacy acquisitions grant neither actor and can be explicitly
   for(const actor of ['owner','member'] as const){assert.deepEqual(resourceSubscriptions(s,actor),[]);assert.ok(!availableSkillIdsFor(s,actor).includes('audit-evidence'));}
   s=updateWorkspace(s,'resource.acquire','member',{name:'audit-evidence'});assert.equal(resourceSubscriptions(s,'member').length,1);assert.equal(resourceSubscriptions(s,'owner').length,0);
   s=updateWorkspace(s,'resource.acquire','owner',{name:'audit-evidence'});assert.equal(resourceSubscriptions(s,'owner').length,1);assert.deepEqual(s.workspace.acquiredResources,history);validateResourceState(s);
-  const corrupt=structuredClone(s);corrupt.workspace.resourceSubscriptions![0].sha256='0'.repeat(64);assert.throws(()=>validateResourceState(corrupt),/订阅记录无效/);
+  const corrupt=structuredClone(s);corrupt.workspace.resourceSubscriptions![0].sha256='0'.repeat(64);assert.throws(()=>validateResourceState(corrupt),/Invalid resource subscription records/);
 });
 
 test('generated Python cache is excluded while source attachments and invalid files remain checked',async()=>{
@@ -74,7 +74,7 @@ test('generated Python cache is excluded while source attachments and invalid fi
   const link = process.platform === 'win32' ? join(source, id, 'linked-dir') : join(source, id, 'linked.md');
   const target = process.platform === 'win32' ? join(source, id) : join(source, id, 'SKILL.md');
   await symlink(target, link, process.platform === 'win32' ? 'junction' : 'file');
-  await assert.rejects(loadSourceSkillPackage(id, source), /符号链接/);
+  await assert.rejects(loadSourceSkillPackage(id, source), /symbolic link/);
 });
 
 test('CLI context retains the frozen package after a new publication and explicitly rejects unavailable legacy versions',async t=>{

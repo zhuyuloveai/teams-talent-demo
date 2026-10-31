@@ -53,14 +53,14 @@ test('real user and visible replies form one native turn; tool cycles and hidden
 test('one native turn spanning nodes keeps its identity and only exposes messages in the adopted node scope', async () => {
   const f = await fixture(); try {
     const observe = createTaskSessionStream(f.runtime, { isAlive: () => true }), first = await observe(f.state, 'member', f.query);
-    await assert.rejects(observe(f.state,'member',{...f.query,taskId:'MKT-OTHER'}),/没有可读取/); await assert.rejects(observe(f.state,'owner',{...f.query,cursor:first.cursor!}),/游标/);
+    await assert.rejects(observe(f.state,'member',{...f.query,taskId:'MKT-OTHER'}),/no readable local delivery session/); await assert.rejects(observe(f.state,'owner',{...f.query,cursor:first.cursor!}),/session cursor does not match/);
     f.task.assigneeId='su'; assert.equal((await observe(f.state,'member',f.query)).sessions.length,1);
-    f.state.workspace.team.members.find(m=>m.id==='member')!.status='invited'; await assert.rejects(observe(f.state,'member',f.query),/无权/); f.state.workspace.team.members.find(m=>m.id==='member')!.status='active';
+    f.state.workspace.team.members.find(m=>m.id==='member')!.status='invited'; await assert.rejects(observe(f.state,'member',f.query),/No permission to read sessions/); f.state.workspace.team.members.find(m=>m.id==='member')!.status='active';
     f.state.workspace.collaboration={adoptions:[{...f.query,nodeId:'develop',id:'adopt-1',role:'member',runId:f.runId,sessionId:f.sessionId,at:at(5),revision:1,basisDigest:'basis',readReferences:[]}],events:[],operations:[]};
     f.document.state.messages.push(message('assistant','reply-develop',7,'开发节点的真实可见回复'));await f.save();
     const prepare=await observe(f.state,'member',f.query),develop=await observe(f.state,'member',{...f.query,nodeId:'develop'});
     assert.equal(prepare.turns[0].turnId,develop.turns[0].turnId); assert.equal(develop.turns[0].round,1); assert.equal(develop.turns[0].user,null); assert.equal(develop.turns[0].userSourceNode,'prepare');
-    assert.deepEqual(prepare.turns[0].replies.map(m=>m.id),['reply-1']);assert.deepEqual(develop.turns[0].replies.map(m=>m.id),['reply-develop']);await assert.rejects(observe(f.state,'member',{...f.query,nodeId:'develop',cursor:first.cursor!}),/游标/);
+    assert.deepEqual(prepare.turns[0].replies.map(m=>m.id),['reply-1']);assert.deepEqual(develop.turns[0].replies.map(m=>m.id),['reply-develop']);await assert.rejects(observe(f.state,'member',{...f.query,nodeId:'develop',cursor:first.cursor!}),/session cursor does not match/);
   } finally { await f.cleanup(); }
 });
 test('partial active trace append waits; corruption degrades but session identity mismatch remains explicit', async () => {
@@ -68,8 +68,8 @@ test('partial active trace append waits; corruption degrades but session identit
     const observe=createTaskSessionStream(f.runtime,{isAlive:()=>true}),first=await observe(f.state,'owner',f.query),line=JSON.stringify(f.event('finish','turn.finished',4,{outcome:'success'}));
     await appendFile(f.trajectory,line.slice(0,20));assert.equal((await observe(f.state,'owner',{...f.query,cursor:first.cursor!})).turns.length,0);
     await appendFile(f.trajectory,line.slice(20)+'\n');assert.equal((await observe(f.state,'owner',{...f.query,cursor:first.cursor!})).turns[0].status,'ended');
-    await appendFile(f.trajectory,'{bad}\n');const degraded=await observe(f.state,'owner',f.query);assert.equal(degraded.sessions[0].trajectory?.state,'degraded');assert.equal(degraded.sessions[0].trajectory?.reason,'corrupt_tail');assert.ok(degraded.turns.length>0);assert.match(degraded.sessions[0].note!,/任务进度不受影响/);
-    await writeFile(f.trajectory,'');await writeFile(join(f.sessionDir,'session.json'),JSON.stringify({...f.document,meta:{session_id:randomUUID()}}));await assert.rejects(observe(f.state,'owner',f.query),/正文身份/);
+    await appendFile(f.trajectory,'{bad}\n');const degraded=await observe(f.state,'owner',f.query);assert.equal(degraded.sessions[0].trajectory?.state,'degraded');assert.equal(degraded.sessions[0].trajectory?.reason,'corrupt_tail');assert.ok(degraded.turns.length>0);assert.match(degraded.sessions[0].note!,/task progress is not affected/);
+    await writeFile(f.trajectory,'');await writeFile(join(f.sessionDir,'session.json'),JSON.stringify({...f.document,meta:{session_id:randomUUID()}}));await assert.rejects(observe(f.state,'owner',f.query),/identity or structure of the native session content does not match/);
   }finally{await f.cleanup();}
 });
 test('missing text is explicit, tool-only history is not a conversation, failure never advances business progress', async()=>{
@@ -94,13 +94,13 @@ test('sessions have isolated cursors and no client-controlled filesystem access'
  const f=await fixture(),second=await fixture();try{
   const observe=createTaskSessionStream(f.runtime,{isAlive:()=>true});f.state.workspace.taskAutomation=[{...f.query,sessions:[{...f.query,nodeId:'prepare' as any,tool:'icode',sessionId:second.sessionId,source:'manual',at:at(1)}]}];
   const first=await observe(f.state,'owner',{...f.query,sessionId:f.sessionId});assert.equal(first.sessions.length,2);
-  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:second.sessionId,cursor:first.cursor!}),/游标/);assert.deepEqual((await observe(f.state,'owner',{...f.query,sessionId:second.sessionId})).turns,[]);
-  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:'../../secret'}),/不属于/);
+  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:second.sessionId,cursor:first.cursor!}),/session cursor does not match/);assert.deepEqual((await observe(f.state,'owner',{...f.query,sessionId:second.sessionId})).turns,[]);
+  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:'../../secret'}),/does not belong to the current task node/);
   const document=join(f.sessionDir,'session.json');
   // Windows 文件符号链接需要额外权限；目录联接无需提权，同样覆盖 realpath 越界防护。
   if(process.platform==='win32'){await rm(f.sessionDir,{recursive:true,force:true});await symlink(second.sessionDir,f.sessionDir,'junction');}
   else{await rm(document);await symlink(join(second.sessionDir,'session.json'),document);}
-  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:f.sessionId}),/路径校验/);
+  await assert.rejects(observe(f.state,'owner',{...f.query,sessionId:f.sessionId}),/path check failed/);
  }finally{await f.cleanup();await second.cleanup();}
 });
 
@@ -113,9 +113,9 @@ test('native in-flight checkpoints use the newest persisted envelope without mas
   await writeFile(primary,JSON.stringify(envelope(3,'较早正式正文')));assert.equal((await observe(f.state,'owner',{...f.query,cursor:first.cursor!})).turns.length,0);
   await writeFile(primary,JSON.stringify(envelope(8,'较新结束正文')));const next=await observe(f.state,'owner',{...f.query,cursor:first.cursor!});assert.equal(next.turns[0].id,first.turns[0].id);assert.equal(next.turns[0].replies[0].text,'较新结束正文');
   await writeFile(recovery,JSON.stringify(envelope(9,'下一次保存的追加回复')));assert.equal((await observe(f.state,'owner',{...f.query,cursor:next.cursor!})).turns[0].replies[0].text,'下一次保存的追加回复');
-  await writeFile(primary,'{broken');await assert.rejects(observe(f.state,'owner',f.query),/格式无效/);await writeFile(primary,JSON.stringify(envelope(8,'有效主正文')));
-  await writeFile(recovery,'{broken');await assert.rejects(observe(f.state,'owner',f.query),/格式无效/);await writeFile(recovery,JSON.stringify({...envelope(9,'无效时间'),meta:{session_id:f.sessionId,updated_at:'not-a-time'}}));await assert.rejects(observe(f.state,'owner',f.query),/持久化时间无效/);
-  await writeFile(recovery,JSON.stringify({...envelope(9,'错误身份'),meta:{session_id:randomUUID(),updated_at:at(9)}}));await assert.rejects(observe(f.state,'owner',f.query),/身份/);
+  await writeFile(primary,'{broken');await assert.rejects(observe(f.state,'owner',f.query),/Invalid session record format/);await writeFile(primary,JSON.stringify(envelope(8,'有效主正文')));
+  await writeFile(recovery,'{broken');await assert.rejects(observe(f.state,'owner',f.query),/Invalid session record format/);await writeFile(recovery,JSON.stringify({...envelope(9,'无效时间'),meta:{session_id:f.sessionId,updated_at:'not-a-time'}}));await assert.rejects(observe(f.state,'owner',f.query),/persistence time/);
+  await writeFile(recovery,JSON.stringify({...envelope(9,'错误身份'),meta:{session_id:randomUUID(),updated_at:at(9)}}));await assert.rejects(observe(f.state,'owner',f.query),/identity/);
  }finally{await f.cleanup();}
 });
 
@@ -124,14 +124,14 @@ test('an explicit hashed relocation preserves native evidence and rejects foreig
   const ownerPath=join(f.runRoot,'native-session.json'),manifestPath=join(f.runRoot,'manifest.json'),owner=JSON.parse(await readFile(ownerPath,'utf8'));
   owner.sessionRoot=join(f.runtime,'previous-runtime','work-contexts',f.runId+'.native','session-root');await writeFile(ownerPath,JSON.stringify(owner));
   const ownerBytes=await readFile(ownerPath),manifestBytes=await readFile(manifestPath),stateBefore=JSON.stringify(f.state),digest=(value:Buffer)=>createHash('sha256').update(value).digest('hex');
-  const observe=createTaskSessionStream(f.runtime,{isAlive:()=>false});await assert.rejects(observe(f.state,'owner',f.query),/绑定校验/);
+  const observe=createTaskSessionStream(f.runtime,{isAlive:()=>false});await assert.rejects(observe(f.state,'owner',f.query),/binding check failed/);
   const entry={runId:f.runId,...f.query,sessionId:f.sessionId,previousSessionRoot:owner.sessionRoot,sessionRoot:await realpath(join(f.runRoot,'session-root')),ownerSha256:digest(ownerBytes),manifestSha256:digest(manifestBytes)};
   const save=(value:typeof entry)=>writeFile(join(f.runtime,nativeSessionMigrationFile),JSON.stringify({version:1,entries:[value]}));await save(entry);
   const result=await observe(f.state,'owner',f.query);assert.equal(result.turns.length,1);assert.equal(result.sessions[0].status,'unknown');assert.equal(JSON.stringify(f.state),stateBefore);assert.deepEqual(await readFile(ownerPath),ownerBytes);assert.deepEqual(await readFile(manifestPath),manifestBytes);
-  await save({...entry,taskId:'FOREIGN'});await assert.rejects(observe(f.state,'owner',f.query),/迁移凭据/);await save(entry);
-  await writeFile(manifestPath,Buffer.concat([manifestBytes,Buffer.from(' ')]));await assert.rejects(observe(f.state,'owner',f.query),/迁移凭据/);
-  await writeFile(manifestPath,manifestBytes);await save({...entry,sessionRoot:join(f.runtime,'foreign','session-root')});await assert.rejects(observe(f.state,'owner',f.query),/迁移凭据/);
-  await writeFile(join(f.runtime,nativeSessionMigrationFile),'{broken');await assert.rejects(observe(f.state,'owner',f.query),/迁移凭据/);
+  await save({...entry,taskId:'FOREIGN'});await assert.rejects(observe(f.state,'owner',f.query),/migration credential/);await save(entry);
+  await writeFile(manifestPath,Buffer.concat([manifestBytes,Buffer.from(' ')]));await assert.rejects(observe(f.state,'owner',f.query),/migration credential/);
+  await writeFile(manifestPath,manifestBytes);await save({...entry,sessionRoot:join(f.runtime,'foreign','session-root')});await assert.rejects(observe(f.state,'owner',f.query),/migration credential/);
+  await writeFile(join(f.runtime,nativeSessionMigrationFile),'{broken');await assert.rejects(observe(f.state,'owner',f.query),/migration credential/);
  }finally{await f.cleanup();}
 });
 

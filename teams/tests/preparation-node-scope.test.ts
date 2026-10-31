@@ -72,7 +72,7 @@ test('explicit PRD rework remains possible before development adopts inputs',()=
  assert.ok(reopened.deliverables.every(item=>item.references.length===0));
  assert.ok(reopened.criteria.every(item=>item.status==='pending'));
  assert.equal(taskNodeKnowledge(taskAutomation(store.state,scope),'develop'),undefined,'previous PRD recommendations must not remain ready during explicit rework');
- await assert.rejects(adopt(store,'develop'),/尚未获取完成|PRD与完成标准/);
+ await assert.rejects(adopt(store,'develop'),/has not been fetched yet|PRD and completion criteria/);
  const submitted=result(store,adoption);submitted.input.evidence[0].version='prd-v2';await collaborationWrite(store,data,submitted);
  assert.equal(task(store).stage,'developing');assert.equal(task(store).nodes.prepare.status,'complete');
  const completed=taskNodeView(store.state,task(store),'prepare',data);
@@ -89,7 +89,7 @@ test('a new result cannot replace a completed PRD without explicit rework, while
 
 test('PRD rework and late replacement cannot bypass an already adopted development basis',()=>fixture(async(store,path)=>{
  await developmentReady(store);await adopt(store,'develop');const adoption=await adopt(store,'prepare'),before=await readFile(path);
- await assert.rejects(collaborationWrite(store,data,progress(store,'prepare',adoption,{reopen:true})),/功能开发尚未采用/);
+ await assert.rejects(collaborationWrite(store,data,progress(store,'prepare',adoption,{reopen:true})),/before feature development has adopted inputs/);
  await assert.rejects(collaborationWrite(store,data,result(store,adoption)),/nodeId=develop/);
  assert.deepEqual(await readFile(path),before);assert.equal(task(store).nodes.prepare.status,'complete');
 }));

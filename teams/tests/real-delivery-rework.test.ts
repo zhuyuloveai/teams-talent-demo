@@ -42,10 +42,10 @@ function reopenDevelopment(store:Store,adoptionId:string){return collaborationWr
 test('completed development rejects stale writes atomically; explicit rework starts a fresh result round',()=>fixture(async(store,path)=>{
  const {developmentAdoption}=await firstRound(store),before=await readFile(path),previous=structuredClone(task(store).nodes.prepare);
  for(const phase of ['started','progress','blocked'] as const){
-  await assert.rejects(collaborationWrite(store,data,{kind:'progress.add',role:'member',operationId:randomUUID(),input:{...scope,nodeId:'develop',runId,sessionId,expectedRevision:store.state.revision,adoptionId:developmentAdoption,phase,summary:'stale development',evidence:[],...(phase==='blocked'?{blocker:'fixture'}:{})}}),/功能开发已完成.*nodeId=verify/);
+  await assert.rejects(collaborationWrite(store,data,{kind:'progress.add',role:'member',operationId:randomUUID(),input:{...scope,nodeId:'develop',runId,sessionId,expectedRevision:store.state.revision,adoptionId:developmentAdoption,phase,summary:'stale development',evidence:[],...(phase==='blocked'?{blocker:'fixture'}:{})}}),/Feature development is complete.*nodeId=verify/);
   assert.deepEqual(await readFile(path),before);
  }
- await assert.rejects(submit(store,'develop',developmentAdoption,'sha-v2'),/功能开发已完成/);assert.deepEqual(await readFile(path),before);
+ await assert.rejects(submit(store,'develop',developmentAdoption,'sha-v2'),/Feature development is complete/);assert.deepEqual(await readFile(path),before);
  assert.equal((await context(store,'develop')).rework?.allowed,true);await reopenDevelopment(store,developmentAdoption);
  assert.equal(task(store).stage,'developing');assert.equal(task(store).nodes.develop.status,'running');assert.deepEqual(task(store).nodes.prepare,previous);assert.deepEqual(task(store).verificationCheckIds,[]);
  assert.equal(store.state.workspace.collaboration!.events.at(-1)!.reopen,true);
@@ -66,7 +66,7 @@ test('explicit blocked verification rework keeps history, clears current checks 
  const payload={kind:'progress.add',role:'member',operationId:randomUUID(),input:{...scope,nodeId:'verify',runId,sessionId,expectedRevision:store.state.revision,adoptionId:verificationAdoption,phase:'started',reopen:true,summary:'explicit verification retry',evidence:[]}};
  await collaborationWrite(store,data,payload);assert.deepEqual(task(store).verificationCheckIds,[]);assert.deepEqual(task(store).nodes.develop,priorDevelop);
  const round=taskNodeView(store.state,task(store),'verify',data);assert.ok(round.deliverables.every(item=>item.references.length===0));assert.ok(round.criteria.every(item=>item.status==='pending'));
- await assert.rejects(collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:{...scope,nodeId:'verify',runId,sessionId,expectedRevision:store.state.revision,adoptionId:verificationAdoption,summary:'missing fresh checks',...nodeResultFixture('verify'),checks:undefined}}),/检查|来源/);
+ await assert.rejects(collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:{...scope,nodeId:'verify',runId,sessionId,expectedRevision:store.state.revision,adoptionId:verificationAdoption,summary:'missing fresh checks',...nodeResultFixture('verify'),checks:undefined}}),/check conclusion|sources differ/);
  await submit(store,'verify',verificationAdoption);
  assert.equal(task(store).stage,'awaiting-acceptance');assert.equal(task(store).nodes.accept.status,'waiting-owner');assert.equal(task(store).acceptedAt,undefined);assert.deepEqual(task(store).checks.slice(0,history.length),history);
  const before=await readFile(path);assert.equal((await collaborationWrite(store,data,payload)).replayed,true);assert.deepEqual(await readFile(path),before);
@@ -80,11 +80,11 @@ test('CLI cannot accept, return or change waiting/accepted tasks, even when the 
   for(const nodeId of ['prepare','develop','verify','accept'] as const){
    const ctx=await context(store,nodeId);assert.deepEqual(ctx.availableActions,['context.get']);assert.equal(ctx.rework?.allowed,false);
    for(const kind of ['inputs.adopt','progress.add','result.submit']){
-    await assert.rejects(collaborationWrite(store,data,{kind,role:'owner',operationId:randomUUID(),input:{...scope,nodeId,runId,sessionId,expectedRevision:store.state.revision,basisDigest:ctx.basisDigest,readReferences:[],adoptionId:'unused',phase:'started',summary:'must not mutate acceptance'}}),/验收/);
+    await assert.rejects(collaborationWrite(store,data,{kind,role:'owner',operationId:randomUUID(),input:{...scope,nodeId,runId,sessionId,expectedRevision:store.state.revision,basisDigest:ctx.basisDigest,readReferences:[],adoptionId:'unused',phase:'started',summary:'must not mutate acceptance'}}),/acceptance/);
     assert.deepEqual(await readFile(path),before);
    }
   }
-  for(const kind of ['accept','return','acceptance.submit'])await assert.rejects(collaborationWrite(store,data,{kind,role:'owner',operationId:randomUUID(),input:{...scope,nodeId:'accept'}}),/不支持/);
+  for(const kind of ['accept','return','acceptance.submit'])await assert.rejects(collaborationWrite(store,data,{kind,role:'owner',operationId:randomUUID(),input:{...scope,nodeId:'accept'}}),/Unsupported collaboration write operation/);
   assert.deepEqual(await readFile(path),before);
   if(stage==='awaiting-acceptance')await store.transact(state=>{const next=structuredClone(state);acceptDeliveryRequirement(next,'owner',deliveryRequirement(next,scope.projectId,scope.taskId)!,new Date().toISOString());return next;});
  }
@@ -101,11 +101,11 @@ for(const reason of ['failed-checks','owner-return'] as const)test(`${reason}: n
  assert.deepEqual(store.state.workspace.collaboration!.adoptions,previous.ledger.adoptions);assert.deepEqual(store.state.workspace.collaboration!.events.slice(0,previous.ledger.events.length),previous.ledger.events);
  assert.equal(task(store).preparedAt,previous.preparedAt);assert.deepEqual(task(store).talentInputsSnapshot,previous.taskInputs);
  const waiting=await context(store,'verify');assert.deepEqual(waiting.availableActions,['context.get']);assert.deepEqual(waiting.nodeContract!.inputs.map(item=>item.id),['requirement']);assert.ok(waiting.nodeContract!.deliverables.every(item=>item.references.length===0));assert.ok(waiting.nodeContract!.criteria.every(item=>item.status==='pending'));
- await assert.rejects(()=>adopt(store,'verify'),/知识尚未获取完成/);
+ await assert.rejects(()=>adopt(store,'verify'),/Knowledge for this node has not been fetched yet/);
  const same=JSON.stringify(taskAutomation(store.state,scope));queueNextNodeKnowledge(store.state,scope,'develop',new Date().toISOString());assert.equal(JSON.stringify(taskAutomation(store.state,scope)),same,'same upstream event is idempotent');
  await preparer.scheduleNode(scope,'verify');const ready=await context(store,'verify');assert.equal(ready.nodeContract!.inputs.find(item=>item.id==='code-change')!.references[0].codeVersion,'sha-v2');assert.equal(job(store).upstream!.find(item=>item.artifact==='code-change')!.codeVersion,'sha-v2');
- await assert.rejects(()=>submit(store,'verify',verificationAdoption,'sha-v2'),/采用依据已变化/);
- const currentAdoption=await adopt(store,'verify');await assert.rejects(()=>submit(store,'verify',currentAdoption,'sha-v1'),/产物代码版本不一致/);await submit(store,'verify',currentAdoption,'sha-v2');
+ await assert.rejects(()=>submit(store,'verify',verificationAdoption,'sha-v2'),/adoption basis has changed/);
+ const currentAdoption=await adopt(store,'verify');await assert.rejects(()=>submit(store,'verify',currentAdoption,'sha-v1'),/Artifact code version mismatch/);await submit(store,'verify',currentAdoption,'sha-v2');
  assert.equal(task(store).stage,'awaiting-acceptance');assert.equal(task(store).checks.length,previous.checks.length+4);assert.deepEqual(taskAutomation(store.state,scope)!.nodeKnowledgeHistory![0],archived);
  await store.transact(state=>{const next=structuredClone(state);acceptDeliveryRequirement(next,'owner',deliveryRequirement(next,scope.projectId,scope.taskId)!,new Date().toISOString());return next;});
  const bytes=await readFile(path),reopened=new Store(path);await reopened.init();assert.deepEqual(await readFile(path),bytes);assert.equal(task(reopened).stage,'accepted');assert.deepEqual(taskAutomation(reopened.state,scope)!.nodeKnowledgeHistory![0],archived);
@@ -126,7 +126,7 @@ test('a late import from a superseded rework round cannot overwrite the next rou
 test('a result cannot relabel original inputs as duplicate deliverables and replace the actual PRD reference',()=>fixture(async(store)=>{
  const adoptionId=await adopt(store,'prepare'),result=nodeResultFixture('prepare'),before=JSON.stringify(store.state);
  const input={...scope,nodeId:'prepare',runId,sessionId,expectedRevision:store.state.revision,adoptionId,summary:'隔离多证据成果',...result};
- await assert.rejects(()=>collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:{...input,evidence:[...result.evidence,{...result.evidence[0],value:'fixture://original-requirement',description:'原始需求'},{...result.evidence[0],value:'fixture://test-profile',description:'测试口径'}]}}),/产物类型不可重复：prd/);
+ await assert.rejects(()=>collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:{...input,evidence:[...result.evidence,{...result.evidence[0],value:'fixture://original-requirement',description:'原始需求'},{...result.evidence[0],value:'fixture://test-profile',description:'测试口径'}]}}),/An artifact type cannot repeat within one result submission: prd/);
  assert.equal(JSON.stringify(store.state),before,'rejected result leaves nodes, ledger and queued jobs unchanged');
  await collaborationWrite(store,data,{kind:'result.submit',role:'member',operationId:randomUUID(),input:{...input,evidence:[...result.evidence,{kind:'reference',value:'fixture://original-requirement',description:'原始需求输入佐证'},{kind:'reference',value:'fixture://test-profile',description:'测试口径输入佐证'}]}});
  assert.equal(task(store).nodes.prepare.status,'complete');const upstream=taskNodeKnowledge(taskAutomation(store.state,scope),'develop')!.upstream!;assert.equal(upstream.length,1);assert.equal(upstream[0].value,result.evidence[0].value);

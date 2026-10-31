@@ -31,10 +31,10 @@ test('preparation requires successful native material reads and refuses mutating
   ...(results[1]===undefined?[]:[{type:'function_call',name:'read_file',call_id:'long',arguments:JSON.stringify({path:'/task/long.json',offset:2,limit:1})},{type:'function_result',call_id:'long',result:results[1]}]),
  ]}]}});
  assert.equal(preparationReadingEvidence(longEnvelope(truncated,recovered),[{...longRead,content:'{"a":\n'+long+'\n'}]).length,1,'超长行按提示单行重读后，全文行集完整');
- assert.throws(()=>preparationReadingEvidence(longEnvelope(truncated),[{...longRead,content:'{"a":\n'+long+'\n'}]),/截断或缺行/,'只截断未重读不得算已读');
- assert.throws(()=>preparationReadingEvidence({state:{messages:[{role:'assistant',contents:[{type:'text',text:'I read all files'}]}]}},reads),/缺少/);
- assert.throws(()=>preparationReadingEvidence({state:{messages:[{contents:[...contents,{type:'function_call',name:'run_shell',call_id:'bad',arguments:'{}'}]}]}},reads),/只读材料/);
- const failed=structuredClone(envelope);failed.state.messages[0].contents[1].result='Error: cannot read';assert.throws(()=>preparationReadingEvidence(failed,reads),/缺少/);
+ assert.throws(()=>preparationReadingEvidence(longEnvelope(truncated),[{...longRead,content:'{"a":\n'+long+'\n'}]),/truncated or is missing lines/,'只截断未重读不得算已读');
+ assert.throws(()=>preparationReadingEvidence({state:{messages:[{role:'assistant',contents:[{type:'text',text:'I read all files'}]}]}},reads),/No real read receipt/);
+ assert.throws(()=>preparationReadingEvidence({state:{messages:[{contents:[...contents,{type:'function_call',name:'run_shell',call_id:'bad',arguments:'{}'}]}]}},reads),/other than read-only material reads/);
+ const failed=structuredClone(envelope);failed.state.messages[0].contents[1].result='Error: cannot read';assert.throws(()=>preparationReadingEvidence(failed,reads),/No real read receipt/);
 });
 test('prepared work remains task/assignee bound, idempotent and resumes only the validated native session',async()=>{
  const dir=await realpath(await mkdtemp(join(tmpdir(),'native-prepare-'))),repo=join(dir,'repo');await mkdir(repo);execFileSync('git',['init','-q',repo]);
@@ -54,25 +54,25 @@ test('prepared work remains task/assignee bound, idempotent and resumes only the
   const service=new ProjectWorkService(()=>state,fixtures,dir,transport,prepare,dir),before=JSON.stringify(state);
   const [one,two]=await Promise.all([service.prepare('su',scope,preparation.id),service.prepare('su',scope,preparation.id)]);assert.deepEqual(one,two);assert.equal(calls.length,1);assert.equal(JSON.stringify(state),before);
   const exported=JSON.parse(await readFile(calls[0].contextPath,'utf8'));assert.equal(exported.view,'model');assert.equal(exported.agreement.background,task.description);assert.equal('talentInputs'in exported,false);assert.deepEqual(one.status==='ready'?one.readEvidence.map(item=>item.path).sort():[],calls[0].reads.map((item:any)=>item.path).sort());
-  assert.match(await readFile(calls[0].taskFile,'utf8'),/只允许 read_file/);assert.match(await readFile(calls[0].taskFile,'utf8'),/不运行 shell、写文件、修改代码/);assert.match(await readFile(calls[0].taskFile,'utf8'),/inputs adopt/);
-  await assert.rejects(service.prepare('member',scope,preparation.id),/范围或交付人/);await assert.rejects(service.prepare('su',scope,randomUUID()),/范围或交付人/);assert.equal(calls.length,1);
+  assert.match(await readFile(calls[0].taskFile,'utf8'),/may only use the read_file tool/);assert.match(await readFile(calls[0].taskFile,'utf8'),/Do not run shell commands, write files, modify code/);assert.match(await readFile(calls[0].taskFile,'utf8'),/inputs adopt/);
+  await assert.rejects(service.prepare('member',scope,preparation.id),/scope or assignee has changed/);await assert.rejects(service.prepare('su',scope,randomUUID()),/scope or assignee has changed/);assert.equal(calls.length,1);
   if(one.status!=='ready')throw new Error('expected ready');preparation.status='ready';preparation.session=one;state.workspace.taskAutomation!.find(record=>record.taskId===scope.taskId)!.knowledge!.status='ready';
   const denied=await service.plan('member',{...scope,tab:'delivery',nodeId:'prepare'});assert.equal(denied.defaultAction,'resume');assert.equal(denied.actions[0].enabled,false);
   task.assigneeId='member';preparation.assigneeId='member';
   const plan=await service.plan('member',{...scope,tab:'delivery',nodeId:'prepare'});assert.deepEqual(plan.actions.map(action=>action.id),['resume','new']);assert.equal(plan.actions[0].enabled,true);assert.equal(plan.defaultAction,'resume');assert.equal(plan.history!.sessionId,one.sessionId);
-  const downstream=await service.plan('member',{...plan.target,nodeId:'develop'});assert.equal(downstream.actions[0].enabled,false);assert.match(downstream.actions[0].reason!,/上游交付物/);assert.equal(downstream.history!.sessionId,one.sessionId);
+  const downstream=await service.plan('member',{...plan.target,nodeId:'develop'});assert.equal(downstream.actions[0].enabled,false);assert.match(downstream.actions[0].reason!,/upstream deliverables/);assert.equal(downstream.history!.sessionId,one.sessionId);
   const request={requestId:randomUUID(),target:plan.target,action:'resume' as const,planToken:plan.planToken};await service.start('member',request);await service.start('member',request);assert.equal(starts.length,1);assert.equal(starts[0].sessionId,one.sessionId);assert.equal(starts[0].task.preparedSession.sourceRunId,one.runId);assert.equal(starts[0].terminal,'ghostty');
   const fresh=await service.start('member',{requestId:randomUUID(),target:plan.target,action:'new',planToken:plan.planToken});assert.equal(fresh.action,'new');assert.equal(fresh.sessionId,null);assert.equal(starts.length,2);assert.equal(starts[1].sessionId,undefined);assert.equal(starts[1].task.preparedSession,undefined);
   await mkdir(join(dir,'work-contexts',one.runId+'.native','session-root','sessions',one.sessionId.replaceAll('-','').slice(0,12),'trajectory'),{recursive:true});
   await writeFile(join(dir,'work-contexts',one.runId+'.native','session-root','sessions',one.sessionId.replaceAll('-','').slice(0,12),'trajectory','events.jsonl'),'{bad}\n');
-  const degradedPlan=await service.plan('member',plan.target);assert.equal(degradedPlan.history!.trajectory?.state,'degraded');assert.equal(degradedPlan.history!.trajectory?.reason,'corrupt_tail');assert.deepEqual(degradedPlan.actions.map(action=>action.id),['resume','new']);assert.equal(degradedPlan.defaultAction,'new');assert.match(degradedPlan.history!.diagnostic!,/已降级/);
+  const degradedPlan=await service.plan('member',plan.target);assert.equal(degradedPlan.history!.trajectory?.state,'degraded');assert.equal(degradedPlan.history!.trajectory?.reason,'corrupt_tail');assert.deepEqual(degradedPlan.actions.map(action=>action.id),['resume','new']);assert.equal(degradedPlan.defaultAction,'new');assert.match(degradedPlan.history!.diagnostic!,/degraded/);
   const newRun=randomUUID(),output=join(dir,'work-contexts',newRun+'.native');await mkdir(output);const source=join(dir,'work-contexts',one.runId+'.native','session-root','sessions',one.sessionId.replaceAll('-','').slice(0,12),'session.json'),bytes=await readFile(source);
   await copyPreparedSession({runId:newRun,scope,preparedSession:{preparationRunId:one.runId,sourceRunId:one.runId,sessionId:one.sessionId,sessionSha256:sha(bytes)}},output);
   assert.deepEqual(await readFile(join(output,'session-root','sessions',one.sessionId.replaceAll('-','').slice(0,12),'session.json')),bytes);assert.deepEqual(await readFile(source),bytes);
-  await assert.rejects(copyPreparedSession({runId:randomUUID(),scope:{...scope,taskId:'other'},preparedSession:{preparationRunId:one.runId,sourceRunId:one.runId,sessionId:one.sessionId,sessionSha256:sha(bytes)}},join(dir,'work-contexts','invalid.native')),/范围/);
+  await assert.rejects(copyPreparedSession({runId:randomUUID(),scope:{...scope,taskId:'other'},preparedSession:{preparationRunId:one.runId,sourceRunId:one.runId,sessionId:one.sessionId,sessionSha256:sha(bytes)}},join(dir,'work-contexts','invalid.native')),/scope or exit receipt does not match/);
   await writeFile(join(output,'manifest.json'),JSON.stringify({runId:newRun,scope,preparedSession:{preparationRunId:one.runId,sourceRunId:one.runId,sessionId:one.sessionId}}));
-  const pending=await service.plan('member',plan.target);assert.equal(pending.actions[0].enabled,false);assert.match(pending.actions[0].reason!,/尚未取得原生会话回执/);
-  await assert.rejects(service.start('member',{requestId:randomUUID(),target:plan.target,action:'resume',planToken:pending.planToken}),/未重复启动/);assert.equal(starts.length,2);
+  const pending=await service.plan('member',plan.target);assert.equal(pending.actions[0].enabled,false);assert.match(pending.actions[0].reason!,/no native session receipt yet/);
+  await assert.rejects(service.start('member',{requestId:randomUUID(),target:plan.target,action:'resume',planToken:pending.planToken}),/Not started again/);assert.equal(starts.length,2);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
 
@@ -85,7 +85,7 @@ test('preparation requires a configured directory and preserves exact assignee/e
   const preparation=state.workspace.taskAutomation!.find(record=>record.taskId===scope.taskId)!.preparation!;preparation.status='preparing-session';
   const transport:WorkTransport={defaults:async()=>({agent:'code',agentLabel:'Code',model:'model',modelLabel:'Model',terminal:{id:'ghostty',name:'Ghostty'}}),history:async()=>({available:false,directory:'',title:'',active:null}),focus:async()=>{throw new Error('not supported');},start:async()=>{throw new Error('must not launch');}};
   const calls:PreparationInput[]=[],service=new ProjectWorkService(()=>state,fixtures,dir,transport,async input=>{calls.push(input);throw new Error('validated preparation transport reached');},dir),target={...scope,tab:'delivery',nodeId:'prepare'};
-  const defaultPlan=await service.plan('member',target);assert.equal(defaultPlan.directory.root,null);assert.equal(defaultPlan.directory.valid,false);assert.match(defaultPlan.directory.diagnostic,/项目工作区/);
+  const defaultPlan=await service.plan('member',target);assert.equal(defaultPlan.directory.root,null);assert.equal(defaultPlan.directory.valid,false);assert.match(defaultPlan.directory.diagnostic,/No project workspace is configured/);
   await service.bind('owner',target,ownerRepo);await service.bind('member',target,memberRepo);
   await assert.rejects(service.prepare('member',scope,preparation.id),/validated preparation transport reached/);assert.equal(calls.length,1);assert.equal(calls[0].directory,await realpath(memberRepo));
   task.workDirectory=join(dir,'explicit-missing');const missing=await service.prepare('member',scope,preparation.id);assert.equal(missing.status,'waiting-directory');assert.equal(calls.length,1);delete task.workDirectory;

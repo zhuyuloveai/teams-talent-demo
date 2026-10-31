@@ -23,7 +23,7 @@ test('launcher rejects a different workspace, state directory or app on an occup
   await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
   const address=server.address() as {port:number},service={id:'teams',app:'teams-talent-carddemo',origin:'http://127.0.0.1:'+address.port,runtimeDir};
   try {assert.equal((await serviceHealth(service)).workspaceRoot,root);
-    for(const other of [{...value,workspaceRoot:'/another/copy'},{...value,stateRoot:'/another/state'},{app:value.app},{...value,app:'another-app'}]){value=other;await assert.rejects(serviceHealth(service),/其他|旧版/);}
+    for(const other of [{...value,workspaceRoot:'/another/copy'},{...value,stateRoot:'/another/state'},{app:value.app},{...value,app:'another-app'}]){value=other;await assert.rejects(serviceHealth(service),/another directory or by an older service|already used by another service/);}
   }finally{await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}
   assert.equal(await serviceHealth(service),null);
 });
@@ -36,7 +36,7 @@ test('local startup configuration is shared, explicit, validated and overridden 
     const env:NodeJS.ProcessEnv={DEMO_LOCAL_CONFIG:file,DEMO_PORT:'46191'};assert.equal(loadLocalConfiguration(directory,env).loaded,true);assert.equal(env.DEMO_PORT,'46191');assert.equal(env.DEMO_STATE_DIR,state);assert.equal(env.DEMO_MATERIAL_ROOT,material);
     const childEnv:NodeJS.ProcessEnv={...process.env,DEMO_LOCAL_CONFIG:file,DEMO_PORT:'46192'};delete childEnv.DEMO_STATE_DIR;delete childEnv.DEMO_MATERIAL_ROOT;
     const config=JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',`import {workspace,materialRoot,runtimeDir,port} from './server/config.ts'; console.log(JSON.stringify({workspace,materialRoot,runtimeDir,port}));`],{cwd:root,env:childEnv,encoding:'utf8'}));assert.equal(config.materialRoot,material);assert.equal(config.runtimeDir,state);assert.equal(config.port,46192);assert.equal(config.workspace,join(material,'workspace'));
-    for(const bad of ['{',JSON.stringify([]),JSON.stringify({TYPO:'value'}),JSON.stringify({DEMO_ICODE_BINARY:'relative'}),JSON.stringify({DEMO_PORT:'45970'}),JSON.stringify({DEMO_PORT:80})]){await writeFile(file,bad);assert.throws(()=>loadLocalConfiguration(directory,{DEMO_LOCAL_CONFIG:file}),/配置/);}
-    assert.throws(()=>loadLocalConfiguration(directory,{DEMO_LOCAL_CONFIG:'relative'}),/绝对路径/);
+    for(const bad of ['{',JSON.stringify([]),JSON.stringify({TYPO:'value'}),JSON.stringify({DEMO_ICODE_BINARY:'relative'}),JSON.stringify({DEMO_PORT:'45970'}),JSON.stringify({DEMO_PORT:80})]){await writeFile(file,bad);assert.throws(()=>loadLocalConfiguration(directory,{DEMO_LOCAL_CONFIG:file}),/[Ll]ocal config/);}
+    assert.throws(()=>loadLocalConfiguration(directory,{DEMO_LOCAL_CONFIG:'relative'}),/must be an absolute path/);
   }finally{await rm(directory,{recursive:true,force:true});}
 });

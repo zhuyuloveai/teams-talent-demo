@@ -21,10 +21,10 @@ test('every check in a submission must pass, regardless of order or actual/prese
   const {state,task}=prepared();verify(task,checks);
   assert.equal(task.stage,'verifying');assert.equal(task.nodes.verify.status,'blocked');
   assert.deepEqual(task.checks.map(({status,source})=>({status,source})),checks.map(({status,source})=>({status,source})));
-  assert.throws(()=>acceptDeliveryRequirement(state,'owner',task,t2),/不能验收/);
+  assert.throws(()=>acceptDeliveryRequirement(state,'owner',task,t2),/cannot be accepted/);
   // An inconsistent waiting state must still fail the independent acceptance gate.
   task.stage='awaiting-acceptance';task.nodes.verify.status='complete';
-  assert.throws(()=>acceptDeliveryRequirement(state,'owner',task,t2),/不能验收/);
+  assert.throws(()=>acceptDeliveryRequirement(state,'owner',task,t2),/cannot be accepted/);
  }
 });
 
@@ -38,10 +38,10 @@ test('a new passing batch can resolve a failed attempt without removing historic
 
 test('Owner return and resumed development invalidate the prior batch until fresh checks arrive',()=>{
  const {state,task}=prepared();verify(task,[pass]);const history=structuredClone(task.checks);
- assert.throws(()=>returnDeliveryRequirement('member',task,'补充边界',t2),/不能退回/);
+ assert.throws(()=>returnDeliveryRequirement('member',task,'补充边界',t2),/cannot send back/);
  returnDeliveryRequirement('owner',task,'补充边界',t2);assert.deepEqual(task.checks,history);assert.deepEqual(task.verificationCheckIds,[]);
  applyRequirementProgress(task,{nodeId:'develop',phase:'result',summary:'已补充',sessionId:'session-one',evidence:nodeResultFixture('develop').evidence},t2);
- assert.throws(()=>verify(task),/本轮新的检查/);assert.equal(task.stage,'verifying');
+ assert.throws(()=>verify(task),/new check results and sources for this round/);assert.equal(task.stage,'verifying');
  verify(task,[{...pass,source:'actual',summary:'新一轮边界测试通过'}],t2);
  assert.equal(task.stage,'awaiting-acceptance');assert.deepEqual(task.checks.slice(0,history.length),history);
  acceptDeliveryRequirement(state,'owner',task,t2);assert.equal(task.stage,'accepted');
@@ -53,5 +53,5 @@ test('existing pre-batch histories remain unchanged and their complete last subm
  acceptDeliveryRequirement(state,'owner',task,t2);assert.equal(task.stage,'accepted');assert.equal(task.verificationCheckIds,undefined);
  const mixed=prepared();verify(mixed.task,[fail,pass]);delete mixed.task.verificationCheckIds;
  mixed.task.stage='awaiting-acceptance';mixed.task.nodes.verify.status='complete';
- assert.throws(()=>acceptDeliveryRequirement(mixed.state,'owner',mixed.task,t2),/不能验收/);
+ assert.throws(()=>acceptDeliveryRequirement(mixed.state,'owner',mixed.task,t2),/cannot be accepted/);
 });

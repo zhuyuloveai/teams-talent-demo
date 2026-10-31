@@ -16,7 +16,7 @@ test('historical task bindings remain read-only, pin exact Git identity and neve
   const task={projectId:'carddemo',id:'REQ-legacy'},binding={kind:'carddemo-worktree',projectId:task.projectId,taskId:task.id,recordedDirectory:null,directory:await realpath(join(worktree,'legacy-source')),worktreeRoot:await realpath(worktree),branch:'codex/old-task',baseBranch:'develop',baseCommit,platformRoot:repo,commonDirectory:await realpath(join(repo,'.git')),remote:'origin',remoteUrl:'https://github.com/example/old-platform.git'};
   const path=join(runtime,'project-task-directory-bindings.json');await writeFile(path,JSON.stringify({version:1,bindings:[binding]}));const before=await readFile(path),refs=git(repo,['show-ref','--heads']);
   assert.equal((await readLegacyTaskBinding(repo,runtime,task))!.directory,binding.directory);assert.equal(await taskWorkDirectory(runtime,task,repo),binding.directory);assert.deepEqual(await readFile(path),before);assert.equal(git(repo,['show-ref','--heads']),refs);
-  git(worktree,['switch','-c','wrong-task']);await assert.rejects(readLegacyTaskBinding(repo,runtime,task),/分支/);git(worktree,['switch','codex/old-task']);
+  git(worktree,['switch','-c','wrong-task']);await assert.rejects(readLegacyTaskBinding(repo,runtime,task),/origin or branch has changed/);git(worktree,['switch','codex/old-task']);
   await rm(binding.directory,{recursive:true});await assert.rejects(taskWorkDirectory(runtime,task,repo),{code:'ENOENT'});assert.deepEqual(await readFile(path),before);
  }finally{await rm(temp,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });

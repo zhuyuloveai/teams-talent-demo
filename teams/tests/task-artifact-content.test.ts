@@ -33,11 +33,11 @@ async function fixture(){
 }
 test('saved task/node/version identifies exact text, members can read shared task; no client path',async()=>{
  const f=await fixture();try{
-  const before=JSON.stringify(f.state);const result=await readTaskArtifactContent(f.state,'owner',f.query,f.options);assert.equal(result.content,await readFile(f.path,'utf8'));assert.equal(result.sha256,sha(result.content!));assert.equal(result.integrity,'current-file');assert.match(result.note,/未登记/);
+  const before=JSON.stringify(f.state);const result=await readTaskArtifactContent(f.state,'owner',f.query,f.options);assert.equal(result.content,await readFile(f.path,'utf8'));assert.equal(result.sha256,sha(result.content!));assert.equal(result.integrity,'current-file');assert.match(result.note,/No content SHA was registered/);
   assert.equal((await readTaskArtifactContent(f.state,'member',f.query,f.options)).content,result.content);
   for(const patch of [{taskId:'MKT-FOREIGN'},{nodeId:'verify'},{artifactId:'artifact:another-result:0'},{version:'v2'},{path:f.path}])await assert.rejects(readTaskArtifactContent(f.state,'owner',{...f.query,...patch} as any,f.options));
   assert.equal(JSON.stringify(f.state),before);
-  f.state.workspace.team.members=f.state.workspace.team.members.filter(m=>m.id!=='member');await assert.rejects(readTaskArtifactContent(f.state,'member',f.query,f.options),/无权/);
+  f.state.workspace.team.members=f.state.workspace.team.members.filter(m=>m.id!=='member');await assert.rejects(readTaskArtifactContent(f.state,'member',f.query,f.options),/No permission to read materials/);
  }finally{await f.clean();}
 });
 test('declared content hash is enforced; binary, large files and symlinks fail explicitly',async()=>{
@@ -45,26 +45,26 @@ test('declared content hash is enforced; binary, large files and symlinks fail e
   (f.event.evidence[0] as any).sha256=sha(await readFile(f.path,'utf8'));assert.equal((await readTaskArtifactContent(f.state,'owner',f.query,f.options)).integrity,'registered-sha256');
   await writeFile(f.path,'changed');await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/SHA256/);delete (f.event.evidence[0] as any).sha256;
   await writeFile(f.path,Buffer.from([0xff,0xfe]));await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/UTF-8/);
-  await writeFile(f.path,'\0');await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/二进制/);
+  await writeFile(f.path,'\0');await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/binary data/);
   await writeFile(f.path,Buffer.alloc(1024*1024+1));await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/1 MiB/);
-  const outside=join(f.temp,'secret.md');await writeFile(outside,'outside');f.event.evidence[0].value=outside;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/不在任务/);
+  const outside=join(f.temp,'secret.md');await writeFile(outside,'outside');f.event.evidence[0].value=outside;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/not in the task work directory/);
  }finally{await f.clean();}
 });
 test('an artifact path that is a symbolic link is rejected',{skip:fileLinks?false:'当前账户无法创建文件符号链接（Windows 需要开发者模式或 SeCreateSymbolicLinkPrivilege）'},async()=>{
  const f=await fixture();try{
   const outside=join(f.temp,'secret.md');await writeFile(outside,'outside');
-  const link=join(f.directory,'link.md');await symlink(outside,link);f.event.evidence[0].value=link;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/符号链接/);
+  const link=join(f.directory,'link.md');await symlink(outside,link);f.event.evidence[0].value=link;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/Symbolic links are not allowed/);
  }finally{await f.clean();}
 });
 test('local registry is explicit, atomic/idempotent, scoped and rejects overlap/symlinks/corruption',async()=>{
  const f=await fixture();try{
   const path=join(f.reports,'test.md');await writeFile(path,'actual report');f.event.evidence[0].value=path;
-  await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/核验登记/);
+  await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/Verify the registration first/);
   const registration={...f.options,projectId:f.query.projectId,taskId:f.query.taskId,directory:f.reports};const row=await registerTaskArtifactRoot(registration),bytes=await readFile(join(f.options.runtime,'task-artifact-roots.json'));
   assert.deepEqual(await registerTaskArtifactRoot(registration),row);assert.deepEqual(await readFile(join(f.options.runtime,'task-artifact-roots.json')),bytes);
   assert.equal((await readTaskArtifactContent(f.state,'owner',f.query,f.options)).content,'actual report');
-  await assert.rejects(registerTaskArtifactRoot({...registration,taskId:'MKT-OTHER'}),/重叠/);
-  await assert.rejects(registerTaskArtifactRoot({...registration,directory:f.temp}),/专属子目录/);
+  await assert.rejects(registerTaskArtifactRoot({...registration,taskId:'MKT-OTHER'}),/must not overlap/);
+  await assert.rejects(registerTaskArtifactRoot({...registration,directory:f.temp}),/task-specific subdirectory/);
   await writeFile(join(f.options.runtime,'task-artifact-roots.json'),'{broken');await assert.rejects(readTaskArtifactRoots({...registration}),/JSON/);
  }finally{await f.clean();}
 });
@@ -74,7 +74,7 @@ test('a registry directory that is a link is rejected',async()=>{
   const link=join(f.options.teamsRoot,'test-results','link');
   // A junction is the same reparse-point check but needs no extra Windows privilege.
   if(process.platform==='win32')await symlink(f.reports,link,'junction');else await symlink(f.reports,link);
-  await assert.rejects(registerTaskArtifactRoot({...registration,directory:link}),/符号链接/);
+  await assert.rejects(registerTaskArtifactRoot({...registration,directory:link}),/must be a real directory, not a symlink/);
  }finally{await f.clean();}
 });
 test('historical tracked document reads exact reachable commit, not newer working file or another branch',async()=>{
@@ -82,8 +82,8 @@ test('historical tracked document reads exact reachable commit, not newer workin
   git('init','-q');git('config','user.name','Artifact Test');git('config','user.email','artifact@example.invalid');git('add','prd.md');git('commit','-qm','version 1');const first=git('rev-parse','HEAD');
   f.event.evidence[0].codeVersion=first;await writeFile(f.path,'new file');git('add','.');git('commit','-qm','version 2');
   const result=await readTaskArtifactContent(f.state,'owner',f.query,f.options);assert.match(result.content!,/Exact PRD/);assert.equal(result.integrity,'git-commit');
-  f.event.evidence[0].codeVersion='HEAD';await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/完整提交/);
-  git('checkout','--orphan','foreign');git('commit','-qm','unrelated');const foreign=git('rev-parse','HEAD');git('checkout','--detach',first);f.event.evidence[0].codeVersion=foreign;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/不属于本任务/);
+  f.event.evidence[0].codeVersion='HEAD';await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/not a full commit SHA/);
+  git('checkout','--orphan','foreign');git('commit','-qm','unrelated');const foreign=git('rev-parse','HEAD');git('checkout','--detach',first);f.event.evidence[0].codeVersion=foreign;await assert.rejects(readTaskArtifactContent(f.state,'owner',f.query,f.options),/not in the history of this task/);
  }finally{await f.clean();}
 });
 test('PR uses saved GitHub address; script/local/other URLs never become links',async()=>{

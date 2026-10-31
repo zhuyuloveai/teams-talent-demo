@@ -28,7 +28,7 @@ test('Windows independent launch creates one new console with encoded data and r
   assert.doesNotMatch(payload, /RedirectStandard|^& \$|Invoke-Expression/m);
   assert.ok(payload.includes("$start.FileName = 'C:\\工具 O''Brien & $ %;\\icode.exe'"));
   assert.match(controller, /-NoExit/); assert.doesNotMatch(payload, /^exit /m);
-  assert.match(receipt.note, /模型结果需在终端核对/);
+  assert.match(receipt.note, /check the tool launch and model result in the terminal/);
 });
 test('Windows Terminal selection sends only encoded user data, preserves a GUID profile, and never emits cwd as a WT argument', async () => {
   const profile = '{12345678-1234-abcd-5678-1234567890ab}', t = setup({ WT_SESSION:'existing', WT_PROFILE_ID:profile });
@@ -43,10 +43,10 @@ test('production route propagates process errors without a second terminal or a 
   for (const env of [{ DEMO_WINDOWS_TERMINAL:'none' },{ WT_SESSION:'existing' }]) {
     const t=setup(env); t.fail(); await assert.rejects(t.launcher.launch(input),/process launch denied/); assert.equal(t.calls.length,1);
   }
-  const t=setup(); t.reply('unconfirmed'); await assert.rejects(t.launcher.launch(input),/待核对，未重复启动/); assert.equal(t.calls.length,1);
+  const t=setup(); t.reply('unconfirmed'); await assert.rejects(t.launcher.launch(input),/needs checking and nothing was launched again/); assert.equal(t.calls.length,1);
 });
 test('native-disabled and Linux reject before executable discovery or process creation', async () => {
-  for (const [env,platform,reason] of [[{DEMO_NATIVE_DISABLED:'1'},'win32',/未开放/],[{},'linux',/仅支持 Windows 与 macOS/]] as const) {
+  for (const [env,platform,reason] of [[{DEMO_NATIVE_DISABLED:'1'},'win32',/does not allow real native launches/],[{},'linux',/supports only Windows and macOS/]] as const) {
     const t=setup(env,platform); await assert.rejects(t.launcher.launch(input),reason); assert.deepEqual(t.calls,[]); assert.deepEqual(t.resolved,[]);
   }
 });
@@ -59,14 +59,14 @@ test('invalid WT profile and shell command separator reject before dispatch', as
   await assert.rejects(createTerminalLauncher(t.runtime).launch(input),/DEMO_WINDOWS_TERMINAL=none/); assert.equal(t.calls.length,0);
 });
 test('explicit terminal configuration fails precisely and does not silently select another shell', async () => {
-  const t=setup({DEMO_POWERSHELL_BINARY:'C:\\missing\\pwsh.exe'});await assert.rejects(t.launcher.launch(input),/DEMO_POWERSHELL_BINARY.*不存在/);assert.equal(t.calls.length,0);assert.equal(t.resolved.includes('powershell.exe'),false);
-  const relative=setup({DEMO_POWERSHELL_BINARY:'pwsh.exe'});await assert.rejects(relative.launcher.launch(input),/绝对路径/);
-  const wt=setup({WT_SESSION:'existing',DEMO_WINDOWS_TERMINAL:'C:\\missing\\wt.exe'});await assert.rejects(wt.launcher.launch(input),/DEMO_WINDOWS_TERMINAL.*不存在/);assert.equal(wt.calls.length,0);
+  const t=setup({DEMO_POWERSHELL_BINARY:'C:\\missing\\pwsh.exe'});await assert.rejects(t.launcher.launch(input),/DEMO_POWERSHELL_BINARY.*does not exist/);assert.equal(t.calls.length,0);assert.equal(t.resolved.includes('powershell.exe'),false);
+  const relative=setup({DEMO_POWERSHELL_BINARY:'pwsh.exe'});await assert.rejects(relative.launcher.launch(input),/absolute path/);
+  const wt=setup({WT_SESSION:'existing',DEMO_WINDOWS_TERMINAL:'C:\\missing\\wt.exe'});await assert.rejects(wt.launcher.launch(input),/DEMO_WINDOWS_TERMINAL.*does not exist/);assert.equal(wt.calls.length,0);
 });
 test('Windows .cmd discovery is explicit and launch rejection gives the executable override', async () => {
   const found=await findExecutable('opencode','win32',{Path:'C:\\npm;C:\\bin'},async path=>path==='C:\\npm\\opencode.cmd'); assert.equal(found,'C:\\npm\\opencode.cmd');
   const t=setup();t.runtime.resolveExecutable=async()=>found;
-  await assert.rejects(createTerminalLauncher(t.runtime).launch(input),/DEMO_OPENCODE_BINARY.*opencode.exe.*绝对路径/);assert.equal(t.calls.length,0);
+  await assert.rejects(createTerminalLauncher(t.runtime).launch(input),/DEMO_OPENCODE_BINARY to the absolute path of opencode.exe/);assert.equal(t.calls.length,0);
 });
 test('executable resolution pins relative PATH entries before changing project cwd and does not hide access errors', async () => {
   assert.equal(await findExecutable('icode','darwin',{PATH:'relative-bin'},async()=>true),resolve('relative-bin/icode'));
@@ -125,7 +125,7 @@ test('Ghostty creates its own configured surface; unavailable or denied selectio
   assert.equal(t.calls[0].args[3],"/tmp/中文 O'Brien");assert.ok(t.calls[0].args[2].startsWith('/bin/sh -c '));
   t.fail();await assert.rejects(t.launcher.launch({executable:'/tools/icode',directory:'/tmp',args:[],terminal:'ghostty'}),/process launch denied/);assert.equal(t.calls.length,2);
   t.runtime.macTerminals=async()=>[{id:'terminal',name:'Terminal',path:'/System/Applications/Utilities/Terminal.app'}];
-  await assert.rejects(createTerminalLauncher(t.runtime).launch({executable:'/tools/icode',directory:'/tmp',args:[],terminal:'ghostty'}),/所选终端不可用.*未改用其他终端/);assert.equal(t.calls.length,2);
+  await assert.rejects(createTerminalLauncher(t.runtime).launch({executable:'/tools/icode',directory:'/tmp',args:[],terminal:'ghostty'}),/The selected terminal is unavailable.*no other terminal was used/);assert.equal(t.calls.length,2);
 });
 
 test('local terminal preference persists independently, rejects invalid/missing choices and changed confirmations', async () => {
@@ -136,9 +136,9 @@ test('local terminal preference persists independently, rejects invalid/missing 
     const preferences=new TerminalPreferences(directory,'darwin',async()=>options);
     assert.equal((await preferences.context()).selectedTerminal,'terminal');await preferences.select('ghostty');
     assert.equal((await new TerminalPreferences(directory,'darwin',async()=>options).context()).selectedTerminal,'ghostty');assert.deepEqual(await preferences.selected('ghostty'),{id:'ghostty',name:'Ghostty'});
-    await assert.rejects(preferences.selected('terminal'),/配置已变化/);await assert.rejects(preferences.select('other'),/不可用/);
+    await assert.rejects(preferences.selected('terminal'),/configuration changed/);await assert.rejects(preferences.select('other'),/unavailable/);
     assert.deepEqual(JSON.parse(await readFile(join(directory,'terminal-preference.json'),'utf8')),{terminal:'ghostty'});
-    options=[options[0]];await assert.rejects(preferences.selected(),/所选终端不可用/);
-    await writeFile(join(directory,'terminal-preference.json'),'invalid');await assert.rejects(preferences.selected(),/读取失败/);await preferences.select('terminal');assert.equal((await preferences.selected()).id,'terminal');
+    options=[options[0]];await assert.rejects(preferences.selected(),/The selected terminal is unavailable/);
+    await writeFile(join(directory,'terminal-preference.json'),'invalid');await assert.rejects(preferences.selected(),/Failed to read the terminal preference/);await preferences.select('terminal');assert.equal((await preferences.selected()).id,'terminal');
   } finally {await rm(directory,{recursive:true,force:true});}
 });

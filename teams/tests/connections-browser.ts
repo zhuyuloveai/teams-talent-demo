@@ -19,19 +19,19 @@ try{
   browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});page.setDefaultTimeout(8000);
   page.on('pageerror',error=>errors.push(error.message));await page.route('**/api/**',route=>{if(route.request().method()==='POST'){writes.push(route.request().url());return route.abort();}return route.continue();});
   const knowledgeReads:string[]=[];page.on('request',request=>{if(/\/api\/(knowledge|talents)\//.test(new URL(request.url()).pathname))knowledgeReads.push(request.url());});
-  await page.goto(origin+'/teams#/connections');await page.getByRole('button',{name:'查看代码托管平台数据',exact:true}).waitFor();
+  await page.goto(origin+'/teams#/connections');await page.getByRole('button',{name:'View Source control platform data',exact:true}).waitFor();
   assert.equal(await page.locator('.enterprise-plugin-card').count(),5);
-  assert.equal(await page.locator('[data-platform="business-knowledge"]').count(),0,'business knowledge is shown on the project knowledge page, not as a source plugin');assert.equal(await page.getByText('业务知识（Talent）',{exact:true}).count(),0);
-  assert.equal(await page.locator('[data-platform="requirements"]').getByRole('button',{name:'在项目中使用',exact:true}).isEnabled(),false);
+  assert.equal(await page.locator('[data-platform="business-knowledge"]').count(),0,'business knowledge is shown on the project knowledge page, not as a source plugin');assert.equal(await page.getByText('Business knowledge (Talent)',{exact:true}).count(),0);
+  assert.equal(await page.locator('[data-platform="requirements"]').getByRole('button',{name:'Use in project',exact:true}).isEnabled(),false);
   const checks=[
-    ['repository','代码托管平台','CardDemo 业务代码仓库','carddemo-java-1025',6],
-    ['requirements','需求平台','信用卡消费返现','MKT-001',11],
-    ['defects','缺陷平台','普通卡不应进入白金卡返现范围','CARD-BUG-001',8],
-    ['design-library','设计文档 / 知识库','营销能力设计','marketing-capability',7],
-    ['test-assets','测试资产平台','白金卡客户范围','CARD-TC-01',7],
+    ['repository','Source control platform','CardDemo business code repository','carddemo-java-1025',6],
+    ['requirements','Requirements platform','Credit Card Spending Cashback','MKT-001',11],
+    ['defects','Defect platform','Standard cards must not enter the platinum cashback scope','CARD-BUG-001',8],
+    ['design-library','Design documents / knowledge base','Marketing capability design','marketing-capability',7],
+    ['test-assets','Test asset platform','Platinum card customer scope','CARD-TC-01',7],
   ] as const;
   for(const [id,name,title,record,count] of checks){
-    await page.getByRole('button',{name:'查看'+name+'数据',exact:true}).click();const drawer=page.locator('.enterprise-source-drawer');await drawer.getByRole('button',{name:title,exact:true}).waitFor();
+    await page.getByRole('button',{name:'View '+name+' data',exact:true}).click();const drawer=page.locator('.enterprise-source-drawer');await drawer.getByRole('button',{name:title,exact:true}).waitFor();
     const recordIds:string[]=[];
     while(true){recordIds.push(...await drawer.locator('.ant-table-row').evaluateAll(rows=>rows.map(row=>row.getAttribute('data-row-key')!)));const next=drawer.locator('.ant-pagination-next:not(.ant-pagination-disabled)');if(!await next.count())break;await next.click();}
     assert.equal(recordIds.length,count);assert.equal(new Set(recordIds).size,count);
@@ -40,23 +40,23 @@ try{
     const firstPage=drawer.locator('.ant-pagination-item-1');if(await firstPage.count())await firstPage.click();
     await drawer.getByText('Credit Card',{exact:true}).first().waitFor();await drawer.getByText('iCode Teams',{exact:true}).first().waitFor();
     await drawer.getByRole('button',{name:title,exact:true}).click();await drawer.getByRole('heading',{name:title,exact:true}).waitFor();await drawer.getByText(record,{exact:true}).waitFor();
-    assert.ok((await drawer.locator('.enterprise-source-detail').innerText()).includes('来源记录'));
-    if(id==='design-library'){await drawer.getByRole('button',{name:'阅读营销能力设计',exact:true}).click();await drawer.locator('.enterprise-source-reference pre').waitFor();assert.ok((await drawer.locator('.enterprise-source-reference pre').innerText()).includes('白金卡消费额外返现'));}
-    if(id==='test-assets')assert.ok((await drawer.locator('.enterprise-source-detail').innerText()).includes('预期结果'));
-    await page.screenshot({path:output+'/'+id+'-detail.png',fullPage:true,animations:'disabled'});await drawer.getByRole('button',{name:'返回数据',exact:true}).click();await drawer.locator('.ant-table-row').first().waitFor();await drawer.locator('.ant-drawer-close').click();await drawer.waitFor({state:'hidden'});
+    assert.ok((await drawer.locator('.enterprise-source-detail').innerText()).includes('Source record'));
+    if(id==='design-library'){await drawer.getByRole('button',{name:'Read Marketing capability design',exact:true}).click();await drawer.locator('.enterprise-source-reference pre').waitFor();assert.ok((await drawer.locator('.enterprise-source-reference pre').innerText()).includes('Platinum card extra spending cashback'));}
+    if(id==='test-assets')assert.ok((await drawer.locator('.enterprise-source-detail').innerText()).includes('Expected result'));
+    await page.screenshot({path:output+'/'+id+'-detail.png',fullPage:true,animations:'disabled'});await drawer.getByRole('button',{name:'Back to data',exact:true}).click();await drawer.locator('.ant-table-row').first().waitFor();await drawer.locator('.ant-drawer-close').click();await drawer.waitFor({state:'hidden'});
   }
-  await page.getByRole('button',{name:'高级能力设置',exact:true}).click();await page.getByRole('switch',{name:'启用代码 Review',exact:true}).waitFor();
-  assert.deepEqual(await page.locator('.ant-drawer .ant-tabs-tab').allTextContents(),['质量与安全','模型与工具服务'],'no Talent connection tab');await page.locator('.ant-drawer-close').click();await page.getByRole('switch',{name:'启用代码 Review',exact:true}).waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'Advanced capability settings',exact:true}).click();await page.getByRole('switch',{name:'Enable Code Review',exact:true}).waitFor();
+  assert.deepEqual(await page.locator('.ant-drawer .ant-tabs-tab').allTextContents(),['Quality and security','Model and tool services'],'no Talent connection tab');await page.locator('.ant-drawer-close').click();await page.getByRole('switch',{name:'Enable Code Review',exact:true}).waitFor({state:'hidden'});
   for(const mode of ['light','dark'])for(const width of [1440,390]){
-    await page.setViewportSize({width,height:1000});await page.evaluate(value=>localStorage.setItem('carddemo-theme',value),mode);await page.reload();await page.getByRole('button',{name:'查看测试资产平台数据',exact:true}).waitFor();
+    await page.setViewportSize({width,height:1000});await page.evaluate(value=>localStorage.setItem('carddemo-theme',value),mode);await page.reload();await page.getByRole('button',{name:'View Test asset platform data',exact:true}).waitFor();
     let measure=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.ok(measure.scrollWidth<=width);layouts.push({mode,page:'cards',...measure});
     await page.screenshot({path:output+'/'+mode+'-'+width+'-cards.png',fullPage:true,animations:'disabled'});
-    await page.getByRole('button',{name:'查看测试资产平台数据',exact:true}).click();const drawer=page.locator('.enterprise-source-drawer');await drawer.getByRole('button',{name:'白金卡客户范围',exact:true}).click();
+    await page.getByRole('button',{name:'View Test asset platform data',exact:true}).click();const drawer=page.locator('.enterprise-source-drawer');await drawer.getByRole('button',{name:'Platinum card customer scope',exact:true}).click();
     await drawer.locator('.enterprise-source-detail').waitFor();measure=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.ok(measure.scrollWidth<=width);layouts.push({mode,page:'detail',...measure});
     await page.screenshot({path:output+'/'+mode+'-'+width+'-detail.png',fullPage:true,animations:'disabled'});await drawer.locator('.ant-drawer-close').click();await drawer.waitFor({state:'hidden'});
   }
-  await page.getByRole('combobox',{name:'切换角色'}).click();await page.locator('.ant-select-item-option-content').getByText('陈晨 · 项目成员',{exact:true}).click();await page.getByText('此页面面向项目 Owner',{exact:true}).waitFor();
-  assert.equal(await page.getByRole('button',{name:'查看需求平台数据',exact:true}).count(),0);
+  await page.getByRole('combobox',{name:'Switch role'}).click();await page.locator('.ant-select-item-option-content').getByText('Chen Chen · Project member',{exact:true}).click();await page.getByText('This page is for the project Owner',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'View Requirements platform data',exact:true}).count(),0);
   assert.deepEqual(errors,[]);assert.deepEqual(writes,[]);assert.deepEqual(knowledgeReads,[],'enterprise connections do not read Talents knowledge');assert.equal((await(await fetch(origin+'/api/state')).json()).revision,initial.revision);assert.equal(await readFile(join(dir,'state.json'),'utf8'),before);
   await writeFile(output+'/result.json',JSON.stringify({passed:true,plugins:checks.map(([id])=>id),businessKnowledgePluginRemoved:true,knowledgeReads,layouts,pageErrors:errors,posts:writes,stateUnchanged:true,memberGuard:true},null,2));console.log('PASS: 5 source plugin drawers, no business-knowledge plugin or Talent connection, local reference, read-only state, role guard, 8 layouts');
 }catch(error){await writeFile(output+'/failure.log',String(error)+'\n'+logs);throw error;}finally{await browser?.close();server.kill('SIGTERM');await new Promise(resolve=>server.once('exit',resolve));await rm(dir,{recursive:true,force:true});}

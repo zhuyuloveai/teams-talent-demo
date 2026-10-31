@@ -34,7 +34,7 @@ test('assigned tasks persist queued/importing, wait the full configured interval
  const hidden=await readTalentNodeInputs(store.state,data,{...scope,nodeId:'prepare'});assert.deepEqual(hidden.skills,[]);assert.deepEqual(hidden.knowledge.assets,[]);assert.equal(hidden.requirement.description,'展示当前库存数量；计量单位与刷新频率待确认。');
  delay.resolve();await pending;const prepared=taskAutomation(store.state,scope)!.preparation!;
  assert.equal(prepared.status,'ready');assert.equal(nativeCalls,1);assert.equal(reads,1);assert.equal(taskAutomation(store.state,scope)!.knowledge!.status,'ready');
- const shown=await readTalentNodeInputs(store.state,data,{...scope,nodeId:'prepare'});assert.deepEqual(shown,taskAutomation(store.state,scope)!.knowledge!.nodeInputs);assert.ok(shown.skills.every(skill=>skill.sha256.length===64));assert.doesNotMatch(JSON.stringify(shown),/白金卡|额外0.5/);
+ const shown=await readTalentNodeInputs(store.state,data,{...scope,nodeId:'prepare'});assert.deepEqual(shown,taskAutomation(store.state,scope)!.knowledge!.nodeInputs);assert.ok(shown.skills.every(skill=>skill.sha256.length===64));assert.doesNotMatch(JSON.stringify(shown),/[Pp]latinum|白金卡|extra 0\.5|额外0.5/);
  const task=deliveryRequirement(store.state,scope.projectId,scope.taskId)!;assert.equal(task.stage,'preparing');assert.equal(task.preparedAt,undefined);assert.ok(Object.values(task.nodes).every(node=>node.status==='pending'));assert.equal(store.state.workspace.collaboration,undefined);
  const bytes=await readFile(path);await service.schedule(scope);const reopened=new Store(path);await reopened.init();new TaskPreparationService(reopened,data,{prepareSession:async()=>{throw new Error('must not rerun');}}).resumeQueued();assert.deepEqual(await readFile(path),bytes);assert.equal(nativeCalls,1);
 }));
@@ -54,7 +54,7 @@ test('missing directories stay explicit and retry the same native preparation ID
  const service=new TaskPreparationService(store,data,{delayMs:0,loadInputs:async(state,scope)=>{inputs++;return load(store)(state,scope);},prepareSession:async(_role,_scope,id)=>{ids.push(id);return++native===1?{status:'waiting-directory',reason:'请关联当前项目工作目录'}:receipt(id);}});
  await service.schedule(scope);assert.equal(taskAutomation(store.state,scope)!.preparation!.status,'waiting-directory');assert.equal(taskAutomation(store.state,scope)!.knowledge!.status,'ready');
  service.resumeQueued();await service.schedule(scope);assert.equal(native,1);await service.retry('owner',scope);await service.schedule(scope,true);assert.equal(native,2);assert.equal(inputs,1);assert.equal(ids[0],ids[1]);
- assert.throws(()=>assignDeliveryRequirement(store.state,'owner',{...scope,assigneeId:'owner'},new Date().toISOString()),/会话正在准备或已就绪/);
+ assert.throws(()=>assignDeliveryRequirement(store.state,'owner',{...scope,assigneeId:'owner'},new Date().toISOString()),/being prepared or is ready/);
 }));
 
 test('failed imports expose failure, preserve no partial inputs and only explicit authorized retry rechecks',async()=>fixture(async(store,scope)=>{

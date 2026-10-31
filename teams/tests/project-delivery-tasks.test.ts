@@ -72,7 +72,7 @@ test('project tasks and counts are shared while execution and preferred selectio
   const { visibleGenericTasks, taskExecutableBy, currentActorId } = await import('../src/task-visibility.js');
   const state = initialState();
   // A duplicate display name must not turn another stable member ID into the current member.
-  state.workspace.team.members.push({ id: 'member-other', name: '陈晨', role: 'member', status: 'active' });
+  state.workspace.team.members.push({ id: 'member-other', name: 'Chen Chen', role: 'member', status: 'active' });
   state.assigned = true; state.assigneeId = 'member-other'; state.stage = 'assigned';
   add(state, 'carddemo', 'MKT-MINE-001');
   const other = add(state, 'carddemo', 'MKT-OTHER-001'); other.assigneeId = 'member-other';
@@ -102,7 +102,7 @@ test('project tasks and counts are shared while execution and preferred selectio
   state.assigneeId = 'member';
   assert.deepEqual(projectDeliveryTasks(state, 'carddemo', 'member').map(task => task.id), ['DEMO-MKT-001', 'MKT-MINE-001', 'MKT-OTHER-001']);
   state.assigned = false; state.assigneeId = null;
-  assert.equal(projectDeliveryTasks(state, 'carddemo', 'owner')[0].status, '待分配');
+  assert.equal(projectDeliveryTasks(state, 'carddemo', 'owner')[0].status, 'Unassigned');
   assert.ok(projectDeliveryTasks(state, 'carddemo', 'member').some(task => task.id === 'DEMO-MKT-001'));
   assert.equal(taskExecutableBy('member', projectDeliveryTasks(state, 'carddemo', 'member')[0].assigneeId), false);
 });
@@ -116,7 +116,7 @@ test('unmapped snapshots and other assignments remain readable without gaining e
   const source = projectOverview(state, data, 'carddemo').requirements.find(row => row.source.sourceRecordId === 'MKT-002')!.source;
   assert.equal(sourceTaskAssigneeId(source, 'carddemo'), 'member');
   assert.equal(sourceTaskAssigneeId(source, id), null);
-  assert.equal(sourceTaskAssigneeId({ ...source, id: 'requirements:carddemo:UNMAPPED', requirement: { ...source.requirement!, owner: '陈晨' } }, 'carddemo'), null);
+  assert.equal(sourceTaskAssigneeId({ ...source, id: 'requirements:carddemo:UNMAPPED', requirement: { ...source.requirement!, owner: 'Chen Chen' } }, 'carddemo'), null);
   assert.deepEqual(projectDeliveryTasks(state, id, 'member').map(task => task.id), ['MKT-PRIVATE-001']);
   assert.equal(projectOverview(state, data, id, undefined, 'owner').counts.all, 1);
   assert.equal(projectOverview(state, data, id, undefined, 'member').counts.all, 1);

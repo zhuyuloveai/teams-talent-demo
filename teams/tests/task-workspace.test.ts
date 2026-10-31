@@ -90,6 +90,6 @@ test('a selected subdirectory resolves to the Git root; the Teams platform direc
     await git(repo, ['-c', 'user.name=Test', '-c', 'user.email=test@example.test', 'commit', '--allow-empty', '-m', 'base']);
     const workspace = await prepareTaskWorkspace(runtime, { ...task, directory: child });
     assert.equal(workspace.directory, await (async () => (await import('node:fs/promises')).realpath(repo))());
-    await assert.rejects(prepareTaskWorkspace(runtime, { ...task, directory: process.cwd() }), /Teams 工程之外/);
+    await assert.rejects(prepareTaskWorkspace(runtime, { ...task, directory: process.cwd() }), /outside the Teams project/);
   } finally { await rm(root, { recursive: true, force: true }); }
 });

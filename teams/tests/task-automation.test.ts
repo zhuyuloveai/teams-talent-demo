@@ -18,28 +18,28 @@ const submitted=()=>{let s=assigned();for(const [action,role]of [['knowledge','o
 async function using(state:DemoState,run:(store:Store,path:string)=>Promise<void>){const dir=await mkdtemp(join(tmpdir(),'task-auto-'));try{const path=join(dir,'state.json');await writeFile(path,JSON.stringify(state));const store=new Store(path);await store.init();await run(store,path);}finally{await rm(dir,{recursive:true,force:true});}}
 
 test('Owner selects a real active member and can reassign without changing delivery evidence',async()=>{
- let state=transition(initialState(),'assign','owner',{assigneeId:'su'});assert.equal(taskAssigneeName(state),'苏晴');assert.equal(projectOverview(state,data,'carddemo').requirements[0].owner,'苏晴');assert.match(state.audit.at(-1)!.detail,/苏晴/);
- assert.throws(()=>transition(state,'prepare','member'),/不能代其推进/);
- for(const assigneeId of ['unknown',''])assert.throws(()=>transition(initialState(),'assign','owner',{assigneeId}),/有效的项目成员/);
- const invited=initialState();invited.workspace.team.members.find(member=>member.id==='su')!.status='invited';assert.throws(()=>transition(invited,'assign','owner',{assigneeId:'su'}),/有效的项目成员/);
- assert.throws(()=>transition(state,'assign','member',{assigneeId:'member'}),/无权/);
+ let state=transition(initialState(),'assign','owner',{assigneeId:'su'});assert.equal(taskAssigneeName(state),'Su Qing');assert.equal(projectOverview(state,data,'carddemo').requirements[0].owner,'Su Qing');assert.match(state.audit.at(-1)!.detail,/Su Qing/);
+ assert.throws(()=>transition(state,'prepare','member'),/cannot advance the task on their behalf/);
+ for(const assigneeId of ['unknown',''])assert.throws(()=>transition(initialState(),'assign','owner',{assigneeId}),/Select a valid project member/);
+ const invited=initialState();invited.workspace.team.members.find(member=>member.id==='su')!.status='invited';assert.throws(()=>transition(invited,'assign','owner',{assigneeId:'su'}),/Select a valid project member/);
+ assert.throws(()=>transition(state,'assign','member',{assigneeId:'member'}),/not allowed/);
  state=transition(state,'assign','owner',{assigneeId:'member'});state=transition(state,'knowledge','owner');state=transition(state,'prepare','member');
- const frozen=structuredClone(state.context);state=transition(state,'assign','owner',{assigneeId:'yang'});assert.equal(taskAssigneeName(state),'杨帆');assert.deepEqual(state.context,frozen);assert.equal(state.stage,'assigned');
- assert.throws(()=>updateWorkspace(state,'member.remove','owner',{teamId:'carddemo',id:'yang'}),/先调整/);
- await using(state,async(store,path)=>{assert.equal(taskAssigneeId(store.state),'yang');const previousFetch=globalThis.fetch;globalThis.fetch=async()=>new Response(JSON.stringify({assets:[]}));try{const context=await collaborationContext(store.state,data,{...mainTask,nodeId:'prepare'});assert.deepEqual((context.agreement as any).assignee,{id:'yang',name:'杨帆'});}finally{globalThis.fetch=previousFetch;}assert.equal(JSON.parse(await readFile(path,'utf8')).assigneeId,'yang');});
- assert.throws(()=>transition(transition(submitted(),'accept','owner'),'assign','owner',{assigneeId:'su'}),/已验收/);
+ const frozen=structuredClone(state.context);state=transition(state,'assign','owner',{assigneeId:'yang'});assert.equal(taskAssigneeName(state),'Yang Fan');assert.deepEqual(state.context,frozen);assert.equal(state.stage,'assigned');
+ assert.throws(()=>updateWorkspace(state,'member.remove','owner',{teamId:'carddemo',id:'yang'}),/Reassign the requirements or tasks/);
+ await using(state,async(store,path)=>{assert.equal(taskAssigneeId(store.state),'yang');const previousFetch=globalThis.fetch;globalThis.fetch=async()=>new Response(JSON.stringify({assets:[]}));try{const context=await collaborationContext(store.state,data,{...mainTask,nodeId:'prepare'});assert.deepEqual((context.agreement as any).assignee,{id:'yang',name:'Yang Fan'});}finally{globalThis.fetch=previousFetch;}assert.equal(JSON.parse(await readFile(path,'utf8')).assigneeId,'yang');});
+ assert.throws(()=>transition(transition(submitted(),'accept','owner'),'assign','owner',{assigneeId:'su'}),/accepted requirement cannot be changed/);
 });
 
 test('legacy fixed assignee is preserved through migration and corrupt authoritative assignments are rejected',async()=>{
- const legacy=assigned();delete legacy.assigneeId;await using(legacy,async(store,path)=>{assert.equal(store.state.assigneeId,'member');assert.equal(await readFile(path+'.pre-unified-delivery.json','utf8'),JSON.stringify(legacy));const bad=structuredClone(store.state);bad.workspace.deliveryRequirements!.find(task=>task.id==='DEMO-MKT-001')!.assigneeId='not-a-member';await writeFile(path,JSON.stringify(bad));await assert.rejects(new Store(path).init(),/交付人记录无效|项目交付人与所属团队不一致/);assert.equal(await readFile(path,'utf8'),JSON.stringify(bad));});
+ const legacy=assigned();delete legacy.assigneeId;await using(legacy,async(store,path)=>{assert.equal(store.state.assigneeId,'member');assert.equal(await readFile(path+'.pre-unified-delivery.json','utf8'),JSON.stringify(legacy));const bad=structuredClone(store.state);bad.workspace.deliveryRequirements!.find(task=>task.id==='DEMO-MKT-001')!.assigneeId='not-a-member';await writeFile(path,JSON.stringify(bad));await assert.rejects(new Store(path).init(),/Invalid requirement assignee record|Project assignees do not match the project team/);assert.equal(await readFile(path,'utf8'),JSON.stringify(bad));});
 });
 
 test('knowledge import is per-task and concurrent/refresh/reassignment never repeat or freeze it',async()=>{
  await using(assigned(),async(store,path)=>{let reads=0;const dependencies={async inputs(){reads++;return ready;},async collect(){return [];}};const service=new TaskAutomationService(store,data,dependencies);
  const [one,two]=await Promise.all([service.prepare('member',mainTask),service.prepare('member',mainTask)]);assert.deepEqual(one,two);assert.equal(reads,1);assert.equal(store.state.context,null);assert.equal(store.state.stage,'assigned');const id=taskAutomation(store.state,mainTask)!.knowledge!.id;
- await store.apply(store.state.revision,'assign','owner',{assigneeId:'su'});assert.throws(()=>service.prepare('member',mainTask),/仅当前需求交付人/);
+ await store.apply(store.state.revision,'assign','owner',{assigneeId:'su'});assert.throws(()=>service.prepare('member',mainTask),/Only the current assignee of this requirement/);
  await store.apply(store.state.revision,'assign','owner',{assigneeId:'member'});await service.prepare('member',mainTask);const loaded=new Store(path);await loaded.init();await new TaskAutomationService(loaded,data,dependencies).prepare('member',mainTask);assert.equal(reads,1);assert.equal(taskAutomation(loaded.state,mainTask)!.knowledge!.id,id);assert.equal(taskAutomation(loaded.state,mainTask)!.knowledge!.attempts,1);
- assert.throws(()=>service.prepare('owner',mainTask),/交付人/);assert.throws(()=>service.prepare('member',{projectId:'teams',taskId:'T104'}),/只读/);
+ assert.throws(()=>service.prepare('owner',mainTask),/current assignee/);assert.throws(()=>service.prepare('member',{projectId:'teams',taskId:'T104'}),/read-only/);
  });
 });
 
@@ -56,14 +56,14 @@ test('acceptance collects exact task session identities across nodes once, witho
  for(const [nodeId,sessionId,tool]of [['develop','one','icode'],['verify','one','icode'],['verify','two','opencode']]as const)state=updateWorkspace(state,'session.link','member',{...mainTask,nodeId,sessionId,tool});
  const event=(projectId:string,taskId:string,nodeId:string,sessionId:string)=>({id:sessionId,operationId:sessionId,projectId,taskId,nodeId,sessionId,runId:'run-'+nodeId,role:'member' as const,adoptionId:'a',phase:'progress' as const,summary:'actual progress',blocker:null,evidence:[],at:'2026-10-27T00:00:00Z',revision:1});
  state.workspace.collaboration={adoptions:[],operations:[],events:[event('carddemo','DEMO-MKT-001','verify','one'),event('teams','T104','develop','foreign'),event('carddemo','another','develop','other'),event('carddemo','DEMO-MKT-001','prepare','prepare-only')]};
- const sessions=collectTaskSessions(state,mainTask);assert.equal(sessions.length,2);assert.deepEqual(sessions[0].nodeIds,['develop','verify']);assert.deepEqual(sessions[0].sources,['成员关联','Teams CLI 回传']);
- await using(state,async(store)=>{const service=new TaskAutomationService(store,data,{async inputs(){return ready;},async collect(state,scope){return collectTaskSessions(state,scope);}});assert.throws(()=>service.collect(),/尚未通过/);assert.equal(taskAutomation(store.state,mainTask)?.collection,undefined);});
+ const sessions=collectTaskSessions(state,mainTask);assert.equal(sessions.length,2);assert.deepEqual(sessions[0].nodeIds,['develop','verify']);assert.deepEqual(sessions[0].sources,['Linked by member','Teams CLI submission']);
+ await using(state,async(store)=>{const service=new TaskAutomationService(store,data,{async inputs(){return ready;},async collect(state,scope){return collectTaskSessions(state,scope);}});assert.throws(()=>service.collect(),/Acceptance has not passed/);assert.equal(taskAutomation(store.state,mainTask)?.collection,undefined);});
  for(const[action,role]of [['replay','member'],['check-fail','member'],['fix','member'],['submit','member'],['purchase','owner'],['deduplicate','owner'],['uat','owner']]as const)state=transition(state,action,role);
  const returned=transition(state,'return','owner',{reason:'补充材料'});assert.equal(taskAutomation(returned,mainTask)?.collection,undefined);
  state=transition(state,'accept','owner');await using(state,async(store,path)=>{let calls=0;const service=new TaskAutomationService(store,data,{async inputs(){return ready;},async collect(state,scope){calls++;if(calls===1)throw new Error('归集读取失败');return collectTaskSessions(state,scope);}});
  await service.collect();assert.equal(store.state.stage,'accepted');assert.equal(taskAutomation(store.state,mainTask)!.collection!.status,'failed');const id=taskAutomation(store.state,mainTask)!.collection!.id;await service.collect();assert.equal(calls,1);
  await Promise.all([service.collect(mainTask,true),service.collect(mainTask,true)]);assert.equal(calls,2);assert.equal(taskAutomation(store.state,mainTask)!.collection!.sessions.length,2);assert.equal(taskAutomation(store.state,mainTask)!.collection!.id,id);assert.equal(store.state.workspace.sessionReported,false);assert.equal(taskAutomation(store.state,mainTask)!.collection!.reporting!.status,'pending');
- const restored=new Store(path);await restored.init();await new TaskAutomationService(restored,data,{async inputs(){return ready;},async collect(){throw new Error('must not rerun');}}).collect();assert.equal(restored.state.stage,'accepted');assert.throws(()=>transition(restored.state,'accept','owner'),/旧演练推进入口已停用/);
+ const restored=new Store(path);await restored.init();await new TaskAutomationService(restored,data,{async inputs(){return ready;},async collect(){throw new Error('must not rerun');}}).collect();assert.equal(restored.state.stage,'accepted');assert.throws(()=>transition(restored.state,'accept','owner'),/old walkthrough entry is disabled/);
  });
 });
 

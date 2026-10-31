@@ -37,8 +37,8 @@ test('shared task inputs read actual registered packages and requirement facts w
   assert.equal(input.skills[0].source, 'teams-registered-package'); assert.equal(input.skills[0].sha256, pkg.sha256);
   assert.equal(input.skills[0].content, pkg.files.find(file => file.path === 'SKILL.md')!.bytes.toString('utf8'));
   assert.deepEqual(state, original); assert.equal(state.knowledge, false);
-  await assert.rejects(sharedTaskInputs(state, 'carddemo', 'MKT-MISSING'), /不存在/);
-  await assert.rejects(sharedTaskInputs(state, 'teams', task.id), /不属于/);
+  await assert.rejects(sharedTaskInputs(state, 'carddemo', 'MKT-MISSING'), /does not exist/);
+  await assert.rejects(sharedTaskInputs(state, 'teams', task.id), /does not belong to the selected project/);
 });
 
 test('accepted task sessions persist one exact export receipt and retries reject conflicting payloads', async () => using(async dir => {
@@ -48,20 +48,20 @@ test('accepted task sessions persist one exact export receipt and retries reject
   assert.deepEqual(a.sessionIds, ['test-session-001']);
   const path = await exportPath(dir), original = await readFile(path);
   assert.deepEqual(await exportTaskSessions(structuredClone(state), payload, dir), a); assert.deepEqual(await readFile(path), original);
-  await assert.rejects(exportTaskSessions(state, { ...payload, deliveryId: 'another' }, dir), /不同上报内容/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, deliveryId: 'another' }, dir), /already used for a different report/);
   const broken = JSON.parse(original.toString()); broken.payload.sessions[0].sessionId = 'tampered';
-  await writeFile(path, JSON.stringify(broken)); await assert.rejects(exportTaskSessions(state, payload, dir), /内容与回执不一致/);
+  await writeFile(path, JSON.stringify(broken)); await assert.rejects(exportTaskSessions(state, payload, dir), /does not match its receipt/);
 }));
 
 test('sharing rejects unaccepted, wrong digest, duplicate, foreign and malformed sessions', async () => using(async dir => {
   const { state, task, payload } = fixture();
-  task.stage = 'awaiting-acceptance'; await assert.rejects(exportTaskSessions(state, payload, dir), /尚未验收/); task.stage = 'accepted';
-  await assert.rejects(exportTaskSessions(state, { ...payload, inputDigest: 'b'.repeat(64) }, dir), /采用依据/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, taskId: 'MKT-OTHER' }, dir), /不存在/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [payload.sessions[0], payload.sessions[0]] }, dir), /未按工具和标识去重/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [{ ...payload.sessions[0], sessionId: 'foreign' }] }, dir), /节点关联不一致/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [] }, dir), /不能为空/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [{ ...payload.sessions[0], nodeIds: ['prepare'] }] }, dir), /开发与验证/);
+  task.stage = 'awaiting-acceptance'; await assert.rejects(exportTaskSessions(state, payload, dir), /not accepted yet/); task.stage = 'accepted';
+  await assert.rejects(exportTaskSessions(state, { ...payload, inputDigest: 'b'.repeat(64) }, dir), /adoption basis digest/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, taskId: 'MKT-OTHER' }, dir), /does not exist/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [payload.sessions[0], payload.sessions[0]] }, dir), /not deduplicated by tool and ID/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [{ ...payload.sessions[0], sessionId: 'foreign' }] }, dir), /does not match the node links/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [] }, dir), /cannot be empty/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessions: [{ ...payload.sessions[0], nodeIds: ['prepare'] }] }, dir), /Only development and verification node sessions/);
   assert.deepEqual(await readdir(dir), []);
 }));
 
@@ -76,10 +76,10 @@ test('sharing preserves complete session JSON and rejects forged or unrelated do
   const document = (content: string, sessionId = payload.sessions[0].sessionId) => ({ sessionId, content, sha256: createHash('sha256').update(content).digest('hex') });
   const content = JSON.stringify({ meta: { session_id: payload.sessions[0].sessionId }, messages: [{ role: 'assistant', content: '隔离协议测试'.repeat(10000) }] });
   const valid = document(content);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [{ ...valid, sha256: 'b'.repeat(64) }] }, dir), /内容与摘要不一致/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [document('not JSON')] }, dir), /不是合法 JSON/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [document('{}', 'another-session')] }, dir), /不属于上报范围/);
-  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [valid, valid] }, dir), /清单无效|重复/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [{ ...valid, sha256: 'b'.repeat(64) }] }, dir), /does not match its digest/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [document('not JSON')] }, dir), /is not valid JSON/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [document('{}', 'another-session')] }, dir), /outside the reported scope/);
+  await assert.rejects(exportTaskSessions(state, { ...payload, sessionDocuments: [valid, valid] }, dir), /Invalid session document list|duplicated/);
   const receipt = await exportTaskSessions(state, { ...payload, sessionDocuments: [valid] }, dir);
   assert.deepEqual(receipt.documentHashes, [{ sessionId: valid.sessionId, sha256: valid.sha256 }]);
   const persisted = JSON.parse(await readFile(await exportPath(dir), 'utf8')); validateTaskIntakes([persisted]);

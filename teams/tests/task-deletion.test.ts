@@ -38,23 +38,23 @@ test('Owner deletion cleans only task process data, leaves code/docs/knowledge a
  assert.deepEqual(await readFile(join(f.roots.shared,'teams/snapshot.json')),snapshot,'legacy snapshot is preserved by online deletion; current shared data is computed from Store');
  const backup=JSON.parse(await readFile(join(f.roots.runtime,'task-reset-backups',result.receipt.backupId,'manifest.json'),'utf8'));assert.equal(backup.status,'applied');assert.ok(backup.entries.every((entry:any)=>entry.kind!=='document'));assert.equal(result.receipt.counts.files,backup.entries.length);
  const replay=await new TaskDeletionService(f.store,f.roots).remove('owner',input);assert.deepEqual(replay.receipt,result.receipt);assert.equal(replay.state.revision,result.state.revision);
- await assert.rejects(f.service.remove('owner',{...input,taskId:f.other.taskId}),/不同内容/);
+ await assert.rejects(f.service.remove('owner',{...input,taskId:f.other.taskId}),/different content/);
  const reloaded=new Store(join(f.roots.runtime,'state.json'));await reloaded.init();assert.equal(deliveryRequirement(reloaded.state,f.scope.projectId,f.scope.taskId),undefined);
- assert.throws(()=>createDeliveryRequirement(reloaded.state,'owner',{...f.scope,id:f.scope.taskId,title:'reuse old ID',description:'stale creation retry',assigneeId:'member'},at),/已删除/);
+ assert.throws(()=>createDeliveryRequirement(reloaded.state,'owner',{...f.scope,id:f.scope.taskId,title:'reuse old ID',description:'stale creation retry',assigneeId:'member'},at),/was deleted/);
 }));
 test('role, source-only task, baseline, cross-task token and stale revision cannot delete',()=>fixture(async f=>{
- await assert.rejects(f.service.preview('member',f.scope),/Owner/);await assert.rejects(f.service.preview('owner',{projectId:'carddemo',taskId:'DEMO-MKT-001'}),/基线/);await assert.rejects(f.service.preview('owner',{projectId:'teams',taskId:'T104'}),/本地需求不存在/);
+ await assert.rejects(f.service.preview('member',f.scope),/Owner/);await assert.rejects(f.service.preview('owner',{projectId:'carddemo',taskId:'DEMO-MKT-001'}),/baseline/);await assert.rejects(f.service.preview('owner',{projectId:'teams',taskId:'T104'}),/local requirement does not exist/);
  const input=await f.payload(),before=await readFile(join(f.roots.runtime,'state.json'));
- await assert.rejects(f.service.remove('member',input),/Owner/);await assert.rejects(f.service.remove('owner',{...input,taskId:f.other.taskId}),/已变化/);await assert.rejects(f.service.remove('owner',{...input,planToken:randomUUID()}),/已失效/);assert.deepEqual(await readFile(join(f.roots.runtime,'state.json')),before);
- await f.store.transact(state=>({...state,revision:state.revision+1}));await assert.rejects(f.service.remove('owner',input),/已变化/);assert.ok(deliveryRequirement(f.store.state,f.scope.projectId,f.scope.taskId));
+ await assert.rejects(f.service.remove('member',input),/Owner/);await assert.rejects(f.service.remove('owner',{...input,taskId:f.other.taskId}),/workspace changed/);await assert.rejects(f.service.remove('owner',{...input,planToken:randomUUID()}),/confirmation expired/);assert.deepEqual(await readFile(join(f.roots.runtime,'state.json')),before);
+ await f.store.transact(state=>({...state,revision:state.revision+1}));await assert.rejects(f.service.remove('owner',input),/workspace changed/);assert.ok(deliveryRequirement(f.store.state,f.scope.projectId,f.scope.taskId));
 }));
 test('native session activity, new runtime writes, and asynchronous knowledge jobs block deletion without stopping the user',()=>fixture(async f=>{
  const input=await f.payload(),native=join(f.roots.runtime,'work-contexts',f.runId+'.native'),observed=await inspectNativeProcess(process.pid);assert.ok(observed);
  await put(join(native,'manifest.json'),{runId:f.runId,scope:f.scope});await put(join(native,'native-session.json'),{...f.scope,runId:f.runId,sessionId:f.sessionId,pid:process.pid,startedAt:observed.startedAt});await put(join(native,'process.json'),{pid:process.pid,startedAt:observed.startedAt});
- const active=await f.service.preview('owner',f.scope);assert.equal(active.canDelete,false);assert.match(active.reason!,/仍活动/);await assert.rejects(f.service.remove('owner',input),/仍活动/);await rm(native,{recursive:true});
- const changed=await f.payload();await put(join(f.roots.runtime,'work-contexts',f.runId+'.json'),{scope:f.scope,changed:true});await assert.rejects(f.service.remove('owner',changed),/文件已变化/);
+ const active=await f.service.preview('owner',f.scope);assert.equal(active.canDelete,false);assert.match(active.reason!,/still active/);await assert.rejects(f.service.remove('owner',input),/still active/);await rm(native,{recursive:true});
+ const changed=await f.payload();await put(join(f.roots.runtime,'work-contexts',f.runId+'.json'),{scope:f.scope,changed:true});await assert.rejects(f.service.remove('owner',changed),/run files changed/);
  await f.store.transact(state=>{const next=structuredClone(state);next.workspace.taskAutomation=[{...f.scope,sessions:[],knowledge:{id:randomUUID(),status:'running',startedAt:at,finishedAt:null,attempts:1}}];return next;});
- const busy=await f.service.preview('owner',f.scope);assert.equal(busy.canDelete,false);assert.match(busy.reason!,/正在获取知识/);
+ const busy=await f.service.preview('owner',f.scope);assert.equal(busy.canDelete,false);assert.match(busy.reason!,/fetching knowledge/);
 }));
 
 

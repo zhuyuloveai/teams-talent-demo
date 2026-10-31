@@ -54,7 +54,7 @@ test('legacy assignment follows the retained main record and missing or duplicat
   for (const duplicate of [false, true]) {
     const invalid = fixture();
     invalid.workspace.deliveryRequirements = duplicate ? [invalid.workspace.deliveryRequirements![0], structuredClone(invalid.workspace.deliveryRequirements![0])] : [];
-    const before = JSON.stringify(invalid); assert.throws(() => resetLegacyMainTaskFields(invalid), /唯一保留/); assert.equal(JSON.stringify(invalid), before);
+    const before = JSON.stringify(invalid); assert.throws(() => resetLegacyMainTaskFields(invalid), /exactly one remaining/); assert.equal(JSON.stringify(invalid), before);
   }
 });
 

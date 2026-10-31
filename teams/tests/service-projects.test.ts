@@ -31,7 +31,7 @@ test('root launcher never adopts or stops another checkout on a matching port', 
   const respond = (body: object) => async () => new Response(JSON.stringify(body));
   assert.equal((await projectHealth(project, respond(valid))).pid, 456);
   for (const change of [{ workspaceRoot: '/other/teams' }, { stateRoot: '/other/state' }, { pid: -1 }, { app: 'other' }]) {
-    await assert.rejects(projectHealth(project, respond({ ...valid, ...change })), /未接管/);
+    await assert.rejects(projectHealth(project, respond({ ...valid, ...change })), /not taken over/);
   }
   assert.equal(await projectHealth(project, async () => { throw Object.assign(new Error('connect'), { cause: { code: 'ECONNREFUSED' } }); }), null);
   await assert.rejects(projectHealth(project, async () => { throw new Error('invalid response'); }), /invalid response/);

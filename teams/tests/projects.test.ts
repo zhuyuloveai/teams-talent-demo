@@ -29,13 +29,13 @@ test('created projects keep independent identities and metadata without changing
 
 test('project creation and editing enforce Owner access, required fields and exact project identity', () => {
   const initial = initialState(), project = draft(), before = JSON.stringify(initial);
-  for (const kind of ['project.create', 'project.metadata.update'] as const) assert.throws(() => updateWorkspace(initial, kind, 'member', project), /无权/);
-  for (const field of ['name', 'remoteUrl', 'repositoryIdentity']) assert.throws(() => updateWorkspace(initial, 'project.create', 'owner', { ...project, [field]: '  ' }), /不能为空/);
-  for (const id of ['carddemo', 'teams']) assert.throws(() => updateWorkspace(initial, 'project.create', 'owner', { ...project, id }), /标识无效/);
-  assert.throws(() => updateWorkspace(initial, 'project.metadata.update', 'owner', project), /不存在/);
+  for (const kind of ['project.create', 'project.metadata.update'] as const) assert.throws(() => updateWorkspace(initial, kind, 'member', project), /not allowed/);
+  for (const field of ['name', 'remoteUrl', 'repositoryIdentity']) assert.throws(() => updateWorkspace(initial, 'project.create', 'owner', { ...project, [field]: '  ' }), /must not be empty/);
+  for (const id of ['carddemo', 'teams']) assert.throws(() => updateWorkspace(initial, 'project.create', 'owner', { ...project, id }), /Invalid project ID/);
+  assert.throws(() => updateWorkspace(initial, 'project.metadata.update', 'owner', project), /not found/);
   assert.equal(JSON.stringify(initial), before);
   const created = updateWorkspace(initial, 'project.create', 'owner', project), saved = JSON.stringify(created);
-  assert.throws(() => updateWorkspace(created, 'project.create', 'owner', project), /已存在/);
+  assert.throws(() => updateWorkspace(created, 'project.create', 'owner', project), /already exists/);
   assert.equal(JSON.stringify(created), saved);
 });
 
@@ -48,7 +48,7 @@ test('existing state is preserved in migration backup; created metadata persists
     const reloaded = new Store(path); await reloaded.init(); assert.deepEqual(reloaded.state, store.state);
     assert.equal(reloaded.state.workspace.projects?.[0].id, project.id);
     const broken = structuredClone(reloaded.state); broken.workspace.projects![0].id = 'carddemo';
-    await writeFile(path, JSON.stringify(broken)); await assert.rejects(new Store(path).init(), /标识无效/);
+    await writeFile(path, JSON.stringify(broken)); await assert.rejects(new Store(path).init(), /Invalid project ID/);
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), broken);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
@@ -58,17 +58,17 @@ test('source associations validate the provider record, preserve project isolati
   let state = updateWorkspace(initial, 'project.create', 'owner', project);
   assert.equal(state.workspace.projects?.[0].assets, undefined);
   state = updateWorkspace(state, 'asset.link', 'owner', { projectId: project.id, sourceAssetId: 'requirements:carddemo:DEMO-MKT-001', title: 'untrusted title' }, catalog.list());
-  assert.equal(state.workspace.projects?.[0].assets?.[0].title, '信用卡消费返现');
+  assert.equal(state.workspace.projects?.[0].assets?.[0].title, 'Credit Card Spending Cashback');
   assert.equal(state.workspace.projects?.[0].assets?.[0].sourceAssetId, 'requirements:carddemo:DEMO-MKT-001');
   assert.deepEqual(businessState(state), businessState(initial));
   assert.equal(state.assigned, false); assert.equal(state.context, null);
   const before = JSON.stringify(state);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'member', { projectId: project.id, sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /无权/);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: project.id, sourceAssetId: 'unknown' }, catalog.list()), /不存在/);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: project.id, sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /已关联/);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'teams', sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /只读/);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'carddemo', sourceAssetId: 'repository:teams:icode-teams' }, catalog.list()), /本项目/);
-  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'carddemo', sourceAssetId: 'repository:carddemo:carddemo-java-1025' }, catalog.list()), /已关联/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'member', { projectId: project.id, sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /not allowed/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: project.id, sourceAssetId: 'unknown' }, catalog.list()), /not found/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: project.id, sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /already linked/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'teams', sourceAssetId: 'requirements:carddemo:DEMO-MKT-001' }, catalog.list()), /read-only/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'carddemo', sourceAssetId: 'repository:teams:icode-teams' }, catalog.list()), /of this project/);
+  assert.throws(() => updateWorkspace(state, 'asset.link', 'owner', { projectId: 'carddemo', sourceAssetId: 'repository:carddemo:carddemo-java-1025' }, catalog.list()), /already linked/);
   assert.equal(JSON.stringify(state), before);
 });
 

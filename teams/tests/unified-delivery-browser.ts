@@ -78,20 +78,20 @@ try {
   for (const id of ids) for (const node of ['prepare', 'develop', 'verify', 'accept']) {
     await visit(id, node);
     assert.deepEqual(await page.locator('[data-node-section]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.nodeSection)), ['input', 'result', 'execution']);
-    assert.deepEqual(await page.locator('[data-node-section]>.framework-card>.card-heading>h2').allTextContents(), ['输入', '结果', '执行过程']);
+    assert.deepEqual(await page.locator('[data-node-section]>.framework-card>.card-heading>h2').allTextContents(), ['Input', 'Result', 'Execution']);
     const material = page.locator('.task-permanent-materials'); assert.equal(await material.getAttribute('data-material-task'), id);
     assert.ok((await material.innerText()).includes(saved.workspace.deliveryRequirements!.find(task => task.id === id)!.description.split('。')[0]));
-    assert.doesNotMatch(await material.innerText(), /本次采用的输入|查看输入来源详情|dev-frontend-ui/);
-    assert.equal(await material.getByRole('button', { name: /收起|展开|关闭/ }).count(), 0); assert.equal(await page.getByRole('button', { name: /展开任务资料|收起任务资料/ }).count(), 0);
+    assert.doesNotMatch(await material.innerText(), /Inputs adopted this time|View input source details|dev-frontend-ui/);
+    assert.equal(await material.getByRole('button', { name: /Collapse|Expand|Close/ }).count(), 0); assert.equal(await page.getByRole('button', { name: /Expand task materials|Collapse task materials/ }).count(), 0);
     assert.equal(await page.locator('[data-action]').count(), 0);
     const initial = await page.locator('.project-node-content').innerText(); assert.doesNotMatch(initial, /ui-protocol-|"operationId"|"runId"|\/Users\/|\.runtime\//);
-    await page.getByRole('heading', { name: '任务进展', exact: true }).waitFor(); await page.getByRole('heading', { name: '会话过程', exact: true }).waitFor();
-    if (node === 'prepare') { await page.getByText('查看需求、采用版本与上游结果', { exact: true }).click(); await page.getByText('知识与 Skill 版本', { exact: true }).waitFor(); assert.ok(await page.locator('[data-node-section=input]').getByRole('button', { name: /^阅读 / }).count() > 0); }
+    await page.getByRole('heading', { name: 'Task progress', exact: true }).waitFor(); await page.getByRole('heading', { name: 'Session activity', exact: true }).waitFor();
+    if (node === 'prepare') { await page.getByText('View requirement, adopted versions and upstream results', { exact: true }).click(); await page.getByText('Knowledge and Skill versions', { exact: true }).waitFor(); assert.ok(await page.locator('[data-node-section=input]').getByRole('button', { name: /^Read / }).count() > 0); }
     const expected = (saved.workspace.collaboration?.events ?? []).filter(event => event.projectId === 'carddemo' && event.taskId === id && event.nodeId === node);
     assert.deepEqual(await page.locator('[data-collaboration-event]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.collaborationEvent)), expected.map(event => event.id));
-    if (expected.length) { await page.getByRole('button', { name: '查看会话、操作与证据引用', exact: true }).last().click(); const detail = JSON.parse(await page.locator('.drawer-console').innerText()); assert.equal(detail.taskId, id); assert.equal(detail.nodeId, node); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' }); }
-    if (node === 'verify') { await page.getByText('查看检查与复检记录（8）', { exact: true }).click(); assert.equal(await page.locator('[data-check-source=actual]').count(), 2); assert.equal(await page.locator('[data-check-source=preset]').count(), 6); }
-    if (node === 'accept') { await page.getByRole('button', { name: '通过需求验收', exact: true }).click(); await page.getByRole('dialog', { name: '确认通过需求验收' }).waitFor(); await page.getByRole('dialog').getByRole('button', { name: /取\s*消/ }).click(); }
+    if (expected.length) { await page.getByRole('button', { name: 'View sessions, operations and evidence references', exact: true }).last().click(); const detail = JSON.parse(await page.locator('.drawer-console').innerText()); assert.equal(detail.taskId, id); assert.equal(detail.nodeId, node); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' }); }
+    if (node === 'verify') { await page.getByText('View checks and retests (8)', { exact: true }).click(); assert.equal(await page.locator('[data-check-source=actual]').count(), 2); assert.equal(await page.locator('[data-check-source=preset]').count(), 6); }
+    if (node === 'accept') { await page.getByRole('button', { name: 'Accept requirement', exact: true }).click(); await page.getByRole('dialog', { name: 'Confirm requirement acceptance' }).waitFor(); await page.getByRole('dialog').getByRole('button', { name: /Cancel/ }).click(); }
     const definition = taskNodeDefinitions[node as RequirementNode];
     assert.deepEqual(await page.locator('[data-node-section=result] [data-artifact-slot]').evaluateAll(items => items.map(item => (item as HTMLElement).dataset.artifactSlot)), definition.deliverableRequirements.filter(item=>!item.optional).map(item => item.id));
     assert.deepEqual(await page.locator('[data-completion-criterion]').evaluateAll(items => items.map(item => (item as HTMLElement).dataset.completionCriterion)), definition.completionCriteria.map(item => item.id));
@@ -99,7 +99,7 @@ try {
     if (node === 'develop') {
       const prd = taskNodeView(saved, saved.workspace.deliveryRequirements!.find(task => task.id === id)!, 'prepare').deliverables[0].references[0];
       assert.equal(await page.locator('[data-node-section=input] [data-artifact-slot=prd] [data-artifact-reference]').getAttribute('data-artifact-reference'), prd.id);
-      await page.locator('[data-node-section=input] [data-artifact-slot=prd]').getByRole('button', { name: '查看引用', exact: true }).click(); assert.ok((await page.locator('.drawer-console').innerText()).includes('fixture://isolated-contract/prd')); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' });
+      await page.locator('[data-node-section=input] [data-artifact-slot=prd]').getByRole('button', { name: 'View reference', exact: true }).click(); assert.ok((await page.locator('.drawer-console').innerText()).includes('fixture://isolated-contract/prd')); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' });
     }
     checks.push({ id, node, events: expected.length });
   }
@@ -125,8 +125,8 @@ try {
     if (width === 390) { await page.locator('.task-permanent-materials').scrollIntoViewIfNeeded(); await page.screenshot({ path: out + '/' + theme + '-' + width + '-materials.png', fullPage: true, animations: 'disabled' }); }
   }
   await visit(ids[1], 'verify', 'member'); assert.deepEqual(await page.locator('[data-delivery-task]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.deliveryTask)), [ids[1], ids[0], 'MKT-UI-OTHER-003']);
-  await page.reload(); await page.locator('[data-material-task="' + ids[1] + '"]').waitFor(); assert.equal(await page.getByRole('button', { name: '通过需求验收', exact: true }).count(), 0);
-  await visit('MKT-UI-OTHER-003', 'develop', 'member'); assert.equal(await page.locator('[data-material-task=MKT-UI-OTHER-003]').count(), 1); assert.equal(await page.getByRole('button', { name: 'iCode 作业', exact: true }).isDisabled(), true);
+  await page.reload(); await page.locator('[data-material-task="' + ids[1] + '"]').waitFor(); assert.equal(await page.getByRole('button', { name: 'Accept requirement', exact: true }).count(), 0);
+  await visit('MKT-UI-OTHER-003', 'develop', 'member'); assert.equal(await page.locator('[data-material-task=MKT-UI-OTHER-003]').count(), 1); assert.equal(await page.getByRole('button', { name: 'iCode work', exact: true }).isDisabled(), true);
   // Controlled transport fixtures exercise polling/scroll behavior only, without native execution claims.
   let streamEpoch = 1, streamOffline = false;
   const activeSession = 'ui-protocol-active', historySession = 'ui-protocol-history';
@@ -142,19 +142,19 @@ try {
   await page.route('**/api/task-session-stream?**', streamRoute);
   await page.setViewportSize({ width: 1440, height: 1050 }); await visit(ids[1], 'develop');
   await page.locator('[data-session-turn="' + activeSession + ':29"]').waitFor(); assert.equal(await page.locator('[data-session-turn]').count(), 30);
-  assert.equal(await page.locator('[data-message-role=user]').count(), 30); assert.equal(await page.locator('[data-message-role=assistant]').count(), 30); assert.doesNotMatch(await page.locator('.task-session-activity').innerText(), /工具开始|工具完成|工具错误|调用耗时|model.cycle|spans/);
+  assert.equal(await page.locator('[data-message-role=user]').count(), 30); assert.equal(await page.locator('[data-message-role=assistant]').count(), 30); assert.doesNotMatch(await page.locator('.task-session-activity').innerText(), /Tool started|Tool completed|Tool error|Call duration|model.cycle|spans/);
   const eventViewport = page.locator('.task-session-events'); await eventViewport.scrollIntoViewIfNeeded();
   await eventViewport.evaluate(element => { element.scrollTop = 0; element.dispatchEvent(new Event('scroll')); }); streamEpoch = 2;
-  const latest = page.getByRole('button', { name: '有新对话内容 · 查看最新', exact: true });
+  const latest = page.getByRole('button', { name: 'New conversation · view latest', exact: true });
   await latest.waitFor(); assert.ok(await eventViewport.evaluate(element => element.scrollTop) < 2); assert.equal(await page.locator('[data-session-turn]').count(), 30); assert.equal(await page.locator('[data-session-message=reply-29]').count(), 1); assert.match(await page.locator('[data-session-message=reply-29]').innerText(), /增量追加的完整回复/);
   streamEpoch = 3; await page.locator('[data-session-turn="' + activeSession + ':30"]').waitFor(); assert.equal(await page.locator('[data-session-turn]').count(), 31); assert.ok(await eventViewport.evaluate(element => element.scrollTop) < 2);
   await latest.click(); assert.ok(await eventViewport.evaluate(element => element.scrollTop) > 0);
   await page.locator('.task-session-activity').scrollIntoViewIfNeeded(); await page.screenshot({path:out+'/conversation-turns.png',fullPage:false,animations:'disabled'});
-  await page.getByRole('combobox', { name: '选择任务会话', exact: true }).click(); await page.getByTitle('协议夹具历史会话 · 已结束', { exact: true }).click();
+  await page.getByRole('combobox', { name: 'Select a task session', exact: true }).click(); await page.getByTitle('协议夹具历史会话 · Ended', { exact: true }).click();
   await page.locator('[data-session-turn="' + historySession + ':1"]').waitFor(); assert.equal(await page.locator('[data-session-turn]').count(), 1); assert.equal(await page.locator('[data-event-session="' + activeSession + '"]').count(), 0);
   await visit(ids[1], 'prepare'); await page.locator('.task-session-activity').waitFor(); assert.equal(await page.locator('[data-session-turn^=ui-protocol-]').count(), 0);
-  streamOffline = true; await visit(ids[1], 'develop'); await page.getByText('会话过程读取未完成', { exact: true }).waitFor(); streamOffline = false;
-  await page.locator('.task-session-activity').getByRole('button', { name: /重\s*试/ }).click(); await page.locator('[data-session-turn="' + activeSession + ':30"]').waitFor();
+  streamOffline = true; await visit(ids[1], 'develop'); await page.getByText('Session activity was not fully read', { exact: true }).waitFor(); streamOffline = false;
+  await page.locator('.task-session-activity').getByRole('button', { name: /Retry/ }).click(); await page.locator('[data-session-turn="' + activeSession + ':30"]').waitFor();
   await page.unroute('**/api/task-session-stream?**', streamRoute);
   // Imported source records share the same shell while keeping original evidence and identities.
   const snapshot = JSON.parse(await readFile('fixtures/teams-project.json', 'utf8')) as Presentation['teamsProject'];
@@ -164,43 +164,43 @@ try {
   for (const task of snapshot.tasks) for (const node of deliveryStages) {
     await visitImported(task.id, node); await page.locator('[data-material-task="' + task.id + '"]').waitFor();
     assert.deepEqual(await page.locator('.task-main-rail [data-flow-node]').evaluateAll(nodes => nodes.map(item => (item as HTMLElement).dataset.flowNode)), deliveryStages);
-    assert.deepEqual(await page.locator('.task-main-rail strong').allTextContents(), ['需求澄清', '功能开发', '测试验证', '需求验收']);
+    assert.deepEqual(await page.locator('.task-main-rail strong').allTextContents(), ['Requirement clarification', 'Development', 'Verification', 'Requirement acceptance']);
     assert.equal(await page.locator('.task-talent-rail [data-flow-node]').count(), 4);
-    assert.equal(await page.locator('[data-flow-node=auto-collection]').getByText('来源只读 · 未执行', { exact: true }).count(), 1);
-    await page.locator('[data-flow-node=knowledge-prepare]').getByText('来源只读 · 未执行', { exact: true }).waitFor();
-    assert.deepEqual(await page.locator('[data-node-section]>.framework-card>.card-heading>h2').allTextContents(), ['输入', '结果', '执行过程']);
+    assert.equal(await page.locator('[data-flow-node=auto-collection]').getByText('Source record, read-only · not executed', { exact: true }).count(), 1);
+    await page.locator('[data-flow-node=knowledge-prepare]').getByText('Source record, read-only · not executed', { exact: true }).waitFor();
+    assert.deepEqual(await page.locator('[data-node-section]>.framework-card>.card-heading>h2').allTextContents(), ['Input', 'Result', 'Execution']);
     const material = await page.locator('.task-permanent-materials').innerText();
-    assert.doesNotMatch(material, /本次采用的输入|查看输入来源详情/); for (const criterion of task.criteria) assert.ok(material.includes(criterion));
-    assert.equal(await page.getByRole('button', { name: '通过需求验收', exact: true }).count(), 0);
+    assert.doesNotMatch(material, /Inputs adopted this time|View input source details/); for (const criterion of task.criteria) assert.ok(material.includes(criterion));
+    assert.equal(await page.getByRole('button', { name: 'Accept requirement', exact: true }).count(), 0);
     assert.equal(await page.locator('[data-collaboration-event]').count(), 0);
     assert.equal(await page.locator('.project-delivery-sidebar').getAttribute('data-task-count'), String(snapshot.tasks.length));
     const source = importedStage(task, node);
     assert.deepEqual(await page.locator('[data-node-section=result] [data-artifact-slot=source-output] [data-artifact-reference]').evaluateAll(nodes => nodes.map(item => (item as HTMLElement).dataset.artifactReference)), source.outputs.slice(0, 2).map(item => 'source:teams:' + task.id + ':' + item.id));
-    if (source.outputs.length > 2) { await page.locator('[data-node-section=result] [data-artifact-slot=source-output]').getByRole('button', { name: '查看全部 ' + source.outputs.length + ' 项', exact: true }).click(); const sourceText = await page.locator('.drawer-console').innerText(); for (const output of source.outputs) assert.ok(sourceText.includes(output.output)); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' }); }
+    if (source.outputs.length > 2) { await page.locator('[data-node-section=result] [data-artifact-slot=source-output]').getByRole('button', { name: 'View all ' + source.outputs.length, exact: true }).click(); const sourceText = await page.locator('.drawer-console').innerText(); for (const output of source.outputs) assert.ok(sourceText.includes(output.output)); await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' }); }
     for (const item of taskNodeDefinitions[node].deliverableRequirements) assert.equal(await page.locator('[data-node-section=result] [data-artifact-slot="' + item.id + '"]').getAttribute('data-artifact-status'), 'unregistered');
     assert.equal(await page.locator('[data-criterion-status=reported]').count(), 0);
     if(node==='verify'&&task.id==='T104'){
       const cases=page.locator('[data-node-section=input] [data-artifact-slot=test-cases]');
-      await cases.getByText(/TEAMS-TC-001/).waitFor();assert.match(await cases.innerText(),/企业测试资产插件.*用例定义/);
-      await cases.getByRole('button',{name:'查看引用',exact:true}).click();const text=await page.locator('.drawer-console').innerText();assert.match(text,/TEAMS-TC-001/);assert.match(text,/expected/);await page.locator('.ant-drawer-open .ant-drawer-close').click();
+      await cases.getByText(/TEAMS-TC-001/).waitFor();assert.match(await cases.innerText(),/Enterprise test asset plugin.*case definition/);
+      await cases.getByRole('button',{name:'View reference',exact:true}).click();const text=await page.locator('.drawer-console').innerText();assert.match(text,/TEAMS-TC-001/);assert.match(text,/expected/);await page.locator('.ant-drawer-open .ant-drawer-close').click();
     }
     if(node==='verify'&&task.id==='T108')assert.equal(await page.locator('[data-node-section=input] [data-artifact-slot=test-cases] [data-artifact-reference]').count(),0);
     if (source.nodes.length) {
-      await page.getByText('查看本阶段原节点与作业记录', { exact: true }).click();
+      await page.getByText('View original nodes and work records for this stage', { exact: true }).click();
       assert.deepEqual(await page.locator('[data-imported-source-node]').evaluateAll(nodes => nodes.map(item => (item as HTMLElement).dataset.importedSourceNode)), source.nodes.map(item => item.id));
-      await page.getByRole('button', { name: '查看原节点详情', exact: true }).first().click();
+      await page.getByRole('button', { name: 'View original node details', exact: true }).first().click();
       assert.deepEqual(JSON.parse(await page.locator('.drawer-console').innerText()), source.nodes[0]);
       await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' });
-    } else { await page.getByText('来源未提供此阶段记录', { exact: true }).waitFor(); assert.equal(await page.getByRole('button', { name: 'iCode 作业', exact: true }).count(), 0); }
+    } else { await page.getByText('The source provides no records for this stage', { exact: true }).waitFor(); assert.equal(await page.getByRole('button', { name: 'iCode work', exact: true }).count(), 0); }
     importedChecks.push({ task: task.id, node, sourceNodeIds: source.nodes.map(item => item.id) });
   }
   await visitImported('T104', 'review'); await page.locator('[data-material-task=T104]').waitFor(); assert.equal(await page.locator('[data-flow-node=prepare]').getAttribute('aria-current'), 'step');
-  assert.equal(await page.getByRole('button', { name: 'iCode 作业', exact: true }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: 'iCode work', exact: true }).isDisabled(), true);
   assert.equal(await page.locator('[data-task-group=mine]').getAttribute('data-group-count'), '0');
-  await page.getByRole('button', { name: '查看需求执行记录', exact: true }).click(); await page.getByRole('dialog', { name: 'T104 · 来源执行记录' }).waitFor();
+  await page.getByRole('button', { name: 'View requirement execution records', exact: true }).click(); await page.getByRole('dialog', { name: 'T104 · Source execution records' }).waitFor();
   await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' });
   await page.locator('[data-delivery-task=T108]').click(); await page.locator('[data-material-task=T108]').waitFor(); await page.reload(); await page.locator('[data-material-task=T108]').waitFor();
-  await page.getByRole('button', { name: '查看需求执行记录', exact: true }).click(); await page.getByText('此任务阶段未提供关联作业快照', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'View requirement execution records', exact: true }).click(); await page.getByText('No linked work snapshot exists for this task stage', { exact: true }).waitFor();
   await page.locator('.ant-drawer-open .ant-drawer-close').click(); await page.locator('.ant-drawer-open').waitFor({ state: 'hidden' });
   for (const theme of ['light', 'dark']) for (const width of [1440, 390]) {
     await page.evaluate(value => localStorage.setItem('carddemo-theme', value), theme); await page.setViewportSize({ width, height: 1050 });
@@ -210,7 +210,7 @@ try {
     if (width === 390) { await page.locator('.task-permanent-materials').scrollIntoViewIfNeeded(); await page.screenshot({ path: out + '/teams-' + theme + '-' + width + '-materials.png', fullPage: true, animations: 'disabled' }); }
   }
   await visitImported('T104', 'prepare', 'member'); await page.locator('[data-material-task=T104]').waitFor();
-  assert.equal(await page.locator('[data-delivery-task]').count(), snapshot.tasks.length); assert.equal(await page.getByRole('button', { name: '查看需求执行记录', exact: true }).count(), 1); assert.equal(await page.getByRole('button', { name: 'iCode 作业', exact: true }).isDisabled(), true);
+  assert.equal(await page.locator('[data-delivery-task]').count(), snapshot.tasks.length); assert.equal(await page.getByRole('button', { name: 'View requirement execution records', exact: true }).count(), 1); assert.equal(await page.getByRole('button', { name: 'iCode work', exact: true }).isDisabled(), true);
   assert.deepEqual(posts, []); assert.deepEqual(errors, []); assert.deepEqual(await hashes(), before);
   await writeFile(out + '/result.json', JSON.stringify({ passed: true, checks, importedChecks, importedSourceNodesPreserved: true, sidebarRepeatedInputsRemoved: true, streamUiProtocol: { sessionSwitch: true, incrementalTurns: true, sameMessageUpdates: true, noToolTimeline: true, readingPositionPreserved: true, latestJump: true, scopeCleared: true, explicitErrorAndRetry: true, nativeExecution: false }, fixedThreeSections: true, permanentMaterials: true, compactTasks: true, roleScope: true, browserPostAttempts: posts, pageErrors: errors, isolatedStateUnchanged: true, nativeInvocations: 0 }, null, 2));
   console.log('Unified delivery UI passed: 8 live + 20 imported task nodes, exact source records, source launch scope, 10 layouts, permanent materials, 0 browser POST/native, isolated state unchanged');

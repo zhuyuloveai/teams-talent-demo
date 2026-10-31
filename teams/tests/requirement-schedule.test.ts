@@ -18,10 +18,10 @@ function fixture() {
   const state = initialState(); migrateMainDelivery(state);
   state.workspace.deliveryRequirements![0].createdAt = '2026-10-27T03:01:58.582Z';
   for (const [id, at, stage] of [['MKT-E2E-001', '04:06:35.586', 'awaiting-acceptance'], ['MKT-E2E-ACCEPT-001', '04:06:35.618', 'accepted'], ['MKT-OWNER-001', '08:54:09.591', 'verifying']] as const) {
-    const task = createDeliveryRequirement(state, 'owner', { projectId: 'carddemo', id, title: id, description: '排期隔离夹具', assigneeId: 'member' }, `2026-10-27T${at}Z`);
+    const task = createDeliveryRequirement(state, 'owner', { projectId: 'carddemo', id, title: id, description: 'Schedule isolation fixture', assigneeId: 'member' }, `2026-10-27T${at}Z`);
     task.stage = stage;
   }
-  createDeliveryRequirement(state, 'owner', { projectId: 'carddemo', id: userId, title: '用户填写的排期', description: '仅验证排序与排期的隔离数据', assigneeId: 'member', due: '2026-10-30' }, '2026-10-27T13:18:05.932Z');
+  createDeliveryRequirement(state, 'owner', { projectId: 'carddemo', id: userId, title: 'User-entered schedule', description: 'Isolated data for checking ordering and schedule only', assigneeId: 'member', due: '2026-10-30' }, '2026-10-27T13:18:05.932Z');
   return state;
 }
 
@@ -36,7 +36,7 @@ test('approved schedule changes only four missing local due values and preserves
   state.workspace.deliveryRequirements![0].due = '2026-11-12';
   assert.equal(planRequirementSchedule(state).state.workspace.deliveryRequirements![0].due, '2026-11-12');
   state.workspace.deliveryRequirements!.find(task => task.id === 'MKT-OWNER-001')!.createdAt = '2026-11-01T00:00:00Z';
-  assert.throws(() => planRequirementSchedule(state), /不得早于实际创建日期/);
+  assert.throws(() => planRequirementSchedule(state), /cannot be earlier than the actual creation date/);
 });
 
 test('both project requirement lists and filters sort by creation, not progress updates; unknown source dates stay last', () => {
@@ -52,8 +52,8 @@ test('both project requirement lists and filters sort by creation, not progress 
   assert.deepEqual(state, saved);
   state.workspace.deliveryRequirements![0].updatedAt = '2099-01-01T00:00:00Z';
   assert.deepEqual(projectOverview(state, data, 'carddemo').requirements.map(item => item.source.sourceRecordId), expected);
-  createDeliveryRequirement(state, 'owner', { projectId: 'teams', id: 'MKT-TEAM-OLD', title: '较早创建', description: '仅验证排序与排期的隔离数据', due: '2026-11-01' }, '2026-10-27T01:00:00Z');
-  createDeliveryRequirement(state, 'owner', { projectId: 'teams', id: 'MKT-TEAM-NEW', title: '最新创建', description: '仅验证排序与排期的隔离数据', due: '2026-11-02' }, '2026-10-27T02:00:00Z');
+  createDeliveryRequirement(state, 'owner', { projectId: 'teams', id: 'MKT-TEAM-OLD', title: 'Created earlier', description: 'Isolated data for checking ordering and schedule only', due: '2026-11-01' }, '2026-10-27T01:00:00Z');
+  createDeliveryRequirement(state, 'owner', { projectId: 'teams', id: 'MKT-TEAM-NEW', title: 'Created latest', description: 'Isolated data for checking ordering and schedule only', due: '2026-11-02' }, '2026-10-27T02:00:00Z');
   const teams = projectOverview(state, data, 'teams');
   assert.deepEqual(teams.requirements.map(item => item.taskId), ['MKT-TEAM-NEW', 'MKT-TEAM-OLD', 'T104', 'T105', 'T106', 'T107']);
   assert.deepEqual(teams.requirements.slice(2).map(item => item.due), data.teamsProject.tasks.filter(task => task.type === '需求').map(task => task.due));
@@ -68,7 +68,7 @@ test('schedule tool is dry-run by default, refuses live/stale state and applies 
     const dry = run(); assert.equal(dry.status, 0, dry.stderr); assert.equal(JSON.parse(dry.stdout).changes.length, 4); assert.equal(await readFile(path, 'utf8'), original);
     const apply = ['--apply', 'yes', '--expect-revision', String(state.revision), '--expect-sha256', sha, '--service-stopped', 'yes'];
     await writeFile(join(directory, 'server.pid'), String(process.pid));
-    assert.match(run(...apply).stderr, /仍在运行/); assert.equal(await readFile(path, 'utf8'), original); await rm(join(directory, 'server.pid'));
+    assert.match(run(...apply).stderr, /still running/); assert.equal(await readFile(path, 'utf8'), original); await rm(join(directory, 'server.pid'));
     assert.notEqual(run(...apply.map(value => value === sha ? '0'.repeat(64) : value)).status, 0);
     assert.notEqual(run('--apply', 'yes', '--expect-revision', String(state.revision + 1), '--expect-sha256', sha, '--service-stopped', 'yes').status, 0);
     const applied = run(...apply); assert.equal(applied.status, 0, applied.stderr);

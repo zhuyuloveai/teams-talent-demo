@@ -54,7 +54,7 @@ if (worker) {
     const prepareKnowledge = JSON.stringify(auto().knowledge), initialSession = JSON.stringify(auto().preparation?.session);
     await adopt('prepare');
     const beforeInvalid = JSON.stringify(store.state);
-    await assert.rejects(write('prepare', 'result.submit', { adoptionId: adopted.get('prepare'), summary: 'missing PRD', evidence: [], completedCriteria: [] }), /引用|交付物/); assert.equal(JSON.stringify(store.state), beforeInvalid); assert.equal(auto().nodeKnowledge?.develop?.status, 'waiting-upstream');
+    await assert.rejects(write('prepare', 'result.submit', { adoptionId: adopted.get('prepare'), summary: 'missing PRD', evidence: [], completedCriteria: [] }), /reference|deliverable/i); assert.equal(JSON.stringify(store.state), beforeInvalid); assert.equal(auto().nodeKnowledge?.develop?.status, 'waiting-upstream');
     const preparedResult = result('prepare'); await collaborationWrite(store, data, preparedResult); const developId = auto().nodeKnowledge!.develop!.id;
     assert.equal(auto().nodeKnowledge!.develop!.status, 'queued'); assert.equal(auto().preparation!.status, 'ready');
     const replayState = JSON.stringify(store.state); assert.equal((await collaborationWrite(store, data, preparedResult)).replayed, true); assert.equal(JSON.stringify(store.state), replayState);

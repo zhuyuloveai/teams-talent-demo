@@ -45,7 +45,7 @@ try{
  const after=await state(),completed=taskAutomation(after,scope)!;
  assert.equal(completed.knowledge!.status,'ready');
  assert.ok(Date.parse(completed.knowledge!.finishedAt!)-Date.parse(startedAt)>=20000,'actual persisted import delay must be at least 20 seconds');
- assert.equal(completed.preparation!.id,id);assert.equal(completed.preparation!.status,'waiting-directory');assert.match(completed.preparation!.error!,/目录/);
+ assert.equal(completed.preparation!.id,id);assert.equal(completed.preparation!.status,'waiting-directory');assert.match(completed.preparation!.error!,/directory/i);
  assert.equal(completed.preparation!.session,undefined);assert.equal(completed.preparation!.attempts,1);
  const loaded=await get('/api/task-node-inputs?'+query),loadedContext=await get('/api/collaboration/context?'+query);
  const imported=completed.knowledge!.nodeInputs;assert.ok(imported);assert.deepEqual(loadedContext.nodeInputs,loaded);assert.deepEqual(loaded,imported);

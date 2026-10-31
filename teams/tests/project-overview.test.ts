@@ -20,28 +20,28 @@ test('CardDemo main requirement changes within one deduplicated project set; qua
     assert.equal(result.counts.closed, checks === 'none' ? 1 : 2 - open); assert.equal(result.counts.unconfirmed, checks === 'none' ? 2 : 1);
     assert.equal(result.counts.pending, stage === 'draft' ? 1 : 0);
     assert.equal(result.counts.delivered, stage === 'accepted' ? 2 : 1);
-    assert.equal(result.requirements[0].quality.find(item => item.label === '安全')?.passed, false);
+    assert.equal(result.requirements[0].quality.find(item => item.label === 'Security')?.passed, false);
     assert.equal(result.requirements[0].quality.find(item => item.label === 'Review')?.passed, false);
-    assert.equal(result.requirements[0].quality.find(item => item.label === '功能')?.passed, stage === 'accepted');
-    if (stage === 'returned') { assert.equal(result.requirements[0].quality.find(item => item.label === '测试')?.passed, false); assert.match(result.requirements[0].quality.find(item => item.label === '测试')!.result, /待复验/); }
+    assert.equal(result.requirements[0].quality.find(item => item.label === 'Function')?.passed, stage === 'accepted');
+    if (stage === 'returned') { assert.equal(result.requirements[0].quality.find(item => item.label === 'Test')?.passed, false); assert.match(result.requirements[0].quality.find(item => item.label === 'Test')!.result, /retest pending/); }
   }
 });
 test('Teams task projections count once; research, problem input and unknown close state have explicit scope', () => {
   const result = overview(initialState(), 'teams');
   assert.deepEqual(result.requirements.map(item => item.taskId), ['T104', 'T105', 'T106', 'T107']); assert.equal(result.research[0].taskId, 'T108');
-  assert.equal(result.research[0].quality.find(item => item.label === '测试')?.result, '不适用（调研）');
+  assert.equal(result.research[0].quality.find(item => item.label === 'Test')?.result, 'Not applicable (research)');
   assert.deepEqual(result.counts, { all: 4, pending: 0, active: 1, acceptance: 1, delivered: 2, issues: 1, open: 0, closed: 0, unconfirmed: 1, blocking: 0 });
   assert.equal(result.requirements[0].phase, '准备'); assert.ok(result.requirements[0].route?.includes('node=review'));
   assert.ok(result.requirements.find(item => item.taskId === 'T106')?.route?.includes('node=accept'));
   assert.equal(result.issues.length, 1); assert.equal(result.issues[0].closed, null); assert.equal(result.issues[0].blocksDelivery, false);
-  assert.equal(result.requirements.filter(item => item.overdue).length, 2); assert.ok(result.requirements.every(item => !item.quality.find(q => q.label === '安全')?.passed));
+  assert.equal(result.requirements.filter(item => item.overdue).length, 2); assert.ok(result.requirements.every(item => !item.quality.find(q => q.label === 'Security')?.passed));
 });
 test('empty and cross-project source associations do not inherit original delivery or duplicate totals', () => {
   const id = 'a6a6e619-033b-4bd8-b3cc-b9f42fce6863';
   let state = updateWorkspace(initialState(), 'project.create', 'owner', { id, name: '隔离概览', description: '', remoteUrl: 'mock://overview', repositoryIdentity: 'overview' });
   assert.deepEqual(overview(state, id).counts, { all: 0, pending: 0, active: 0, acceptance: 0, delivered: 0, issues: 0, open: 0, closed: 0, unconfirmed: 0, blocking: 0 });
   state = updateWorkspace(state, 'asset.link', 'owner', { projectId: id, sourceAssetId: 'requirements:teams:REQ-T105' }, catalog.list());
-  const result = overview(state, id); assert.equal(result.counts.all, 1); assert.equal(result.counts.delivered, 0); assert.equal(result.requirements[0].phase, '待开展'); assert.equal(result.requirements[0].route, undefined); assert.equal(result.requirements[0].owner, '未分配'); assert.equal(result.requirements[0].due, undefined);
+  const result = overview(state, id); assert.equal(result.counts.all, 1); assert.equal(result.counts.delivered, 0); assert.equal(result.requirements[0].phase, '待开展'); assert.equal(result.requirements[0].route, undefined); assert.equal(result.requirements[0].owner, 'Unassigned'); assert.equal(result.requirements[0].due, undefined);
   const duplicate = structuredClone(state); duplicate.workspace.projects![0].assets!.push({ ...duplicate.workspace.projects![0].assets![0], id: 'another-local-reference' });
   assert.equal(overview(duplicate, id).counts.all, 1); assert.equal(overview(state).counts.all, 5); assert.equal(overview(state, 'teams').counts.all, 4);
 });
@@ -76,16 +76,16 @@ test('source-backed project requirements and issues have exact initial totals wi
   assert.deepEqual(result.counts, { all: 5, pending: 1, active: 2, acceptance: 1, delivered: 1, issues: 7, open: 4, closed: 1, unconfirmed: 2, blocking: 2 });
   assert.deepEqual(result.requirements.map(item => item.source.sourceRecordId), ['DEMO-MKT-001', 'MKT-002', 'MKT-003', 'MKT-004', 'MKT-005']);
   assert.deepEqual(result.requirements.slice(1).map(item => [item.source.title, item.owner, item.phase]), [
-    ['返现明细查询', '陈晨', '开发'], ['账单返现汇总', '苏晴', '验证'], ['返现到账通知', '杨帆', '待验收'], ['历史权益查询', '赵宁', '已交付'],
+    ['Cashback Detail Query', 'Chen Chen', '开发'], ['Statement Cashback Summary', 'Su Qing', '验证'], ['Cashback Credited Notification', 'Yang Fan', '待验收'], ['Historical Benefit Query', 'Zhao Ning', '已交付'],
   ]);
   for (const item of result.requirements.slice(1)) {
     assert.equal(item.taskId, undefined); assert.equal(item.route, undefined); assert.equal(item.source.pluginId, 'requirements');
     assert.deepEqual(item.source.references, []); assert.ok(item.source.detail.includes(item.source.requirement!.delivery!.summary));
     assert.ok(item.quality.every(conclusion => !conclusion.passed), 'a source delivery label must not invent verified quality evidence');
   }
-  assert.equal(result.requirements[0].source.title, '信用卡消费返现');
-  assert.match(result.requirements[0].source.summary, /白金卡客户未来 3 个月.*额外增加 0\.5%/);
-  assert.match(result.requirements[0].source.detail, /待确认：活动日期/);
+  assert.equal(result.requirements[0].source.title, 'Credit Card Spending Cashback');
+  assert.match(result.requirements[0].source.summary, /Platinum card customers get an extra 0\.5% cashback.*next 3 months/);
+  assert.match(result.requirements[0].source.detail, /To be confirmed: campaign dates/);
   assert.deepEqual(filterIssues(result, 'blocking').map(item => item.source.sourceRecordId), ['CARD-BUG-003', 'CARD-BUG-004']);
   assert.deepEqual(filterIssues(result, 'closed').map(item => item.source.sourceRecordId), ['CARD-BUG-007']);
   assert.deepEqual(filterIssues(result, 'unconfirmed').map(item => item.source.sourceRecordId), ['CARD-BUG-001', 'CARD-BUG-002']);
@@ -105,8 +105,8 @@ test('additional source links deduplicate while another project keeps independen
   localAssets.push(...localAssets.map((asset, index) => ({ ...asset, id: 'duplicate-' + index })));
   const local = overview(state, id);
   assert.deepEqual(local.counts, { all: 2, pending: 2, active: 0, acceptance: 0, delivered: 0, issues: 2, open: 0, closed: 0, unconfirmed: 2, blocking: 0 });
-  assert.ok(local.requirements.every(item => item.owner === '未分配' && item.taskId === undefined && item.route === undefined));
-  assert.ok(local.issues.every(item => item.closed === null && item.owner === '未分配' && !item.blocksDelivery && !item.confirmed));
+  assert.ok(local.requirements.every(item => item.owner === 'Unassigned' && item.taskId === undefined && item.route === undefined));
+  assert.ok(local.issues.every(item => item.closed === null && item.owner === 'Unassigned' && !item.blocksDelivery && !item.confirmed));
   for (const sourceAssetId of sources) state.workspace.project.assets.push({ id: 'local-' + sourceAssetId, title: '重复引用', kind: 'source', location: sourceAssetId, sourceAssetId });
   assert.deepEqual(overview(state).counts, initial.counts);
   assert.equal(overview(state, 'teams').counts.all, 4);

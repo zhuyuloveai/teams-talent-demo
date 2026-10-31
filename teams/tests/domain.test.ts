@@ -23,17 +23,17 @@ test('two-role delivery records the Talents knowledge version and keeps security
   assert.equal(s.context?.knowledgeVersion,'信用卡营销返现业务知识 v2');
   assert.equal(s.security,'unverified'); assert.equal(s.balance,2670.15);
   assert.equal(s.transactions.length,1); assert.equal(s.transactions[0].reward,0.6);
-  assert.equal(s.published,false); assert.equal(s.audit.length,12); assert.equal(s.audit.find(a=>a.action==='发起项目知识整合')?.detail,'Talents 已发布项目知识：信用卡营销返现业务知识 v2');
-  assert.throws(()=>transition(s,'knowledge','owner',{knowledgeVersion:'信用卡营销返现业务知识 v2'}),/尚未发布新的项目知识/);
+  assert.equal(s.published,false); assert.equal(s.audit.length,12); assert.equal(s.audit.find(a=>a.action==='Knowledge consolidation started')?.detail,'Talents published project knowledge: 信用卡营销返现业务知识 v2');
+  assert.throws(()=>transition(s,'knowledge','owner',{knowledgeVersion:'信用卡营销返现业务知识 v2'}),/has not published new project knowledge/);
 });
 test('permission and prerequisite failures do not mutate state', () => {
   const s=initialState(), before=JSON.stringify(s);
-  assert.throws(()=>transition(s,'assign','member'), /无权/);
-  assert.throws(()=>transition(s,'publish' as Action,'owner'), /未知操作/);
-  assert.throws(()=>transition(s,'knowledge','member'), /无权/);
-  assert.throws(()=>transition(s,'prepare','member'),/先分配需求/);
-  assert.throws(()=>transition(s,'accept','owner'),/未完成/);
-  assert.throws(()=>transition(s,'toString' as Action,'owner'),/未知/);
+  assert.throws(()=>transition(s,'assign','member'), /not allowed to perform this action/);
+  assert.throws(()=>transition(s,'publish' as Action,'owner'), /Unknown action/);
+  assert.throws(()=>transition(s,'knowledge','member'), /not allowed to perform this action/);
+  assert.throws(()=>transition(s,'prepare','member'),/Assign the requirement first/);
+  assert.throws(()=>transition(s,'accept','owner'),/Acceptance conditions not met/);
+  assert.throws(()=>transition(s,'toString' as Action,'owner'),/Unknown/);
   assert.equal(JSON.stringify(s),before);
 });
 test('role navigation separates team management while retaining shared tool and project entry points', () => {
@@ -57,10 +57,10 @@ test('usage counts people rather than instances and separates waiting from runni
 test('failed tests prevent delivery and duplicate purchase cannot change ledger', () => {
   let s=initialState();
   for(const [a,r] of flow.slice(0,5))s=step(s,a,r);
-  assert.throws(()=>transition(s,'submit','member'),/检查未通过/);
+  assert.throws(()=>transition(s,'submit','member'),/Checks did not pass/);
   for(const [a,r] of flow.slice(5,9))s=step(s,a,r);
   const serialized=JSON.stringify(s);
-  assert.throws(()=>transition(s,'purchase','owner'),/只记账一次/);
+  assert.throws(()=>transition(s,'purchase','owner'),/booked only once/);
   assert.equal(JSON.stringify(s),serialized);
 });
 test('Owner returns delivery and member must fix, submit and revalidate', () => {
@@ -68,7 +68,7 @@ test('Owner returns delivery and member must fix, submit and revalidate', () => 
   for(const [a,r] of flow.slice(0,11))s=step(s,a,r);
   s=transition(s,'return','owner',{reason:'补充核验范围'});
   assert.equal(s.uat,false);assert.equal(s.stage,'returned');
-  assert.throws(()=>transition(s,'accept','owner'),/未完成/);
+  assert.throws(()=>transition(s,'accept','owner'),/Acceptance conditions not met/);
   s=transition(s,'fix','member');s=transition(s,'submit','member');s=transition(s,'uat','owner');s=transition(s,'accept','owner');
   assert.equal(s.stage,'accepted');assert.equal(s.transactions.length,1);
 });
@@ -77,7 +77,7 @@ test('atomic persistence, stale revision rejection and deliberate reset',async()
   try {
     const path=join(dir,'state.json'),store=new Store(path);await store.init();
     await store.apply(0,'assign','owner',{assigneeId:'member'});
-    await assert.rejects(store.apply(0,'assign','owner',{assigneeId:'member'}),/另一页面/);
+    await assert.rejects(store.apply(0,'assign','owner',{assigneeId:'member'}),/Another page updated the data/);
     const restored=new Store(path);await restored.init();assert.equal(restored.state.workspace.deliveryRequirements?.find(task=>task.id==='DEMO-MKT-001')?.assigneeId,'member');assert.equal(restored.state.assigned,false);assert.equal(restored.state.published,false);
     await restored.reset(1);assert.equal(restored.state.revision,2);assert.equal(restored.state.published,false);
     assert.deepEqual(JSON.parse(await readFile(path,'utf8')),restored.state);
@@ -99,33 +99,33 @@ test('project knowledge can precede assignment and frozen inputs retain selected
   const snapshot=JSON.stringify(s.context);
   s=updateWorkspace(s,'asset.add','owner',{title:'新增规范',kind:'document',location:'demo/spec'});
   assert.equal(JSON.stringify(s.context),snapshot);
-  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:['dev-backend-service']}),/冻结/);
-  assert.throws(()=>updateWorkspace(s,'material.add','member',{title:'晚到资料',body:'内容'}),/冻结/);
+  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:['dev-backend-service']}),/is frozen/);
+  assert.throws(()=>updateWorkspace(s,'material.add','member',{title:'晚到资料',body:'内容'}),/is frozen/);
 });
 test('team and connection management enforce roles and protect fixed demonstration identities',()=>{
-  let s=initialState();assert.throws(()=>updateWorkspace(s,'member.invite','member',{name:'新成员'}),/无权/);
+  let s=initialState();assert.throws(()=>updateWorkspace(s,'member.invite','member',{name:'新成员'}),/not allowed to perform this action/);
   s=updateWorkspace(s,'member.invite','owner',{teamId:'carddemo',name:'李明'});const id=s.workspace.team.members.at(-1)!.id;
   assert.equal(s.workspace.team.members.at(-1)!.status,'invited');
   s=updateWorkspace(s,'member.approve','owner',{teamId:'carddemo',id});assert.equal(s.workspace.team.members.at(-1)!.status,'active');
-  assert.throws(()=>updateWorkspace(s,'member.remove','owner',{teamId:'carddemo',id:'member'}),/固定/);
+  assert.throws(()=>updateWorkspace(s,'member.remove','owner',{teamId:'carddemo',id:'member'}),/Fixed roles cannot be changed/);
   s=updateWorkspace(s,'member.remove','owner',{teamId:'carddemo',id});assert.equal(s.workspace.team.members.length,6);
 });
 test('manual post-delivery reporting is rejected and acceptance queues an independent collection',()=>{
-  let s=initialState();assert.throws(()=>updateWorkspace(s,'session.report','member',{}),/自动归集/);
-  assert.throws(()=>updateWorkspace(s,'analysis.run','owner',{scope:'single'}),/上报/);
+  let s=initialState();assert.throws(()=>updateWorkspace(s,'session.report','member',{}),/collected automatically after acceptance/);
+  assert.throws(()=>updateWorkspace(s,'analysis.run','owner',{scope:'single'}),/Report and link the delivery session first/);
   for(const [a,r] of flow.slice(0,12))s=step(s,a,r);
   assert.equal(s.workspace.taskAutomation?.[0].collection?.status,'queued');
   assert.equal(s.workspace.sessionReported,false);
   finishTaskCollection(s,mainTask,collectTaskSessions(s,mainTask),new Date().toISOString());
   assert.equal(s.workspace.taskAutomation?.[0].collection?.status,'empty');
   assert.equal(s.stage,'accepted');assert.equal(s.workspace.sessionReported,false);
-  assert.throws(()=>updateWorkspace(s,'session.report','member',{}),/自动归集/);
+  assert.throws(()=>updateWorkspace(s,'session.report','member',{}),/collected automatically after acceptance/);
 });
 test('base collaboration settings govern progress and session report independently of business skills',()=>{
   let s=initialState();for(const [a,r] of flow.slice(0,4))s=step(s,a,r);
   s=updateWorkspace(s,'progress.sync','member',{text:'已确认需求影响范围'});assert.equal(s.workspace.progress.length,1);
   s=updateWorkspace(s,'foundation.update','member',{progressEnabled:false,uploadEnabled:true});
-  assert.throws(()=>updateWorkspace(s,'progress.sync','member',{text:'测试'}),/启用/);
+  assert.throws(()=>updateWorkspace(s,'progress.sync','member',{text:'测试'}),/Enable/);
   assert.equal(s.workspace.selectedSkills.length,13);
 });
 test('v1 migration preserves existing data and backup while broken v2 is rejected',async()=>{
@@ -135,17 +135,17 @@ test('v1 migration preserves existing data and backup while broken v2 is rejecte
     assert.equal(store.state.published,true);assert.equal(store.state.schemaVersion,2);
     assert.deepEqual(JSON.parse(await readFile(path+'.pre-v2.json','utf8')),old);
     const bad:any=structuredClone(store.state);delete bad.workspace;await writeFile(path,JSON.stringify(bad));
-    await assert.rejects(new Store(path).init(),/工作区状态无效/);
+    await assert.rejects(new Store(path).init(),/Invalid workspace state/);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
 test('new external demo sources save only their own scope and preserve existing workflow switches',()=>{
   const initial=initialState();
-  assert.throws(()=>updateWorkspace(initial,'connection.update','member',{id:'test-assets',enabled:false,description:'测试用例'}),/无权/);
-  assert.throws(()=>updateWorkspace(initial,'connection.update','owner',{id:'unknown-platform',enabled:true,description:'未知'}),/连接不存在/);
+  assert.throws(()=>updateWorkspace(initial,'connection.update','member',{id:'test-assets',enabled:false,description:'测试用例'}),/not allowed to perform this action/);
+  assert.throws(()=>updateWorkspace(initial,'connection.update','owner',{id:'unknown-platform',enabled:true,description:'未知'}),/Connection not found/);
   const saved=updateWorkspace(initial,'connection.update','owner',{id:'test-assets',enabled:false,description:'白金卡返现测试用例'});
   assert.deepEqual(saved.workspace.connections.filter(c=>c.id!=='test-assets'),initial.workspace.connections);
-  assert.deepEqual(saved.workspace.connections.find(c=>c.id==='test-assets'),{id:'test-assets',name:'测试资产平台',kind:'asset',enabled:false,description:'白金卡返现测试用例'});
+  assert.deepEqual(saved.workspace.connections.find(c=>c.id==='test-assets'),{id:'test-assets',name:'Test asset platform',kind:'asset',enabled:false,description:'白金卡返现测试用例'});
   assert.deepEqual(saved.workspace.foundation,initial.workspace.foundation);assert.equal(saved.knowledge,false);
 });
 
@@ -155,7 +155,7 @@ test('requirements and defects retain independent connection settings without mi
   const requirements=structuredClone(current.workspace.connections.find(item=>item.id==='requirements'));
   current=updateWorkspace(current,'connection.update','owner',{id:'defects',enabled:true,description:'独立缺陷平台范围'});
   assert.deepEqual(current.workspace.connections.find(item=>item.id==='requirements'),requirements);
-  assert.deepEqual(current.workspace.connections.find(item=>item.id==='defects'),{id:'defects',name:'缺陷平台',kind:'asset',enabled:true,description:'独立缺陷平台范围'});
+  assert.deepEqual(current.workspace.connections.find(item=>item.id==='defects'),{id:'defects',name:'Defect platform',kind:'asset',enabled:true,description:'独立缺陷平台范围'});
   current=updateWorkspace(current,'connection.update','owner',{id:'requirements',enabled:true,description:'更新需求范围'});
   assert.equal(current.workspace.connections.find(item=>item.id==='defects')?.description,'独立缺陷平台范围');
 });
@@ -163,19 +163,19 @@ test('requirements and defects retain independent connection settings without mi
 test('resource publishing and subscriptions stay separate from unpublished project delivery',async()=>{
   const {skillCatalog}=await readSkillCatalog();
   let s=initialState();
-  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:'dev-frontend-ui'}),/已发布的共享资源/);
-  assert.throws(()=>updateWorkspace(s,'resource.publish','member',{id:'dev-frontend-ui'}),/无权/);
-  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'office-word'}),/共享范围/);
-  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:['not-owned']}),/有效的项目或用户/);
-  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:[]}),/有效的项目或用户/);
+  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:'dev-frontend-ui'}),/Get a published shared resource/);
+  assert.throws(()=>updateWorkspace(s,'resource.publish','member',{id:'dev-frontend-ui'}),/not allowed to perform this action/);
+  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'office-word'}),/not shareable/);
+  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:['not-owned']}),/Select valid project or user Skills/);
+  assert.throws(()=>updateWorkspace(s,'skills.select','member',{skills:[]}),/Select valid project or user Skills/);
   s=transition(s,'assign','owner',{assigneeId:'member'});s=step(s,'knowledge','owner');
-  assert.throws(()=>transition({...s,workspace:{...s.workspace,selectedSkills:[]}},'prepare','member'),/请选择/);
+  assert.throws(()=>transition({...s,workspace:{...s.workspace,selectedSkills:[]}},'prepare','member'),/Select/);
   s=updateWorkspace(s,'skills.select','member',{skills:['dev-frontend-ui','office-excel']});s=transition(s,'prepare','member');
   const context=structuredClone(s.context);
   s=updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui'},[],skillCatalog);
   assert.equal(s.published,false);assert.deepEqual(resourcePublications(s).map(item=>item.id),['dev-frontend-ui']);
-  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui'},[],skillCatalog),/已发布/);
-  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:'dev-code-reviewer'}),/已发布的共享资源/);
+  assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui'},[],skillCatalog),/published/);
+  assert.throws(()=>updateWorkspace(s,'resource.acquire','member',{name:'dev-code-reviewer'}),/Get a published shared resource/);
   s=updateWorkspace(s,'resource.acquire','member',{name:'dev-frontend-ui'});
   s=updateWorkspace(s,'resource.publish','owner',{id:'code-agent'});
   s=updateWorkspace(s,'resource.acquire','member',{name:'code-agent'});
@@ -202,7 +202,7 @@ test('legacy shared records and frozen inputs remain unchanged through explicit 
     assert.equal(s.context?.agentVersion,'r1');assert.deepEqual(s.workspace.acquiredResources,['dev-frontend-ui']);
     s.adoptedSkill='1.1.0';s=updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui'},[],skillCatalog);
     assert.equal(resourcePublications(s).length,14);assert.equal(resourcePublications(s).find(item=>item.id==='dev-frontend-ui')?.version,'1.0.0');
-    assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui',version:'1.1.0'},[],skillCatalog),/没有对应内容包/);
+    assert.throws(()=>updateWorkspace(s,'resource.publish','owner',{id:'dev-frontend-ui',version:'1.1.0'},[],skillCatalog),/has no content package/);
     assert.deepEqual(resourceSubscriptions(s,'member'),[]);assert.deepEqual(resourceSubscriptions(s,'owner'),[]);
     s=updateWorkspace(s,'resource.acquire','member',{name:'dev-frontend-ui'});
     assert.equal(resourceSubscriptions(s,'member')[0].sha256,skillCatalog.find(item=>item.id==='dev-frontend-ui')!.sha256);
@@ -210,15 +210,15 @@ test('legacy shared records and frozen inputs remain unchanged through explicit 
     assert.equal(resourcePublications(s).find(item=>item.id==='dev-code-reviewer')?.version,'1.0.0');
     assert.equal(s.context?.skillVersion,'1.0.0');assert.equal(s.audit[0].detail,'原演示共享记录');
     const bad:any=structuredClone(old);bad.workspace.resourcePublications=null;await writeFile(path,JSON.stringify(bad));
-    await assert.rejects(new Store(path).init(),/资源发布记录无效/);
+    await assert.rejects(new Store(path).init(),/Invalid resource publication records/);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
 
 test('old campaign state remains readable but cannot execute current rules until explicit reset', () => {
   const old = initialState(); delete old.campaignId;
-  assert.throws(() => transition(old, 'assign', 'owner'), /旧活动规则/);
-  assert.throws(() => updateWorkspace(old, 'project.update', 'owner', {}), /旧活动规则/);
+  assert.throws(() => transition(old, 'assign', 'owner'), /old campaign rules/);
+  assert.throws(() => updateWorkspace(old, 'project.update', 'owner', {}), /old campaign rules/);
   assert.equal(old.transactions.length, 0);
 });
 test('purchase needs no enrollment and uses current extra cashback amount', () => {

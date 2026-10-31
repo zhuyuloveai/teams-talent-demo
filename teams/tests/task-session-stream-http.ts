@@ -57,7 +57,7 @@ try {
   assert.equal((await request(query)).sessions[0].status, 'failed');
   await appendFile(trajectory, '{bad}\n');
   const degraded = await request(query);
-  assert.equal(degraded.sessions[0].trajectory?.state, 'degraded'); assert.equal(degraded.sessions[0].trajectory?.reason, 'corrupt_tail'); assert.ok(degraded.turns.length > 0); assert.match(degraded.sessions[0].note!, /任务进度不受影响/);
+  assert.equal(degraded.sessions[0].trajectory?.state, 'degraded'); assert.equal(degraded.sessions[0].trajectory?.reason, 'corrupt_tail'); assert.ok(degraded.turns.length > 0); assert.match(degraded.sessions[0].note!, /task progress is not affected/);
   assert.equal((await readFile(join(runtime, 'state.json'))).equals(originalState), true, 'GET requests must not alter state bytes');
   const output = 'test-results/task-session-stream'; await mkdir(output, { recursive: true });
   browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -71,9 +71,9 @@ try {
   assert.equal(await sessionButton.getAttribute('aria-pressed'), 'true');
   await page.locator('[data-session-message="user-1"]').waitFor(); assert.equal(await page.locator('[data-session-message="user-1"]').innerText(), '请展示实际用户输入');
   await page.locator('[data-session-message="reply-1"]').waitFor(); assert.equal(await page.locator('[data-session-message="reply-1"] > p').innerText(), '真实回复的可见部分');
-  await page.getByText('详细轨迹不可用，任务可继续', { exact: true }).waitFor();
+  await page.getByText('Detailed trajectory unavailable; the task can continue', { exact: true }).waitFor();
   assert.equal(await page.locator('.task-session-activity').getAttribute('data-stream-task'), scope.taskId); assert.equal(await page.locator('.task-session-activity').getAttribute('data-stream-node'), 'develop');
-  assert.equal(await page.getByRole('combobox', { name: '选择任务会话', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('combobox', { name: 'Select a task session', exact: true }).count(), 0);
   await page.screenshot({ path: join(output, 'team-work-conversation.png'), fullPage: true, animations: 'disabled' });
   const beforeConversationReload = await readFile(join(runtime, 'state.json'));
   await page.reload(); await page.locator('[data-session-message="reply-1"]').waitFor(); assert.equal(await sessionButton.getAttribute('aria-pressed'), 'true');
@@ -81,7 +81,7 @@ try {
   const cards = await page.locator('.team-work-conversation-layout > .framework-card').evaluateAll(elements => elements.map(element => { const box = element.getBoundingClientRect(); return { x: box.x, y: box.y, bottom: box.bottom }; }));
   assert.equal(cards.length, 2); assert.ok(cards[1].y >= cards[0].bottom - 1); assert.equal(await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth), false);
   await page.screenshot({ path: join(output, 'team-work-conversation-mobile.png'), fullPage: true, animations: 'disabled' });
-  assert.equal(await page.getByText('调用 Trace', { exact: true }).count(), 0);
+  assert.equal(await page.getByText('Call Trace', { exact: true }).count(), 0);
   assert.equal(await page.locator('.trace-monitor-frame').count(), 0);
   for (const path of ['/trace-monitor/', '/trace-api/projects/carddemo/traces']) assert.equal((await fetch(origin + path)).status, 404);
   const previousStreamRequests = streamRequests; await page.waitForTimeout(2200); assert.ok(streamRequests > previousStreamRequests, 'conversation polling remains active without OTLP');

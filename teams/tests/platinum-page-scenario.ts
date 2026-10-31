@@ -15,8 +15,8 @@ process.env.DEMO_NATIVE_DISABLED = '1';
 const [{ Store, atomicJson }, { readFixtures }, { createDeliveryRequirement }, { queueTaskPreparation, taskAutomation }, { talentNodeInputs }, { readTalentNodeInputs }, { registeredTaskSkill }, { loadSourceSkillPackage }, { projectKnowledge, readTalentsFile }, { TaskPreparationService }, { collaborationContext }] = await Promise.all([
   import('../server/store.js'), import('../server/http-shared.js'), import('../src/delivery-requirements.js'), import('../src/task-automation.js'), import('../server/talent-node-inputs.js'), import('../server/talent-node-client.js'), import('../server/talent-intake.js'), import('../server/skill-packages.js'), import('../server/shared-data.js'), import('../server/task-preparation.js'), import('../server/collaboration-service.js'),
 ]);
-const title = '白金卡消费返现权益说明页', artifactId = 'a-platinum-cashback-page';
-const description = '白金卡客户在未来3个月消费额外返现0.5%。增加权益入口与说明页，非白金卡不展示入口；不修改业务计算或入账。日期起算、消费范围、限额、结算等待确认。';
+const title = 'Platinum Card Spending Cashback Benefit Page', artifactId = 'a-platinum-cashback-page';
+const description = 'Platinum card customers get an extra 0.5% cashback on spending over the next 3 months. Add a benefit entry and description page; hide the entry for non-platinum cards; do not change business calculation or posting. Start date, spending scope, cap and settlement await confirmation.';
 const nodes: RequirementNode[] = ['prepare', 'develop', 'verify', 'accept'];
 const files: Record<RequirementNode, string[]> = {
   prepare: ['Benefit Display Rules', 'Open Questions Checklist', 'Existing Modules and UI Reference'],
@@ -71,15 +71,15 @@ try {
   for (const source of sourceFacts.sourceFiles) assert.equal(hash(await readFile(resolve('..', source.path))), source.sha256, 'source provenance must match the real repository file');
   for (const file of sourceFacts.knowledgeFiles) assert.equal(hash((await readTalentsFile(artifactId, 1, file.path)).content), file.sha256, 'published knowledge must match its declared provenance');
   const rules = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/Benefit Display Rules.md')).content, implementation = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/Existing Modules and UI Reference.md')).content;
-  assert.match(rules, /额外\s*0\.5%/); assert.match(rules, /未来\s*3\s*个月/); assert.match(rules, /非白金卡.*不可见/); assert.match(rules, /不新增.*返现计算.*入账/); assert.match(rules, /日期起算.*未定/);
-  assert.match(implementation, /pageCardDetail/); assert.match(implementation, /CardResponse/); assert.match(implementation, /没有白金等级/);
+  assert.match(rules, /extra\s*0\.5%/); assert.match(rules, /next\s*3\s*months/); assert.match(rules, /hidden for customers confirmed as non-platinum/); assert.match(rules, /adds no .*cashback calculation.*posting/); assert.match(rules, /start date is not set/);
+  assert.match(implementation, /pageCardDetail/); assert.match(implementation, /CardResponse/); assert.match(implementation, /no platinum tier/);
   checks.push('published source content is readable, matches repository/provenance hashes and retains the agreed policy and implementation limits');
 
   for (const [projectId, name, id] of [
-    ['carddemo', title + '补充', 'REQ-' + randomUUID()], ['carddemo', '库存数量说明页', 'REQ-' + randomUUID()],
+    ['carddemo', title + ' supplement', 'REQ-' + randomUUID()], ['carddemo', 'Inventory quantity page', 'REQ-' + randomUUID()],
     ['teams', title, 'REQ-' + randomUUID()], ['carddemo', title, 'MKT-SCENARIO-BOUNDARY'],
   ]) {
-    const other = create(projectId, name, id, '仅整理本需求页面内容；详细规则待确认。');
+    const other = create(projectId, name, id, 'Only organise this requirement page content; detailed rules await confirmation.');
     for (const node of nodes) assert.ok(!(await input(node, other)).knowledge.assets.some(asset => asset.id.includes(artifactId)), projectId + '/' + name + ' must not inherit the bank scenario');
   }
   for (const node of nodes) {
@@ -99,7 +99,7 @@ try {
   historical.inputDigest = 'd'.repeat(64); const historicalBefore = structuredClone(historical), historicalResult = await input('develop', historical);
   assert.equal(historicalResult.selection.basis, 'historical-subset'); assert.equal(historicalResult.knowledge.assets.length, 1); assert.equal(historicalResult.knowledge.assets[0].id, 'historical-explicit'); assert.deepEqual(historicalResult.skills, historical.talentInputsSnapshot.skills); assert.deepEqual(historical, historicalBefore); checks.push('historical task-wide adoption is not populated with new recommended content');
 
-  const oldReady = create('carddemo'), ordinary = create('carddemo', '原先的通用说明页', 'REQ-' + randomUUID(), '只记录已保存的需求内容。');
+  const oldReady = create('carddemo'), ordinary = create('carddemo', 'Earlier generic description page', 'REQ-' + randomUUID(), 'Only records the saved requirement content.');
   const cached = structuredClone(await input('prepare', ordinary)); cached.taskId = oldReady.id; cached.requirement = { id: oldReady.id, title: oldReady.title, description: oldReady.description };
   for (const asset of cached.knowledge.assets) { asset.id = asset.id.replace(ordinary.id, oldReady.id); asset.sourceRecordId = oldReady.id; }
   for (const item of cached.selection.knowledge) item.id = item.id.replace(ordinary.id, oldReady.id);

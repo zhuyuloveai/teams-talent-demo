@@ -55,14 +55,14 @@ test('preparation creates isolated worktree in business repo; reuse and subseque
   await writeFile(join(one.directory,'README.md'),'task changes');
   git(f.business,['branch','release-baseline']);await saveProjectWorkspace(f.runtime,f.platform,{...f.input,baseBranch:'release-baseline'});
   const saved=await readProjectTaskBinding(f.runtime,f.task);assert.equal(saved!.baseBranch,'develop');assert.equal(saved!.directory,one.directory);assert.equal(await readFile(join(one.directory,'README.md'),'utf8'),'task changes');
-  git(one.directory,['switch','-c','wrong-task']);await assert.rejects(readProjectTaskBinding(f.runtime,f.task),/分支发生变化/);
+  git(one.directory,['switch','-c','wrong-task']);await assert.rejects(readProjectTaskBinding(f.runtime,f.task),/branch changed/);
 }));
 
 test('preparation refuses already executed, explicitly assigned, stale or conflicting tasks and preserves paths',async()=>fixture(async f=>{
   await saveProjectWorkspace(f.runtime,f.platform,f.input);
-  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,'wrong-preparation'),/准备请求/);
+  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,'wrong-preparation'),/preparation request changed/);
   f.state.workspace.deliveryRequirements[0].nodes.prepare.status='done';await writeFile(join(f.runtime,'state.json'),JSON.stringify(f.state));
-  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,f.preparationId),/任务已开始/);
+  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,f.preparationId),/task has started/);
   await assert.rejects(access(join(f.runtime,'project-worktree-bindings.json')),{code:'ENOENT'});
   const config=await readProjectWorkspaces(f.runtime);git(f.business,['remote','set-url','origin','https://github.com/wrong/changed.git']);
   await assert.rejects(verifyProjectWorkspace(config.projects[0]),/origin/);
@@ -93,14 +93,14 @@ test('native preparation and project plan use external task root without appendi
   let input:any;
   const service=new ProjectWorkService(()=>state,await readFixtures(),f.runtime,{defaults:async()=>({agent:'code',agentLabel:'Code',model:'configured',modelLabel:'Configured',terminal:{id:'ghostty',name:'Ghostty'}}),history:async()=>{throw Error('must not use old history');},start:async()=>{throw Error('no real TUI during unit test');},focus:async()=>{throw Error('no focus');}},async value=>{input=value;throw new Error('Test captured native launch input; no model call.');},f.platform);
   const unprepared=await service.plan('member',{...scope,tab:'delivery',nodeId:'prepare'});
-  assert.equal(unprepared.actions[0].enabled,false);assert.match(unprepared.actions[0].reason!,/独立任务工作区/);
+  assert.equal(unprepared.actions[0].enabled,false);assert.match(unprepared.actions[0].reason!,/standalone task workspace/);
   await assert.rejects(service.prepare('member',scope,preparation.id),/Test captured native launch/);
   assert.ok(input);assert.equal(input.scope.taskId,f.task.id);
   const binding=await readProjectTaskBinding(f.runtime,f.task);assert.ok(binding);
   assert.equal(input.directory,binding.directory);assert.equal(binding.baseBranch,'main');
   assert.equal(git(input.directory,['remote','get-url','origin']),remoteUrl);
   const plan=await service.plan('member',{...scope,tab:'delivery',nodeId:'prepare'});
-  assert.equal(plan.directory.valid,true);assert.equal(plan.directory.root,input.directory);assert.match(plan.directory.diagnostic,/PR 目标 main/);
+  assert.equal(plan.directory.valid,true);assert.equal(plan.directory.root,input.directory);assert.match(plan.directory.diagnostic,/PR target main/);
   assert.equal((await service.plan('owner',{projectId:'carddemo',tab:'content'})).directory.root,f.business);
 }));
 
@@ -110,7 +110,7 @@ test('old prepared session keeps original cwd after default workspace changes',a
   (f.state.workspace.taskAutomation[0].preparation as any).session={directory:original};
   await writeFile(join(f.runtime,'state.json'),JSON.stringify(f.state));
   assert.equal(await taskWorkDirectory(f.runtime,f.task,f.platform),original);
-  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,f.preparationId),/任务已开始/);
+  await assert.rejects(ensureProjectTaskWorkspace(f.runtime,f.task,f.preparationId),/task has started/);
 }));
 
 

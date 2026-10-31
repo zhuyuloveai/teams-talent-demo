@@ -10,7 +10,7 @@ import { createDeliveryRequirement } from '../src/delivery-requirements.js';
 const root = await mkdtemp(join(tmpdir(), 'shell-navigation-'));
 const teams = 'http://127.0.0.1:46224', talent = 'http://127.0.0.1:46225';
 const seed = initialState(), taskId = 'MKT-NAV-001';
-createDeliveryRequirement(seed, 'owner', { projectId: 'carddemo', id: taskId, title: '导航范围核对', description: '只验证布局操作保留当前工作位置。', assigneeId: 'member', skillIds: ['dev-code-reviewer'] }, '2026-10-27T00:00:00Z');
+createDeliveryRequirement(seed, 'owner', { projectId: 'carddemo', id: taskId, title: 'Navigation scope check', description: 'Only verifies that layout actions keep the current work position.', assigneeId: 'member', skillIds: ['dev-code-reviewer'] }, '2026-10-27T00:00:00Z');
 await writeFile(join(root, 'state.json'), JSON.stringify(seed));
 const env = { ...process.env, DEMO_PORT: '46224', DEMO_TALENT_PORT: '46225', DEMO_STATE_DIR: root, DEMO_SHARED_DIR: join(root, 'shared'), DEMO_SHARED_SEED_DIR: join(root, 'no-seed'), DEMO_NATIVE_DISABLED: '1' };
 const processes = ['server/index.ts'].map(file => spawn(process.execPath, ['--import', 'tsx', file], { env, stdio: ['ignore', 'pipe', 'pipe'] }));
@@ -35,15 +35,15 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     const url = teams + '/teams?demo-role=' + role + '#/projects?project=carddemo&tab=delivery&task=' + taskId + '&node=develop';
     await page.goto(url);
-    const sidebar = page.locator('.framework-sidebar'), taskSidebar = page.getByRole('complementary', { name: '交付任务列表' });
+    const sidebar = page.locator('.framework-sidebar'), taskSidebar = page.getByRole('complementary', { name: 'Delivery task list' });
     const task = page.locator('[data-delivery-task="' + taskId + '"]');
     await task.waitFor(); assert.equal(await task.getAttribute('aria-current'), 'page');
     const expandedWidth = width > 760 ? 200 : 72;
     assert.equal((await sidebar.boundingBox())!.width, expandedWidth);
-    const toggle = page.getByRole('button', { name: '收起左侧导航', exact: true });
+    const toggle = page.getByRole('button', { name: 'Collapse navigation', exact: true });
     assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
     if (width > 760) {
-      const label = sidebar.getByRole('link', { name: '工作台', exact: true }).locator('.nav-label');
+      const label = sidebar.getByRole('link', { name: 'Workspace', exact: true }).locator('.nav-label');
       const text = await label.evaluate(element => ({ font: getComputedStyle(element).fontSize, height: element.getBoundingClientRect().height, lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight) }));
       assert.equal(text.font, '14px'); assert.ok(text.height <= text.lineHeight + 1);
     }
@@ -52,7 +52,7 @@ try {
     const top = await scroll.evaluate(element => element.scrollTop);
     await page.screenshot({ path: `test-results/shell-navigation/${role}-${theme}-${width}-expanded.png`, fullPage: true });
     await toggle.focus(); await toggle.press('Enter');
-    const expand = page.getByRole('button', { name: '展开左侧导航', exact: true });
+    const expand = page.getByRole('button', { name: 'Expand navigation', exact: true });
     await expand.waitFor(); assert.equal(await expand.getAttribute('aria-expanded'), 'false');
     if (width > 760) assert.equal((await sidebar.boundingBox())!.width, 72); else assert.equal(await sidebar.isVisible(), false);
     assert.equal((await page.locator('.framework-main').boundingBox())!.width - mainWidth, width > 760 ? 128 : 72);
@@ -63,7 +63,7 @@ try {
     await page.reload(); await expand.waitFor(); assert.equal(await page.evaluate(() => localStorage.getItem('teams-sidebar-collapsed')), 'true'); assert.equal(page.url(), route);
     await expand.focus(); await expand.press('Space'); await toggle.waitFor(); assert.equal((await sidebar.boundingBox())!.width, expandedWidth);
     if (width > 760) {
-      const resize = page.getByRole('separator', { name: '调整导航宽度' }); await resize.focus();
+      const resize = page.getByRole('separator', { name: 'Resize navigation' }); await resize.focus();
       for (let n = 0; n < 4; n++) await resize.press('ArrowRight');
       assert.equal((await sidebar.boundingBox())!.width, 240);
       await toggle.click(); await expand.click(); assert.equal((await sidebar.boundingBox())!.width, 240);
@@ -78,15 +78,15 @@ try {
   workPage.on('request', request => { if (request.method() === 'POST') posts.push(request.url()); });
   workPage.on('pageerror', error => errors.push(error.message));
   await workPage.goto(teams + '/teams?demo-role=owner#/team-work?tab=sessions');
-  assert.equal(await workPage.getByRole('link', { name: '开发会话轨迹', exact: true }).count(), 0);
-  await workPage.getByRole('tab', { name: '任务会话', exact: true }).waitFor();
-  assert.equal(await workPage.getByRole('tab', { name: '任务会话', exact: true }).getAttribute('aria-selected'), 'true');
-  assert.equal(await workPage.getByText('调用 Trace', { exact: true }).count(), 0);
+  assert.equal(await workPage.getByRole('link', { name: 'Development session trajectory', exact: true }).count(), 0);
+  await workPage.getByRole('tab', { name: 'Task sessions', exact: true }).waitFor();
+  assert.equal(await workPage.getByRole('tab', { name: 'Task sessions', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await workPage.getByText('Call Trace', { exact: true }).count(), 0);
   await workPage.locator('.team-work-conversation-view').waitFor({ state: 'visible' });
-  await workPage.getByRole('tab', { name: '任务作业', exact: true }).click();
+  await workPage.getByRole('tab', { name: 'Task work', exact: true }).click();
   await workPage.waitForURL(url => url.hash === '#/team-work');
   await workPage.reload(); await workPage.locator('.team-work-page').waitFor();
-  assert.equal(await workPage.getByRole('tab', { name: '任务作业', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await workPage.getByRole('tab', { name: 'Task work', exact: true }).getAttribute('aria-selected'), 'true');
   await workContext.close();
   const talentContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await talentContext.newPage();

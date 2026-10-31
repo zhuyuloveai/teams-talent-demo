@@ -14,7 +14,7 @@ try {
   await startTraceService();await startTraceService();
   const health=await(await fetch(origin+'/health')).json();assert.equal(health.app,'teams-trace-server');assert.equal(health.workspaceRoot,resolve('.'));assert.equal(health.stateRoot,process.env.DEMO_TRACE_DATA_DIR);
   await checkNativeTraceReceiver(origin+'/v1/traces',{workspaceRoot:resolve('.'),stateRoot:process.env.DEMO_TRACE_DATA_DIR});
-  await assert.rejects(checkNativeTraceReceiver(origin+'/v1/traces',{workspaceRoot:'/another-workspace'}),/其他工作区/);
+  await assert.rejects(checkNativeTraceReceiver(origin+'/v1/traces',{workspaceRoot:'/another-workspace'}),/another workspace/);
   const attributes=Object.entries({'trace2.project.id':projectId,'service.name':'teams-protocol-probe','teams.task.id':taskId,'teams.node.id':nodeId,'teams.run.id':runId}).map(([key,stringValue])=>({key,value:{stringValue}}));
   const request={resourceSpans:[{resource:{attributes},scopeSpans:[{scope:{name:'explicit-test-probe'},spans:[{traceId:randomBytes(16),spanId:randomBytes(8),name:'Explicit probe; no native model execution',kind:1,startTimeUnixNano:String(BigInt(Date.now())*1000000n),endTimeUnixNano:String(BigInt(Date.now()+2)*1000000n),attributes:[{key:'session.id',value:{stringValue:sessionId}}],status:{code:1}}]}]}]};
   const response=await fetch(origin+'/v1/traces',{method:'POST',headers:{'content-type':'application/x-protobuf','content-encoding':'gzip'},body:new Uint8Array(gzipSync(traceRequestType.encode(traceRequestType.fromObject(request)).finish()))});assert.equal(response.status,200,await response.clone().text());assert.equal(response.headers.get('content-type'),'application/x-protobuf');

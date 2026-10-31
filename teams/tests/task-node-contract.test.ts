@@ -25,9 +25,9 @@ test('result gate requires registered outputs and explicit criteria; code and re
  assert.deepEqual(nodeResultErrors(f.state,f.task,'prepare',nodeResultFixture('prepare').evidence,definition.completionCriteria.map(item=>item.id),undefined),[]);
  add(f,'prepare');add(f,'develop');
  const verify=nodeResultFixture('verify');assert.deepEqual(nodeResultErrors(f.state,f.task,'verify',verify.evidence,verify.completedCriteria,verify.checks),[]);
- assert.match(nodeResultErrors(f.state,f.task,'verify',verify.evidence.map(item=>({...item,codeVersion:'another-commit'})),verify.completedCriteria,verify.checks).join(' '),/代码版本不一致/);
- assert.match(nodeResultErrors(f.state,f.task,'verify',verify.evidence,verify.completedCriteria,verify.checks!.map(item=>({...item,source:'actual'}))).join(' '),/来源不一致/);
- const failed=nodeResultFixture('verify',{failed:true});assert.deepEqual(nodeResultErrors(f.state,f.task,'verify',failed.evidence,failed.completedCriteria,failed.checks),[]);assert.match(nodeResultErrors(f.state,f.task,'verify',failed.evidence,verify.completedCriteria,failed.checks).join(' '),/存在失败/);
+ assert.match(nodeResultErrors(f.state,f.task,'verify',verify.evidence.map(item=>({...item,codeVersion:'another-commit'})),verify.completedCriteria,verify.checks).join(' '),/Artifact code version mismatch/);
+ assert.match(nodeResultErrors(f.state,f.task,'verify',verify.evidence,verify.completedCriteria,verify.checks!.map(item=>({...item,source:'actual'}))).join(' '),/Report and check sources differ/);
+ const failed=nodeResultFixture('verify',{failed:true});assert.deepEqual(nodeResultErrors(f.state,f.task,'verify',failed.evidence,failed.completedCriteria,failed.checks),[]);assert.match(nodeResultErrors(f.state,f.task,'verify',failed.evidence,verify.completedCriteria,failed.checks).join(' '),/There are failed checks/);
 });
 test('historical completion and unclassified skills do not fabricate PRD, quality capabilities or another project code graph',async()=>{
  const f=setup();f.task.nodes.prepare.status='complete';
@@ -38,22 +38,22 @@ test('historical completion and unclassified skills do not fabricate PRD, qualit
 test('old actual awaiting acceptance keeps its history, while new node-contract tasks cannot accept missing reports',()=>{
  const f=setup();f.task.stage='awaiting-acceptance';f.task.nodes.develop.status='complete';f.task.nodes.verify.status='complete';f.task.checks=[{id:'check',nodeId:'verify',status:'passed',source:'actual',summary:'已有真实检查',at,sessionId:'preserved-native-session'}];f.task.verificationCheckIds=['check'];
  const protectedHistory=JSON.stringify(f.task.checks);acceptDeliveryRequirement(f.state,'owner',f.task,at);assert.equal(f.task.stage,'accepted');assert.equal(JSON.stringify(f.task.checks),protectedHistory);
- f.task.stage='awaiting-acceptance';f.task.nodeContractVersion='delivery-node-v1';assert.throws(()=>acceptDeliveryRequirement(f.state,'owner',f.task,at),/依据不齐全/);
+ f.task.stage='awaiting-acceptance';f.task.nodeContractVersion='delivery-node-v1';assert.throws(()=>acceptDeliveryRequirement(f.state,'owner',f.task,at),/Acceptance basis incomplete/);
 });
 
 test('enterprise test cases carry case IDs, versions and expectations with exact task scope, independent of Talent knowledge',async()=>{
  const data=await readFixtures(),f=setup();f.task.id='DEMO-MKT-001';
  let cases=taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references;
- assert.equal(cases.length,3);assert.ok(cases.every(item=>item.testCase?.id&&item.testCase.expected&&item.version&&item.sourceLabel.includes('企业测试资产插件')));
- f.task.id='REQ-'+randomUUID();f.task.title='白金卡消费返现权益说明页';cases=taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references;assert.equal(cases.length,4);assert.match(cases[1].testCase!.expected,/待确认|不补造/);
- f.task.title+='变更';assert.equal(taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references.length,0);
- f.task.projectId='teams';f.task.id='T104';cases=taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references;assert.equal(cases.length,1);assert.equal(cases[0].testCase!.id,'TEAMS-TC-001');assert.doesNotMatch(JSON.stringify(cases),/白金卡/);
+ assert.equal(cases.length,3);assert.ok(cases.every(item=>item.testCase?.id&&item.testCase.expected&&item.version&&item.sourceLabel.includes('Enterprise test asset plugin')));
+ f.task.id='REQ-'+randomUUID();f.task.title='Platinum Card Spending Cashback Benefit Page';cases=taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references;assert.equal(cases.length,4);assert.match(cases[1].testCase!.expected,/to-be-confirmed|no definite rules are invented/);
+ f.task.title+=' change';assert.equal(taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references.length,0);
+ f.task.projectId='teams';f.task.id='T104';cases=taskNodeView(f.state,f.task,'verify',data).inputs.find(item=>item.id==='test-cases')!.references;assert.equal(cases.length,1);assert.equal(cases[0].testCase!.id,'TEAMS-TC-001');assert.doesNotMatch(JSON.stringify(cases),/[Pp]latinum/);
 });
 
 test('new contracts require separate static-tool and Agent Review reports; old v1 awaiting results remain acceptable without invented reports',()=>{
  const f=setup();add(f,'prepare');add(f,'develop');const v2=nodeResultFixture('verify');
  assert.ok(v2.evidence.some(item=>item.artifact==='static-analysis-report'));assert.ok(v2.evidence.some(item=>item.artifact==='agent-review-report'));
- const incomplete=v2.evidence.filter(item=>item.artifact!=='static-analysis-report');assert.match(nodeResultErrors(f.state,f.task,'verify',incomplete,v2.completedCriteria,v2.checks).join(';'),/静态检查/);
+ const incomplete=v2.evidence.filter(item=>item.artifact!=='static-analysis-report');assert.match(nodeResultErrors(f.state,f.task,'verify',incomplete,v2.completedCriteria,v2.checks).join(';'),/Static analysis/);
  const oldEvidence=v2.evidence.filter(item=>item.artifact!=='static-analysis-report').map(item=>item.artifact==='agent-review-report'?{...item,artifact:'code-review-report' as const}:item);
  const oldChecks=v2.checks!.filter(item=>item.artifact!=='static-analysis-report').map(item=>item.artifact==='agent-review-report'?{...item,artifact:'code-review-report'}:item);
  f.task.nodeContractVersion='delivery-node-v1';assert.deepEqual(nodeResultErrors(f.state,f.task,'verify',oldEvidence,v2.completedCriteria,oldChecks),[]);

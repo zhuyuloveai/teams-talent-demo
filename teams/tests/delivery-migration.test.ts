@@ -33,10 +33,10 @@ test('unassigned and accepted historical main states retain meaning without inve
  assert.equal(projectDeliveryTasks(state,'carddemo')[0].pendingAssignment,true);assert.equal(projectDeliveryTasks(state,'carddemo','member').length,1);
  const assigned=transition(state,'assign','owner',{assigneeId:'member'});
  assert.equal(deliveryRequirement(assigned,'carddemo','DEMO-MKT-001')!.assigneeId,'member');assert.equal(assigned.assigned,false);assert.equal(assigned.stage,'draft');
- for(const action of ['prepare','replay','check-fail','fix','submit','accept','return'] as const)assert.throws(()=>transition(assigned,action,action==='accept'||action==='return'?'owner':'member'),/旧演练推进入口已停用/);
+ for(const action of ['prepare','replay','check-fail','fix','submit','accept','return'] as const)assert.throws(()=>transition(assigned,action,action==='accept'||action==='return'?'owner':'member'),/the old walkthrough entry is disabled/);
  const accepted=initialState();accepted.assigned=true;accepted.assigneeId='member';accepted.stage='accepted';accepted.checks='passed';accepted.audit=[{id:1,at:'2026-10-27T00:00:00Z',role:'owner',system:'Teams',action:'通过功能验收',detail:'旧验收',origin:'simulated'}];
  migrateMainDelivery(accepted);const task=deliveryRequirement(accepted,'carddemo','DEMO-MKT-001')!;
- assert.equal(task.stage,'accepted');assert.equal(task.checks[0].source,'preset');assert.equal(task.checks[0].sessionId,null);assert.match(task.nodes.develop.summary,/历史/);assert.equal(accepted.workspace.collaboration,undefined);assert.equal(accepted.workspace.taskAutomation,undefined);assert.equal(migrateMainDelivery(accepted),false);
+ assert.equal(task.stage,'accepted');assert.equal(task.checks[0].source,'preset');assert.equal(task.checks[0].sessionId,null);assert.match(task.nodes.develop.summary,/historical/);assert.equal(accepted.workspace.collaboration,undefined);assert.equal(accepted.workspace.taskAutomation,undefined);assert.equal(migrateMainDelivery(accepted),false);
 });
 
 test('accepted main task stays actionable without the legacy session report flag',async()=>{
@@ -47,6 +47,6 @@ test('accepted main task stays actionable without the legacy session report flag
   const {nextStep}=await import(pathToFileURL(outfile).href),state=initialState();
   state.assigned=true;state.assigneeId='member';state.stage='accepted';state.workspace.sessionReported=false;
   const next=nextStep(state,'owner');
-  assert.equal(next.title,'查看验收和会话共享');assert.match(next.href,/task=DEMO-MKT-001/);
+  assert.equal(next.title,'View acceptance and session sharing');assert.match(next.href,/task=DEMO-MKT-001/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });

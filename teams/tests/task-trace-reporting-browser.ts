@@ -12,10 +12,10 @@ const origin = 'http://127.0.0.1:46234';
 const output = 'test-results/task-trace-reporting';
 const seed = initialState();
 const at = new Date().toISOString();
-const task = createDeliveryRequirement(seed, 'owner', { projectId: 'carddemo', id: 'MKT-TRACE-001', title: '信用卡消费返现', description: '用于验证任务会话上报和可视化路由。', assigneeId: 'member', skillIds: ['dev-code-reviewer'] }, at);
+const task = createDeliveryRequirement(seed, 'owner', { projectId: 'carddemo', id: 'MKT-TRACE-001', title: 'Credit Card Spending Cashback', description: 'Used to verify task session reporting and visual routing.', assigneeId: 'member', skillIds: ['dev-code-reviewer'] }, at);
 task.stage = 'developing';
 task.preparedAt = at;
-task.nodes.prepare = { status: 'complete', updatedAt: at, summary: '隔离浏览器回归的准备记录' };
+task.nodes.prepare = { status: 'complete', updatedAt: at, summary: 'Preparation record for the isolated browser regression' };
 await writeFile(join(runtime, 'state.json'), JSON.stringify(seed));
 await mkdir(output, { recursive: true });
 
@@ -41,34 +41,34 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   const visit = async (role: string, route: string) => {
     await page.goto(origin + '/teams?demo-role=' + role + '#/' + route);
-    await page.getByRole('combobox', { name: '切换角色' }).waitFor();
+    await page.getByRole('combobox', { name: 'Switch role' }).waitFor();
   };
 
   await visit('owner', 'team-work');
-  await page.getByRole('link', { name: '任务追溯', exact: true }).waitFor();
-  await page.getByText('陈晨', { exact: true }).first().waitFor();
-  assert.doesNotMatch(await page.locator('.team-work-page').innerText(), /成员 [BC]/);
-  await page.getByText('显示导入快照', { exact: true }).click();
-  await page.getByText('快照责任人 · 成员 B', { exact: true }).first().waitFor();
-  await page.getByText('快照责任人 · 成员 C', { exact: true }).first().waitFor();
+  await page.getByRole('link', { name: 'Task traceability', exact: true }).waitFor();
+  await page.getByText('Chen Chen', { exact: true }).first().waitFor();
+  assert.doesNotMatch(await page.locator('.team-work-page').innerText(), /Member [BC]/);
+  await page.getByText('Show imported snapshots', { exact: true }).click();
+  await page.getByText('Snapshot owner · Member B', { exact: true }).first().waitFor();
+  await page.getByText('Snapshot owner · Member C', { exact: true }).first().waitFor();
   await page.screenshot({ path: join(output, 'snapshot-owners.png'), fullPage: true, animations: 'disabled' });
 
   await visit('owner', 'team-work?tab=sessions&view=conversations');
-  assert.equal(await page.getByRole('button', { name: '上报任务会话' }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: 'Report task session' }).isDisabled(), true);
 
   await visit('member', 'team-work?tab=sessions&view=conversations');
-  await page.getByRole('link', { name: '任务追溯', exact: true }).waitFor();
-  assert.equal(await page.getByText('调用 Trace', { exact: true }).count(), 0);
-  assert.equal(await page.getByRole('tab', { name: '成员运行概览', exact: true }).count(), 0);
-  const report = page.getByRole('button', { name: '上报任务会话' });
+  await page.getByRole('link', { name: 'Task traceability', exact: true }).waitFor();
+  assert.equal(await page.getByText('Call Trace', { exact: true }).count(), 0);
+  assert.equal(await page.getByRole('tab', { name: 'Member runtime overview', exact: true }).count(), 0);
+  const report = page.getByRole('button', { name: 'Report task session' });
   assert.equal(await report.isEnabled(), true);
   await report.click();
   const modal = page.locator('.ant-modal:visible');
-  await modal.getByRole('textbox', { name: '上报会话标识' }).fill('isolated-session-three');
+  await modal.getByRole('textbox', { name: 'Report session ID' }).fill('isolated-session-three');
   await page.screenshot({ path: join(output, 'report-form.png'), fullPage: true, animations: 'disabled' });
   const [response] = await Promise.all([
     page.waitForResponse(request => request.url().endsWith('/api/workspace')),
-    modal.getByRole('button', { name: '确认上报会话', exact: true }).click()
+    modal.getByRole('button', { name: 'Confirm session report', exact: true }).click()
   ]);
   assert.equal(response.status(), 200, await response.text());
   await page.waitForURL(url => url.hash.includes('session=isolated-session-three'));
@@ -80,7 +80,7 @@ try {
   assert.ok(record?.sessions.some(item => item.sessionId === 'isolated-session-three' && item.nodeId === 'develop' && item.tool === 'icode'));
   await page.screenshot({ path: join(output, 'reported-session.png'), fullPage: true, animations: 'disabled' });
   assert.deepEqual(errors, []);
-  await writeFile(join(output, 'result.json'), JSON.stringify({ passed: true, renamed: '任务追溯', snapshotOwnersSeparated: true, memberReporting: true, ownerCannotReportForMember: true, selectedSession: 'isolated-session-three', nativeExecution: false, errors }, null, 2));
+  await writeFile(join(output, 'result.json'), JSON.stringify({ passed: true, renamed: 'Task traceability', snapshotOwnersSeparated: true, memberReporting: true, ownerCannotReportForMember: true, selectedSession: 'isolated-session-three', nativeExecution: false, errors }, null, 2));
   console.log('PASS task trace naming, snapshot owner identity, member session reporting and visualization route');
 } catch (error) {
   if (browser) {

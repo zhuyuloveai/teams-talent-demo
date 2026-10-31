@@ -23,7 +23,7 @@ test('native liveness distinguishes exited/zombie/reused PID and rejects an olde
   assert.equal(await nativeProcessActive(owner, record, async () => ({ state: 'Z', startedAt: record.startedAt })), false);
   assert.equal(await nativeProcessActive(owner, record, async () => ({ state: 'S', startedAt: '2026-10-27T12:05:00Z' })), false);
   assert.equal(await nativeProcessActive(owner, record, async () => ({ state: 'S', startedAt: record.startedAt })), true);
-  await assert.rejects(nativeProcessActive(owner, record, async () => ({ state: 'S', startedAt: '2026-10-27T11:00:00Z' })), /归属/);
+  await assert.rejects(nativeProcessActive(owner, record, async () => ({ state: 'S', startedAt: '2026-10-27T11:00:00Z' })), /owner was not guessed/);
   await assert.rejects(nativeProcessActive(owner, record, async () => { throw Object.assign(new Error('denied'), { code: 'EPERM' }); }), /denied/);
 });
 
@@ -66,7 +66,7 @@ test('prepared TUI focuses a live exact terminal, then restores latest saved dia
     await put(output, 'session-root/sessions/' + short + '/session.recovery.json', latest);
     await put(output, 'result.json', { runId: resumedRun, sessionId, status: 'failed', executionMode: 'interactive', nativeExitCode: 120 });
     // A stale lock is preserved; a dead owner is not an active process.
-    const plan = await service.plan('member', target); assert.equal(plan.defaultAction, 'resume'); assert.equal(plan.actions[0].enabled, true); assert.equal(plan.history?.prepared?.sourceRunId, resumedRun); assert.equal(plan.history?.prepared?.sessionSha256, sha(latest)); assert.match(plan.history!.diagnostic!, /异常退出/);
+    const plan = await service.plan('member', target); assert.equal(plan.defaultAction, 'resume'); assert.equal(plan.actions[0].enabled, true); assert.equal(plan.history?.prepared?.sourceRunId, resumedRun); assert.equal(plan.history?.prepared?.sessionSha256, sha(latest)); assert.match(plan.history!.diagnostic!, /exited abnormally/);
     const destination = join(dir, 'work-contexts', randomUUID() + '.native'); await mkdir(destination);
     await copyPreparedSession({ runId: randomUUID(), scope, preparedSession: { ...plan.history!.prepared, sessionId } }, destination);
     assert.equal(await readFile(join(destination, 'session-root/sessions', short, 'session.recovery.json'), 'utf8'), latest);
@@ -84,6 +84,6 @@ test('exact Ghostty focus sends only focus by persisted surface ID, with no inpu
     const opts = { platform: 'darwin' as const, terminals: async () => [{ id: 'ghostty', name: 'Ghostty', path: '/Applications/Ghostty.app' }], execute: async (file: string, args: string[]) => { calls.push({ file, args }); return { stdout: 'focused\n' }; } };
     assert.equal((await focusWorkTerminal(history, opts)).status, 'terminal-focused'); assert.equal(calls.length, 1); assert.equal(calls[0].args.at(-1), 'surface-123'); assert.match(calls[0].args[1], /focus \(item 1 of matches\)/); assert.doesNotMatch(calls[0].args[1], /new window|do script|input text|send key/);
     await assert.rejects(focusWorkTerminal(history, { ...opts, execute: async () => { throw new Error('surface closed'); } }), /surface closed/); assert.equal(calls.length, 1);
-    process.env.DEMO_NATIVE_DISABLED = '1'; await assert.rejects(focusWorkTerminal(history, opts), /未开放/); assert.equal(calls.length, 1);
+    process.env.DEMO_NATIVE_DISABLED = '1'; await assert.rejects(focusWorkTerminal(history, opts), /does not allow real terminal operations/); assert.equal(calls.length, 1);
   } finally { if (old === undefined) delete process.env.DEMO_NATIVE_DISABLED; else process.env.DEMO_NATIVE_DISABLED = old; }
 });
