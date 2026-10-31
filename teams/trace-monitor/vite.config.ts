@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
       port: Number(env.VITE_DEV_PORT || 5174),
       proxy: {
         "/trace-api": {
-          target: env.VITE_API_TARGET || "http://127.0.0.1:8012",
+          target: env.VITE_API_TARGET || "http://127.0.0.1:8013",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/trace-api/, "/api/v1"),
         },

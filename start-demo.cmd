@@ -41,10 +41,10 @@ echo        Install Python 3.10+ and retry, or set DEMO_TRACE_PYTHON to a python
 echo.
 
 :launch
-echo Teams:      http://127.0.0.1:45970/teams
-echo Talents:    http://127.0.0.1:45980/talents
-echo Trace page: http://127.0.0.1:45970/teams?demo-role=owner#/trace-monitor
-echo Trace API:  http://127.0.0.1:8012  (/v1/traces for OTLP, /api/v1 for queries)
+echo Teams:      http://127.0.0.1:46970/teams
+echo Talents:    http://127.0.0.1:46980/talents
+echo Trace page: http://127.0.0.1:46970/teams?demo-role=owner#/trace-monitor
+echo Trace API:  http://127.0.0.1:8013  (/v1/traces for OTLP, /api/v1 for queries)
 echo.
 echo Building Teams, Talents and the trace monitor, then starting them with trace-server.
 echo Keep this window open. Press Ctrl+C to stop.

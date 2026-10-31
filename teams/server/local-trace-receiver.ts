@@ -18,7 +18,7 @@ const hash=(value:Buffer)=>createHash('sha256').update(value).digest('hex');
 export interface LocalTraceOptions {port?:number;runtimeDir:string;root:string;host?:'127.0.0.1'}
 /** Local-only trace sink. No business state, external forwarding, model calls or UI. */
 export async function startLocalTraceReceiver(options:LocalTraceOptions){
- const port=options.port??8012;if(!Number.isInteger(port)||port<0||port>65535)throw new Error('Trace port must be between 0 and 65535');
+ const port=options.port??8013;if(!Number.isInteger(port)||port<0||port>65535)throw new Error('Trace port must be between 0 and 65535');
  if(options.host&&options.host!=='127.0.0.1')throw new Error('Trace receiver must bind IPv4 loopback');
  if(!isAbsolute(options.runtimeDir)||!isAbsolute(options.root))throw new Error('Trace runtime and workspace paths must be absolute');
  await mkdir(options.runtimeDir,{recursive:true,mode:0o700});

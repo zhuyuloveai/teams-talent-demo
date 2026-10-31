@@ -1,6 +1,6 @@
 const controlled = new Set(['trace2.project.id', 'teams.task.id', 'teams.node.id', 'teams.run.id']);
 export function nativeTraceEnvironment(base, scope, endpoint) {
-  const value = endpoint ?? base.DEMO_TRACE_ENDPOINT ?? base.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ?? `http://127.0.0.1:${base.DEMO_TRACE_PORT ?? 8012}/v1/traces`;
+  const value = endpoint ?? base.DEMO_TRACE_ENDPOINT ?? base.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ?? `http://127.0.0.1:${base.DEMO_TRACE_PORT ?? 8013}/v1/traces`;
   const url = new URL(value);
   if (url.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || url.username || url.password || url.search || url.hash || url.pathname !== '/v1/traces') throw new Error('Teams TUI trace 必须指向本机 HTTP /v1/traces 接收端，不允许外部地址或凭据');
   const env = { ...base };

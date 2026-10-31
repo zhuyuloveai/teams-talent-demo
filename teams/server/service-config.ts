@@ -7,9 +7,9 @@ export const materialRoot = resolve(process.env.DEMO_MATERIAL_ROOT ?? join(root,
 export const workspace = join(materialRoot, 'workspace');
 export const runtimeDir = resolve(process.env.DEMO_STATE_DIR ?? join(root, '.runtime'));
 export const sessionId = '6b82c08d-eb3b-4bdc-b373-54fed16a7fcd';
-export const port = Number(process.env.DEMO_PORT ?? 45970);
+export const port = Number(process.env.DEMO_PORT ?? 46970);
 export const origin = 'http://127.0.0.1:' + port;
-export const talentPort = Number(process.env.DEMO_TALENT_PORT ?? 45980);
+export const talentPort = Number(process.env.DEMO_TALENT_PORT ?? 46980);
 export const talentOrigin = 'http://127.0.0.1:' + talentPort;
 /** Exchange directory shared with Talents: Teams writes teams/, Talents writes talents/. */
 export const sharedDir = resolve(process.env.DEMO_SHARED_DIR ?? join(root, '..', 'shared', 'data'));
@@ -17,7 +17,7 @@ export const sharedDir = resolve(process.env.DEMO_SHARED_DIR ?? join(root, '..',
 export const sharedSeedDir = resolve(process.env.DEMO_SHARED_SEED_DIR ?? join(root, '..', 'shared', 'seed'));
 // 开发会话轨迹：demo 内嵌的 trace_server（Python/uvicorn，file 存储）
 export const traceServerRoot = join(root, 'trace-server');
-export const tracePort = Number(process.env.DEMO_TRACE_PORT ?? 8012);
+export const tracePort = Number(process.env.DEMO_TRACE_PORT ?? 8013);
 export const traceOrigin = 'http://127.0.0.1:' + tracePort;
 // 默认落在 trace-server/trace_data：查询端与 OTLP 接收端读写同一目录
 export const traceDataDir = resolve(process.env.DEMO_TRACE_DATA_DIR ?? join(traceServerRoot, 'trace_data'));

@@ -6,7 +6,7 @@ import { runtimeDir, origin as configuredOrigin } from '../server/config.ts';
 import { createHash, randomUUID } from 'node:crypto';
 const help = `Teams CLI · 本机接入
 context get | inputs adopt | progress add | result submit | operation get
---endpoint http://127.0.0.1:45970 (或 DEMO_ORIGIN)
+--endpoint http://127.0.0.1:46970 (或 DEMO_ORIGIN)
 --input '{"projectId":"…","taskId":"…","nodeId":"…"}' 或 --input-file FILE
 context get 可用 --project / --task / --node；默认 --view model 去重上下文，--view full 查看完整响应。
 context.currentNodeId 是任务当前阶段；切换业务环节须显式改 nodeId，重新读取并采用该节点输入。

@@ -5,7 +5,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {runtimeDir,origin as configuredOrigin} from '../server/config.ts';
 const help=`Teams iCode 作业 CLI
 plan | start | status
---endpoint http://127.0.0.1:45970 --role owner|member
+--endpoint http://127.0.0.1:46970 --role owner|member
 --project ID --task ID --node prepare|develop|verify [--mode cli]
 start: --mode cli --instruction-file FILE (或 --instruction TEXT) --request-id UUID
 status: --request-id 原请求UUID

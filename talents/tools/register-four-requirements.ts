@@ -3,7 +3,7 @@ import { appendFourRequirements } from '../server/four-requirements.ts';
 import { buildExport } from '../server/export.ts';
 import { fourRequirementScenarios, fourRequirementScenariosV2 } from '../../shared/four-requirement-scenarios.ts';
 const args=process.argv.slice(2),apply=args.includes('--apply');
-if(args.some((a,i)=>a!=='--apply'&&a!=='--endpoint'&&a!=='--version'&&args[i-1]!=='--endpoint'&&args[i-1]!=='--version')||args.filter(a=>a==='--endpoint').length!==1||args.filter(a=>a==='--version').length>1)throw new Error('用法：node --import tsx tools/register-four-requirements.ts --endpoint http://127.0.0.1:45980 [--version 1|2] [--apply]');
+if(args.some((a,i)=>a!=='--apply'&&a!=='--endpoint'&&a!=='--version'&&args[i-1]!=='--endpoint'&&args[i-1]!=='--version')||args.filter(a=>a==='--endpoint').length!==1||args.filter(a=>a==='--version').length>1)throw new Error('用法：node --import tsx tools/register-four-requirements.ts --endpoint http://127.0.0.1:46980 [--version 1|2] [--apply]');
 const versionArg=args.includes('--version')?args[args.indexOf('--version')+1]:'1';if(versionArg!=='1'&&versionArg!=='2')throw new Error('版本只支持1或2');const version=Number(versionArg) as 1|2,scenarios=version===2?fourRequirementScenariosV2:fourRequirementScenarios;
 const endpoint=args[args.indexOf('--endpoint')+1];if(!endpoint)throw new Error('需要明确本机 endpoint');
 const url=new URL(endpoint);if(url.protocol!=='http:'||url.hostname!=='127.0.0.1'||url.username||url.password||url.search||url.hash||!['','/'].includes(url.pathname))throw new Error('仅支持显式本机 Talents origin');

@@ -4,10 +4,10 @@ import { loadLocalConfiguration } from './local-config.ts';
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const localConfiguration = loadLocalConfiguration(root);
 export const repositoryRoot = resolve(root, '..');
-export const port = Number(process.env.DEMO_TALENT_PORT ?? 45980);
+export const port = Number(process.env.DEMO_TALENT_PORT ?? 46980);
 export const origin = 'http://127.0.0.1:' + port;
 /** Teams runs separately; Talents only links back to it. */
-export const teamsPort = Number(process.env.DEMO_PORT ?? 45970);
+export const teamsPort = Number(process.env.DEMO_PORT ?? 46970);
 export const teamsOrigin = 'http://127.0.0.1:' + teamsPort;
 export const runtimeDir = resolve(process.env.DEMO_TALENT_STATE_DIR ?? join(root, '.runtime'));
 /** Exchange directory shared with Teams: Teams writes teams/, Talents writes talents/. */

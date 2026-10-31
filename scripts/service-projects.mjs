@@ -6,8 +6,8 @@ import { loadLocalConfiguration as loadTalents } from '../talents/server/local-c
 // never become the new Talents service's state directory by environment leakage.
 export function configuredProjects(root, environment = process.env) {
   const definitions = [
-    { id: 'teams', app: 'teams-talent-carddemo', portKey: 'DEMO_PORT', defaultPort: 45970, stateKey: 'DEMO_STATE_DIR', load: loadTeams },
-    { id: 'talents', app: 'talents-carddemo', portKey: 'DEMO_TALENT_PORT', defaultPort: 45980, stateKey: 'DEMO_TALENT_STATE_DIR', load: loadTalents },
+    { id: 'teams', app: 'teams-talent-carddemo', portKey: 'DEMO_PORT', defaultPort: 46970, stateKey: 'DEMO_STATE_DIR', load: loadTeams },
+    { id: 'talents', app: 'talents-carddemo', portKey: 'DEMO_TALENT_PORT', defaultPort: 46980, stateKey: 'DEMO_TALENT_STATE_DIR', load: loadTalents },
   ];
   const projects = definitions.map(({ load, portKey, defaultPort, stateKey, ...definition }) => {
     const dir = join(root, definition.id), env = { ...environment };

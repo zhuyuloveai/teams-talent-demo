@@ -2,7 +2,7 @@
 import { appendPlatinumCashbackPage } from '../server/platinum-cashback-page.ts';
 import { platinumCashbackPage } from '../../shared/platinum-cashback-page.ts';
 const args=process.argv.slice(2),apply=args.includes('--apply');
-if(args.some((arg,index)=>arg!=='--apply'&&arg!=='--endpoint'&&args[index-1]!=='--endpoint'))throw new Error('用法：node --import tsx tools/register-platinum-cashback-page.ts --endpoint http://127.0.0.1:45980 [--apply]');
+if(args.some((arg,index)=>arg!=='--apply'&&arg!=='--endpoint'&&args[index-1]!=='--endpoint'))throw new Error('用法：node --import tsx tools/register-platinum-cashback-page.ts --endpoint http://127.0.0.1:46980 [--apply]');
 const endpoint=args[args.indexOf('--endpoint')+1];
 if(!args.includes('--endpoint')||!endpoint)throw new Error('需要显式 --endpoint，不隐式选择正式服务');
 const url=new URL(endpoint);

@@ -16,7 +16,7 @@ export function ProjectWorkspaceSettings({ projectId, onSaved }: {projectId: str
   useEffect(() => {
     const selected = config?.projects.find(item => item.projectId === projectId);
     setDirectory(selected?.directory ?? ''); setRemoteUrl(selected?.remoteUrl ?? (projectId === 'carddemo' ? 'https://github.com/JeffyLiu003/carddemo-java-1025.git' : projectId === 'teams' ? 'https://github.com/SEAL-iCode/iCode-teams.git' : state.workspace.projects?.find(project=>project.id===projectId)?.remoteUrl ?? ''));
-    setBaseBranch(selected?.baseBranch ?? 'main');
+    setBaseBranch(selected?.baseBranch ?? (projectId === 'carddemo' ? 'devb-en' : 'main'));
   }, [config, projectId]);
   return <FrameworkCard title={t('pws.title')}>
     <Typography.Paragraph type="secondary">{t('pws.note')}</Typography.Paragraph>

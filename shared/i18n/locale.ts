@@ -1,22 +1,20 @@
 export type Locale = 'zh' | 'en';
 export const locales: readonly Locale[] = ['zh', 'en'];
-export const defaultLocale: Locale = 'zh';
+export const defaultLocale: Locale = 'en';
 export const localeStorageKey = 'demo-locale';
 
 export const isLocale = (value: unknown): value is Locale => value === 'zh' || value === 'en';
 /** BCP 47 tag for Intl and <html lang>. */
 export const htmlLang = (locale: Locale): string => (locale === 'zh' ? 'zh-CN' : 'en');
 
-/** `?lang=` wins so a link can pin a language; otherwise remembered, browser, then default. */
+/** `?lang=` wins so a link can pin a language; otherwise remembered, then default. The English demo
+ *  ignores the browser language so a presenter's Chinese system still opens in English. */
 export function detectLocale(fallback: Locale = defaultLocale): Locale {
   if (typeof window === 'undefined') return fallback;
   const requested = new URLSearchParams(window.location.search).get('lang');
   if (isLocale(requested)) return requested;
   const remembered = window.localStorage.getItem(localeStorageKey);
   if (isLocale(remembered)) return remembered;
-  const preferred = window.navigator.language?.toLowerCase() ?? '';
-  if (preferred.startsWith('en')) return 'en';
-  if (preferred.startsWith('zh')) return 'zh';
   return fallback;
 }
 
