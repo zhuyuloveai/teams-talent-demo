@@ -105,12 +105,12 @@ export function runPlan(st: TalentsState, t: Task): RunPlan {
     (ch?.removed ?? []).forEach(f => p.log('已删除：' + f + '，标出引用它的知识条目'));
     p.step('修订受影响的知识');
     const prev = existingArtifact(st, t), outs = prev ? (prev.files ?? []).filter(f => !/index\.md$/.test(f)).map(f => f.split('/').pop()!) : [];
-    if (src?.fromTeams) p.log('→ read   上一版 业务规则目录.md', '→ edit   业务规则目录.md：补充新增文档中的返现规则', '→ edit   统一语言术语表.md：补充新增术语', '→ edit   数据字典.md：补充新增字段');
+    if (src?.fromTeams) p.log('→ read   上一版 Business Rules Catalog.md', '→ edit   Business Rules Catalog.md：补充新增文档中的返现规则', '→ edit   Ubiquitous Language Glossary.md：补充新增术语', '→ edit   Data Dictionary.md：补充新增字段');
     else outs.forEach(f => p.log('→ read   上一版 ' + f, '→ edit   ' + f + '：修订受这些文档影响的条目'));
   } else {
     (src?.tree ?? []).flatMap(g => g.files.map(f => (g.dir ? g.dir + '/' : '') + f)).slice(0, 6).forEach(f => p.log('→ read   ' + f));
     p.step('提取知识');
-    p.log('→ write  业务规则目录.md', '→ write  数据字典.md', '→ write  统一语言术语表.md');
+    p.log('→ write  Business Rules Catalog.md', '→ write  Data Dictionary.md', '→ write  Ubiquitous Language Glossary.md');
   }
   p.step('整理产物');
   p.log('→ write  index.md', '✓ Done，会话 ' + sid, K + ' 进程退出，退出码 0');
@@ -164,7 +164,7 @@ function trajPlan(st: TalentsState, t: Task, sid: string): RunPlan {
     '[diagnosis.chains] 问题链 ' + (r?.chains ?? 0) + ' 条：验证类 3、实现与验证类 2、实现类 1',
     '[diagnosis.improvements] 优化建议 ' + (r?.suggestions.length ?? 0) + ' 条：Skill 1、提示词 1、工具 1');
   p.step('生成报告');
-  p.log('[report] 渲染 轨迹诊断报告.html：执行脉络、问题链、模式与经验、优化建议', '[report] 数据契约校验通过；关键结论均链接到原始证据',
+  p.log('[report] 渲染 Trajectory Diagnosis Report.html：执行脉络、问题链、模式与经验、优化建议', '[report] 数据契约校验通过；关键结论均链接到原始证据',
     '✓ Done · ' + (n > 1 ? n + ' 个会话' : '1 个会话') + ' · session ' + sid, K + ' 进程退出，退出码 0');
   return p.done(Math.min(30, 18 + n * 2));
 }
@@ -281,7 +281,7 @@ export function produce(st: TalentsState, t: Task): Artifact | null {
     a.name = '轨迹洞察：' + st.trajTopics[topic].title;
     a.desc = r ? r.chains + ' 条问题链，' + r.suggestions.length + ' 条优化建议。' : '';
     a.kind = 'diagnosis'; a.sessions = ids.slice(); a.topic = topic;
-    a.files = ['trajectory/' + topic + '/轨迹诊断报告.html'];
+    a.files = ['trajectory/' + topic + '/Trajectory Diagnosis Report.html'];
     a.suggestions = (r?.suggestions ?? []).map(s => ({ id: s.id, status: 'pending' }));
   } else if (cap.custom) {
     a.name = src.name + ' ' + cap.name;
@@ -301,14 +301,14 @@ export function produce(st: TalentsState, t: Task): Artifact | null {
     a.name = src.name + ' 业务知识';
     a.desc = '从「' + src.name + '」提取的业务规则、术语和数据字典。';
     a.folder = '业务知识';
-    a.files = ['doc-knowledge/index.md', 'doc-knowledge/业务规则目录.md', 'doc-knowledge/统一语言术语表.md', 'doc-knowledge/数据字典.md'];
+    a.files = ['doc-knowledge/index.md', 'doc-knowledge/Business Rules Catalog.md', 'doc-knowledge/Ubiquitous Language Glossary.md', 'doc-knowledge/Data Dictionary.md'];
     a.skills = ['bank-domain-payments'];
     a.usage = '涉及业务规则、字段含义、术语或业务流程时先查阅';
   } else {
     const map: Record<string, string> = JSON.parse(content('miner/pr-map.json') ?? '{}');
     a.specs = (t.prs ?? []).map(n => map[n]).filter((n, i, arr) => n && arr.indexOf(n) === i);
     if (!a.specs.length && t.name) a.specs = [t.name];
-    if (!a.specs.length) a.specs = ['消费返现与奖励发放'];
+    if (!a.specs.length) a.specs = ['Spending Cashback and Reward Issuance'];
     a.name = src.name + ' 开发范式';
     a.desc = '从代码变更或代码片段总结的实现范式，含步骤、约束和示例代码。';
     a.folder = 'miner';

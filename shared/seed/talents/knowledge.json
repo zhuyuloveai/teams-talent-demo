@@ -17,22 +17,22 @@
       "delivery": "local",
       "files": [
         {
-          "path": "platinum-cashback-page/权益展示规则.md",
+          "path": "platinum-cashback-page/Benefit Display Rules.md",
           "title": "权益展示规则",
           "type": "markdown"
         },
         {
-          "path": "platinum-cashback-page/待确认清单.md",
+          "path": "platinum-cashback-page/Open Questions Checklist.md",
           "title": "待确认清单",
           "type": "markdown"
         },
         {
-          "path": "platinum-cashback-page/现有模块与UI参考.md",
+          "path": "platinum-cashback-page/Existing Modules and UI Reference.md",
           "title": "现有模块与UI参考",
           "type": "markdown"
         },
         {
-          "path": "platinum-cashback-page/验收用例.md",
+          "path": "platinum-cashback-page/Acceptance Cases.md",
           "title": "验收用例",
           "type": "markdown"
         },
@@ -58,27 +58,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-001/原始需求.md",
+          "path": "four-requirements/REQ-2026-001/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-001/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-001/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-001/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -109,27 +109,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-002/原始需求.md",
+          "path": "four-requirements/REQ-2026-002/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-002/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-002/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-002/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-002/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -160,27 +160,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-003/原始需求.md",
+          "path": "four-requirements/REQ-2026-003/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-003/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-003/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-003/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-003/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -211,27 +211,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-004/原始需求.md",
+          "path": "four-requirements/REQ-2026-004/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-004/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-004/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-004/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -262,27 +262,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-001/原始需求.md",
+          "path": "four-requirements/REQ-2026-001/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/v2/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-001/v2/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/v2/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-001/v2/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/v2/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-001/v2/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-001/v2/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-001/v2/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -313,27 +313,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-002/原始需求.md",
+          "path": "four-requirements/REQ-2026-002/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/v2/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-002/v2/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/v2/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-002/v2/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/v2/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-002/v2/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-002/v2/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-002/v2/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -364,27 +364,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-003/原始需求.md",
+          "path": "four-requirements/REQ-2026-003/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/v2/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-003/v2/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/v2/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-003/v2/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/v2/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-003/v2/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-003/v2/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-003/v2/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -415,27 +415,27 @@
       "delivery": "local",
       "files": [
         {
-          "path": "four-requirements/REQ-2026-004/原始需求.md",
+          "path": "four-requirements/REQ-2026-004/Original Requirement.md",
           "title": "原始需求",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/v2/业务规则与范围.md",
+          "path": "four-requirements/REQ-2026-004/v2/Business Rules and Scope.md",
           "title": "业务规则与范围",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/v2/待确认与差异.md",
+          "path": "four-requirements/REQ-2026-004/v2/Open Questions and Differences.md",
           "title": "待确认与差异",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/v2/基线与实现约束.md",
+          "path": "four-requirements/REQ-2026-004/v2/Baseline and Implementation Constraints.md",
           "title": "基线与实现约束",
           "type": "markdown"
         },
         {
-          "path": "four-requirements/REQ-2026-004/v2/测试定义与验收.md",
+          "path": "four-requirements/REQ-2026-004/v2/Test Definition and Acceptance.md",
           "title": "测试定义与验收",
           "type": "markdown"
         },
@@ -503,17 +503,17 @@
           "type": "markdown"
         },
         {
-          "path": "doc-knowledge/业务规则目录.md",
+          "path": "doc-knowledge/Business Rules Catalog.md",
           "title": "业务规则目录",
           "type": "markdown"
         },
         {
-          "path": "doc-knowledge/统一语言术语表.md",
+          "path": "doc-knowledge/Ubiquitous Language Glossary.md",
           "title": "统一语言术语表",
           "type": "markdown"
         },
         {
-          "path": "doc-knowledge/数据字典.md",
+          "path": "doc-knowledge/Data Dictionary.md",
           "title": "数据字典",
           "type": "markdown"
         }
@@ -538,7 +538,7 @@
       ],
       "files": [
         {
-          "path": "doc-knowledge/银行编码规范要点.md",
+          "path": "doc-knowledge/Bank Coding Standards Essentials.md",
           "title": "银行编码规范要点",
           "type": "markdown"
         }
@@ -555,7 +555,7 @@
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-27 18:50",
-      "note": "新增 5 个代码片段挖掘的开发范式，保留「统一错误码与异常处理」",
+      "note": "新增 5 个代码片段挖掘的开发范式，保留「Unified Error Codes and Exception Handling」",
       "delivery": "local",
       "files": [
         {
@@ -564,102 +564,102 @@
           "type": "markdown"
         },
         {
-          "path": "miner/消费返现与奖励发放/summary.md",
-          "title": "消费返现与奖励发放：范式总结",
+          "path": "miner/Spending Cashback and Reward Issuance/summary.md",
+          "title": "Spending Cashback and Reward Issuance：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/消费返现与奖励发放/analyzer.md",
-          "title": "消费返现与奖励发放：代码分析报告",
+          "path": "miner/Spending Cashback and Reward Issuance/analyzer.md",
+          "title": "Spending Cashback and Reward Issuance：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/消费返现与奖励发放/meta.json",
-          "title": "消费返现与奖励发放：挖掘元数据",
+          "path": "miner/Spending Cashback and Reward Issuance/meta.json",
+          "title": "Spending Cashback and Reward Issuance：挖掘元数据",
           "type": "json"
         },
         {
-          "path": "miner/跨服务幂等入账与失败重试/summary.md",
-          "title": "跨服务幂等入账与失败重试：范式总结",
+          "path": "miner/Cross-Service Idempotent Posting and Retry/summary.md",
+          "title": "Cross-Service Idempotent Posting and Retry：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/跨服务幂等入账与失败重试/analyzer.md",
-          "title": "跨服务幂等入账与失败重试：代码分析报告",
+          "path": "miner/Cross-Service Idempotent Posting and Retry/analyzer.md",
+          "title": "Cross-Service Idempotent Posting and Retry：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/跨服务幂等入账与失败重试/meta.json",
-          "title": "跨服务幂等入账与失败重试：挖掘元数据",
+          "path": "miner/Cross-Service Idempotent Posting and Retry/meta.json",
+          "title": "Cross-Service Idempotent Posting and Retry：挖掘元数据",
           "type": "json"
         },
         {
-          "path": "miner/活动资格判定与有效期控制/summary.md",
-          "title": "活动资格判定与有效期控制：范式总结",
+          "path": "miner/Campaign Eligibility and Validity Control/summary.md",
+          "title": "Campaign Eligibility and Validity Control：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/活动资格判定与有效期控制/analyzer.md",
-          "title": "活动资格判定与有效期控制：代码分析报告",
+          "path": "miner/Campaign Eligibility and Validity Control/analyzer.md",
+          "title": "Campaign Eligibility and Validity Control：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/活动资格判定与有效期控制/meta.json",
-          "title": "活动资格判定与有效期控制：挖掘元数据",
+          "path": "miner/Campaign Eligibility and Validity Control/meta.json",
+          "title": "Campaign Eligibility and Validity Control：挖掘元数据",
           "type": "json"
         },
         {
-          "path": "miner/账户余额乐观锁更新/summary.md",
-          "title": "账户余额乐观锁更新：范式总结",
+          "path": "miner/Account Balance Optimistic Lock Update/summary.md",
+          "title": "Account Balance Optimistic Lock Update：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/账户余额乐观锁更新/analyzer.md",
-          "title": "账户余额乐观锁更新：代码分析报告",
+          "path": "miner/Account Balance Optimistic Lock Update/analyzer.md",
+          "title": "Account Balance Optimistic Lock Update：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/账户余额乐观锁更新/meta.json",
-          "title": "账户余额乐观锁更新：挖掘元数据",
+          "path": "miner/Account Balance Optimistic Lock Update/meta.json",
+          "title": "Account Balance Optimistic Lock Update：挖掘元数据",
           "type": "json"
         },
         {
-          "path": "miner/用户维护与删除保护/summary.md",
-          "title": "用户维护与删除保护：范式总结",
+          "path": "miner/User Maintenance and Delete Protection/summary.md",
+          "title": "User Maintenance and Delete Protection：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/用户维护与删除保护/analyzer.md",
-          "title": "用户维护与删除保护：代码分析报告",
+          "path": "miner/User Maintenance and Delete Protection/analyzer.md",
+          "title": "User Maintenance and Delete Protection：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/用户维护与删除保护/meta.json",
-          "title": "用户维护与删除保护：挖掘元数据",
+          "path": "miner/User Maintenance and Delete Protection/meta.json",
+          "title": "User Maintenance and Delete Protection：挖掘元数据",
           "type": "json"
         },
         {
-          "path": "miner/统一错误码与异常处理/summary.md",
-          "title": "统一错误码与异常处理：范式总结",
+          "path": "miner/Unified Error Codes and Exception Handling/summary.md",
+          "title": "Unified Error Codes and Exception Handling：范式总结",
           "type": "markdown"
         },
         {
-          "path": "miner/统一错误码与异常处理/analyzer.md",
-          "title": "统一错误码与异常处理：代码分析报告",
+          "path": "miner/Unified Error Codes and Exception Handling/analyzer.md",
+          "title": "Unified Error Codes and Exception Handling：代码分析报告",
           "type": "markdown"
         },
         {
-          "path": "miner/统一错误码与异常处理/input/prs/12/metadata.json",
+          "path": "miner/Unified Error Codes and Exception Handling/input/prs/12/metadata.json",
           "title": "PR #12",
           "type": "json"
         },
         {
-          "path": "miner/统一错误码与异常处理/input/prs/19/metadata.json",
+          "path": "miner/Unified Error Codes and Exception Handling/input/prs/19/metadata.json",
           "title": "PR #19",
           "type": "json"
         },
         {
-          "path": "miner/统一错误码与异常处理/input/prs/35/metadata.json",
+          "path": "miner/Unified Error Codes and Exception Handling/input/prs/35/metadata.json",
           "title": "PR #35",
           "type": "json"
         }

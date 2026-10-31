@@ -1,0 +1,32 @@
+{
+ "files": {
+  "业务规则目录.md": "Business Rules Catalog.md",
+  "统一语言术语表.md": "Ubiquitous Language Glossary.md",
+  "数据字典.md": "Data Dictionary.md",
+  "银行编码规范要点.md": "Bank Coding Standards Essentials.md",
+  "原始需求.md": "Original Requirement.md",
+  "业务规则与范围.md": "Business Rules and Scope.md",
+  "基线与实现约束.md": "Baseline and Implementation Constraints.md",
+  "待确认与差异.md": "Open Questions and Differences.md",
+  "测试定义与验收.md": "Test Definition and Acceptance.md",
+  "待确认清单.md": "Open Questions Checklist.md",
+  "权益展示规则.md": "Benefit Display Rules.md",
+  "现有模块与UI参考.md": "Existing Modules and UI Reference.md",
+  "验收用例.md": "Acceptance Cases.md",
+  "轨迹诊断报告.html": "Trajectory Diagnosis Report.html",
+  "改进建议.md": "Improvement Suggestions.md",
+  "Skill改进-dev-api-integration.md": "Skill Improvement - dev-api-integration.md",
+  "Skill改进-dev-backend-service.md": "Skill Improvement - dev-backend-service.md",
+  "启动演示.command": "Start Demo.command",
+  "停止演示.command": "Stop Demo.command",
+  "重置任务.command": "Reset Task.command"
+ },
+ "dirs": {
+  "消费返现与奖励发放": "Spending Cashback and Reward Issuance",
+  "跨服务幂等入账与失败重试": "Cross-Service Idempotent Posting and Retry",
+  "活动资格判定与有效期控制": "Campaign Eligibility and Validity Control",
+  "账户余额乐观锁更新": "Account Balance Optimistic Lock Update",
+  "用户维护与删除保护": "User Maintenance and Delete Protection",
+  "统一错误码与异常处理": "Unified Error Codes and Exception Handling"
+ }
+}

@@ -19,11 +19,11 @@ export const STD_ID = 's-std';
 /** The diagnosed iCode session (Teams shares it; content/trajectory/carddemo-19 holds its report). */
 export const TRAJ_SESSION = '6b82c08d-eb3b-4bdc-b373-54fed16a7fcd';
 
-const MINER_DIFF = ['消费返现与奖励发放', '跨服务幂等入账与失败重试', '活动资格判定与有效期控制', '账户余额乐观锁更新', '用户维护与删除保护'];
-const MINER_PR = ['统一错误码与异常处理'];
+const MINER_DIFF = ['Spending Cashback and Reward Issuance', 'Cross-Service Idempotent Posting and Retry', 'Campaign Eligibility and Validity Control', 'Account Balance Optimistic Lock Update', 'User Maintenance and Delete Protection'];
+const MINER_PR = ['Unified Error Codes and Exception Handling'];
 const MINER_SPECS = [...MINER_DIFF, ...MINER_PR];
-const BIZ_FILES = ['doc-knowledge/index.md', 'doc-knowledge/业务规则目录.md', 'doc-knowledge/统一语言术语表.md', 'doc-knowledge/数据字典.md'];
-const STD_FILES = ['doc-knowledge/银行编码规范要点.md'];
+const BIZ_FILES = ['doc-knowledge/index.md', 'doc-knowledge/Business Rules Catalog.md', 'doc-knowledge/Ubiquitous Language Glossary.md', 'doc-knowledge/Data Dictionary.md'];
+const STD_FILES = ['doc-knowledge/Bank Coding Standards Essentials.md'];
 
 const PRS: [number, string, string][] = [
   [12, '各服务统一 ApiError 与 GlobalExceptionHandler', '2026-09-22'],
@@ -150,11 +150,11 @@ export function seedState(): TalentsState {
       { id: 't-biz', projectId: PROJECT_ID, name: '', cap: 'doc-extract', sources: [DOCSET_ID], mode: 'update', input: { from: '2026-10-26 10:00', to: '2026-10-27 09:05' }, schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 09:31', duration: '6 分 12 秒', artifact: 'a-biz', created: '2026-10-25 22:24' },
       { id: 't-std', projectId: null, name: '', cap: 'doc-extract', sources: [STD_ID], schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-18 11:22', duration: '9 分 05 秒', artifact: 'a-std', created: '2026-10-18 11:13' },
       { id: 't-miner-errors', projectId: PROJECT_ID, name: '', cap: 'miner-pr', sources: [REPO_ID], prs: [12, 19, 35], schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-24 17:10', duration: '13 分 22 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-24 16:57' },
-      { id: 't-miner-cashback', projectId: PROJECT_ID, name: '消费返现与奖励发放', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 11:06', duration: '8 分 12 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 11:04' },
-      { id: 't-miner-idempotent', projectId: PROJECT_ID, name: '跨服务幂等入账与失败重试', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 17:44', duration: '9 分 26 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 17:42' },
-      { id: 't-miner-eligibility', projectId: PROJECT_ID, name: '活动资格判定与有效期控制', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 17:50', duration: '7 分 48 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 17:48' },
-      { id: 't-miner-lock', projectId: PROJECT_ID, name: '账户余额乐观锁更新', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 18:45', duration: '6 分 31 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 18:43' },
-      { id: 't-miner-user', projectId: PROJECT_ID, name: '用户维护与删除保护', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 18:50', duration: '5 分 54 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 18:48' },
+      { id: 't-miner-cashback', projectId: PROJECT_ID, name: 'Spending Cashback and Reward Issuance', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 11:06', duration: '8 分 12 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 11:04' },
+      { id: 't-miner-idempotent', projectId: PROJECT_ID, name: 'Cross-Service Idempotent Posting and Retry', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 17:44', duration: '9 分 26 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 17:42' },
+      { id: 't-miner-eligibility', projectId: PROJECT_ID, name: 'Campaign Eligibility and Validity Control', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 17:50', duration: '7 分 48 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 17:48' },
+      { id: 't-miner-lock', projectId: PROJECT_ID, name: 'Account Balance Optimistic Lock Update', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 18:45', duration: '6 分 31 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 18:43' },
+      { id: 't-miner-user', projectId: PROJECT_ID, name: 'User Maintenance and Delete Protection', cap: 'miner-diff', sources: [REPO_ID], mode: 'build', schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 18:50', duration: '5 分 54 秒', artifact: 'a-miner', produced: 'a-miner', created: '2026-10-27 18:48' },
       { id: 't-traj', projectId: PROJECT_ID, name: '', cap: 'traj', sources: ['s-sessions'], sessions: [TRAJ_SESSION], schedule: { kind: 'now' }, status: 'success', lastRun: '2026-10-27 01:21', duration: '42 分 18 秒', artifact: 'a-traj', created: '2026-10-27 00:38' },
     ],
     // published: what developers see; draft: the latest run, waiting for review (revisions are added while reviewing).
@@ -169,18 +169,18 @@ export function seedState(): TalentsState {
       { id: 'a-biz', projectId: PROJECT_ID, cap: 'doc-extract', name: '信用卡营销返现业务知识', desc: '业务规则目录、统一语言术语表和数据字典，每条注明出处。', sources: [DOCSET_ID], kind: 'files', folder: '业务知识',
         files: BIZ_FILES, skills: ['bank-domain-payments'], usage: '涉及返现规则、字段含义、术语或业务流程时先查阅',
         published: { version: 1, at: '2026-10-26 14:40', note: '首次发布', delivery: 'local', files: BIZ_FILES, basis: { version: '2026-10-26 10:00' },
-          over: { 'doc-knowledge/业务规则目录.md': 'doc-knowledge-v1/业务规则目录.md' } },
+          over: { 'doc-knowledge/Business Rules Catalog.md': 'doc-knowledge-v1/Business Rules Catalog.md' } },
         draft: { created: '2026-10-27 09:31', task: 't-biz', revisions: [], basis: { version: '2026-10-27 09:05' } } },
       { id: 'a-std', projectId: null, cap: 'doc-extract', name: '银行编码规范要点', desc: '分层、建模、接口与安全约定，以及五类检查规则。', sources: [STD_ID], kind: 'files', folder: '编码规范',
         files: STD_FILES, skills: ['dev-bank-coding-standards'], usage: '编写或评审代码时对照检查',
         published: { version: 1, at: '2026-10-18 14:02', note: '首次发布', delivery: 'local', agents: ['Code', 'Reviewer'], files: STD_FILES, basis: { version: '2026-10-12 10:00' } }, draft: null },
       { id: 'a-miner', projectId: PROJECT_ID, cap: 'miner-diff', name: 'carddemo-java-1025 开发范式', desc: '从已合并 PR 与代码片段挖掘的实现范式，含步骤、约束和示例代码。', sources: [REPO_ID], kind: 'files', folder: 'miner',
         specs: MINER_SPECS, files: minerFiles(MINER_SPECS), skills: ['find-reference-spec'], usage: '开发新需求或修改现有功能前，用 find-reference-spec 查找可参考的范式',
-        published: { version: 2, at: '2026-10-27 18:50', note: '新增 5 个代码片段挖掘的开发范式，保留「统一错误码与异常处理」', delivery: 'local', specs: MINER_SPECS, files: minerFiles(MINER_SPECS) },
-        history: [{ version: 1, specs: ['统一错误码与异常处理'] }], draft: null },
+        published: { version: 2, at: '2026-10-27 18:50', note: '新增 5 个代码片段挖掘的开发范式，保留「Unified Error Codes and Exception Handling」', delivery: 'local', specs: MINER_SPECS, files: minerFiles(MINER_SPECS) },
+        history: [{ version: 1, specs: ['Unified Error Codes and Exception Handling'] }], draft: null },
       // A diagnosis is not published: its suggestions are submitted as PRs one by one (server/pull-requests.ts).
       { id: 'a-traj', projectId: PROJECT_ID, cap: 'traj', name: '轨迹洞察：CardDemo 迁移与扩建（19 轮）', desc: '6 条问题链，3 条优化建议。', sources: ['s-sessions'], kind: 'diagnosis',
-        sessions: [TRAJ_SESSION], topic: 'carddemo-19', files: ['trajectory/carddemo-19/轨迹诊断报告.html'],
+        sessions: [TRAJ_SESSION], topic: 'carddemo-19', files: ['trajectory/carddemo-19/Trajectory Diagnosis Report.html'],
         suggestions: ['change-01', 'change-02', 'change-03'].map(id => ({ id, status: 'pending' })),
         published: null, draft: { created: '2026-10-27 01:21', task: 't-traj', revisions: [], basis: null } },
     ],

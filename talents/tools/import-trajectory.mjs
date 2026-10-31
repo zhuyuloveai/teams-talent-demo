@@ -24,7 +24,7 @@ const suggestions = data.improvements.map(i => ({
     ...list(i.supporting_changes).map(c => ({ path: c.path.replace(new RegExp('^' + i.source_id + '/'), ''), before: c.before, after: c.after, reason: c.reason }))],
 }));
 mkdirSync(dir, { recursive: true });
-copyFileSync(source, join(dir, '轨迹诊断报告.html'));
+copyFileSync(source, join(dir, 'Trajectory Diagnosis Report.html'));
 writeFileSync(join(dir, 'report.json'), JSON.stringify({
   title: data.overview.title, summary: data.overview.summary, generatedAt: data.generated_at,
   chains: data.chains.length, suggestions,

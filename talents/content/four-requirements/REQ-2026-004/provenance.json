@@ -35,23 +35,23 @@
   ],
   "knowledgeFiles": [
     {
-      "path": "four-requirements/REQ-2026-004/原始需求.md",
+      "path": "four-requirements/REQ-2026-004/Original Requirement.md",
       "sha256": "341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484"
     },
     {
-      "path": "four-requirements/REQ-2026-004/业务规则与范围.md",
+      "path": "four-requirements/REQ-2026-004/Business Rules and Scope.md",
       "sha256": "993cbb121f7d220b9ad9bebabfa568fea7f234f8183ed6a6f48dd6ac697c4d3c"
     },
     {
-      "path": "four-requirements/REQ-2026-004/待确认与差异.md",
+      "path": "four-requirements/REQ-2026-004/Open Questions and Differences.md",
       "sha256": "08c18172cf26a0ed95689ab87848c89eabe37f6145c0f402fda4e74b926a35fe"
     },
     {
-      "path": "four-requirements/REQ-2026-004/基线与实现约束.md",
+      "path": "four-requirements/REQ-2026-004/Baseline and Implementation Constraints.md",
       "sha256": "2b308f57f234bd5fb2c40c7cf0940c988ae1b4b1c655f99bd2f7b804d41cc261"
     },
     {
-      "path": "four-requirements/REQ-2026-004/测试定义与验收.md",
+      "path": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
       "sha256": "0a6ebdba59c9b31b6dc45d9165742d9c749d6957ecadcb3513974e26ce97f444"
     },
     {

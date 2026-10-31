@@ -12,8 +12,8 @@ const dir = await mkdtemp(join(tmpdir(), 'owner-overview-')), origin = 'http://1
 await writeFile(join(dir, 'state.json'), JSON.stringify(initialState()));
 // Stands in for Talents: CardDemo knowledge is already published in the shared data directory, so Teams marks project knowledge built on first read.
 await mkdir(join(shared, 'talents', 'files', 'a-biz', 'v1', 'doc-knowledge'), { recursive: true });
-await writeFile(join(shared, sharedPaths.talentsFile('a-biz', 1, 'doc-knowledge/业务规则目录.md')), '# 业务规则目录');
-await writeFile(join(shared, sharedPaths.talentsKnowledge), JSON.stringify({ schemaVersion: 1, exportedAt: new Date().toISOString(), artifacts: [{ id: 'a-biz', projectId: 'carddemo', name: '信用卡营销返现业务知识', description: '白金卡返现规则', capability: 'doc-extract', capabilityName: '业务知识提取', category: 'doc', kind: 'files', version: 1, publishedAt: '2026-10-27T10:00:00.000Z', note: '', delivery: 'local', files: [{ path: 'doc-knowledge/业务规则目录.md', title: '业务规则目录', type: 'markdown' }] }] } satisfies TalentsKnowledge));
+await writeFile(join(shared, sharedPaths.talentsFile('a-biz', 1, 'doc-knowledge/Business Rules Catalog.md')), '# 业务规则目录');
+await writeFile(join(shared, sharedPaths.talentsKnowledge), JSON.stringify({ schemaVersion: 1, exportedAt: new Date().toISOString(), artifacts: [{ id: 'a-biz', projectId: 'carddemo', name: '信用卡营销返现业务知识', description: '白金卡返现规则', capability: 'doc-extract', capabilityName: '业务知识提取', category: 'doc', kind: 'files', version: 1, publishedAt: '2026-10-27T10:00:00.000Z', note: '', delivery: 'local', files: [{ path: 'doc-knowledge/Business Rules Catalog.md', title: '业务规则目录', type: 'markdown' }] }] } satisfies TalentsKnowledge));
 const env = { ...process.env, DEMO_PORT: '45975', DEMO_TALENT_PORT: '45985', DEMO_STATE_DIR: dir, DEMO_SHARED_DIR: shared, DEMO_SHARED_SEED_DIR: join(dir, 'no-seed'), DEMO_NATIVE_DISABLED: '1' };
 const processes = ['server/index.ts'].map(file => spawn(process.execPath, ['--import', 'tsx', file], { env, stdio: ['ignore', 'pipe', 'pipe'] }));
 let logs = ''; for (const process of processes) { process.stdout.on('data', value => logs += value); process.stderr.on('data', value => logs += value); }

@@ -12,14 +12,14 @@ export const fourRequirementScenarios = [
     "sourceSha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13",
     "manifest": "four-requirements/REQ-2026-001/provenance.json",
     "files": {
-      "requirement": "four-requirements/REQ-2026-001/原始需求.md",
-      "rules": "four-requirements/REQ-2026-001/业务规则与范围.md",
-      "questions": "four-requirements/REQ-2026-001/待确认与差异.md",
-      "implementation": "four-requirements/REQ-2026-001/基线与实现约束.md",
-      "acceptance": "four-requirements/REQ-2026-001/测试定义与验收.md",
+      "requirement": "four-requirements/REQ-2026-001/Original Requirement.md",
+      "rules": "four-requirements/REQ-2026-001/Business Rules and Scope.md",
+      "questions": "four-requirements/REQ-2026-001/Open Questions and Differences.md",
+      "implementation": "four-requirements/REQ-2026-001/Baseline and Implementation Constraints.md",
+      "acceptance": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-001/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-001\n原始需求 SHA256：6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13\n完整需求：Talents发布资料 four-requirements/REQ-2026-001/原始需求.md（原文v1.0）。\n范围：信用卡账单/消费分期，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "业务需求编号：REQ-2026-001\n原始需求 SHA256：6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13\n完整需求：Talents发布资料 four-requirements/REQ-2026-001/Original Requirement.md（原文v1.0）。\n范围：信用卡账单/消费分期，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
     "casesVersion": "REQ-2026-001-cases-v1",
     "cases": [
       {
@@ -99,14 +99,14 @@ export const fourRequirementScenarios = [
     "sourceSha256": "3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9",
     "manifest": "four-requirements/REQ-2026-002/provenance.json",
     "files": {
-      "requirement": "four-requirements/REQ-2026-002/原始需求.md",
-      "rules": "four-requirements/REQ-2026-002/业务规则与范围.md",
-      "questions": "four-requirements/REQ-2026-002/待确认与差异.md",
-      "implementation": "four-requirements/REQ-2026-002/基线与实现约束.md",
-      "acceptance": "four-requirements/REQ-2026-002/测试定义与验收.md",
+      "requirement": "four-requirements/REQ-2026-002/Original Requirement.md",
+      "rules": "four-requirements/REQ-2026-002/Business Rules and Scope.md",
+      "questions": "four-requirements/REQ-2026-002/Open Questions and Differences.md",
+      "implementation": "four-requirements/REQ-2026-002/Baseline and Implementation Constraints.md",
+      "acceptance": "four-requirements/REQ-2026-002/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-002/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-002\n原始需求 SHA256：3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9\n完整需求：Talents发布资料 four-requirements/REQ-2026-002/原始需求.md（原文v1.0）。\n范围：信用卡挂失与补卡，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "业务需求编号：REQ-2026-002\n原始需求 SHA256：3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9\n完整需求：Talents发布资料 four-requirements/REQ-2026-002/Original Requirement.md（原文v1.0）。\n范围：信用卡挂失与补卡，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
     "casesVersion": "REQ-2026-002-cases-v1",
     "cases": [
       {
@@ -186,14 +186,14 @@ export const fourRequirementScenarios = [
     "sourceSha256": "a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01",
     "manifest": "four-requirements/REQ-2026-003/provenance.json",
     "files": {
-      "requirement": "four-requirements/REQ-2026-003/原始需求.md",
-      "rules": "four-requirements/REQ-2026-003/业务规则与范围.md",
-      "questions": "four-requirements/REQ-2026-003/待确认与差异.md",
-      "implementation": "four-requirements/REQ-2026-003/基线与实现约束.md",
-      "acceptance": "four-requirements/REQ-2026-003/测试定义与验收.md",
+      "requirement": "four-requirements/REQ-2026-003/Original Requirement.md",
+      "rules": "four-requirements/REQ-2026-003/Business Rules and Scope.md",
+      "questions": "four-requirements/REQ-2026-003/Open Questions and Differences.md",
+      "implementation": "four-requirements/REQ-2026-003/Baseline and Implementation Constraints.md",
+      "acceptance": "four-requirements/REQ-2026-003/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-003/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-003\n原始需求 SHA256：a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01\n完整需求：Talents发布资料 four-requirements/REQ-2026-003/原始需求.md（原文v1.0）。\n范围：信用卡额度调整申请与审批，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "业务需求编号：REQ-2026-003\n原始需求 SHA256：a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01\n完整需求：Talents发布资料 four-requirements/REQ-2026-003/Original Requirement.md（原文v1.0）。\n范围：信用卡额度调整申请与审批，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
     "casesVersion": "REQ-2026-003-cases-v1",
     "cases": [
       {
@@ -273,14 +273,14 @@ export const fourRequirementScenarios = [
     "sourceSha256": "341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484",
     "manifest": "four-requirements/REQ-2026-004/provenance.json",
     "files": {
-      "requirement": "four-requirements/REQ-2026-004/原始需求.md",
-      "rules": "four-requirements/REQ-2026-004/业务规则与范围.md",
-      "questions": "four-requirements/REQ-2026-004/待确认与差异.md",
-      "implementation": "four-requirements/REQ-2026-004/基线与实现约束.md",
-      "acceptance": "four-requirements/REQ-2026-004/测试定义与验收.md",
+      "requirement": "four-requirements/REQ-2026-004/Original Requirement.md",
+      "rules": "four-requirements/REQ-2026-004/Business Rules and Scope.md",
+      "questions": "four-requirements/REQ-2026-004/Open Questions and Differences.md",
+      "implementation": "four-requirements/REQ-2026-004/Baseline and Implementation Constraints.md",
+      "acceptance": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-004/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-004\n原始需求 SHA256：341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484\n完整需求：Talents发布资料 four-requirements/REQ-2026-004/原始需求.md（原文v1.0）。\n范围：交易争议在线申请与处理，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "业务需求编号：REQ-2026-004\n原始需求 SHA256：341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484\n完整需求：Talents发布资料 four-requirements/REQ-2026-004/Original Requirement.md（原文v1.0）。\n范围：交易争议在线申请与处理，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
     "casesVersion": "REQ-2026-004-cases-v1",
     "cases": [
       {

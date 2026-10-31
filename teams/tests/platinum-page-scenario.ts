@@ -19,10 +19,10 @@ const title = '白金卡消费返现权益说明页', artifactId = 'a-platinum-c
 const description = '白金卡客户在未来3个月消费额外返现0.5%。增加权益入口与说明页，非白金卡不展示入口；不修改业务计算或入账。日期起算、消费范围、限额、结算等待确认。';
 const nodes: RequirementNode[] = ['prepare', 'develop', 'verify', 'accept'];
 const files: Record<RequirementNode, string[]> = {
-  prepare: ['权益展示规则', '待确认清单', '现有模块与UI参考'],
-  develop: ['权益展示规则', '现有模块与UI参考', '待确认清单'],
-  verify: ['验收用例', '权益展示规则', '待确认清单'],
-  accept: ['验收用例', '权益展示规则', '待确认清单'],
+  prepare: ['Benefit Display Rules', 'Open Questions Checklist', 'Existing Modules and UI Reference'],
+  develop: ['Benefit Display Rules', 'Existing Modules and UI Reference', 'Open Questions Checklist'],
+  verify: ['Acceptance Cases', 'Benefit Display Rules', 'Open Questions Checklist'],
+  accept: ['Acceptance Cases', 'Benefit Display Rules', 'Open Questions Checklist'],
 };
 const skills: Record<RequirementNode, string[]> = {
   prepare: ['ba-requirement-analysis', 'ba-acceptance-criteria'],
@@ -70,7 +70,7 @@ try {
   assert.equal(sourceFacts.artifactId, artifactId); assert.equal(sourceFacts.projectId, 'carddemo'); assert.equal(sourceFacts.exactTitle, title);
   for (const source of sourceFacts.sourceFiles) assert.equal(hash(await readFile(resolve('..', source.path))), source.sha256, 'source provenance must match the real repository file');
   for (const file of sourceFacts.knowledgeFiles) assert.equal(hash((await readTalentsFile(artifactId, 1, file.path)).content), file.sha256, 'published knowledge must match its declared provenance');
-  const rules = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/权益展示规则.md')).content, implementation = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/现有模块与UI参考.md')).content;
+  const rules = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/Benefit Display Rules.md')).content, implementation = (await readTalentsFile(artifactId, 1, 'platinum-cashback-page/Existing Modules and UI Reference.md')).content;
   assert.match(rules, /额外\s*0\.5%/); assert.match(rules, /未来\s*3\s*个月/); assert.match(rules, /非白金卡.*不可见/); assert.match(rules, /不新增.*返现计算.*入账/); assert.match(rules, /日期起算.*未定/);
   assert.match(implementation, /pageCardDetail/); assert.match(implementation, /CardResponse/); assert.match(implementation, /没有白金等级/);
   checks.push('published source content is readable, matches repository/provenance hashes and retains the agreed policy and implementation limits');

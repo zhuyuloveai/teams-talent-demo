@@ -47,7 +47,7 @@ export function fileLabel(key: string) {
   if (name === 'metadata.json') return 'PR #' + parts.pop();
   if (name === 'meta.json') return parts[1] ? parts[1] + '：挖掘元数据' : '挖掘元数据';
   if (name === 'index.md') return parts[0] === 'miner' ? '范式索引' : '索引';
-  if (name.startsWith('Skill改进-')) return 'Skill 改进：' + name.replace(/^Skill改进-|\.md$/g, '');
+  if (name.startsWith('Skill Improvement - ')) return 'Skill improvement: ' + name.replace(/^Skill Improvement - |\.md$/g, '');
   return name.replace(/\.(md|html)$/, '');
 }
 export function fileType(key: string): 'markdown' | 'html' | 'json' | 'text' {

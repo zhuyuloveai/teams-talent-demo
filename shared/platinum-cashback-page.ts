@@ -5,8 +5,8 @@ export const platinumCashbackPage = {
   description: '在信用卡详情中增加“消费返现权益”入口，白金卡客户可查看活动说明，非白金卡不展示入口。只确定白金卡、未来3个月、额外0.5%；页面展示适用客户/期限/比例，并区分已确认与待确认。日期起算、消费范围、上限、舍入、到账时间、退款口径待定。仅做权益入口和说明页，不改实际返现计算/入账。需求澄清形成PRD，后续设计代码/测试报告按现有四节点合同。',
   manifest: 'platinum-cashback-page/provenance.json',
   files: {
-    rules: 'platinum-cashback-page/权益展示规则.md', questions: 'platinum-cashback-page/待确认清单.md',
-    implementation: 'platinum-cashback-page/现有模块与UI参考.md', acceptance: 'platinum-cashback-page/验收用例.md',
+    rules: 'platinum-cashback-page/Benefit Display Rules.md', questions: 'platinum-cashback-page/Open Questions Checklist.md',
+    implementation: 'platinum-cashback-page/Existing Modules and UI Reference.md', acceptance: 'platinum-cashback-page/Acceptance Cases.md',
   },
 } as const;
 export type ScenarioNode = 'prepare' | 'develop' | 'verify' | 'accept';

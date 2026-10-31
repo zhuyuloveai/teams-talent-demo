@@ -9,7 +9,7 @@ import { seedState } from '../server/seed.ts';
 
 test('exports only published artifacts, at their published version', () => {
   const state = seedState();
-  state.artifacts.push({ id: 'a-draft', projectId: 'carddemo', cap: 'traj', name: '草稿', desc: '', sources: ['s-sessions'], kind: 'files', files: ['trajectory/platinum/改进建议.md'], published: null, draft: { created: '2026-10-27 09:00', revisions: [] } });
+  state.artifacts.push({ id: 'a-draft', projectId: 'carddemo', cap: 'traj', name: '草稿', desc: '', sources: ['s-sessions'], kind: 'files', files: ['trajectory/platinum/Improvement Suggestions.md'], published: null, draft: { created: '2026-10-27 09:00', revisions: [] } });
   const { knowledge } = buildExport(state);
   assert.deepEqual(knowledge.artifacts.map(a => [a.id, a.version]), [['a-platinum-cashback-page', 1],
     ['a-req-2026-001', 1], ['a-req-2026-002', 1], ['a-req-2026-003', 1], ['a-req-2026-004', 1],
@@ -28,14 +28,14 @@ test('published files use the published text: v1 overrides and review revisions'
   const state = seedState();
   const { files } = buildExport(state);
   const biz = files.get('a-biz/v1')!;
-  const rules = biz.find(f => f.path === 'doc-knowledge/业务规则目录.md');
-  if (readContent('doc-knowledge-v1/业务规则目录.md') != null) assert.equal(rules!.text, readContent('doc-knowledge-v1/业务规则目录.md'));
-  const terms = biz.find(f => f.path === 'doc-knowledge/统一语言术语表.md');
-  if (terms) assert.equal(terms.text, readContent('doc-knowledge/统一语言术语表.md'));
+  const rules = biz.find(f => f.path === 'doc-knowledge/Business Rules Catalog.md');
+  if (readContent('doc-knowledge-v1/Business Rules Catalog.md') != null) assert.equal(rules!.text, readContent('doc-knowledge-v1/Business Rules Catalog.md'));
+  const terms = biz.find(f => f.path === 'doc-knowledge/Ubiquitous Language Glossary.md');
+  if (terms) assert.equal(terms.text, readContent('doc-knowledge/Ubiquitous Language Glossary.md'));
 
   // A publish from the review page stores revised text in published.over.
   const std = state.artifacts.find(a => a.id === 'a-std')!;
-  std.published = { ...std.published!, version: 2, over: { 'doc-knowledge/银行编码规范要点.md': { text: '# 修订后的规范\n' } } };
+  std.published = { ...std.published!, version: 2, over: { 'doc-knowledge/Bank Coding Standards Essentials.md': { text: '# 修订后的规范\n' } } };
   assert.equal(buildExport(state).files.get('a-std/v2')![0].text, '# 修订后的规范\n');
 });
 
@@ -48,8 +48,8 @@ test('writes knowledge.json and the files, and removes versions no longer publis
   for (const a of knowledge.artifacts) for (const f of a.files) await access(join(dir, 'talents', 'files', a.id, 'v' + a.version, f.path));
   const miner = knowledge.artifacts.find((a: any) => a.id === 'a-miner');
   const index = await readFile(join(dir, 'talents', 'files', 'a-miner', 'v2', 'miner', 'index.md'), 'utf8');
-  assert.match(index, /消费返现与奖励发放/);
-  assert.match(index, /统一错误码与异常处理/);
+  assert.match(index, /Spending Cashback and Reward Issuance/);
+  assert.match(index, /Unified Error Codes and Exception Handling/);
   // PR-mode specs carry their PR records; diff-mode specs carry their mining metadata.
   assert.ok(miner.files.some((f: any) => f.type === 'json' && f.title.startsWith('PR #')));
   assert.ok(miner.files.some((f: any) => f.type === 'json' && /挖掘元数据/.test(f.title)));

@@ -20,7 +20,7 @@ npm run setup      # Teams 与 Talents 各自 npm ci
 npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
 ```
 
-- 后台启停：`npm start` / `npm stop`（macOS 也可双击 `启动演示.command` / `停止演示.command`，Windows 用 `start-demo.cmd`）。
+- 后台启停：`npm start` / `npm stop`（macOS 也可双击 `Start Demo.command` / `Stop Demo.command`，Windows 用 `start-demo.cmd`）。
 - 单独启动：`cd teams && npm run dev`，或 `cd talents && npm run dev`。另一边没启动时，读取 `shared/seed/` 中提交的初始数据。
 
 任务追溯保留 CLI 进度与原生会话正文。Teams 启动的 iCode 不再启用 OTLP Trace，无需安装 Trace 服务或 exporter。
@@ -51,7 +51,7 @@ npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
 
 业务需求编号：REQ-2026-001
 原始需求 SHA256：6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13
-完整需求：Talents发布资料 four-requirements/REQ-2026-001/原始需求.md（原文v1.0）。
+完整需求：Talents发布资料 four-requirements/REQ-2026-001/Original Requirement.md（原文v1.0）。
 范围：信用卡账单/消费分期，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
 试验口径版本：test-profile-v2
 试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
@@ -69,7 +69,7 @@ npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
 
 业务需求编号：REQ-2026-002
 原始需求 SHA256：3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9
-完整需求：Talents发布资料 four-requirements/REQ-2026-002/原始需求.md（原文v1.0）。
+完整需求：Talents发布资料 four-requirements/REQ-2026-002/Original Requirement.md（原文v1.0）。
 范围：信用卡挂失与补卡，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
 试验口径版本：test-profile-v2
 试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
@@ -87,7 +87,7 @@ npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
 
 业务需求编号：REQ-2026-003
 原始需求 SHA256：a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01
-完整需求：Talents发布资料 four-requirements/REQ-2026-003/原始需求.md（原文v1.0）。
+完整需求：Talents发布资料 four-requirements/REQ-2026-003/Original Requirement.md（原文v1.0）。
 范围：信用卡额度调整申请与审批，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
 试验口径版本：test-profile-v2
 试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
@@ -105,7 +105,7 @@ npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
 
 业务需求编号：REQ-2026-004
 原始需求 SHA256：341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484
-完整需求：Talents发布资料 four-requirements/REQ-2026-004/原始需求.md（原文v1.0）。
+完整需求：Talents发布资料 four-requirements/REQ-2026-004/Original Requirement.md（原文v1.0）。
 范围：交易争议在线申请与处理，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
 试验口径版本：test-profile-v2
 试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
@@ -160,7 +160,7 @@ npm run reset:task -- --restore "/absolute/path/to/task-reset-backups/backup-id"
 
 恢复前同样先核对预览并结束目标会话；备份后的新变化会接受冲突检查。需要纳入自定义目录中的 Teams CLI 回执时，可加 `--receipt-root` 并提供绝对目录，仍按精确项目和任务范围处理。
 
-macOS 入口为 `./重置任务.command`，Windows 为 `reset-task.cmd`，参数与上述命令一致；无参数时只显示帮助。也可在 `teams/` 内执行 `npm run reset:task -- …`。入口沿用已有本机配置，不会自动安装依赖或选择某个任务。
+macOS 入口为 `./Reset Task.command`，Windows 为 `reset-task.cmd`，参数与上述命令一致；无参数时只显示帮助。也可在 `teams/` 内执行 `npm run reset:task -- …`。入口沿用已有本机配置，不会自动安装依赖或选择某个任务。
 
 ## 数据怎么流动
 
