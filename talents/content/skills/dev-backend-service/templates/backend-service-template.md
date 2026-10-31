@@ -1,26 +1,26 @@
-# 后端服务实现模板
+# Backend service implementation template
 
 ```text
 application/
-  UseCase/Service        # 用例编排
+  UseCase/Service        # Use case orchestration
 domain/
-  model/                 # 实体/值对象/聚合根
-  service/               # 领域服务与规则
+  model/                 # Entities / value objects / aggregate roots
+  service/               # Domain services and rules
 infrastructure/
-  repository/            # 数据访问
-  client/                # 外部接口
+  repository/            # Data access
+  client/                # External interfaces
 api/
-  dto/                   # DTO/VO/Entity映射
+  dto/                   # DTO/VO/Entity mapping
   controller/            # REST/gRPC
 ```
 
-每条业务规则标注需求/规则编号。
+Annotate every business rule with its requirement / rule ID.
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 规则追溯 | 业务规则↔需求编号↔单测 |
-| 错误码 | 统一错误码映射表 |
+| Rule traceability | Business rule ↔ requirement ID ↔ unit test |
+| Error codes | Unified error code mapping table |

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "72965a7c-be81-4e0c-9c6a-bac8f37c7a76",
   "name": "Cross-Service Idempotent Posting and Retry",
-  "description": "跨服务奖励幂等入账开发范式：重复评估检查、账户入账去重、失败保留待处理状态及人工重试",
-  "scenario": "Cross-Service Idempotent Posting and Retry：实现跨服务奖励幂等入账，包含重复评估检查、账户入账去重、失败保留待处理状态及人工重试。",
+  "description": "Development pattern for idempotent cross-service reward posting: duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry",
+  "scenario": "Cross-Service Idempotent Posting and Retry: implement idempotent cross-service reward posting, including a duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {

@@ -1,194 +1,194 @@
-﻿# 支付业务基础与监管约束
+# Payment Business Basics and Regulatory Constraints
 
-## 1. 支付业务全景
+## 1. Payment business overview
 
-银行支付体系覆盖从客户发起资金转移到最终资金交收的全链路，核心环节：
+The bank payment system covers the full chain from the customer initiating a fund movement to the final exchange of funds. Core steps:
 
 ```
-客户发起 -> 渠道校验 -> 风控筛查 -> 账务处理 -> 清算 -> 对账 -> 结算 -> 客户通知
+Customer initiates -> Channel validation -> Risk screening -> Posting -> Clearing -> Reconciliation -> Settlement -> Customer notification
 ```
 
-### 1.1 支付类型
+### 1.1 Payment types
 
-| 类型 | 说明 | 典型场景 | 监管重点 |
+| Type | Description | Typical scenario | Regulatory focus |
 |------|------|---------|---------|
-| 行内转账 | 同行账户间资金划转 | 柜面/网银/手机银行转账 | 限额、身份核验 |
-| 跨行转账 | 跨行账户间资金划转 | 网银互联、超级网银 | CNAPS渠道、到账时效 |
-| 批量代发 | 批量向多账户发放资金 | 代发工资、代发补贴 | 批次完整性、失败处理 |
-| 批量代扣 | 批量从多账户扣款 | 代扣水电费、贷款还款 | 授权链路、扣款失败重试 |
-| 缴费支付 | 缴纳公共事业费用 | 水电燃气费、交通罚款 | 收费方资质、对账 |
-| 跨境汇款 | 跨境资金转移 | 留学缴费、国际贸易 | 外管局申报、反洗钱 |
-| 二维码支付 | 扫码收付款 | 商户收款、C2C转账 | 条码规范、限额 |
-| 协议支付 | 签约后自动扣款 | 基金定投、保险续费 | 协议有效期、解约机制 |
+| Intra-bank transfer | Fund movement between accounts at the same bank | Counter / internet banking / mobile banking transfer | Limits, identity verification |
+| Interbank transfer | Fund movement between accounts at different banks | Internet banking interconnection, Super Internet Banking | CNAPS channel, crediting time |
+| Batch disbursement | Paying funds to many accounts in a batch | Payroll, subsidy payments | Batch completeness, failure handling |
+| Batch deduction | Debiting many accounts in a batch | Utility bills, loan repayments | Authorization chain, retry of failed debits |
+| Bill payment | Paying public utility fees | Water, electricity and gas bills, traffic fines | Payee qualification, reconciliation |
+| Cross-border remittance | Cross-border fund movement | Tuition abroad, international trade | SAFE declaration, AML |
+| QR code payment | Paying and collecting by scanning a code | Merchant collection, C2C transfer | QR code standard, limits |
+| Agreement payment | Automatic debit after signing an agreement | Fund investment plans, insurance renewals | Agreement validity, termination process |
 
-### 1.2 核心概念
+### 1.2 Core concepts
 
-| 概念 | 定义 | 注意事项 |
+| Concept | Definition | Notes |
 |------|------|---------|
-| 发起方 | 发起支付指令的客户或系统 | 须身份认证与授权 |
-| 收款方 | 接收资金的账户持有人 | 须校验收款账户有效性 |
-| 交易号 | 全局唯一交易标识 | 全链路追溯主键，不可复用 |
-| 参考号 | 渠道/批次维度辅助标识 | 用于对账匹配，可重复 |
-| 记账 | 在账户余额上反映资金变动 | 借贷记账法，先借后贷 |
-| 清算 | 交易数据汇总与净额计算 | 不涉及实际资金移动 |
-| 结算 | 实际资金交收 | 通过央行准备金账户 |
-| 对账 | 交易记录与账务记录一致性核对 | T+1日终批处理 |
+| Initiator | The customer or system that initiates the payment instruction | Must be authenticated and authorized |
+| Payee | The account holder who receives the funds | The payee account must be validated |
+| Transaction ID | Globally unique transaction identifier | Primary key for end-to-end tracing; never reused |
+| Reference number | Auxiliary identifier at channel/batch level | Used for reconciliation matching; may repeat |
+| Posting | Reflecting a fund movement in the account balance | Double-entry bookkeeping, debit first, then credit |
+| Clearing | Aggregating transaction data and calculating net amounts | No actual movement of funds |
+| Settlement | Actual exchange of funds | Through central bank reserve accounts |
+| Reconciliation | Checking that transaction records and accounting records agree | T+1 end-of-day batch |
 
-> **关键区分**：清算 ≠ 结算。清算是"算账"（净额计算），结算是"交钱"（资金转移）。日常开发中严禁混用。详见词汇表"易混淆术语对比"。
+> **Key distinction**: clearing ≠ settlement. Clearing is "doing the sums" (net calculation); settlement is "paying the money" (fund movement). Never mix them up in day-to-day development. See "Easily confused terms" in the glossary.
 
-### 1.3 限额体系
+### 1.3 Limit hierarchy
 
-支付限额是多层级参数化控制，从松到紧：
+Payment limits are a multi-level parameterized control, from loose to tight:
 
-| 层级 | 限额类型 | 校验时机 | 典型默认值 |
+| Level | Limit type | When checked | Typical default |
 |------|---------|---------|-----------|
-| L1 | 单笔限额 | 交易发起时 | 5万元/笔 |
-| L2 | 日累计限额 | 交易发起时 | 20万元/日 |
-| L3 | 年累计限额 | 交易发起时 | 100万元/年 |
-| L4 | 渠道限额 | 交易发起时 | 按渠道单独配置 |
-| L5 | 客户分级限额 | 交易发起时 | 按客户风险等级 |
+| L1 | Single transaction limit | When the transaction is initiated | CNY 50,000 per transaction |
+| L2 | Daily cumulative limit | When the transaction is initiated | CNY 200,000 per day |
+| L3 | Annual cumulative limit | When the transaction is initiated | CNY 1,000,000 per year |
+| L4 | Channel limit | When the transaction is initiated | Configured per channel |
+| L5 | Customer tier limit | When the transaction is initiated | By customer risk level |
 
-**限额校验规则：**
-- 校验顺序：单笔 -> 日累计 -> 年累计 -> 渠道 -> 客户分级（短路评估，任一不满足即拒绝）
-- 限额参数须可配置（不硬编码），支持参数化迁移
-- 限额变更须留审计日志，变更生效时间精确到分钟
-- 限额超额须返回明确错误码与当前可用额度
+**Limit check rules:**
+- Check order: single transaction -> daily cumulative -> annual cumulative -> channel -> customer tier (short-circuit evaluation; reject as soon as one fails)
+- Limit parameters must be configurable (not hard-coded) and support parameterized migration
+- Limit changes must leave an audit log; the effective time is precise to the minute
+- An exceeded limit must return a clear error code and the currently available amount
 
-### 1.4 状态机
+### 1.4 State machine
 
-支付交易核心状态机：
+Core state machine of a payment transaction:
 
 ```
-[INIT] --发起--> [PENDING] --风控通过--> [PROCESSING] --记账成功--> [SUCCESS]
-                    |                       |                        |
-                    |                       |--记账失败--> [FAILED]   |--超时--> [TIMEOUT]
-                    |                       |--风控拒绝--> [REJECTED]
-                    |--风控拒绝--> [REJECTED]
+[INIT] --submit--> [PENDING] --risk passed--> [PROCESSING] --posting succeeded--> [SUCCESS]
+                    |                           |                                   |
+                    |                           |--posting failed--> [FAILED]       |--timeout--> [TIMEOUT]
+                    |                           |--risk rejected--> [REJECTED]
+                    |--risk rejected--> [REJECTED]
                     
-[SUCCESS] --发起冲正--> [REVERSING] --冲正成功--> [REVERSED]
+[SUCCESS] --start reversal--> [REVERSING] --reversal succeeded--> [REVERSED]
 ```
 
-| 状态 | 含义 | 允许的后续状态 |
+| State | Meaning | Allowed next states |
 |------|------|--------------|
-| INIT | 已创建未提交 | PENDING, CANCELLED |
-| PENDING | 已提交待风控 | PROCESSING, REJECTED |
-| PROCESSING | 风控通过处理中 | SUCCESS, FAILED, TIMEOUT |
-| SUCCESS | 交易成功 | REVERSING |
-| FAILED | 交易失败（可重试） | PENDING（重试） |
-| REJECTED | 风控拒绝（不可重试） | 终态 |
-| TIMEOUT | 超时未确认 | SUCCESS, FAILED（人工确认后） |
-| REVERSING | 冲正中 | REVERSED, FAILED |
-| REVERSED | 已冲正 | 终态 |
-| CANCELLED | 已撤销 | 终态 |
+| INIT | Created, not submitted | PENDING, CANCELLED |
+| PENDING | Submitted, awaiting risk control | PROCESSING, REJECTED |
+| PROCESSING | Risk passed, processing | SUCCESS, FAILED, TIMEOUT |
+| SUCCESS | Transaction succeeded | REVERSING |
+| FAILED | Transaction failed (retryable) | PENDING (retry) |
+| REJECTED | Rejected by risk control (not retryable) | Final state |
+| TIMEOUT | Timed out, unconfirmed | SUCCESS, FAILED (after manual confirmation) |
+| REVERSING | Reversal in progress | REVERSED, FAILED |
+| REVERSED | Reversed | Final state |
+| CANCELLED | Cancelled | Final state |
 
-> **开发约束**：状态迁移必须通过状态机引擎，禁止直接UPDATE状态字段。每次迁移须记录操作人、时间、原因。
+> **Development constraint**: state transitions must go through the state machine engine; a direct UPDATE of the status field is forbidden. Every transition must record the operator, time and reason.
 
-## 2. 清算与对账
+## 2. Clearing and reconciliation
 
-### 2.1 清算流程
+### 2.1 Clearing process
 
 ```
-日终批处理 -> 交易数据汇总 -> 按对手行/渠道分组 -> 净额计算 -> 生成清算报表 -> 提交结算
+End-of-day batch -> Aggregate transaction data -> Group by counterparty bank/channel -> Net calculation -> Generate clearing report -> Submit for settlement
 ```
 
-- **清算批次**：按渠道/对手行/币种分组，每批生成独立清算报表
-- **净额计算**：应收 - 应付 = 净额，净额为正则收，为负则付
-- **清算文件**：标准格式（如央行CNAPS 8583报文），含批次头/明细/尾校验
+- **Clearing batch**: grouped by channel / counterparty bank / currency; each batch produces its own clearing report
+- **Net calculation**: receivable - payable = net; a positive net is received, a negative net is paid
+- **Clearing file**: standard format (for example the central bank CNAPS 8583 message), with batch header / details / trailer check
 
-### 2.2 对账机制
+### 2.2 Reconciliation
 
-| 对账类型 | 对账双方 | 频率 | 差异处理 |
+| Reconciliation type | Parties | Frequency | Difference handling |
 |---------|---------|------|---------|
-| 内部对账 | 交易系统 vs 账务系统 | T+1日终 | 长款/短款挂账，人工核实 |
-| 外部对账 | 本行 vs 对手行/银联 | T+1日终 | 差异报表，T+2前解决 |
-| 渠道对账 | 本行 vs 支付渠道 | T+1日终 | 差异分类：长款/短款/串户 |
-| 总分核对 | 总账 vs 分户账 | T+1日终 | 余额不平即告警，阻断日终 |
+| Internal reconciliation | Transaction system vs accounting system | T+1 end of day | Excess/short records put in suspense, verified manually |
+| External reconciliation | Our bank vs counterparty bank / UnionPay | T+1 end of day | Difference report, resolved before T+2 |
+| Channel reconciliation | Our bank vs payment channel | T+1 end of day | Difference categories: excess record / short record / wrong account |
+| General ledger to sub-ledger check | General ledger vs sub-ledger accounts | T+1 end of day | Alert on any imbalance; blocks end of day |
 
-**对账差异类型：**
+**Reconciliation difference types:**
 
-| 差异类型 | 定义 | 处理方式 |
+| Difference type | Definition | Handling |
 |---------|------|---------|
-| 长款 | 我方有记录，对方无 | 挂账待查，T+2联系对方 |
-| 短款 | 对方有记录，我方无 | 补录或发起查询 |
-| 金额不符 | 双方有记录但金额不同 | 以原始交易为准，修正记录 |
-| 串户 | 记录正确但入错账户 | 调账处理，留审计日志 |
+| Excess record | We have a record, the other party does not | Put in suspense; contact the other party on T+2 |
+| Short record | The other party has a record, we do not | Add the record or raise an inquiry |
+| Amount mismatch | Both have a record but the amounts differ | The original transaction prevails; correct the record |
+| Wrong account | The record is correct but booked to the wrong account | Adjust the accounts and keep an audit log |
 
-## 3. 监管约束
+## 3. Regulatory constraints
 
-### 3.1 反洗钱（AML）
+### 3.1 Anti-money laundering (AML)
 
-| 要求 | 说明 | 系统实现 |
+| Requirement | Description | System implementation |
 |------|------|---------|
-| 大额交易报告 | 单笔/累计超5万元人民币须上报 | 交易完成后触发报送 |
-| 可疑交易报告 | 符合可疑模式的交易须上报 | 规则引擎实时筛查 |
-| 客户身份识别 | KYC要求，须核实客户身份 | 开户/首次交易强制核验 |
-| 黑名单筛查 | 制裁名单/高风险名单筛查 | 交易前实时比对 |
-| 交易留痕 | 所有交易记录须保留至少5年 | 不可篡改的审计日志 |
+| Large-value transaction report | Single or cumulative amounts above CNY 50,000 must be reported | Report triggered after the transaction completes |
+| Suspicious transaction report | Transactions matching suspicious patterns must be reported | Real-time screening by the rules engine |
+| Customer identification | KYC requirement; the customer's identity must be verified | Mandatory verification at account opening / first transaction |
+| Blacklist screening | Screening against sanctions lists / high-risk lists | Real-time matching before the transaction |
+| Transaction trail | All transaction records must be kept for at least 5 years | Tamper-proof audit log |
 
-### 3.2 数据安全与隐私
+### 3.2 Data security and privacy
 
-| 要求 | 来源 | 系统实现 |
+| Requirement | Source | System implementation |
 |------|------|---------|
-| 敏感信息脱敏 | 《个人信息保护法》 | 卡号/证件号展示时脱敏 |
-| 数据分类分级 | 《数据安全法》/行内标准 | 按密级标注与访问控制 |
-| 传输加密 | PCI DSS / 行内安全规范 | TLS 1.2+，敏感字段国密SM4 |
-| 日志脱敏 | 行内日志规范 | 日志中禁止出现完整卡号/密码 |
+| Masking of sensitive information | Personal Information Protection Law | Card numbers / ID numbers masked on display |
+| Data classification and grading | Data Security Law / internal standard | Labeled by classification level with access control |
+| Encryption in transit | PCI DSS / internal security standard | TLS 1.2+, sensitive fields with SM4 (Chinese national cryptographic standard) |
+| Log masking | Internal logging standard | Full card numbers / passwords must never appear in logs |
 
-### 3.3 支付清算法规
+### 3.3 Payment clearing regulations
 
-| 法规/标准 | 约束 |
+| Regulation/standard | Constraint |
 |----------|------|
-| 《非银行支付机构条例》 | 支付业务资质与备付金管理 |
-| CNAPS规范 | 大额/小额支付系统报文格式与时效 |
-| ISO 20022 | 支付报文国际标准（pain/pacs/camt系列） |
-| 跨境支付规定 | 外管局申报、反洗钱加强筛查 |
-| 备付金集中存管 | 全额集中交存央行，专户管理 |
+| Regulations on Non-Bank Payment Institutions | Payment business licensing and reserve fund management |
+| CNAPS specification | Message formats and timing of the high-value/low-value payment systems |
+| ISO 20022 | International standard for payment messages (pain/pacs/camt series) |
+| Cross-border payment rules | SAFE declaration, enhanced AML screening |
+| Centralized deposit of reserve funds | Reserve funds deposited in full with the central bank, in dedicated accounts |
 
-## 4. 典型业务规则
+## 4. Typical business rules
 
-### 4.1 转账限额规则
-
-```
-规则BR-PAY-001: 单笔转账金额不得超过单笔限额参数（参数化，不硬编码）
-规则BR-PAY-002: 日累计转账金额不得超过日累计限额参数
-规则BR-PAY-003: 限额校验在记账前执行，短路评估
-规则BR-PAY-004: 限额超额返回错误码PAY-AMT-LIMIT-EXCEEDED + 当前可用额度
-规则BR-PAY-005: 限额参数变更须审计日志，精确到分钟级生效
-```
-
-### 4.2 冲正规则
+### 4.1 Transfer limit rules
 
 ```
-规则BR-PAY-010: 只有SUCCESS状态交易可发起冲正
-规则BR-PAY-011: 冲正金额必须等于原交易金额（全额冲正）
-规则BR-PAY-012: 冲正须在T日内完成，跨日冲正须人工审批
-规则BR-PAY-013: 冲正成功后原交易状态变更为REVERSED，不可再次冲正
+Rule BR-PAY-001: A single transfer amount must not exceed the single transaction limit parameter (parameterized, not hard-coded)
+Rule BR-PAY-002: The daily cumulative transfer amount must not exceed the daily cumulative limit parameter
+Rule BR-PAY-003: The limit check runs before posting, with short-circuit evaluation
+Rule BR-PAY-004: An exceeded limit returns error code PAY-AMT-LIMIT-EXCEEDED + the currently available amount
+Rule BR-PAY-005: Limit parameter changes require an audit log and take effect with minute precision
 ```
 
-### 4.3 对账规则
+### 4.2 Reversal rules
 
 ```
-规则BR-PAY-020: T+1日终自动执行内部对账，总分不平则阻断日终批处理
-规则BR-PAY-021: 对账差异挂账后T+2日内须有处置结论
-规则BR-PAY-022: 差异处置须留审计日志（操作人/时间/原因/调账金额）
+Rule BR-PAY-010: Only transactions in SUCCESS state can be reversed
+Rule BR-PAY-011: The reversal amount must equal the original transaction amount (full reversal)
+Rule BR-PAY-012: A reversal must be completed on day T; a reversal on a later day requires manual approval
+Rule BR-PAY-013: After a successful reversal the original transaction changes to REVERSED and cannot be reversed again
 ```
 
-## 5. 术语一致性禁用清单
+### 4.3 Reconciliation rules
 
-> 完整清单见 `templates/glossary.md`。以下为高频禁用别名：
+```
+Rule BR-PAY-020: Internal reconciliation runs automatically at the end of T+1; if the general ledger and sub-ledgers do not balance, the end-of-day batch is blocked
+Rule BR-PAY-021: Every reconciliation difference put in suspense must have a resolution within T+2
+Rule BR-PAY-022: Difference handling must leave an audit log (operator / time / reason / adjustment amount)
+```
 
-| 禁用词 | 正确术语 | 禁用原因 |
+## 5. Forbidden terms for terminology consistency
+
+> The full list is in `templates/glossary.md`. The most frequent forbidden aliases:
+
+| Forbidden word | Correct term | Reason |
 |--------|---------|---------|
-| 转帐 | 转账 | 异体字，易混淆 |
-| 划账 | 转账 | 口语化，非标准 |
-| 日限额 | 日累计限额 | 简称歧义 |
-| 笔限额 | 单笔限额 | 简称歧义 |
-| 核账 | 对账 | 口语化，非标准 |
-| 流水号 | 交易号 | 流水号含歧义（可指批次号） |
-| 批量转账 | 批量代发 | 混淆转账与代发 |
-| 批量扣款 | 批量代扣 | 口语化 |
-| 国际转账 | 跨境汇款 | 口语化，跨境须外管申报 |
-| 多记 | 长款 | 口语化，非对账标准术语 |
-| 少记 | 短款 | 口语化，非对账标准术语 |
-| 错账 | 串户 | 泛化，串户是特定类型 |
-| 保证金 | 备付金 | 概念不同，保证金是担保，备付金是客户资金 |
+| transferal | Transfer | Non-standard variant, easily confused |
+| fund move | Transfer | Colloquial, non-standard |
+| daily limit | Daily Cumulative Limit | Ambiguous abbreviation |
+| txn limit | Single Transaction Limit | Ambiguous abbreviation |
+| account check | Reconciliation | Colloquial, non-standard |
+| serial number | Transaction ID | Ambiguous (can also mean a batch number) |
+| batch transfer | Batch Disbursement | Confuses transfer and disbursement |
+| batch debit | Batch Deduction | Colloquial |
+| international transfer | Cross-border Remittance | Colloquial; cross-border payments require a SAFE declaration |
+| over-recorded | Excess Record | Colloquial, not a standard reconciliation term |
+| under-recorded | Short Record | Colloquial, not a standard reconciliation term |
+| wrong posting | Wrong Account | Too generic; wrong account is a specific type |
+| security deposit | Reserve Fund | Different concept: a security deposit is collateral, a reserve fund is customer money |

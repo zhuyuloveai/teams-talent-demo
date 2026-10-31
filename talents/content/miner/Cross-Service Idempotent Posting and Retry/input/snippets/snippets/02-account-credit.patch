@@ -20,8 +20,8 @@ index 0000000..161896e
 +import java.util.List;
 +
 +/**
-+ * 账户用例服务。对应遗留程序 COACTVWC（查询）、COACTUPC（维护）、
-+ * CBTRN02C（记账）、COBIL00C（还款）、CBACT04C（利息入账）。
++ * Account use case service. Corresponds to the legacy programs COACTVWC (inquiry), COACTUPC (maintenance),
++ * CBTRN02C (posting), COBIL00C (repayment), CBACT04C (interest posting).
 + */
 +@Service
 +@Transactional
@@ -72,7 +72,7 @@ index 0000000..161896e
 +    }
 +
 +    /**
-+     * 营销返现入账（幂等）：同一 rewardId 重复调用只入账一次。
++     * Marketing cashback posting (idempotent): repeated calls with the same rewardId post only once.
 +     */
 +    public Account creditCashback(String accountId, String rewardId, String campaignId, BigDecimal amount) {
 +        if (rewardCredits.existsByRewardId(rewardId)) {
@@ -103,7 +103,7 @@ index 0000000..e7cfe38
 +import java.time.LocalDateTime;
 +
 +/**
-+ * 返现入账幂等记录：同一 rewardId 只允许入账一次（NR-REWARD-01）。
++ * Cashback posting idempotency record: each rewardId may be posted only once (NR-REWARD-01).
 + */
 +@Entity
 +@Table(name = "reward_credit")

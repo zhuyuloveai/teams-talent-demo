@@ -1,36 +1,36 @@
-# REQ-2026-001 · 企业测试用例定义与验收
+# REQ-2026-001 · Enterprise Test Case Definition and Acceptance
 
-来源：原始需求 §9 场景矩阵与 §10 验收标准。版本 REQ-2026-001-cases-v1。以下均为待执行用例，不是已运行报告；存在冲突的期望必须关联PRD决策，禁止直接标通过。测试资产插件提供用例，Talent提供验证知识与Skill。
+Source: original requirement §9 Scenario Matrix and §10 Acceptance Criteria (Executable). Version REQ-2026-001-cases-v1. All cases below are pending execution, not reports of completed runs; conflicting expectations must be linked to a PRD decision and must not be marked as passed directly. The test asset plugin provides the cases; Talent provides the verification knowledge and Skills.
 
-## 9. 场景矩阵
+## 9. Scenario Matrix
 
-| 类型 | 场景 | 角色 | 数据/接口 | 预期 |
+| Type | Scenario | Role | Data/API | Expectation |
 |------|------|------|-----------|------|
-| 主流程 | 1000.00 元已入账消费分 6 期 | 持卡人 | POST `/installments`，事务数据 0000000000000200 | 201，计划 `ACTIVE`，6 期还款计划生成，额度占用 +1000.00 |
-| 主流程 | 账单分期 500.00 元分 3 期 | 持卡人 | POST `/preview` + `/installments` | 总手续费 9.00，首期合计 175.67 |
-| 边界 | 单笔 100.00 元最小额分 12 期 | 持卡人 | POST `/installments`，principal = 100.00 | 201；每期本金 8.33，最后一期 8.37 |
-| 边界 | 分页 size = 100 查询计划列表 | 持卡人 | GET `/installments?page=1&size=100` | 200，返回条数 ≤ 100，耗时 p95 < 800ms |
-| 边界 | 试算令牌在第 30 分钟边界提交 | 持卡人 | POST `/installments`，previewToken 生成于 30 分钟前 | 409 `PREVIEW_EXPIRED` |
-| 异常 | 同一交易重复分期 | 持卡人 | POST `/installments`，sourceId 已存在生效计划 | 409 `ALREADY_INSTALLED`，无新计划 |
-| 异常 | 同一去重键重复提交 3 次 | 持卡人 | POST `/installments`，idempotencyKey 固定 | 3 次返回同一 plan_id，账务分录仅 1 组 |
-| 异常 | ledger-service 不可用 | 持卡人 | 停用 ledger 后 POST `/installments` | 503 `DOWNSTREAM_UNAVAILABLE`，无计划与还款计划落库 |
-| 异常 | 提前结清后再结清 | 持卡人 | POST `/installments/{id}/early-settlement` 第 2 次 | 409 `SETTLEMENT_NOT_ALLOWED` |
-| 权限 | 客户 A 查询客户 B 的计划 | 持卡人 | GET `/installments/{planId}`，planId 属于 B | 404 `INSTALLMENT_NOT_FOUND`，无数据泄露 |
-| 权限 | 运营触发协助结清 | 客服/运营 | POST `/installments/{id}/early-settlement`，token 含 `installment:settle:assist` | 200，审计记录 actor 为运营账号 |
+| Main flow | 1000.00 posted purchase split into 6 periods | Cardholder | POST `/installments`, transaction data 0000000000000200 | 201, plan `ACTIVE`, 6-period repayment schedule generated, limit occupation +1000.00 |
+| Main flow | Statement installment of 500.00 split into 3 periods | Cardholder | POST `/preview` + `/installments` | Total fees 9.00, first-period total 175.67 |
+| Boundary | Minimum single purchase of 100.00 split into 12 periods | Cardholder | POST `/installments`, principal = 100.00 | 201; 8.33 per period, 8.37 for the last period |
+| Boundary | Query the plan list with paging size = 100 | Cardholder | GET `/installments?page=1&size=100` | 200, at most 100 records returned, latency p95 < 800ms |
+| Boundary | Submit a preview token exactly at the 30-minute boundary | Cardholder | POST `/installments`, previewToken generated 30 minutes earlier | 409 `PREVIEW_EXPIRED` |
+| Exception | Install the same transaction twice | Cardholder | POST `/installments`, sourceId already has an effective plan | 409 `ALREADY_INSTALLED`, no new plan |
+| Exception | Submit the same deduplication key 3 times | Cardholder | POST `/installments`, fixed idempotencyKey | The same plan_id is returned 3 times, and only 1 set of accounting entries exists |
+| Exception | ledger-service unavailable | Cardholder | POST `/installments` after the ledger is stopped | 503 `DOWNSTREAM_UNAVAILABLE`, no plan or repayment schedule persisted |
+| Exception | Settle again after early settlement | Cardholder | POST `/installments/{id}/early-settlement` a second time | 409 `SETTLEMENT_NOT_ALLOWED` |
+| Permission | Customer A queries customer B's plan | Cardholder | GET `/installments/{planId}`, where planId belongs to B | 404 `INSTALLMENT_NOT_FOUND`, no data leakage |
+| Permission | Operations triggers an assisted settlement | Customer service/operations | POST `/installments/{id}/early-settlement` with a token containing `installment:settle:assist` | 200, audit records the operations account as actor |
 
-## 10. 验收标准（可执行化）
+## 10. Acceptance Criteria (Executable)
 
-| 故事 | Given | When | Then | 数据准备 |
+| Story | Given | When | Then | Data preparation |
 |------|-------|------|------|---------|
-| US-001 | 存在 1000.00 元已入账消费，账户额度 20000.00 | 选择 6 期试算并提交 | 每期本金 166.66、手续费 5.50、首期合计 172.16，总手续费 33.00；计划 `ACTIVE` | 交易 0000000000000200，账户 00000000006 |
-| US-002 | 已用去重键 `ins-20261027-001` 创建过计划 | 用同一去重键再次提交 | 返回同一 plan_id，`installment_plan` 与账务分录数不变 | 复用 US-001 数据 |
-| US-003 | 交易已分期 | 再次申请分期 | 409 `ALREADY_INSTALLED`，页面展示「已分期」徽标 | 复用 US-001 数据 |
-| US-004 | 计划创建成功 | 查询账户额度视图与计划详情 | 分期占用 = 1000.00，还款计划 6 行合计 = 本金 + 手续费 | 复用 US-001 数据 |
-| US-005 | 计划剩余本金 600.00，`ACTIVE` | 提前结清 | 剩余本金归零、额度释放 600.00、违约金 6.00 过账 ledger | 计划 3 期已还 1 期 |
-| US-006 | 交易金额 99.99 | 打开交易详情 | 入口置灰，提示「单笔消费满 100.00 元可申请分期」 | 交易 0000000000000201 |
-| US-007 | ledger-service 已停用 | 提交分期 | 503 `DOWNSTREAM_UNAVAILABLE`，无半完成资金状态 | 停用 ledger 容器 |
-| US-008 | 运营账号持有 `installment:read:any` | 导出 30 天分期清单 | 生成 CSV，24 小时内可下载，审计记录导出动作 | 30 天计划数据 ≥ 20 条 |
+| US-001 | A posted purchase of 1000.00 exists and the account limit is 20000.00 | Preview 6 periods and submit | 166.66 principal and 5.50 fee per period, first-period total 172.16, total fees 33.00; plan `ACTIVE` | Transaction 0000000000000200, account 00000000006 |
+| US-002 | A plan was already created with the deduplication key `ins-20261027-001` | Submit again with the same deduplication key | The same plan_id is returned and the `installment_plan` and accounting entry counts do not change | Reuse US-001 data |
+| US-003 | The transaction is already on an installment plan | Apply for an installment again | 409 `ALREADY_INSTALLED`, and the page shows the "Already installed" badge | Reuse US-001 data |
+| US-004 | The plan was created successfully | Query the account limit view and the plan details | Installment occupation = 1000.00, and the 6 repayment schedule rows total principal + fees | Reuse US-001 data |
+| US-005 | The plan has a remaining principal of 600.00 and is `ACTIVE` | Settle early | Remaining principal drops to zero, 600.00 of limit is released, and the 6.00 penalty fee is posted to the ledger | Plan has 3 periods with 1 already repaid |
+| US-006 | The transaction amount is 99.99 | Open the transaction details | The entry is greyed out with the message "A single purchase of 100.00 or more is required to apply for an installment" | Transaction 0000000000000201 |
+| US-007 | ledger-service is stopped | Submit an installment | 503 `DOWNSTREAM_UNAVAILABLE`, with no half-completed funds state | Stop the ledger container |
+| US-008 | The operations account holds `installment:read:any` | Export the installment list for 30 days | A CSV is generated, downloadable within 24 hours, and the export action is audited | At least 20 plan records over 30 days |
 
-## 执行证据要求
+## Execution Evidence Requirements
 
-功能测试、静态工具检查、Agent Review、安全报告和问题复测分别记录实际命令/工具版本/代码commit/退出码/报告路径。Owner验收依据为这些实际结果；知识发布不表示已验收。
+Functional tests, static tool checks, Agent Review, security reports and issue re-tests each record the actual command, tool version, code commit, exit code and report path. Owner acceptance is based on these actual results; publishing knowledge does not mean the requirement is accepted.

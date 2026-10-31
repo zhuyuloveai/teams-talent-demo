@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>轨迹诊断报告 · 白金卡额外返现</title>
+<title>Trajectory Diagnosis Report · Platinum Card Extra Cashback</title>
 <style>
 :root {
   --bg: #f3f5f6;
@@ -19,8 +19,8 @@
   --warn-soft: #f9eedb;
   --bad: #ad3828;
   --bad-soft: #f8e4df;
-  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
-  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
@@ -126,71 +126,71 @@ code { font-family: var(--font-mono); font-size: .88em; background: var(--accent
 </head>
 <body>
 <main aria-labelledby="case-output">
-<h1 id="case-output">诊断结果与建议</h1>
-      <p class="small">会话：白金卡消费额外返现（<code>WORK-PLATINUM-001</code>）· 需求 DEMO-MKT-001 · 成员 陈晨 · 代码仓 carddemo-java-1025 · Code Agent · 上下文快照 Context-r1</p>
+<h1 id="case-output">Diagnosis Results and Suggestions</h1>
+      <p class="small">Session: Platinum Card Extra Spending Cashback (<code>WORK-PLATINUM-001</code>) · Requirement DEMO-MKT-001 · Member Chen Chen · Repository carddemo-java-1025 · Code Agent · Context snapshot Context-r1</p>
       <div class="report">
         <div class="report-head">
           <div>
-            <div class="t">诊断结论</div>
-            <div class="one">agent 沿用餐饮返现的资格判定链实现了消费期间与 0.5% 计算，没有加卡片等级判断，自测也只用了白金卡正向输入；首次检查 E3 中“普通卡不参与”未通过（6/7），补充判断后复测 E5 通过 7/7，缺陷在提交前修复。</div>
+            <div class="t">Diagnosis conclusion</div>
+            <div class="one">The agent reused the eligibility decision chain of the dining cashback to implement the spending period and the 0.5% calculation, but added no card tier check, and its self-test used only a positive platinum card input. In the first check E3, "standard cards do not participate" failed (6/7); after the check was added, the retest E5 passed 7/7, and the defect was fixed before submission.</div>
           </div>
-          <span class="pass">诊断可信</span>
+          <span class="pass">Diagnosis credible</span>
         </div>
 
         <div class="report-sec">
-          <h4>因果链：缺陷如何产生、如何被发现</h4>
+          <h4>Causal chain: how the defect arose and how it was found</h4>
           <ol class="chain">
-            <li class="fixed"><span class="dot">1</span><span class="role">读取上下文<span class="ev">Context-r1</span></span><span class="txt">需求三项口径为白金卡客户、未来 3 个月、额外 0.5%；知识快照写明“普通卡与期间外消费不适用”。agent 把“白金卡客户”当作活动目标人群，没有拆成卡片等级条件。</span></li>
-            <li class="fixed"><span class="dot">2</span><span class="role">参考已有实现<span class="ev">Context-r1 关键源码</span></span><span class="txt">选用餐饮返现的 <code>EligibilityPolicy.evaluateParticipation()</code> 作为模板；该链只判断活动有效、账户状态、账户组与报名，<code>AccountSnapshot</code> 不含卡片等级。</span></li>
-            <li class="fixed"><span class="dot">3</span><span class="role">编写实现<span class="ev">开发阶段</span></span><span class="txt">实现了期间开始包含、结束不包含的判断和 1/200 整数分计算，资格条件原样沿用，没有新增卡片等级判断。</span></li>
-            <li class="fixed"><span class="dot">4</span><span class="role">自测<span class="ev">开发阶段</span></span><span class="txt">只验证白金卡消费 120 元返现 0.60 元；没有普通卡、期间结束时刻、半分舍入或零金额的用例。</span></li>
-            <li class="fixed"><span class="dot">5</span><span class="role">首次检查<span class="ev">E3 · CHECK-PLATINUM-001</span></span><span class="txt">七项规则 6/7：CB-02“普通卡不参与”期望 0 分，实际 60 分，普通卡被纳入返现。</span></li>
-            <li class="fixed"><span class="dot">6</span><span class="role">修复<span class="ev">E4 · FIX-PLATINUM-001</span></span><span class="txt">在期间判断之前补充卡片等级判断，非白金卡返回 <code>CARD_TIER</code>、奖励 0 分，并补上普通卡反向用例。</span></li>
-            <li class="fixed"><span class="dot">7</span><span class="role">复测<span class="ev">E5 · CHECK-PLATINUM-002</span></span><span class="txt">七项规则 7/7 通过；安全状态保持 <code>unverified</code>。</span></li>
-            <li class="end"><span class="dot">8</span><span class="role">提交交付<span class="ev">Delivery-r1</span></span><span class="txt">功能缺陷已在提交前修复；白金卡身份在 carddemo-java-1025 中的数据来源仍未定义，正式资格细则待确认，生产安全未验证。</span></li>
+            <li class="fixed"><span class="dot">1</span><span class="role">Read context<span class="ev">Context-r1</span></span><span class="txt">The requirement's three terms are platinum card customers, the next 3 months and an extra 0.5%; the knowledge snapshot states "standard cards and spending outside the period do not qualify". The agent treated "platinum card customers" as the campaign target group and did not turn it into a card tier condition.</span></li>
+            <li class="fixed"><span class="dot">2</span><span class="role">Consult existing implementation<span class="ev">Context-r1 key source code</span></span><span class="txt">It chose the dining cashback's <code>EligibilityPolicy.evaluateParticipation()</code> as the template; that chain only checks campaign validity, account status, account group and enrollment, and <code>AccountSnapshot</code> has no card tier.</span></li>
+            <li class="fixed"><span class="dot">3</span><span class="role">Write implementation<span class="ev">Development stage</span></span><span class="txt">It implemented the period check (start inclusive, end exclusive) and the 1/200 integer-cent calculation, kept the eligibility conditions unchanged, and added no card tier check.</span></li>
+            <li class="fixed"><span class="dot">4</span><span class="role">Self-test<span class="ev">Development stage</span></span><span class="txt">It only verified that a platinum card spend of CNY 120 earns CNY 0.60 cashback; there were no cases for standard cards, the period end instant, half-cent rounding or zero amounts.</span></li>
+            <li class="fixed"><span class="dot">5</span><span class="role">First check<span class="ev">E3 · CHECK-PLATINUM-001</span></span><span class="txt">Seven rules, 6/7: CB-02 "standard cards do not participate" expected 0 cents but got 60 cents; standard cards were included in the cashback.</span></li>
+            <li class="fixed"><span class="dot">6</span><span class="role">Fix<span class="ev">E4 · FIX-PLATINUM-001</span></span><span class="txt">A card tier check was added before the period check; non-platinum cards return <code>CARD_TIER</code> with a reward of 0 cents, and a negative standard card case was added.</span></li>
+            <li class="fixed"><span class="dot">7</span><span class="role">Retest<span class="ev">E5 · CHECK-PLATINUM-002</span></span><span class="txt">Seven rules passed 7/7; the security status stays <code>unverified</code>.</span></li>
+            <li class="end"><span class="dot">8</span><span class="role">Submit delivery<span class="ev">Delivery-r1</span></span><span class="txt">The functional defect was fixed before submission; the data source of platinum card status in carddemo-java-1025 is still undefined, the formal eligibility rules are to be confirmed, and production security is unverified.</span></li>
           </ol>
-          <div class="chain-legend"><span class="f">后来已修复</span><span>保留到提交</span></div>
+          <div class="chain-legend"><span class="f">Fixed later</span><span>Kept until submission</span></div>
         </div>
 
         <div class="report-sec">
-          <h4>发现的问题</h4>
+          <h4>Problems found</h4>
           <div class="findings">
-            <div class="finding"><span class="status fixed">后来已修复</span><div><h5>1 · 遗漏卡片等级判断</h5><p>需求写明普通卡不适用（<code>cashback-contract.md</code> 第 9 行），首版实现没有卡片等级条件，普通卡消费 120 元也返现 60 分。</p><div class="loc">E3 · CB-02；E4 修复</div></div></div>
-            <div class="finding"><span class="status fixed">后来已修复</span><div><h5>2 · 自测只覆盖正向输入</h5><p>开发阶段只验证白金卡 120 元返现 0.60 元，普通卡、结束时刻、半分舍入和零金额都依赖首次检查覆盖；E4 补上普通卡反向用例。</p><div class="loc">开发阶段；E3–E4</div></div></div>
-            <div class="finding"><span class="status kept">保留到提交</span><div><h5>3 · 白金卡身份没有数据来源</h5><p><code>EligibilityPolicy</code> 只判断活动、账户状态、账户组与报名，<code>AccountSnapshot</code> 和 <code>Card</code> 都没有卡片等级字段。本次修复按输入中的卡片等级判断，接入服务前需先确认白金卡身份来自哪里（验收标准 AC-01：正式资格认定细则待确认）。</p><div class="loc">Context-r1 关键源码；Delivery-r1</div></div></div>
-            <div class="finding"><span class="status kept">保留到提交</span><div><h5>4 · 安全状态未验证</h5><p>E5 七项通过只代表功能规则。按 <code>ADR-007</code>，资源服务本期不强制校验 token、生产化前须接入网关，功能验收不代表安全放行；提交时安全状态正确保留为 <code>unverified</code>。</p><div class="loc">E5；Delivery-r1</div></div></div>
+            <div class="finding"><span class="status fixed">Fixed later</span><div><h5>1 · Missing card tier check</h5><p>The requirement states that standard cards do not qualify (<code>cashback-contract.md</code> line 9), but the first implementation had no card tier condition, so a standard card spend of CNY 120 also earned 60 cents of cashback.</p><div class="loc">E3 · CB-02; fixed in E4</div></div></div>
+            <div class="finding"><span class="status fixed">Fixed later</span><div><h5>2 · Self-test covered only positive input</h5><p>The development stage only verified CNY 0.60 cashback on a CNY 120 platinum card spend; standard cards, the end instant, half-cent rounding and zero amounts all relied on the first check. E4 added the negative standard card case.</p><div class="loc">Development stage; E3–E4</div></div></div>
+            <div class="finding"><span class="status kept">Kept until submission</span><div><h5>3 · No data source for platinum card status</h5><p><code>EligibilityPolicy</code> only checks campaign, account status, account group and enrollment, and neither <code>AccountSnapshot</code> nor <code>Card</code> has a card tier field. This fix checks the card tier from the input; before connecting to the services, confirm where platinum card status comes from (acceptance criterion AC-01: formal eligibility rules to be confirmed).</p><div class="loc">Context-r1 key source code; Delivery-r1</div></div></div>
+            <div class="finding"><span class="status kept">Kept until submission</span><div><h5>4 · Security status unverified</h5><p>E5 passing all seven items only covers the functional rules. Under <code>ADR-007</code>, resource services do not enforce token validation in this phase and must be put behind the gateway before production, so functional acceptance is not security clearance; at submission the security status was correctly kept as <code>unverified</code>.</p><div class="loc">E5; Delivery-r1</div></div></div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>过程错误分类</h4>
+          <h4>Process error categories</h4>
           <div class="cats">
-            <div><b>需求理解错误</b>把“白金卡客户”当作已被目标人群条件覆盖，没有拆成卡片等级判断</div>
-            <div><b>复用未核对差异</b>沿用参考实现的资格判定链，没有对照新需求逐条核对条件</div>
-            <div><b>覆盖不全</b>只有白金卡正向用例，缺少普通卡与期间边界的反向用例</div>
-            <div><b>自检缺失</b>提交检查前没有按验收条目逐条自检，问题依赖首次检查发现</div>
+            <div><b>Requirement misunderstanding</b>Assumed "platinum card customers" was already covered by the target group condition and did not turn it into a card tier check</div>
+            <div><b>Reuse without checking differences</b>Reused the reference implementation's eligibility chain without checking each condition against the new requirement</div>
+            <div><b>Incomplete coverage</b>Only a positive platinum card case; negative cases for standard cards and period boundaries were missing</div>
+            <div><b>Missing self-check</b>No item-by-item self-check against the acceptance items before the check was submitted; the problem was left for the first check to find</div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>建议</h4>
+          <h4>Suggestions</h4>
           <div class="sugg">
-            <div><span class="who">代码修正</span><span>E4 已补充卡片等级判断并通过 E5。落到 carddemo-java-1025 前，先确认白金卡身份的数据来源（卡片等级字段或账户组映射），再在 <code>EligibilityPolicy</code> 中增加独立的卡片等级条件和原因码。<span class="use">用于：完成本次需求向服务代码的落地。</span></span></div>
-            <div><span class="who">测试</span><span>保留 CB-01 至 CB-07 作为回归用例；补一条“同一交易重复评估只产生一笔奖励”的检查。<span class="use">用于：改进测试。</span></span></div>
-            <div><span class="who">skill：dev-backend-service</span><span>在工作流第 4 步“业务规则实现”中要求每条规则写正向与反向检查，覆盖白金卡与普通卡、期间开始与结束边界、整数分舍入和重复评估；在“常见失败模式”中加一行“规则只测正向输入”。<span class="use">用于：更新团队 Skill，后续后端开发任务都会遵循。</span></span></div>
-            <div><span class="who">prompt / 记忆</span><span>资格条件按新需求重新列出，不直接沿用参考实现的判定链；提交前按验收条目逐条自检，功能通过不等于安全放行。<span class="use">用于：在线反思的检查点；写入 AGENTS.md 经验规则。</span></span></div>
+            <div><span class="who">Code fix</span><span>E4 added the card tier check and passed E5. Before landing in carddemo-java-1025, confirm the data source of platinum card status (a card tier field or an account group mapping), then add a separate card tier condition and reason code in <code>EligibilityPolicy</code>.<span class="use">For: landing this requirement in the service code.</span></span></div>
+            <div><span class="who">Tests</span><span>Keep CB-01 to CB-07 as regression cases; add a check that "evaluating the same transaction twice produces only one reward".<span class="use">For: improving tests.</span></span></div>
+            <div><span class="who">Skill: dev-backend-service</span><span>In workflow step 4 "Business rule implementation", require positive and negative checks for every rule, covering platinum and standard cards, period start and end boundaries, integer-cent rounding and repeated evaluation; add a row "Rules tested only with positive input" to "Common failure modes".<span class="use">For: updating the team Skill, which later backend development tasks will follow.</span></span></div>
+            <div><span class="who">Prompt / memory</span><span>List eligibility conditions afresh from the new requirement instead of reusing the reference implementation's decision chain; self-check item by item against the acceptance items before submission; functional pass is not security clearance.<span class="use">For: checkpoints for online reflection; written into the AGENTS.md experience rules.</span></span></div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>判定依据</h4>
+          <h4>Basis for the verdict</h4>
           <div class="checks">
-            <div><b>✓ 真实性</b>　E3 记录 CB-02 期望 0 分、实际 60 分；E4 补充卡片等级判断后，E5 七项全部通过，普通卡奖励为 0。</div>
-            <div><b>✓ 可从轨迹推出</b>　需求口径、参考实现缺少卡片等级维度、检查与修复记录都在本次作业记录中，不依赖标准答案也能推出。</div>
+            <div><b>✓ Authenticity</b>  E3 records CB-02 expecting 0 cents and getting 60 cents; after E4 added the card tier check, E5 passed all seven items and the standard card reward is 0.</div>
+            <div><b>✓ Derivable from the trajectory</b>  The requirement terms, the missing card tier dimension in the reference implementation, and the check and fix records are all in this work record; the conclusion can be derived without a reference answer.</div>
           </div>
         </div>
       </div>
-      <p class="small" style="margin-top:12px">四条建议分别对应：完成需求落地、改进测试、更新 Skill、沉淀经验规则。E3、E4、E5 来自 Teams 本地交付工作流的固定检查记录，不是原生 iCode 会话回放；建议的实际效果尚未通过回放实验验证。</p>
+      <p class="small" style="margin-top:12px">The four suggestions correspond to: landing the requirement, improving tests, updating the Skill, and capturing experience rules. E3, E4 and E5 come from the fixed check records of the Teams local delivery workflow, not from a native iCode session replay; the actual effect of the suggestions has not been verified by replay experiments.</p>
 </main>
 </body>
 </html>

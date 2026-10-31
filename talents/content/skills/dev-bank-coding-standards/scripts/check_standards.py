@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-"""编码规范静态检查：命名/异常/日志/安全/资源五类规则，按致命/严重/告警分级输出。"""
+"""Coding standards static check: five rule categories (naming / exception / logging / security / resource), output classified as fatal / critical / major."""
 import argparse, json, re, sys
 from pathlib import Path
 
 RULES = {
     "fatal": [
-        (r"password\s*=\s*['\"][^'\"]+['\"]", "硬编码密钥"),
-        (r"SELECT\s+.*\s+FROM\s+\w+\s+WHERE\s+.*['\"].*\+", "SQL拼接注入风险"),
+        (r"password\s*=\s*['\"][^'\"]+['\"]", "Hardcoded secret"),
+        (r"SELECT\s+.*\s+FROM\s+\w+\s+WHERE\s+.*['\"].*\+", "SQL concatenation injection risk"),
     ],
     "critical": [
-        (r"except\s*:\s*(pass|#|$)", "吞异常"),
-        (r"catch\s*\([^)]*\)\s*\{\s*\}", "空catch"),
+        (r"except\s*:\s*(pass|#|$)", "Swallowed exception"),
+        (r"catch\s*\([^)]*\)\s*\{\s*\}", "Empty catch"),
     ],
     "major": [
-        (r"print\(.*token|secret|password", "日志打印敏感信息"),
-        (r"\b[a-z]{1,3}\b", "疑似命名过短"),
+        (r"print\(.*token|secret|password", "Sensitive data printed in log"),
+        (r"\b[a-z]{1,3}\b", "Name possibly too short"),
     ],
 }
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("target", help="代码文件或目录")
+    ap.add_argument("target", help="Code file or directory")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     target = Path(args.target)

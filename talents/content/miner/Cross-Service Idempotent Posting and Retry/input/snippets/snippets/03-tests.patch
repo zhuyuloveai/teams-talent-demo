@@ -194,7 +194,7 @@ index 0000000..ad9ed68
 +    @BeforeEach
 +    void setUp() {
 +        service = new RewardEvaluationService(campaigns, enrollments, rewards, accountClient, CLOCK);
-+        CampaignDraft draft = new CampaignDraft("餐饮返现", null, CampaignType.CATEGORY_CASHBACK,
++        CampaignDraft draft = new CampaignDraft("Dining cashback", null, CampaignType.CATEGORY_CASHBACK,
 +                NOW.minusDays(10), NOW.plusDays(10), null, "0001",
 +                new BigDecimal("50.00"), new BigDecimal("0.0500"), null,
 +                new BigDecimal("30.00"), 5, new BigDecimal("1000.00"), null, true);
@@ -290,7 +290,7 @@ index 0000000..ad9ed68
 +        RewardView view = service.fulfill("r1");
 +
 +        assertThat(view.grant().getStatus()).isEqualTo(RewardStatus.GRANTED);
-+        assertThat(view.campaignName()).isEqualTo("餐饮返现");
++        assertThat(view.campaignName()).isEqualTo("Dining cashback");
 +        verify(rewards).saveReward(pending);
 +    }
 +

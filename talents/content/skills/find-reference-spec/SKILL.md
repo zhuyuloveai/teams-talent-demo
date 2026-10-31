@@ -1,52 +1,52 @@
 ---
 name: find-reference-spec
-description: 开发新需求或修改现有功能前使用：根据范式索引找出历史上相似的开发范式，阅读范式总结作为参考，必要时再看代码分析报告、PR 描述和 diff。
+description: Use before developing a new requirement or changing an existing feature. Find similar historical development patterns through the pattern index, read their pattern summaries as reference, and when needed look at the code analysis report, PR description and diff.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 0.1.0 |
-| owner | 研发效能组 |
-| category | 知识应用 |
-| 依赖产物 | `.icode-knowledge/miner/`（开发范式挖掘的产出） |
+| owner | Engineering Productivity Team |
+| category | Knowledge application |
+| Required artifacts | `.icode-knowledge/miner/` (output of development pattern mining) |
 
-# find-reference-spec 技能
+# find-reference-spec Skill
 
-## 概述
+## Overview
 
-团队把已合并 PR 中可复用的做法总结成了“开发范式”。开始写代码前，先看看历史上有没有做过相似的事：照着已验证的步骤和约束做，能少走弯路，也能和现有代码保持一致。
+The team has summarized reusable practices from merged PRs into "development patterns". Before writing code, check whether something similar has been done before: following verified steps and constraints saves detours and keeps the change consistent with existing code.
 
-## 何时使用
+## When to use
 
-- 接到新需求、准备在代码仓中新增或修改功能时。
-- 需求涉及跨服务调用、并发更新、错误处理、批处理迁移等容易出错的场景时，尤其要先查。
-- 只改文案、改配置、修拼写等小改动不需要使用。
+- When you receive a new requirement and are about to add or change a feature in the code repository.
+- Check first especially when the requirement involves error-prone scenarios such as cross-service calls, concurrent updates, error handling or batch migrations.
+- Not needed for small changes such as copy edits, configuration changes or typo fixes.
 
-## 范式库结构
+## Pattern library structure
 
 ```
 .icode-knowledge/miner/
-├── index.md                     # 范式索引：名称、描述、首次归档时间
-└── <范式名称>/
-    ├── summary.md               # 范式总结：实现步骤、规范约束、注意事项、参考代码与文件
-    ├── analyzer.md              # 代码分析报告：涉及模块、依赖链、调用跟踪、相关概念
-    ├── meta.json                # 归档信息：来源仓库、提交、PR 列表
-    └── input/prs/<编号>/metadata.json   # PR 标题、描述与验证说明
+├── index.md                     # Pattern index: name, description, first archived time
+└── <pattern name>/
+    ├── summary.md               # Pattern summary: implementation steps, constraints, caveats, reference code and files
+    ├── analyzer.md              # Code analysis report: modules involved, dependency chain, call trace, related concepts
+    ├── meta.json                # Archive info: source repository, commits, PR list
+    └── input/prs/<number>/metadata.json   # PR title, description and verification notes
 ```
 
-## 工作流
+## Workflow
 
-1. **查索引**：读 `.icode-knowledge/miner/index.md`，按名称和描述与当前需求对照，挑出 1 到 3 个最相似的范式。相似看的是“要解决的问题”，不是业务名词是否相同。
-2. **读范式总结**：逐个读所选范式的 `summary.md`，按其中的实现步骤、规范约束和注意事项来实现。“一般化参考代码”和“参考文件”只用来理解做法，不要原样复制。
-3. **需要更多上下文时读分析报告**：要弄清调用链、影响范围或相关类型时，读同目录的 `analyzer.md`。
-4. **仍不清楚时看原始 PR**：读 `input/prs/<编号>/metadata.json` 中的 PR 描述和验证说明；需要看具体改动时，用 `git log --grep "#<编号>"` 找到合并提交后 `git show <提交>`，或打开 `url` 查看 diff。
-5. **没有相似范式时**：直接按常规方式开发，不要为了套用范式而扭曲设计。
-6. **说明参考来源**：完成后告诉用户参考了哪些范式（名称和路径），以及哪些步骤没有照搬、原因是什么。
+1. **Check the index**: read `.icode-knowledge/miner/index.md`, compare names and descriptions with the current requirement, and pick the 1 to 3 most similar patterns. Similarity is about "the problem to solve", not whether the business terms match.
+2. **Read the pattern summaries**: read `summary.md` for each chosen pattern and implement according to its steps, constraints and caveats. Use the "generalized reference code" and "reference files" only to understand the approach; do not copy them verbatim.
+3. **Read the analysis report when you need more context**: when you need to understand the call chain, impact scope or related types, read `analyzer.md` in the same directory.
+4. **Look at the original PR if still unclear**: read the PR description and verification notes in `input/prs/<number>/metadata.json`. To see the actual changes, use `git log --grep "#<number>"` to find the merge commit and then `git show <commit>`, or open the `url` to view the diff.
+5. **When there is no similar pattern**: develop the usual way; do not distort the design just to fit a pattern.
+6. **State your references**: when done, tell the user which patterns you referenced (name and path), and which steps you did not follow and why.
 
-## 注意事项
+## Notes
 
-- 范式反映的是归档时的代码，参考文件的行号可能已经变化，以当前代码为准。
-- 范式之间可能互相引用（如“相关范式”），按需顺着读，不必一次读完全部。
-- 如果发现范式与当前代码或业务规则矛盾，以当前代码和业务规则为准，并提醒用户该范式可能需要更新。
+- A pattern reflects the code at archive time; line numbers in reference files may have changed. The current code wins.
+- Patterns may reference each other (for example "related patterns"); follow them as needed rather than reading everything at once.
+- If a pattern contradicts the current code or business rules, the current code and business rules win, and tell the user the pattern may need updating.

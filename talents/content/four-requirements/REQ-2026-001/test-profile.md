@@ -1,23 +1,23 @@
-# 四需求试验口径 v1
+# Four-Requirement Test Profile v1
 
-范围：REQ-2026-001 / 002 / 003 / 004 的本次本地真实 CLI 交付验证。
-审批来源：用户 2026-10-28 要求需求包端到端验证；测试实现口径由当前协调会话依据规则优先次序整理。保留原文 v1.0；这份配置不等同于正式产品、定价、风控或合规签字。原始第 12.3 节投产待确认继续有效。
+Scope: real local CLI delivery verification of REQ-2026-001 / 002 / 003 / 004 for this run.
+Approval source: on 2026-10-28 the user asked for end-to-end verification of the requirement package; the test implementation profile was compiled by the current coordination session according to the rule precedence. Source v1.0 is kept; this configuration is not a formal product, pricing, risk or compliance sign-off. The original §12.3 pre-production items to be confirmed remain open.
 
-## 基线和实现范围
+## Baseline and Implementation Scope
 
-- 业务基线为当前 develop 提交 5eeddd63184eb17876bd09d89ea45082644b56db。实际任务分支可基于后续已明确合入的 develop 提交，记录具体 SHA。
-- 该基线已有 iam/customer/card/account/transaction/authorization/marketing/web-ui 八模块；dev-b 未提供。材料假设存在的缺失服务由本轮四业务任务按设计补齐，不能用 mock 业务代码或假测试报告代替。
-- 请求 ID 沿当前数据合同：account 11 位、card 16 位、transaction 16 位、customer 9 位；不照抄需求表不一致的长度，也不修改存量 ID。
+- The business baseline is the current develop commit 5eeddd63184eb17876bd09d89ea45082644b56db. The actual task branch may be based on a later develop commit that has been explicitly merged; record the specific SHA.
+- This baseline already has eight modules: iam/customer/card/account/transaction/authorization/marketing/web-ui; dev-b is not provided. Missing services that the materials assume to exist are added by this round's four business tasks according to the design; they cannot be replaced by mock business code or fake test reports.
+- Request IDs follow the current data contract: account 11 digits, card 16 digits, transaction 16 digits, customer 9 digits. Do not copy the inconsistent lengths in the requirement tables, and do not change existing IDs.
 
-## 本次采用的差异处理
+## Difference Handling Adopted for This Run
 
-1. 第 5 章明确业务规则优先。分期前 N-1 期本金截到 2 位，末期吸收差额；手续费按每期期初剩余本金计收并 HALF_UP 到 2 位。1000 元 6 期本金 166.66×5+166.70，手续费 5.50/4.58/3.67/2.75/1.83/0.92，合计 19.25；500 元 3 期手续费 3.00/2.00/1.00，合计 6.00，首期合计 169.66。原文 33.00/9.00/175.67 示例保留为已指出差异，不作本次断言。
-2. 提前结清 feeRebate 默认 0，保留原文正式定价待确认；不补造额外减免。
-3. 挂失/补卡同一去重键返回首次结果（重放 HTTP 200）；不同键对非 ACTIVE 卡的新挂失请求返回 409。补卡取消仅 REQUESTED，已制卡不能取消。
-4. 提额大于当前额度 2 倍的临界例为 8000→16000.01；恰好 16000 不触发双人审批，仍受产品上限和其它资格规则约束。
-5. FRAUD/UNAUTHORIZED 先在 document 侧上传临时证据并取得引用，再创建争议案件；保持至少一份证据、白名单/大小/归属校验。不能先开无证据案件再补录以绕过必填。
-6. 新接口校验当前 IAM HMAC token（不是 JWT），缺 token 401，并落实真实归属、角色和 SoD 校验。原始§6.2与ADR-007差异留存；不将本地验证称生产鉴权已就绪。
+1. The business rules stated in Chapter 5 take precedence. For installments, the principal of the first N-1 periods is truncated to 2 decimals and the last period absorbs the residual; fees are charged on the remaining principal at the start of each period and rounded HALF_UP to 2 decimals. CNY 1000 over 6 periods: principal 166.66×5 + 166.70, fees 5.50/4.58/3.67/2.75/1.83/0.92, total 19.25; CNY 500 over 3 periods: fees 3.00/2.00/1.00, total 6.00, first-period total 169.66. The source examples 33.00/9.00/175.67 are kept as identified differences and are not asserted in this run.
+2. The early-settlement feeRebate defaults to 0; the source's formal pricing stays to be confirmed. Do not invent additional rebates.
+3. For loss reporting/replacement, the same deduplication key returns the first result (replay with HTTP 200); a new loss request with a different key on a non-ACTIVE card returns 409. Replacement can be cancelled only in REQUESTED; once the card is produced it cannot be cancelled.
+4. The boundary case for a limit increase above 2x the current limit is 8000→16000.01; exactly 16000 does not trigger dual approval and is still subject to the product maximum and other eligibility rules.
+5. For FRAUD/UNAUTHORIZED, first upload temporary evidence on the document side and obtain a reference, then create the dispute case; keep the at-least-one-evidence, allowlist, size and ownership checks. Do not open a case without evidence and add evidence later to get around the requirement.
+6. New APIs validate the current IAM HMAC token (not JWT), return 401 when the token is missing, and enforce real ownership, role and SoD checks. The difference between the original §6.2 and ADR-007 is kept on record; do not claim that local verification means production authentication is ready.
 
-## 结果和证据边界
+## Result and Evidence Boundaries
 
-上述是待执行的试验输入。PRD、设计、代码提交/PR、单元测试、功能测试、静态工具检查、Agent Review、安全和问题复测均由真实执行生成，指向实际同一代码版本。其它无值事项或新冲突继续登记/阻塞，不隐式代替 Owner 决策。工具失败不可用预置通过抵消。
+The above are test inputs still to be executed. The PRD, design, code commits/PRs, unit tests, functional tests, static tool checks, Agent Review, security and issue re-tests are all produced by real execution and point to the same actual code version. Other items without values, or new conflicts, continue to be logged or blocked and do not implicitly stand in for Owner decisions. A tool failure cannot be offset by a preset pass.

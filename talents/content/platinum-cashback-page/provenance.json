@@ -4,7 +4,7 @@
   "artifactId": "a-platinum-cashback-page",
   "version": 1,
   "projectId": "carddemo",
-  "exactTitle": "白金卡消费返现权益说明页",
+  "exactTitle": "Platinum Card Spending Cashback Benefit Page",
   "origin": "scenario-fixture",
   "authorship": "User-authorized scenario reference plus directly inspected repository sources; no mining/model execution claimed.",
   "adoption": "recommendation-only; actual requirement description and frozen adoption remain independent",

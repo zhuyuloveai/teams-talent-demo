@@ -1,10 +1,10 @@
-# 范式总结通用模板
+# General Template for Pattern Summaries
 
-遵循以下方面生成总结报告：
-  1） 实现步骤
-  2） 每个步骤包含简要的实现逻辑说明
-  3） 每个步骤包含实现规范约束
-  4） 每个步骤包含实现注意事项
-  5） 为每个步骤提供对应的历史可参考代码。注意将参考代码进行一般化表示，仅抽取实现模式，忽略不同实现实例需要修改的实现细节。
-  6） 为每个步骤补充其他概念，如编码行为、领域知识、系统知识、最佳实践等，这些在需求开发时也可能需要了解和遵循。
-  7） 为每个步骤增加参考文件，提供步骤实现可参考的文件名以及内容起始行和终止行。
+Generate the summary report covering the following aspects:
+  1) Implementation steps
+  2) A brief explanation of the implementation logic for each step
+  3) Implementation standards and constraints for each step
+  4) Implementation notes for each step
+  5) Historical reference code for each step. Generalize the reference code: extract only the implementation pattern and ignore the details that change between implementation instances.
+  6) Additional concepts for each step, such as coding conventions, domain knowledge, system knowledge and best practices, which may also need to be understood and followed during requirement development.
+  7) Reference files for each step: the file names that can be referenced for implementing the step, with the start and end lines of the relevant content.

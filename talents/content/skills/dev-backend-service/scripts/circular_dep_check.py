@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""循环依赖检测（简化版）：基于import图DFS找环。"""
+"""Circular dependency detection (simplified): find cycles in the import graph with DFS."""
 import argparse, json, sys
 from pathlib import Path
 

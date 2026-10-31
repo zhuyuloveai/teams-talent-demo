@@ -1,56 +1,56 @@
-# scripts/ — 接口集成技能脚本
+# scripts/ — API integration skill scripts
 
-本目录包含 `dev-api-integration` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `dev-api-integration` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `contract_validate.py` | 契约校验：比对请求/响应样例与契约 schema 字段集合 | 0/2/3 |
-| `mock_server.py` | 基于契约生成 Mock 服务配置（JSON Server 风格） | 0/3 |
-| `idempotency_test.py` | 幂等性测试：校验重复请求结果一致 | 0/2/3 |
+| `contract_validate.py` | Contract validation: compare request/response samples with the contract schema field set | 0/2/3 |
+| `mock_server.py` | Generate a mock service configuration from the contract (JSON Server style) | 0/3 |
+| `idempotency_test.py` | Idempotency test: check that repeated requests return identical results | 0/2/3 |
 
 ---
 
 ## contract_validate.py
 
-### 用途
-校验接口契约与实际样例的字段一致性。读取契约 JSON（声明 request/response 必填字段列表）与样例 JSON（实际 request/response 字段值），输出缺失字段清单与匹配结果。
+### Purpose
+Checks that an interface contract and an actual sample have consistent fields. Reads the contract JSON (lists the required request/response fields) and the sample JSON (actual request/response field values), and outputs the missing fields and the match result.
 
-### 接口
+### Interface
 ```
 python contract_validate.py <contract_json> <sample_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `contract_json` | 契约 JSON 路径，格式 `{"request": ["字段名"], "response": ["字段名"]}` |
-| `sample_json` | 样例 JSON 路径，格式 `{"request": {...}, "response": {...}}` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `contract_json` | Path to the contract JSON, format `{"request": ["field_name"], "response": ["field_name"]}` |
+| `sample_json` | Path to the sample JSON, format `{"request": {...}, "response": {...}}` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 契约字段全部命中样例（match=true） |
-| 2 | 样例缺失契约声明的字段（match=false） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | All contract fields are present in the sample (match=true) |
+| 2 | The sample is missing fields declared in the contract (match=false) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-### 检查项
-1. **契约字段提取**：从 contract_json 的 `request` 与 `response` 数组提取必填字段名。
-2. **样例字段比对**：检查样例的 `request`/`response` 对象是否包含全部契约字段。
-3. **缺失字段输出**：分别列出 `missing_request_fields` 与 `missing_response_fields`。
-4. **match 判定**：两个缺失列表均为空时 match=true。
+### Checks
+1. **Contract field extraction**: extract the required field names from the `request` and `response` arrays of contract_json.
+2. **Sample field comparison**: check whether the sample's `request`/`response` objects contain all contract fields.
+3. **Missing field output**: list `missing_request_fields` and `missing_response_fields` separately.
+4. **match decision**: match=true when both missing lists are empty.
 
-### 输入 JSON 示例
-契约（contract.json）：
+### Input JSON example
+Contract (contract.json):
 ```json
 {
   "request": ["customer_id", "amount", "currency"],
   "response": ["txn_id", "status", "txn_time"]
 }
 ```
-样例（sample.json）：
+Sample (sample.json):
 ```json
 {
   "request": {"customer_id": "C001", "amount": 100.00, "currency": "CNY"},
@@ -58,7 +58,7 @@ python contract_validate.py <contract_json> <sample_json> [--json]
 }
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "missing_request_fields": [],
@@ -67,55 +67,55 @@ python contract_validate.py <contract_json> <sample_json> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本校验（契约 vs 样例）
+# Basic validation (contract vs sample)
 python skills/dev-api-integration/scripts/contract_validate.py contract.json sample.json
 
-# 缺字段场景（样例少 amount 字段）
+# Missing field case (sample lacks the amount field)
 python skills/dev-api-integration/scripts/contract_validate.py contract.json incomplete_sample.json
 
-# CI 门禁（退出码驱动）
-python skills/dev-api-integration/scripts/contract_validate.py contract.json sample.json && echo "契约校验通过" || echo "契约校验失败"
+# CI gate (driven by exit code)
+python skills/dev-api-integration/scripts/contract_validate.py contract.json sample.json && echo "Contract validation passed" || echo "Contract validation failed"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-api-integration/contract_validate.py` 条目（3 用例）：
-- `match`：契约与样例字段一致 → exit=0，输出含 `match`
-- `missing_field`：样例缺 `c` 字段 → exit=2，输出含 `missing_request_fields`
-- `missing_file`：样例文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `dev-api-integration/contract_validate.py` entry in `tests/test_scripts.py` (3 cases):
+- `match`: contract and sample fields match → exit=0, output contains `match`
+- `missing_field`: sample lacks field `c` → exit=2, output contains `missing_request_fields`
+- `missing_file`: sample file does not exist → exit=3, output contains `error`
 
 ---
 
 ## mock_server.py
 
-### 用途
-基于契约 JSON 生成 Mock 服务配置（JSON Server 风格）。读取契约中的 routes 列表，输出可被 Mock 服务直接消费的路由配置。
+### Purpose
+Generates a mock service configuration (JSON Server style) from the contract JSON. Reads the routes list in the contract and outputs a route configuration that a mock service can consume directly.
 
-### 接口
+### Interface
 ```
 python mock_server.py <contract_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `contract_json` | 契约 JSON 路径，格式 `{"routes": [{"path": "/api/x", "method": "GET", "response": {...}}]}` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `contract_json` | Path to the contract JSON, format `{"routes": [{"path": "/api/x", "method": "GET", "response": {...}}]}` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 成功生成 Mock 配置（含空 routes 也视为成功） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | Mock configuration generated (empty routes also count as success) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-### 检查项
-1. **路由提取**：从契约的 `routes` 数组逐条提取 path/method/response。
-2. **方法默认值**：未声明 method 时默认 `GET`。
-3. **响应默认值**：未声明 response 时默认空对象 `{}`。
-4. **空契约兼容**：契约无 routes 字段时输出空 routes 列表（exit=0）。
+### Checks
+1. **Route extraction**: extract path/method/response from each entry of the contract's `routes` array.
+2. **Default method**: `GET` when no method is declared.
+3. **Default response**: an empty object `{}` when no response is declared.
+4. **Empty contract handling**: when the contract has no routes field, output an empty routes list (exit=0).
 
-### 输入 JSON 示例
+### Input JSON example
 ```json
 {
   "routes": [
@@ -125,7 +125,7 @@ python mock_server.py <contract_json> [--json]
 }
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "routes": [
@@ -135,55 +135,55 @@ python mock_server.py <contract_json> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 从契约生成 Mock 配置
+# Generate mock configuration from the contract
 python skills/dev-api-integration/scripts/mock_server.py contract.json
 
-# 空契约场景（输出空 routes）
+# Empty contract case (outputs empty routes)
 python skills/dev-api-integration/scripts/mock_server.py empty_contract.json
 
-# 接入 json-server 启动 Mock
+# Start the mock with json-server
 python skills/dev-api-integration/scripts/mock_server.py contract.json > mock_routes.json && json-server mock_routes.json
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-api-integration/mock_server.py` 条目（3 用例）：
-- `routes`：契约含 1 条路由 → exit=0，输出含 `routes`
-- `empty_contract`：契约为空对象 → exit=0，输出含 `routes`
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `dev-api-integration/mock_server.py` entry in `tests/test_scripts.py` (3 cases):
+- `routes`: contract with 1 route → exit=0, output contains `routes`
+- `empty_contract`: contract is an empty object → exit=0, output contains `routes`
+- `missing_file`: file does not exist → exit=3, output contains `error`
 
 ---
 
 ## idempotency_test.py
 
-### 用途
-幂等性测试：校验同一请求重复提交后服务端响应是否一致。输入重复请求的响应列表 JSON，输出请求次数与幂等判定。
+### Purpose
+Idempotency test: checks whether the server returns identical responses when the same request is submitted repeatedly. Input is a JSON list of the responses to the repeated request; output is the request count and the idempotency verdict.
 
-### 接口
+### Interface
 ```
 python idempotency_test.py <responses_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `responses_json` | 重复请求的响应列表 JSON，格式 `[{...}, {...}, ...]` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `responses_json` | JSON list of responses to the repeated request, format `[{...}, {...}, ...]` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 全部响应一致（idempotent=true），含空列表场景 |
-| 2 | 响应不一致（idempotent=false） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | All responses are identical (idempotent=true), including an empty list |
+| 2 | Responses differ (idempotent=false) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-### 检查项
-1. **响应一致性**：列表中所有响应对象与首条响应逐一比对。
-2. **空列表兼容**：输入为空数组时视为 idempotent=true。
-3. **请求次数输出**：返回 `requests` 字段表示参与比对的响应数量。
+### Checks
+1. **Response consistency**: compare every response object in the list with the first response.
+2. **Empty list handling**: an empty array counts as idempotent=true.
+3. **Request count output**: the `requests` field gives the number of responses compared.
 
-### 输入 JSON 示例
+### Input JSON example
 ```json
 [
   {"code": 0, "txn_id": "T001", "status": "SUCCESS"},
@@ -191,7 +191,7 @@ python idempotency_test.py <responses_json> [--json]
 ]
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "requests": 2,
@@ -199,30 +199,30 @@ python idempotency_test.py <responses_json> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 幂等性通过（两次响应一致）
+# Idempotency passes (both responses identical)
 python skills/dev-api-integration/scripts/idempotency_test.py identical_responses.json
 
-# 幂等性失败（响应不一致）
+# Idempotency fails (responses differ)
 python skills/dev-api-integration/scripts/idempotency_test.py different_responses.json
 
-# CI 门禁（重复提交场景必须幂等）
-python skills/dev-api-integration/scripts/idempotency_test.py responses.json && echo "幂等性通过" || echo "幂等性失败"
+# CI gate (duplicate submission must be idempotent)
+python skills/dev-api-integration/scripts/idempotency_test.py responses.json && echo "Idempotency passed" || echo "Idempotency failed"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-api-integration/idempotency_test.py` 条目（3 用例）：
-- `identical`：两次响应一致 → exit=0，输出含 `idempotent`
-- `different`：两次响应不一致 → exit=2，输出含 `idempotent`
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `dev-api-integration/idempotency_test.py` entry in `tests/test_scripts.py` (3 cases):
+- `identical`: both responses identical → exit=0, output contains `idempotent`
+- `different`: the two responses differ → exit=2, output contains `idempotent`
+- `missing_file`: file does not exist → exit=3, output contains `error`
 
 ---
 
-## 能力边界
+## Limits
 
-- 上述脚本为**轻量确定性校验**，不替代真实联调与压测。
-- `contract_validate.py` 仅做**字段集合比对**，不校验字段类型、枚举值、长度、业务规则；深度校验须依赖 OpenAPI 3.0 校验器（如 schemathesis）。
-- `mock_server.py` 仅生成路由配置，**不启动 Mock 服务**；需配合 json-server 等 Mock 框架使用。
-- `idempotency_test.py` 仅比对响应内容是否一致，**不验证幂等键机制本身**；幂等键设计与有效期须由代码评审把关。
-- 资金类接口的幂等性须在 L3 档位下额外覆盖并发重复提交、跨节点重复提交场景。
+- These scripts are **lightweight deterministic checks**; they do not replace real integration and load testing.
+- `contract_validate.py` only **compares field sets**. It does not check field types, enum values, lengths or business rules; deep validation needs an OpenAPI 3.0 validator (such as schemathesis).
+- `mock_server.py` only generates the route configuration and **does not start a mock service**; use it with a mock framework such as json-server.
+- `idempotency_test.py` only compares whether response contents are identical and **does not verify the idempotency key mechanism itself**; the idempotency key design and validity period must be checked in code review.
+- At L3, idempotency of fund-related interfaces must additionally cover concurrent duplicate submission and duplicate submission across nodes.

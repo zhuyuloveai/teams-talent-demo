@@ -20,7 +20,7 @@ index 0000000..73f260a
 +    private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 25, 10, 0);
 +
 +    static CampaignDraft cashbackDraft() {
-+        return new CampaignDraft("餐饮返现", "测试", CampaignType.CATEGORY_CASHBACK,
++        return new CampaignDraft("Dining cashback", "Test", CampaignType.CATEGORY_CASHBACK,
 +                NOW.minusDays(1), NOW.plusDays(30), null, "0001",
 +                new BigDecimal("50.00"), new BigDecimal("0.0500"), null,
 +                new BigDecimal("30.00"), 5, new BigDecimal("1000.00"), null, true);
@@ -134,7 +134,7 @@ index 0000000..344a836
 +    private Campaign campaign(CampaignType type, String category, BigDecimal min,
 +                             BigDecimal rate, BigDecimal fixed, BigDecimal budget,
 +                             boolean enrollmentRequired, int maxPerCard) {
-+        CampaignDraft draft = new CampaignDraft("测试", null, type,
++        CampaignDraft draft = new CampaignDraft("Test", null, type,
 +                NOW.minusDays(10), NOW.plusDays(10), null, category, min,
 +                rate, fixed, new BigDecimal("50.00"), maxPerCard, budget, null, enrollmentRequired);
 +        Campaign campaign = new Campaign("c1", draft, NOW);
@@ -158,7 +158,7 @@ index 0000000..344a836
 +
 +    @Test
 +    void rejectsNotActiveCampaign() {
-+        Campaign campaign = new Campaign("c1", new CampaignDraft("测试", null,
++        Campaign campaign = new Campaign("c1", new CampaignDraft("Test", null,
 +                CampaignType.CATEGORY_CASHBACK, NOW.minusDays(1), NOW.plusDays(1), null, "0001",
 +                BigDecimal.ZERO, new BigDecimal("0.05"), null, null, 1, new BigDecimal("100"),
 +                null, true), NOW);
@@ -176,7 +176,7 @@ index 0000000..344a836
 +
 +        AccountSnapshot otherGroup = new AccountSnapshot("00000000001", "Y",
 +                BigDecimal.ZERO, "B000000000");
-+        Campaign targeted = new Campaign("c2", new CampaignDraft("测试", null,
++        Campaign targeted = new Campaign("c2", new CampaignDraft("Test", null,
 +                CampaignType.CATEGORY_CASHBACK, NOW.minusDays(1), NOW.plusDays(1), "A000000000",
 +                "0001", BigDecimal.ZERO, new BigDecimal("0.05"), null, null, 1,
 +                new BigDecimal("100"), null, true), NOW);

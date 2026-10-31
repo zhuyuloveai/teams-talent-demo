@@ -1,1 +1,1 @@
-User Maintenance and Delete Protection：实现用户新增、修改与删除，包含用户类型校验、密码哈希处理、禁止自删除及保留最后一名管理员。
+User Maintenance and Delete Protection: implement creating, updating and deleting users, including user type validation, password hashing, no self-deletion, and keeping the last admin.

@@ -1,19 +1,19 @@
-# 权益入口与说明页验收用例
+# Acceptance Cases for the Benefit Entry and Description Page
 
-以下是待执行的用例定义；没有执行记录、通过结论或安全扫描报告。具体预期以当前任务确认 PRD 为准。使用隔离资格输入时在报告注明夹具来源，不能宣称已接通真实白金资格服务。
+These are case definitions still to be executed; there are no execution records, pass conclusions or security scan reports. The specific expectations follow the PRD confirmed for the current task. When isolated eligibility input is used, note the fixture source in the report; do not claim that a real platinum eligibility service is connected.
 
-| 用例 | 输入与操作 | 待验证预期 |
+| Case | Input and action | Expectation to verify |
 | --- | --- | --- |
-| 白金入口 | 按已确认资格契约提供白金客户，进入卡片详情 | 能看到“消费返现权益”并进入说明页 |
-| 非白金入口 | 按同一契约提供明确非白金客户 | 不显示入口；直接访问说明路径的处理遵照 PRD |
-| 资格未知 | 字段缺失、读取失败或契约未配置 | 不猜测等级；显示/隐藏/重试行为与 PRD 明确约定一致 |
-| 权益文案 | 查看适用客户、期限、比例 | 分别为白金卡、未来 3 个月、额外 0.5%，不把额外比例写成总比例 |
-| 待定事项 | 查看政策说明 | 日期起算、消费范围、上限、舍入、到账时间、退款口径逐项保持待确认，不出现虚构日期或金额 |
-| 返回与刷新 | 详情→说明→返回、刷新/深链 | 保留对应卡片上下文，不显示另一卡片资料，异常有明确提示 |
-| 窄屏与可访问性 | 窄屏、长说明、键盘访问 | 不横向溢出；入口和返回可聚焦，确认/待确认内容层级清楚 |
-| 内容安全 | 含 HTML 特殊字符的展示数据 | 正确转义，不执行注入内容；不得显示 CVV/token 等敏感值 |
-| 无资金副作用 | 只打开/刷新/返回说明页 | 不发送报名、交易、奖励评估或入账写请求，不改变金额和奖励状态 |
+| Platinum entry | Provide a platinum customer under the confirmed eligibility contract and open the card details | "Spending cashback benefit" is visible and opens the description page |
+| Non-platinum entry | Provide a customer who is clearly non-platinum under the same contract | The entry is not shown; direct access to the description path is handled as the PRD specifies |
+| Unknown eligibility | Field missing, read failure, or contract not configured | The tier is not guessed; show/hide/retry behavior matches what the PRD states |
+| Benefit copy | View eligible customers, period and rate | Platinum card, next 3 months and an extra 0.5% respectively; the extra rate is not presented as the total rate |
+| Open items | View the policy description | Start date, spending scope, cap, rounding, crediting time and refund treatment each stay "To be confirmed"; no invented dates or amounts appear |
+| Back and refresh | Details -> description -> back, refresh/deep link | The matching card context is kept, no other card's data is shown, and errors show a clear message |
+| Narrow screen and accessibility | Narrow screen, long description, keyboard access | No horizontal overflow; entry and back are focusable; confirmed/to-be-confirmed content has a clear hierarchy |
+| Content safety | Display data containing HTML special characters | Correctly escaped, injected content is not executed; sensitive values such as CVV/token are never shown |
+| No fund side effects | Only open/refresh/go back on the description page | No enrollment, transaction, reward evaluation or posting write requests are sent; amounts and reward status do not change |
 
-Review 对照范围、资格数据来源和现有静态 Web 结构；单测/集成验证覆盖上述输入边界；安全检查注明实际/预置来源。任一阻塞失败不得以另一条通过覆盖；Owner 退回后按现有门禁重新验证。
+Review checks scope, the eligibility data source and the existing static web structure; unit/integration verification covers the input boundaries above; the security check states the actual/preset source. A blocking failure cannot be offset by another passing case; after the Owner returns the work, it is verified again under the existing gates.
 
-Owner 验收清单：同一版本的 PRD、设计、代码 PR/提交、单测与功能/Review/安全报告、问题及复测、未决项处理。通过/退回均由 Owner 明确记录，不能由此用例文件预先产生验收结果。
+Owner acceptance checklist: PRD, design, code PR/commit, unit tests and functional/Review/security reports of the same version, issues and retests, handling of open items. Pass or return is recorded explicitly by the Owner; this case file cannot produce an acceptance result in advance.

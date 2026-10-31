@@ -24,7 +24,7 @@ index 0000000..60cda8e
 +import static org.assertj.core.api.Assertions.assertThatThrownBy;
 +
 +/**
-+ * 用户目录用例：列表、新增、修改、删除与管理员保护规则。
++ * User directory use cases: list, add, update, delete and admin protection rules.
 + */
 +@SpringBootTest
 +@ActiveProfiles("test")

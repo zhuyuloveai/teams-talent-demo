@@ -1,7 +1,7 @@
 schemaVersion: 1
 id: icode-miner-diff
-name: 开发范式挖掘（代码片段）
-description: 分析本地代码片段并结合代码仓上下文，总结开发范式，归档到仓库的 .icode-knowledge/miner/
+name: Pattern mining (code snippets)
+description: Analyzes local code snippets in the repository context, summarizes development patterns, and archives them to the repository's .icode-knowledge/miner/
 definitionVersion: "0.1.0"
 
 input:
@@ -32,6 +32,6 @@ build:
   skill:
     name: icode-miner-diff
     defaultPrompt: |
-      总结代码仓库“${repository.name}”中所给代码片段体现的开发范式。
+      Summarize the development patterns shown by the given code snippets in the repository "${repository.name}".
 
-      运行准备脚本时传入输入文件：${inputFile.path}。脚本会列出本次的全部输入、输出位置和规则，之后按它的输出进行。
+      Pass the input file when running the preparation script: ${inputFile.path}. The script lists all inputs, output locations and rules for this run; then follow its output.

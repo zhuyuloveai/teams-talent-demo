@@ -1,10 +1,10 @@
 schemaVersion: 1
 id: db-schema
-name: 数据库结构索引
-description: 从 Flyway 迁移脚本和 JPA 实体中还原表、字段、约束与表间关系，供 Agent 查询
+name: Database schema index
+description: Reconstructs tables, columns, constraints and table relations from Flyway migration scripts and JPA entities for the agent to query
 definitionVersion: "0.3.1"
 
-# 一个代码仓；schemas 可限定只索引部分库（每行一个），不填时索引全部。
+# One repository; schemas can limit indexing to some schemas (one per line); when empty, all are indexed.
 input:
   repositories:
     type: array
@@ -32,7 +32,7 @@ output:
     path: .icode-knowledge/db-schema
 
 applications:
-  - name: 表结构查询
+  - name: Table schema query
     type: mcp
     command: db-schema
     args: [serve, --mcp]
@@ -42,7 +42,7 @@ install:
   args: ["-m", "pip", "install", "--user", "db-schema-indexer==0.3.1"]
 
 uninstall:
-  description: 卸载 db-schema-indexer；保留代码仓内的 .icode-knowledge/db-schema 和任务记录。
+  description: Uninstalls db-schema-indexer; keeps .icode-knowledge/db-schema in the repository and the task records.
   command: python3
   args: ["-m", "pip", "uninstall", "-y", "db-schema-indexer"]
 

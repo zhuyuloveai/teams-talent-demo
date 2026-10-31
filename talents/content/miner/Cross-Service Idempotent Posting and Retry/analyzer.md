@@ -1,156 +1,156 @@
-# Cross-Service Idempotent Posting and Retry：奖励发放代码分析报告
+# Cross-Service Idempotent Posting and Retry: Reward Issuance Code Analysis Report
 
-> 场景：跨服务奖励幂等入账 —— 重复评估检查、账户入账去重、失败保留待处理状态及人工重试。
-> 依据：代码片段 01（reward-orchestration）、02（account-credit）、03（tests），并结合代码仓已提交代码验证。
+> Scenario: idempotent cross-service reward posting: duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry.
+> Basis: code snippets 01 (reward-orchestration), 02 (account-credit) and 03 (tests), verified against the code committed in the repository.
 
-## 一、仓库知识层次分类
+## 1. Repository knowledge layers
 
-本需求属于 CardDemo 微服务架构中 **Marketing 支撑域（营销奖励发放）** 与 **Account 存量域（账户入账）** 的跨服务集成，核心是一个"分布式一致性"用例：
+This requirement is a cross-service integration between the **Marketing supporting domain (marketing reward issuance)** and the **Account existing domain (account posting)** in the CardDemo microservice architecture. At its core it is a "distributed consistency" use case:
 
-- **Marketing 限界上下文（`marketing-service`，出站消费方）**：
-  - `RewardEvaluationService`（应用服务）—— 评估 + 发放编排，新增文件
-  - `RewardGrant`（发奖记录实体，`(campaign_id, transaction_id)` 唯一）—— 评估侧幂等载体，新增文件
-  - `RewardGrantRepository`（仓储端口，`RewardGrantJpaRepository` 实现）—— 新增文件
-  - `AccountClient`（出站适配器，`account-service` 客户端）—— 读快照 + 返现入账，新增文件
-  - `V1__marketing_schema.sql`（`reward_grant` 等表）—— 新增迁移
-- **Account 限界上下文（`account-service`，入账提供方）**：
-  - `AccountApplicationService.creditCashback()` —— 幂等返现入账用例，新增方法
-  - `RewardCredit` 实体 + `reward_credit` 表（`reward_id` 主键）—— 入账侧幂等载体，新增文件
-  - `RewardCreditRepository` 端口 + `RewardCreditJpaRepository` 实现 —— 新增文件
-  - `V3__reward_credit.sql` —— 新增迁移
-- **Transaction 域（触发方，代码仓验证）**：`PostingService.evaluateRewards()` + `MarketingClient` 为入账后的营销触发点（片段外，见仓库已提交代码 `PostingService.java:137-150`）。
+- **Marketing bounded context (`marketing-service`, outbound consumer)**:
+  - `RewardEvaluationService` (application service): orchestrates evaluation + issuance, new file
+  - `RewardGrant` (reward record entity, unique on `(campaign_id, transaction_id)`): the idempotency carrier on the evaluation side, new file
+  - `RewardGrantRepository` (repository port, implemented by `RewardGrantJpaRepository`): new file
+  - `AccountClient` (outbound adapter, `account-service` client): reads snapshots + cashback posting, new file
+  - `V1__marketing_schema.sql` (tables such as `reward_grant`): new migration
+- **Account bounded context (`account-service`, posting provider)**:
+  - `AccountApplicationService.creditCashback()`: idempotent cashback posting use case, new method
+  - `RewardCredit` entity + `reward_credit` table (`reward_id` primary key): the idempotency carrier on the posting side, new file
+  - `RewardCreditRepository` port + `RewardCreditJpaRepository` implementation: new files
+  - `V3__reward_credit.sql`: new migration
+- **Transaction domain (trigger, verified in the repository)**: `PostingService.evaluateRewards()` + `MarketingClient` are the marketing trigger point after posting (outside the snippets; see the committed code `PostingService.java:137-150`).
 
-层次定位：
+Layer positioning:
 
-> 营销能力（Marketing）→ 发奖用例（RewardEvaluationService）→ 幂等检查（RewardGrantRepository.existsByCampaignAndTransaction）→ 发奖记录（RewardGrant）→ 账户入账（AccountApplicationService.creditCashback）→ 入账幂等（RewardCredit）；失败路径 → 人工重试（RewardEvaluationService.fulfill → creditCashback）。
+> Marketing capability (Marketing) → reward issuance use case (RewardEvaluationService) → idempotency check (RewardGrantRepository.existsByCampaignAndTransaction) → reward record (RewardGrant) → account posting (AccountApplicationService.creditCashback) → posting idempotency (RewardCredit); failure path → manual retry (RewardEvaluationService.fulfill → creditCashback).
 
-## 二、需求影响位置依赖分析
+## 2. Dependency analysis of affected locations
 
-### Marketing 域（marketing-service）
+### Marketing domain (marketing-service)
 
-| 依赖 | 类型 | 产生原因与位置 |
+| Dependency | Type | Reason and location |
 |---|---|---|
-| `RewardGrantRepository` | 端口接口 | `RewardEvaluationService.evaluate()` `:71` `existsByCampaignAndTransaction()` 重复评估检查；`:79` `countByCampaignAndCard()`；`:112`/`:135` `saveReward()`；`:120` `findReward()`（fulfill） |
-| `AccountClient` | 出站适配器 | `:63` `findAccount()` 读账户快照；`:103`/`:130` `creditCashback()` 返现入账（幂等键 rewardId） |
-| `Clock` | Spring Bean | `:69` `LocalDateTime.now(clock)`；注入使测试可控时间 |
-| `RewardGrant` | 实体 | 状态迁移 `markGranted/markPending`（`:105-108`）、`isCashback()`（`:115-117`）决定是否调账户 |
-| `Campaign`/`Enrollment` 聚合根 | 被依赖聚合根 | `campaign.consumeCashback()` 扣预算（`:91`）；`enrollments.findEnrollment()` 报名判定（`:76`） |
-| `RewardController`（入站） | REST 入口 | `RewardController.java:44-47` 评估入口；`:62-65` `fulfill` 重试入口（仓库已提交） |
+| `RewardGrantRepository` | Port interface | `RewardEvaluationService.evaluate()` `:71` `existsByCampaignAndTransaction()` duplicate-evaluation check; `:79` `countByCampaignAndCard()`; `:112`/`:135` `saveReward()`; `:120` `findReward()` (fulfill) |
+| `AccountClient` | Outbound adapter | `:63` `findAccount()` reads the account snapshot; `:103`/`:130` `creditCashback()` cashback posting (idempotency key rewardId) |
+| `Clock` | Spring bean | `:69` `LocalDateTime.now(clock)`; injection makes time controllable in tests |
+| `RewardGrant` | Entity | State transitions `markGranted/markPending` (`:105-108`); `isCashback()` (`:115-117`) decides whether to call the account service |
+| `Campaign`/`Enrollment` aggregate roots | Depended-on aggregate roots | `campaign.consumeCashback()` deducts the budget (`:91`); `enrollments.findEnrollment()` checks enrollment (`:76`) |
+| `RewardController` (inbound) | REST entry | `RewardController.java:44-47` evaluation entry; `:62-65` `fulfill` retry entry (committed in the repository) |
 
-### Account 域（account-service）
+### Account domain (account-service)
 
-| 依赖 | 类型 | 产生原因与位置 |
+| Dependency | Type | Reason and location |
 |---|---|---|
-| `RewardCreditRepository` | 端口接口 | `creditCashback()` `:78` `existsByRewardId()` 幂等判断；`:84` `saveCredit()` 记录入账事实 |
-| `Account` 聚合根 | 被依赖聚合根 | `:82` `applyCashback(amount)`（`Account.java:118-124`，冲减欠款、余额可为负） |
-| `AccountController` | 入站适配器 | `AccountController.java:74-79` 暴露 `POST /api/v1/accounts/{id}/cashback-credits`，入参 `CashbackCreditRequest`（`rewardId` 幂等键） |
-| `reward_credit` 表 | 数据库 | `V3__reward_credit.sql`，`reward_id` 主键 + `account_id` 索引 |
+| `RewardCreditRepository` | Port interface | `creditCashback()` `:78` `existsByRewardId()` idempotency check; `:84` `saveCredit()` records the posting fact |
+| `Account` aggregate root | Depended-on aggregate root | `:82` `applyCashback(amount)` (`Account.java:118-124`, reduces the amount owed; the balance may be negative) |
+| `AccountController` | Inbound adapter | `AccountController.java:74-79` exposes `POST /api/v1/accounts/{id}/cashback-credits` with input `CashbackCreditRequest` (`rewardId` idempotency key) |
+| `reward_credit` table | Database | `V3__reward_credit.sql`, `reward_id` primary key + `account_id` index |
 
-### 关键交叉依赖
+### Key cross dependencies
 
-- marketing → account：`AccountClient.creditCashback()`（同步 REST，3s 读超时 `RestClientConfig.java:18`；`RemoteServiceException` 包装）。
-- 幂等键语义贯穿三处：评估侧 `(campaign_id, transaction_id)` → 发奖记录唯一；入账侧 `reward_id` → 入账记录主键；`fulfill` 重试靠"已 GRANTED 短路 + 入账侧幂等键兜底"。
+- marketing → account: `AccountClient.creditCashback()` (synchronous REST, 3s read timeout `RestClientConfig.java:18`; wrapped as `RemoteServiceException`).
+- The idempotency key semantics run through three places: evaluation side `(campaign_id, transaction_id)` → unique reward record; posting side `reward_id` → posting record primary key; the `fulfill` retry relies on "short-circuit when already GRANTED + the posting-side idempotency key as safety net".
 
-## 三、调用跟踪
+## 3. Call trace
 
-### 主链路：评估 → 入账（时序）
+### Main path: evaluation → posting (sequence)
 
 ```
 RewardEvaluationService.evaluate(EvaluationCommand)
-  │ validate()：transactionId 非空、cardNumber \d{16}、accountId \d{11}、amount > 0（InvalidRequestException）
-  │ accountClient.findAccount() → 无则 skipped(ACCOUNT_NOT_FOUND)
-  │ for (campaign : campaigns.findActiveAt(now))                    [逐活动]
-  │   1. rewards.existsByCampaignAndTransaction() → true：skipped(ALREADY_EVALUATED)，continue   ← 重复评估检查
-  │   2. enrollments.findEnrollment() / countByCampaignAndCard() → 参与资格
-  │   3. EligibilityPolicy.evaluateTransaction() → 不满足：skipped(reason)，continue
-  │   4. campaign.consumeCashback()（BusinessRuleException → BUDGET_EXHAUSTED 跳过）
+  │ validate(): transactionId non-empty, cardNumber \d{16}, accountId \d{11}, amount > 0 (InvalidRequestException)
+  │ accountClient.findAccount() → none: skipped(ACCOUNT_NOT_FOUND)
+  │ for (campaign : campaigns.findActiveAt(now))                    [per campaign]
+  │   1. rewards.existsByCampaignAndTransaction() → true: skipped(ALREADY_EVALUATED), continue   ← duplicate-evaluation check
+  │   2. enrollments.findEnrollment() / countByCampaignAndCard() → participation eligibility
+  │   3. EligibilityPolicy.evaluateTransaction() → not met: skipped(reason), continue
+  │   4. campaign.consumeCashback() (BusinessRuleException → skip with BUDGET_EXHAUSTED)
   │   5. new RewardGrant(UUID, ..., PENDING)
   │   6. isCashback() ?
-  │        ├─ true：accountClient.creditCashback(accountId, rewardId, campaignId, amount)
-  │        │     ├─ 成功 → grant.markGranted(now)
-  │        │     └─ RemoteServiceException → grant.markPending("Cashback credit pending: ...")   ← 失败保留待处理
-  │        └─ false（积分）：grant.markGranted(now)
-  │   7. rewards.saveReward(grant); campaigns.saveCampaign(campaign)   [同一本地事务，noRollbackFor=RemoteServiceException]
+  │        ├─ true: accountClient.creditCashback(accountId, rewardId, campaignId, amount)
+  │        │     ├─ success → grant.markGranted(now)
+  │        │     └─ RemoteServiceException → grant.markPending("Cashback credit pending: ...")   ← failure kept as pending
+  │        └─ false (points): grant.markGranted(now)
+  │   7. rewards.saveReward(grant); campaigns.saveCampaign(campaign)   [same local transaction, noRollbackFor=RemoteServiceException]
   ▼
 Account AccountApplicationService.creditCashback(accountId, rewardId, campaignId, amount)
-  │ rewardCredits.existsByRewardId(rewardId) → true：直接 getById 返回          ← 入账去重
-  │ account.applyCashback(amount)（currentBalance -= amount，余额可为负=溢缴）
-  │ accounts.saveAccount(account) → rewardCredits.saveCredit(RewardCredit(...))  [先账户后幂等记录，同一事务]
+  │ rewardCredits.existsByRewardId(rewardId) → true: return getById directly          ← posting deduplication
+  │ account.applyCashback(amount) (currentBalance -= amount; a negative balance = overpayment)
+  │ accounts.saveAccount(account) → rewardCredits.saveCredit(RewardCredit(...))  [account first, then idempotency record, same transaction]
 ```
 
-### 失败路径：人工重试
+### Failure path: manual retry
 
 ```
 RewardEvaluationService.fulfill(rewardId)
-  │ rewards.findReward() → 无：NotFoundException(REWARD_NOT_FOUND)
-  │ grant.isGranted() → true：短路返回（不再调账户）
-  │ 非 granted：
-  │    ├─ 积分：markGranted(now)
-  │    └─ 现金：accountClient.creditCashback(...)（account 侧幂等键兜底）
-  │         ├─ 成功 → markGranted(now)
-  │         └─ RemoteServiceException → markPending(reason) + saveReward + throw ex（保留 PENDING，HTTP 503）
+  │ rewards.findReward() → none: NotFoundException(REWARD_NOT_FOUND)
+  │ grant.isGranted() → true: short-circuit return (no further account call)
+  │ not granted:
+  │    ├─ points: markGranted(now)
+  │    └─ cash: accountClient.creditCashback(...) (account-side idempotency key as safety net)
+  │         ├─ success → markGranted(now)
+  │         └─ RemoteServiceException → markPending(reason) + saveReward + throw ex (keeps PENDING, HTTP 503)
 ```
 
-## 四、需求分类
+## 4. Requirement classification
 
-这是一个**新特性开发（新增跨服务业务能力）**：在存量 CardDemo 上新增"营销奖励发放"，核心挑战是**跨服务幂等**（评估幂等 + 入账幂等）与**下游失败不丢账**（PENDING 状态 + 人工重试）。对应需求条目 MK-REW-01..08（评估/发放/幂等）与 NR-REWARD-01（账户幂等入账）。
+This is **new feature development (a new cross-service business capability)**: add "marketing reward issuance" to the existing CardDemo. The core challenges are **cross-service idempotency** (evaluation idempotency + posting idempotency) and **no lost postings on downstream failure** (PENDING status + manual retry). It corresponds to requirement items MK-REW-01..08 (evaluation/issuance/idempotency) and NR-REWARD-01 (idempotent account posting).
 
-## 五、示例使用上下文
+## 5. Example usage context
 
-- **何时触发**：交易入账成功后由 transaction-service 同步调用 `POST /api/v1/reward-evaluations`（`PostingService.evaluateRewards()`，营销失败仅 log.warn 不回滚——ADR-009）；PENDING 奖励由运营经 `POST /api/v1/rewards/{rewardId}/fulfill` 人工重试。
-- **为何重要**：返现是"消费事实之后的附加权益"，营销域与账务域失败域必须分离；幂等键设计同时服务同步重试与未来事件重放（ADR-009 理由 3）。
-- **并发场景**：批量入账通常逐笔串行，但 `uk_reward_campaign_txn` 唯一约束兜底并发重复评估；`@Version` 乐观锁保护预算消耗。
+- **When it is triggered**: after a transaction is posted successfully, transaction-service synchronously calls `POST /api/v1/reward-evaluations` (`PostingService.evaluateRewards()`; a marketing failure only logs log.warn and does not roll back, per ADR-009); operations retry PENDING rewards manually through `POST /api/v1/rewards/{rewardId}/fulfill`.
+- **Why it matters**: cashback is "an add-on benefit after the spending fact", so the failure domains of marketing and accounting must be separated; the idempotency key design serves both synchronous retries and future event replay (ADR-009 rationale 3).
+- **Concurrency scenario**: batch posting usually runs one transaction at a time, but the `uk_reward_campaign_txn` unique constraint is the safety net for concurrent repeated evaluations; the `@Version` optimistic lock protects budget consumption.
 
-## 六、具体根因分析（如何）
+## 6. Root cause analysis (how)
 
-- **为什么两处幂等**：评估侧唯一键 `(campaign_id, transaction_id)` 只能保证"同一活动同一交易评估一次"，无法覆盖 account-service 侧被重复调用（网络重放、跨服务重试）；account 侧必须以业务幂等键 `reward_id` 再保证一次"同一奖励只入账一次"。注释明确这一分工：`RewardEvaluationService.java:34-35`。
-- **为什么失败保留 PENDING 而非回滚**：账户服务不可用时已消耗的活动预算与发奖记录不应回滚丢弃；`@Transactional(noRollbackFor = RemoteServiceException.class)`（`:37`）使事务提交、保留 PENDING，供人工重试。
-- **为什么先查后写双保险**：`existsByCampaignAndTransaction` / `existsByRewardId` 是应用层快速路径，数据库唯一约束/主键是并发兜底——检查防重复、约束防竞态。
-- **环境约束**：JDK 21 / Spring Boot 3.3 / PostgreSQL（H2 单测）、无 MQ（ADR-009 方案 A：本地事务 + 同步调用 + 幂等键 + 人工重试）；标识零填充字符串（交易号 16 位、卡号 16 位、账户 11 位）；金额 `BigDecimal(12,2)`；时间 `LocalDateTime`；每服务独立库、禁止跨库 JOIN（`07-java-conventions.md`）。
+- **Why idempotency in two places**: the evaluation-side unique key `(campaign_id, transaction_id)` only guarantees "one evaluation per campaign per transaction" and cannot cover repeated calls on the account-service side (network replay, cross-service retries); the account side must guarantee "each reward is posted only once" again with the business idempotency key `reward_id`. The comments state this division of responsibility explicitly: `RewardEvaluationService.java:34-35`.
+- **Why keep PENDING on failure instead of rolling back**: when the account service is unavailable, the campaign budget already consumed and the reward record should not be rolled back and discarded; `@Transactional(noRollbackFor = RemoteServiceException.class)` (`:37`) lets the transaction commit and keeps PENDING for manual retry.
+- **Why the double safeguard of check-before-write**: `existsByCampaignAndTransaction` / `existsByRewardId` are the fast path in the application layer, and the database unique constraint/primary key is the concurrency safety net: the check prevents duplicates, the constraint prevents races.
+- **Environment constraints**: JDK 21 / Spring Boot 3.3 / PostgreSQL (H2 for unit tests), no MQ (ADR-009 option A: local transaction + synchronous call + idempotency key + manual retry); identifiers are zero-padded strings (transaction ID 16 digits, card number 16 digits, account 11 digits); amounts `BigDecimal(12,2)`; times `LocalDateTime`; each service has its own database and cross-database JOINs are forbidden (`07-java-conventions.md`).
 
-## 七、当前与预期行为
+## 7. Current and expected behavior
 
-- **实现前**：账户仅有记账/还款/利息入账用例，无返现概念；营销域无发奖记录；跨服务无幂等写入。
-- **实现后**：
-  1. 同一活动同一交易重复评估 → `ALREADY_EVALUATED` 跳过，不重复发奖（`RewardEvaluationServiceTest.isIdempotentPerCampaignAndTransaction`，`verify(rewards, never()).saveReward()`）。
-  2. 同一 `rewardId` 重复入账 → 账户余额只变一次（`AccountControllerTest.cashbackCreditIsIdempotentPerRewardId`，第二次余额不变）。
-  3. 账户服务不可用 → 奖励 PENDING + failureReason，`fulfill` 重试成功转 GRANTED（`keepsPendingWhenAccountUnavailable`、`fulfilsPendingCashback`）。
-- **容易被忽略的独特方面**：
-  1. 入账顺序"先账户后幂等记录"（`AccountApplicationService.java:82-85`）：若先记 credit 后入账失败，会留下"已入账"的假记录；当前顺序失败时整事务回滚，两者都不会残留。
-  2. `fulfill` 失败时显式 `rewards.saveReward(grant)` 后 `throw ex`：利用 `noRollbackFor` 把 PENDING 状态落库再让调用方看到 503。
-  3. 积分奖励不走账户调用直接 GRANTED，`evaluate()` 与 `fulfill()` 都分支处理 `isCashback()`。
-  4. 金额断言一律 `isEqualByComparingTo`，避免 BigDecimal 等值比较陷阱。
+- **Before**: the account only had posting/repayment/interest posting use cases and no concept of cashback; the marketing domain had no reward records; there were no idempotent cross-service writes.
+- **After**:
+  1. Repeated evaluation of the same transaction for the same campaign → skipped with `ALREADY_EVALUATED`, no duplicate reward (`RewardEvaluationServiceTest.isIdempotentPerCampaignAndTransaction`, `verify(rewards, never()).saveReward()`).
+  2. Repeated posting with the same `rewardId` → the account balance changes only once (`AccountControllerTest.cashbackCreditIsIdempotentPerRewardId`, the balance is unchanged the second time).
+  3. Account service unavailable → reward is PENDING + failureReason; a successful `fulfill` retry moves it to GRANTED (`keepsPendingWhenAccountUnavailable`, `fulfilsPendingCashback`).
+- **Distinctive aspects that are easily overlooked**:
+  1. The posting order "account first, then idempotency record" (`AccountApplicationService.java:82-85`): recording the credit first and then failing the posting would leave a false "already posted" record; with the current order, a failure rolls back the whole transaction and neither remains.
+  2. When `fulfill` fails it explicitly calls `rewards.saveReward(grant)` and then `throw ex`: it uses `noRollbackFor` to persist the PENDING status before the caller sees the 503.
+  3. Points rewards skip the account call and go straight to GRANTED; both `evaluate()` and `fulfill()` branch on `isCashback()`.
+  4. Amount assertions always use `isEqualByComparingTo`, avoiding the BigDecimal equality trap.
 
-## 八、需求实现逻辑（如何/为什么）
+## 8. Requirement implementation logic (how/why)
 
-- **`RewardEvaluationService`（新增，application 层）**：编排"校验 → 幂等检查 → 资格 → 扣预算 → 建记录 → 入账 → 落库"。循环内每个失败点转 `skipped`/`PENDING` 而不是向上抛，保证单活动失败不中断整批（`:70-115`）。
-- **`RewardGrant`（新增，domain 层）**：状态机 `PENDING → GRANTED / FAILED`（`RewardStatus.java`），`markGranted/markPending/markFailed` 封装状态迁移并维护 `failureReason`/`grantedAt`；构造校验奖励 > 0；`@Version` 乐观锁；表唯一约束 `uk_reward_campaign_txn`（`V1__marketing_schema.sql:505`）。
-- **`AccountClient`（新增，infrastructure 层）**：`findAccount()` 用 `RestClient.exchange()` 区分 404（返回 empty）与其他非 2xx（抛 `RemoteServiceException`）；`creditCashback()` POST 入账。RestClient 由 `RestClientConfig` 装配（3s 读超时）。
-- **`AccountApplicationService.creditCashback()`（account 域新增用例）**：`existsByRewardId` 短路 → `applyCashback` → 先存账户后存 `RewardCredit`（同一 `@Transactional`）。
-- **`RewardCredit` + `reward_credit` 表（新增）**：`reward_id` 主键即幂等键，附 `account_id` 索引支持按账户查询。
-- **测试（03-tests.patch）**：account 侧 `@SpringBootTest` + MockMvc 端到端验证幂等（真实数据库约束生效）；marketing 侧 `@ExtendWith(MockitoExtension.class)` 单测桩仓储/客户端，固定 `Clock` 验证 GRANTED/PENDING/幂等跳过/fulfill，`ArgumentCaptor` 校验保存内容。
+- **`RewardEvaluationService` (new, application layer)**: orchestrates "validate → idempotency check → eligibility → deduct budget → create record → post → persist". Every failure point inside the loop becomes `skipped`/`PENDING` instead of throwing upward, so a failure in one campaign does not interrupt the whole batch (`:70-115`).
+- **`RewardGrant` (new, domain layer)**: state machine `PENDING → GRANTED / FAILED` (`RewardStatus.java`); `markGranted/markPending/markFailed` wrap the transitions and maintain `failureReason`/`grantedAt`; the constructor validates reward > 0; `@Version` optimistic lock; table unique constraint `uk_reward_campaign_txn` (`V1__marketing_schema.sql:505`).
+- **`AccountClient` (new, infrastructure layer)**: `findAccount()` uses `RestClient.exchange()` to distinguish 404 (returns empty) from other non-2xx (throws `RemoteServiceException`); `creditCashback()` POSTs the posting. The RestClient is wired by `RestClientConfig` (3s read timeout).
+- **`AccountApplicationService.creditCashback()` (new use case in the account domain)**: short-circuit on `existsByRewardId` → `applyCashback` → save the account first, then `RewardCredit` (same `@Transactional`).
+- **`RewardCredit` + `reward_credit` table (new)**: the `reward_id` primary key is the idempotency key, with an `account_id` index to support queries by account.
+- **Tests (03-tests.patch)**: on the account side, `@SpringBootTest` + MockMvc end to end verifies idempotency (with real database constraints in effect); on the marketing side, `@ExtendWith(MockitoExtension.class)` unit tests stub the repositories/client, use a fixed `Clock` to verify GRANTED/PENDING/idempotent skips/fulfill, and use `ArgumentCaptor` to check what was saved.
 
-## 九、具体实现步骤
+## 9. Concrete implementation steps
 
-1. **定义发奖记录实体与唯一约束**（幂等载体）：`RewardGrant`（`rewardId` UUID 主键、`(campaign_id, transaction_id)` 唯一约束、`@Version`），状态方法封装迁移；`RewardStatus` 枚举 PENDING/GRANTED/FAILED。目的：评估侧重复评估在数据库层不可行。
-2. **定义仓储端口与实现**：`RewardGrantRepository`（`existsByCampaignAndTransaction`、`countByCampaignAndCard`、`findReward`、`saveReward` 等），`RewardGrantJpaRepository` 以 default 方法桥接 Spring Data 派生查询。目的：domain 依赖倒置，不含 Spring 注解。
-3. **编写评估编排（应用服务）**：`RewardEvaluationService.evaluate()` —— 参数校验 → 读账户快照 → 逐活动（幂等检查 → 资格判定 → 扣预算 → 建 grant → 按类型入账/直接 GRANTED → 落库）；类级 `@Transactional(noRollbackFor = RemoteServiceException.class)`。目的：单活动失败不中断整批，下游失败保留 PENDING。
-4. **编写出站适配器**：`AccountClient.creditCashback(accountId, rewardId, campaignId, amount)` POST `/api/v1/accounts/{id}/cashback-credits`，`RestClientException` 包装为 `RemoteServiceException`；`findAccount()` 区分 404。目的：隔离 HTTP 细节，异常语义统一。
-5. **下游账户幂等入账**：`AccountApplicationService.creditCashback()` 先 `existsByRewardId` 短路（幂等键），再 `applyCashback` 冲减欠款，先存账户后存 `RewardCredit` 幂等记录；`RewardCredit` 以 `reward_id` 为主键。目的：同一奖励只入账一次，重复调用无害。
-6. **提供人工重试入口**：`RewardEvaluationService.fulfill(rewardId)` —— 记录不存在抛 404；`isGranted()` 短路；现金重调账户（入账侧幂等键兜底），失败 `markPending` + 保存 + 抛 503。对应 REST `POST /api/v1/rewards/{rewardId}/fulfill`。目的：PENDING 治理的闭环入口。
-7. **数据库迁移**：marketing `V1__marketing_schema.sql` 建 `reward_grant`（唯一约束 + 查询索引）；account `V3__reward_credit.sql` 建 `reward_credit`（`reward_id` PK + `account_id` 索引）。目的：幂等约束落在数据库层，Flyway 版本化演进。
-8. **测试覆盖幂等与失败路径**：account 侧 MockMvc 端到端重复调用断言余额不变；marketing 侧 Mockito 断言 `never().saveReward()`（重复评估）、PENDING + failureReason（下游失败）、fulfill 成功转 GRANTED。
+1. **Define the reward record entity and unique constraint** (the idempotency carrier): `RewardGrant` (`rewardId` UUID primary key, `(campaign_id, transaction_id)` unique constraint, `@Version`), with state methods wrapping the transitions; the `RewardStatus` enum PENDING/GRANTED/FAILED. Purpose: make repeated evaluation impossible at the database level.
+2. **Define the repository port and implementation**: `RewardGrantRepository` (`existsByCampaignAndTransaction`, `countByCampaignAndCard`, `findReward`, `saveReward`, etc.), with `RewardGrantJpaRepository` bridging to Spring Data derived queries through default methods. Purpose: dependency inversion for the domain, no Spring annotations.
+3. **Write the evaluation orchestration (application service)**: `RewardEvaluationService.evaluate()`: parameter validation → read the account snapshot → per campaign (idempotency check → eligibility decision → deduct budget → create grant → post by type or go straight to GRANTED → persist); class-level `@Transactional(noRollbackFor = RemoteServiceException.class)`. Purpose: a failure in one campaign does not interrupt the batch, and a downstream failure keeps PENDING.
+4. **Write the outbound adapter**: `AccountClient.creditCashback(accountId, rewardId, campaignId, amount)` POSTs `/api/v1/accounts/{id}/cashback-credits` and wraps `RestClientException` as `RemoteServiceException`; `findAccount()` distinguishes 404. Purpose: isolate HTTP details and unify exception semantics.
+5. **Idempotent posting in the downstream account service**: `AccountApplicationService.creditCashback()` first short-circuits on `existsByRewardId` (the idempotency key), then `applyCashback` reduces the amount owed, saving the account first and then the `RewardCredit` idempotency record; `RewardCredit` uses `reward_id` as its primary key. Purpose: each reward is posted only once, and repeated calls are harmless.
+6. **Provide the manual retry entry**: `RewardEvaluationService.fulfill(rewardId)`: a missing record throws 404; `isGranted()` short-circuits; cash rewards call the account service again (the posting-side idempotency key is the safety net), and on failure `markPending` + save + throw 503. REST `POST /api/v1/rewards/{rewardId}/fulfill`. Purpose: the closed-loop entry for handling PENDING.
+7. **Database migrations**: marketing `V1__marketing_schema.sql` creates `reward_grant` (unique constraint + query indexes); account `V3__reward_credit.sql` creates `reward_credit` (`reward_id` PK + `account_id` index). Purpose: idempotency constraints live at the database level and evolve with Flyway versioning.
+8. **Tests cover idempotency and failure paths**: on the account side, MockMvc end-to-end repeated calls assert the balance is unchanged; on the marketing side, Mockito asserts `never().saveReward()` (repeated evaluation), PENDING + failureReason (downstream failure), and a successful fulfill moving to GRANTED.
 
-## 十、需求实施检查清单
+## 10. Requirement implementation checklist
 
-- [ ] 幂等键在**两端**都落地：评估侧 `(campaign_id, transaction_id)` 唯一约束 + `exists` 检查；入账侧 `reward_id` 主键 + `exists` 检查。
-- [ ] 下游失败**不丢失**：事务 `noRollbackFor = RemoteServiceException`；失败记录 PENDING + failureReason；重试入口 `fulfill` 存在且 `isGranted()` 短路。
-- [ ] 先查后写、先账户后幂等记录的顺序正确（避免残留假"已入账"记录）。
-- [ ] 金额全程 `BigDecimal`，比较用 `compareTo/signum`，测试断言 `isEqualByComparingTo`。
-- [ ] 异常语义统一：参数错 `InvalidRequestException`(400)、记录不存在 `NotFoundException`(404)、下游不可用 `RemoteServiceException`(503)；错误体 `{"code","message","details"}`。
-- [ ] 时间源注入 `Clock` 保证测试可控；不打印卡号等敏感字段到日志。
-- [ ] 迁移脚本可重放（Flyway），表名/字段与数据字典对应，`@Column` 与 SQL 一一对应。
+- [ ] The idempotency key is in place at **both ends**: evaluation side `(campaign_id, transaction_id)` unique constraint + `exists` check; posting side `reward_id` primary key + `exists` check.
+- [ ] Downstream failures are **not lost**: transaction `noRollbackFor = RemoteServiceException`; failed records are PENDING + failureReason; the retry entry `fulfill` exists and short-circuits on `isGranted()`.
+- [ ] The order is correct: check before write, account before idempotency record (so no false "already posted" record remains).
+- [ ] Amounts are `BigDecimal` throughout, compared with `compareTo/signum`, and tests assert with `isEqualByComparingTo`.
+- [ ] Exception semantics are unified: bad parameters `InvalidRequestException` (400), missing record `NotFoundException` (404), downstream unavailable `RemoteServiceException` (503); error body `{"code","message","details"}`.
+- [ ] The time source is an injected `Clock` so tests are controllable; sensitive fields such as card numbers are never logged.
+- [ ] Migration scripts are replayable (Flyway), table and column names correspond to the data dictionary, and `@Column` maps one-to-one to SQL.
 
-## 十一、总结
+## 11. Summary
 
-这是一个跨服务幂等入账的新特性：marketing-service 新增 `RewardEvaluationService` 编排"评估 → 发奖 → 入账"，以 `RewardGrant` 的 `(campaign_id, transaction_id)` 唯一约束 + `exists` 检查保证评估侧幂等；account-service 新增 `AccountApplicationService.creditCashback()`，以 `RewardCredit.reward_id` 主键 + `exists` 检查保证入账侧去重；下游失败通过 `@Transactional(noRollbackFor = RemoteServiceException.class)` 保留 PENDING 状态，并由 `RewardEvaluationService.fulfill()` 提供人工重试闭环。实现遵循 DDD 分层（interfaces → application → domain ← infrastructure）、仓储端口依赖倒置、统一领域异常、Flyway 迁移与 `BigDecimal/LocalDateTime` 约定，是"本地事务 + 同步调用 + 幂等键 + 人工重试"跨服务一致性方案（ADR-009 方案 A）的完整落地。
+This is a new feature for idempotent cross-service posting: marketing-service adds `RewardEvaluationService` to orchestrate "evaluate → issue reward → post", guaranteeing evaluation-side idempotency with the `(campaign_id, transaction_id)` unique constraint of `RewardGrant` + an `exists` check; account-service adds `AccountApplicationService.creditCashback()`, guaranteeing posting-side deduplication with the `RewardCredit.reward_id` primary key + an `exists` check; downstream failures keep PENDING status through `@Transactional(noRollbackFor = RemoteServiceException.class)`, and `RewardEvaluationService.fulfill()` provides the closed manual retry loop. The implementation follows DDD layering (interfaces → application → domain ← infrastructure), dependency inversion through repository ports, unified domain exceptions, Flyway migrations and the `BigDecimal/LocalDateTime` conventions; it is a complete implementation of the "local transaction + synchronous call + idempotency key + manual retry" cross-service consistency approach (ADR-009 option A).

@@ -1,20 +1,20 @@
-# Unified Error Codes and Exception Handling 开发范式总结
+# Unified Error Codes and Exception Handling: Development Pattern Summary
 
-**一般性场景描述**：新增业务校验或调用其他服务时，如何定义错误码、抛出异常并映射为统一的 HTTP 错误响应。
+**General scenario**: when adding a business validation or calling another service, how to define error codes, throw exceptions and map them to a unified HTTP error response.
 
-## 实现步骤
+## Implementation steps
 
-### 步骤 1. 领域异常只表达业务断言
+### Step 1. Domain exceptions express business assertions only
 
-**实现逻辑**：业务规则不满足时抛 `BusinessRuleException(code, message)`，资源不存在抛 `NotFoundException`，参数非法抛 `InvalidRequestException`。
+**Implementation logic**: throw `BusinessRuleException(code, message)` when a business rule is not met, `NotFoundException` when a resource does not exist, and `InvalidRequestException` for invalid parameters.
 
-**规范约束**：
-- `code` 使用大写下划线，必须登记在错误码总表；`message` 可沿用存量系统提示文案（如 `You have nothing to pay...`）。
+**Standards and constraints**:
+- `code` uses upper case with underscores and must be registered in the error code table; `message` may reuse the legacy system's prompt text (such as `You have nothing to pay...`).
 
-**注意事项**：
-- 异常类放在 `domain/exception`，不依赖 Spring。
+**Notes**:
+- Exception classes live in `domain/exception` and do not depend on Spring.
 
-**一般化参考代码**：
+**Generalized reference code**:
 
 ```java
 public class BusinessRuleException extends RuntimeException {
@@ -27,19 +27,19 @@ public class BusinessRuleException extends RuntimeException {
 }
 ```
 
-**参考文件**：
-- `services/transaction-service/src/main/java/com/carddemo/transaction/domain/exception/BusinessRuleException.java` 行 1-18
+**Reference files**:
+- `services/transaction-service/src/main/java/com/carddemo/transaction/domain/exception/BusinessRuleException.java` lines 1-18
 
 ---
 
-### 步骤 2. 出站调用失败统一转换
+### Step 2. Translate outbound call failures uniformly
 
-**实现逻辑**：调用其他服务的客户端把 5xx、超时、连接失败统一转换为 `RemoteServiceException`。
+**Implementation logic**: clients that call other services translate 5xx, timeouts and connection failures into `RemoteServiceException`.
 
-**规范约束**：
-- 不得吞掉远程异常；404 由客户端转换为 `Optional.empty()` 或业务异常，交给调用方决定。
+**Standards and constraints**:
+- Never swallow remote exceptions; the client turns a 404 into `Optional.empty()` or a business exception and leaves the decision to the caller.
 
-**一般化参考代码**：
+**Generalized reference code**:
 
 ```java
 } catch (RestClientException ex) {
@@ -47,36 +47,36 @@ public class BusinessRuleException extends RuntimeException {
 }
 ```
 
-**参考文件**：
-- `services/transaction-service/src/main/java/com/carddemo/transaction/infrastructure/client/AccountClient.java` 行 40-50
+**Reference files**:
+- `services/transaction-service/src/main/java/com/carddemo/transaction/infrastructure/client/AccountClient.java` lines 40-50
 
 ---
 
-### 步骤 3. 全局异常处理映射 HTTP 状态
+### Step 3. Global exception handling maps HTTP status
 
-**规范约束**：
-- 错误体统一为 `{"code", "message", "details"}`；每个服务各有一个 `@RestControllerAdvice`。
+**Standards and constraints**:
+- The error body is always `{"code", "message", "details"}`; each service has one `@RestControllerAdvice`.
 
-**参考文件**：
-- `services/transaction-service/src/main/java/com/carddemo/transaction/interfaces/rest/GlobalExceptionHandler.java` 行 17-56
+**Reference files**:
+- `services/transaction-service/src/main/java/com/carddemo/transaction/interfaces/rest/GlobalExceptionHandler.java` lines 17-56
 
 ---
 
-### 步骤 4. 登记错误码
+### Step 4. Register error codes
 
-**实现逻辑**：新增错误码时同步更新接口目录的错误码总表，写明 HTTP 状态、归属服务与含义。
+**Implementation logic**: when adding an error code, update the error code table in the API catalog at the same time, stating the HTTP status, owning service and meaning.
 
-**参考文件**：
+**Reference files**:
 - carddemo-java-1025 / docs/design/05-api-catalog.md §8
 
-**示例**：`NOTHING_TO_PAY`（409，account / transaction）、`PAYMENT_EXCEEDS_BALANCE`（409，account）、`LAST_ADMIN`（409，iam）。
+**Examples**: `NOTHING_TO_PAY` (409, account / transaction), `PAYMENT_EXCEEDS_BALANCE` (409, account), `LAST_ADMIN` (409, iam).
 
-## 测试要点
+## Testing points
 
-- MockMvc 断言 HTTP 状态与 `code`，不断言 `message` 全文。
-- 下游服务停掉时，接口返回 503 `DEPENDENCY_UNAVAILABLE`。
+- MockMvc asserts the HTTP status and `code`, not the full `message` text.
+- When a downstream service is stopped, the API returns 503 `DEPENDENCY_UNAVAILABLE`.
 
-## 依据
+## Basis
 
 - carddemo-java-1025 / docs/design/07-java-conventions.md §3–§4
-- 银行开发规范 / 编码规范清单（异常类：禁止吞异常）
+- Bank Development Standards / Coding standards checklist (exception category: never swallow exceptions)

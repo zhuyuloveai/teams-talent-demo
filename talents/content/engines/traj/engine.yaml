@@ -1,10 +1,10 @@
 schemaVersion: 1
 id: icode-traj-insight
-name: 轨迹洞察
-description: 从复杂的执行记录中梳理全貌、发现问题，沉淀可复用的经验与优化建议
+name: Trajectory insights
+description: Reads complex execution traces to build the full picture, find problems, and distill reusable experience and improvement suggestions
 definitionVersion: "0.1.6"
 
-# 会话由 iCode Teams 共享；Skill、文档和任务说明是可选的补充材料，帮助深入诊断。
+# Sessions are shared by iCode Teams; Skills, documents and the task note are optional supporting material for deeper diagnosis.
 input:
   sessions:
     type: array
@@ -32,12 +32,12 @@ build:
   skill:
     name: icode-traj-logic-analyser
     defaultPrompt: |
-      诊断所选会话中 Agent 的过程错误，给出可复用的改进建议。
+      Diagnose the agent's process errors in the selected sessions and give reusable improvement suggestions.
 
-      运行准备脚本时传入输入文件：${inputFile.path}。按 recipe generalization-zh-vis 处理每个会话，
-      再基于证据账本做诊断，生成诊断报告（report.html）和改进建议（improvements.json）。
+      Pass the input file when running the preparation script: ${inputFile.path}. Process each session with recipe generalization-zh-vis,
+      then diagnose from the evidence ledger and produce the diagnosis report (report.html) and improvement suggestions (improvements.json).
 
-# 分析需要 Python 3.12 与 uv；锁定的 TrajectoryLens 组件随包携带。
+# Analysis needs Python 3.12 and uv; the pinned TrajectoryLens components ship with the package.
 install:
   command: python3
   args: ["${package.root}/skills/icode-traj-logic-analyser/scripts/run.py", "setup"]

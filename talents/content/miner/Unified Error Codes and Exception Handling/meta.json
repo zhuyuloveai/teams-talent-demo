@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "6aedee9d-c67a-54b8-b3f5-1deee7f5afb7",
   "name": "Unified Error Codes and Exception Handling",
-  "description": "领域异常 + 出站失败转换 + 全局异常映射为统一错误响应",
-  "scenario": "新增业务校验或调用其他服务时，如何定义错误码、抛出异常并映射为统一的 HTTP 错误响应。",
+  "description": "Domain exceptions + outbound failure translation + global exception mapping to a unified error response",
+  "scenario": "When adding a business validation or calling another service, how to define error codes, throw exceptions and map them to a unified HTTP error response.",
   "scenarioSource": "agent",
   "mode": "pr",
   "repository": {

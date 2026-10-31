@@ -1,121 +1,121 @@
 ---
 name: dev-backend-service
-description: 按银行后端架构规范（DDD分层、微服务）实现业务逻辑：Application层→Domain层→Infrastructure层，含DTO映射、业务规则追溯、统一错误码、日志与接口实现。后端服务/业务逻辑层开发任务时使用。
+description: "Implement business logic according to the bank backend architecture standards (DDD layering, microservices): Application layer → Domain layer → Infrastructure layer, including DTO mapping, business rule traceability, unified error codes, logging and interface implementation. Use for backend service / business logic layer development tasks."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 后端技术负责人 |
-| category | 岗位技能 |
+| owner | Dev / Backend tech lead |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-backend-service 技能
+# dev-backend-service skill
 
-## 概述
+## Overview
 
-本技能用于按银行后端架构规范高质量实现业务逻辑。
+This skill implements business logic with high quality according to the bank backend architecture standards.
 
-## 工作流
+## Workflow
 
-1. 读取领域模型与接口契约，明确聚合根/实体/值对象
-2. 按分层架构实现：Application层 → Domain层 → Infrastructure层
-3. DTO/VO/Entity定义与映射（与设计一致）
-4. 业务规则实现（逐条标注需求/规则编号）
-5. 异常处理与统一错误码
-6. 日志埋点（关键操作，敏感信息脱敏）
-7. 数据库访问实现（防SQL注入）
-8. API接口实现（REST/gRPC，含鉴权）
-9. 自检：分层职责、循环依赖、规范扫描
+1. Read the domain model and interface contract; identify aggregate roots / entities / value objects
+2. Implement by layer: Application layer → Domain layer → Infrastructure layer
+3. Define and map DTO / VO / Entity (consistent with the design)
+4. Implement business rules (annotate each with its requirement / rule ID)
+5. Exception handling and unified error codes
+6. Logging instrumentation (key operations, sensitive data masked)
+7. Database access (prevent SQL injection)
+8. API implementation (REST / gRPC, with authentication)
+9. Self-check: layer responsibilities, circular dependencies, standards scan
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 分层骨架讨论、领域模型探索、接口草案对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，后端服务/业务逻辑层开发任务 | 后端架构评审 + 技术负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Layer skeleton discussion, domain model exploration, interface draft alignment | No review needed |
+| L2 Standard (default) | Default level for bank production; backend service / business logic layer development tasks | Backend architecture review + tech lead sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金划拨、账户余额变更、限额参数、监管报送、跨服务事务、生产数据回写时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves fund transfers, account balance changes, limit parameters, regulatory reporting, cross-service transactions or write-back of production data, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3输出分层代码+接口契约+统一错误码映射
-- 业务规则逐条标注需求/规则编号并给出单测覆盖点
-- 事务一致性：明确事务边界、隔离级别、分布式事务方案（Saga/TCC/最终一致），资金类操作须含补偿与冲正路径
-- 并发安全：识别共享资源（账户余额/限额/库存），定义锁策略（乐观锁/悲观锁/分布式锁）与死锁检测，关键路径单测覆盖并发场景
-- 幂等性：写操作定义幂等键（业务流水号+操作类型），幂等校验前置，重复请求返回首结果而非抛错
-- 字段级校验：DTO字段含类型/必填/长度/枚举/正则，校验在 Application 层入口完成，Domain 层做业务规则校验
-- 异常路径覆盖：领域异常（业务规则违反）/技术异常（DB/网络/超时）/外部依赖异常逐类定义错误码与降级策略
+- At L3, output layered code + interface contract + unified error code mapping
+- Annotate each business rule with its requirement / rule ID and list its unit test coverage points
+- Transaction consistency: state the transaction boundary, isolation level and distributed transaction approach (Saga / TCC / eventual consistency); fund operations must include compensation and reversal paths
+- Concurrency safety: identify shared resources (account balance / limits / inventory), define the locking strategy (optimistic / pessimistic / distributed lock) and deadlock detection; unit tests on key paths cover concurrent scenarios
+- Idempotency: write operations define an idempotency key (business serial number + operation type); the idempotency check runs first, and a duplicate request returns the first result instead of throwing an error
+- Field-level validation: DTO fields specify type / required / length / enum / regex; validation happens at the Application layer entry point, and the Domain layer validates business rules
+- Exception path coverage: define error codes and degradation strategies per class for domain exceptions (business rule violations), technical exceptions (DB / network / timeout) and external dependency exceptions
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 分层合规（layer_check.py 退出码 0，无反向依赖）
-- [ ] 无循环依赖（circular_dep_check.py 退出码 0）
-- [ ] 业务规则可追溯（每条规则标注 REQ/规则编号）
-- [ ] 错误码统一（统一错误码映射表覆盖全部异常路径）
-- [ ] 事务边界明确（资金类操作含补偿与冲正路径）
-- [ ] 并发安全验证（共享资源锁策略+并发单测）
-- [ ] 幂等性验证（写操作含幂等键+重复提交测试）
+- [ ] Layering compliant (layer_check.py exit code 0, no reverse dependencies)
+- [ ] No circular dependencies (circular_dep_check.py exit code 0)
+- [ ] Business rules traceable (each rule annotated with its REQ / rule ID)
+- [ ] Unified error codes (the unified error code mapping table covers all exception paths)
+- [ ] Clear transaction boundaries (fund operations include compensation and reversal paths)
+- [ ] Concurrency safety verified (locking strategy for shared resources + concurrency unit tests)
+- [ ] Idempotency verified (write operations have an idempotency key + duplicate submission test)
 
-> 主模板含【L3必填】深度字段：`templates/backend-service-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/backend-service-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/backend-service-template.md` | 分层代码结构模板 |
-| `templates/error-code-mapping.md` | 错误码映射 |
+| `templates/backend-service-template.md` | Layered code structure template |
+| `templates/error-code-mapping.md` | Error code mapping |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/layer_check.py` | 分层依赖检查 | 0/2 |
-| `scripts/circular_dep_check.py` | 循环依赖检测 | 0/2 |
+| `scripts/layer_check.py` | Layer dependency check | 0/2 |
+| `scripts/circular_dep_check.py` | Circular dependency detection | 0/2 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/backend-standards.md` | 后端架构与编码规范 |
+| `references/backend-standards.md` | Backend architecture and coding standards |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 分层正确
-- [ ] 业务逻辑在Domain层
-- [ ] 业务规则可追溯
-- [ ] 错误码统一
-- [ ] 无循环依赖
+- [ ] Layering correct
+- [ ] Business logic in the Domain layer
+- [ ] Business rules traceable
+- [ ] Unified error codes
+- [ ] No circular dependencies
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 分层混乱 | Infrastructure 反向调用 Application/API | layer_check.py 拦截 + 分层规范评审 | 调整依赖方向后重跑分层检查 |
-| 领域模型贫血 | Domain 层只有 getter/setter，业务逻辑泄露到 Application | DDD 评审把关 + 业务规则归属检查 | 把逻辑下沉到 Domain 后重审 |
-| 循环依赖 | 模块 A 依赖 B，B 又依赖 A，编译/启动失败 | circular_dep_check.py 检测 + 依赖倒置重构 | 引入接口或中介层解环后重跑检测 |
-| 过度设计 | 简单 CRUD 引入复杂抽象与模式 | 需求驱动，仅实现必要抽象 | 简化抽象后重审 |
-| 事务边界不清 | 资金操作跨多个 Service 无统一事务/无补偿 | L3 要求事务边界与补偿路径明确 | 补偿路径后重审事务设计 |
-| 并发安全问题 | 余额/限额并发更新导致超扣/超卖 | 锁策略+并发单测覆盖 | 补锁策略后重跑并发单测 |
-| 幂等性缺失 | 重复请求产生重复扣款/重复状态变更 | 幂等键+重复提交测试 | 补幂等键后重跑幂等测试 |
+| Tangled layers | Infrastructure calls back into Application / API | Blocked by layer_check.py + layering standards review | Fix the dependency direction and rerun the layer check |
+| Anemic domain model | Domain layer has only getters/setters; business logic leaks into Application | DDD review + business rule ownership check | Move the logic down into Domain and review again |
+| Circular dependency | Module A depends on B and B depends on A; compile / startup fails | Detection with circular_dep_check.py + dependency inversion refactoring | Break the cycle with an interface or mediator layer and rerun detection |
+| Over-engineering | Simple CRUD gets complex abstractions and patterns | Requirement-driven; implement only necessary abstractions | Simplify the abstractions and review again |
+| Unclear transaction boundary | Fund operation spans several Services with no unified transaction / no compensation | L3 requires a clear transaction boundary and compensation path | Add the compensation path and review the transaction design again |
+| Concurrency safety issues | Concurrent balance / limit updates cause over-debit / overselling | Locking strategy + concurrency unit test coverage | Add the locking strategy and rerun the concurrency unit tests |
+| Missing idempotency | Duplicate requests cause duplicate debits / duplicate state changes | Idempotency key + duplicate submission test | Add the idempotency key and rerun the idempotency test |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式后端开发/架构评审 | 分层代码、领域模型、接口契约、错误码映射 | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 事务边界与补偿路径、并发锁策略、幂等键定义、字段级校验规则、异常路径清单 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Formal backend development / architecture review starts | Layered code, domain model, interface contract, error code mapping | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Transaction boundary and compensation path, concurrency locking strategy, idempotency key definition, field-level validation rules, exception path list | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的事务边界与并发锁策略须由后端架构师与 DBA 共同确认；Agent 起草，架构师确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the transaction boundary and concurrency locking strategy must be confirmed jointly by the backend architect and the DBA. The Agent drafts; the architect confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "bf9dd92a-7a31-4b49-89f1-fb0dd6a6c508",
   "name": "Campaign Eligibility and Validity Control",
-  "description": "营销活动资格校验与有效期控制开发范式：活动状态机与时间窗、账户状态与目标账户组、报名及参与限制的判定链实现",
-  "scenario": "Campaign Eligibility and Validity Control：实现营销活动资格校验与有效期控制，包含活动状态、时间窗口、账户状态、目标账户组、报名及参与限制。",
+  "description": "Development pattern for marketing campaign eligibility checks and validity control: campaign state machine and time window, account status and target account groups, and the decision chain for enrollment and participation limits",
+  "scenario": "Campaign Eligibility and Validity Control: implement marketing campaign eligibility checks and validity control, covering campaign status, time window, account status, target account group, enrollment and participation limits.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {

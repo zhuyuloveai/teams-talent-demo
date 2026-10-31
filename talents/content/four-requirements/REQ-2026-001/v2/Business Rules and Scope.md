@@ -1,46 +1,46 @@
-> v2 节点资料：以下原始章节/历史基线摘录保持原意。当前本地测试参数以本目录 `test-profile.md` v2 为准；正式第 12.3 节仍待确认。不得自行把其它推断政策转成已确认。
+> v2 node materials: the original chapters and historical baseline excerpts below keep their original meaning. The current local test parameters follow `test-profile.md` v2 in this directory; the formal §12.3 items are still to be confirmed. Do not turn any other inferred policy into a confirmed one on your own.
 
-# REQ-2026-001 · 业务规则与范围
+# REQ-2026-001 · Business Rules and Scope
 
-来源：用户提供需求 v1.0，以下为完整章节原文；数值按原材料模拟属性使用。
+Source: user-provided requirement v1.0. The chapters below are quoted in full from the source; values are used according to their simulated status in the source material.
 
-## 3. 范围定义
+## 3. Scope Definition
 
 ### 3.1 In-Scope / Out-of-Scope
 
 **In-Scope**
 
-- 单笔消费分期（3/6/12 期）与账单分期（3/6/12 期）。
-- 期数、费率、手续费、每期本金与手续费计算与试算。
-- 分期计划、还款计划、提前结清。
-- 前台入口、计划页、后台查询。
-- 与 transaction、account、billing、ledger、notification、audit 的集成。
+- Single-purchase installment (3/6/12 periods) and statement installment (3/6/12 periods).
+- Calculation and preview of period count, fee rate, fees, per-period principal, and per-period fees.
+- Installment plans, repayment schedules, early settlement.
+- Front-end entry points, plan page, back-office query.
+- Integration with transaction, account, billing, ledger, notification, and audit.
 
 **Out-of-Scope**
 
-- 商户贴息、零手续费活动、组合分期。
-- 逾期罚息与征信报送（沿用现有账单与催收流程）。
-- 多币种分期。
+- Merchant subsidies, zero-fee campaigns, combined installments.
+- Overdue penalty interest and credit bureau reporting (the existing statement and collections flows are reused).
+- Multi-currency installments.
 
-### 3.2 假设与依赖
+### 3.2 Assumptions and Dependencies
 
-| 编号 | 假设/依赖 | 说明 |
+| ID | Assumption/Dependency | Description |
 |------|----------|------|
-| A-01 | 交易已由 transaction-service 入账并标记 `POSTED` | 分期资格以该状态为前提 |
-| A-02 | 账单可分期金额由 billing-service 计算并提供 | 本期不改造账单计算逻辑 |
-| A-03 | 额度占用与释放通过 account-service 完成 | 涉及余额的变更不经本服务直写 |
-| A-04 | 手续费收入过账到 ledger-service | 会计科目沿用现有手续费科目 |
-| A-05 | 通知走 notification-service 模板 | 通知失败不回滚分期主流程 |
+| A-01 | The transaction has been posted by transaction-service and marked `POSTED` | Installment eligibility requires this status |
+| A-02 | The installment-eligible statement amount is calculated and provided by billing-service | Statement calculation logic is not changed in this phase |
+| A-03 | Limit reservation and release are completed through account-service | Changes affecting balances are never written directly by this service |
+| A-04 | Fee income is posted to ledger-service | The existing fee accounts are reused |
+| A-05 | Notifications use notification-service templates | Notification failures do not roll back the installment main flow |
 
-## 5. 业务规则
+## 5. Business Rules
 
-| 编号 | 规则 | 来源 | 优先级 | 验证点 |
+| ID | Rule | Source | Priority | Verification point |
 |------|------|------|--------|--------|
-| BR-INS-01 | 单笔消费分期金额 ≥ 100.00；账单分期 ≥ 500.00 | 模拟业务确认 | 必须 | 99.99 元被拒并返回 `INSTALLMENT_NOT_ELIGIBLE`；100.00 元可提交 |
-| BR-INS-02 | 期数仅 3/6/12；月手续费率 0.60%/0.55%/0.50% | 模拟定价 | 必须 | 三档期数试算结果与定价表逐项一致；其余期数返回 `INVALID_TERM` |
-| BR-INS-03 | 每期本金 = 本金/期数，最后一期吸收尾差；手续费按剩余本金×月费率，HALF_UP 2 位 | 模拟定价 | 必须 | 1000.00 元 6 期：每期本金 166.66、最后一期 166.70，合计 = 1000.00 |
-| BR-INS-04 | 同一交易/同一账单只能成功分期一次；去重键唯一 | 模拟业务确认 | 必须 | 重复提交返回同一计划号，`installment_plan` 计数不变 |
-| BR-INS-05 | 分期占用额度 = 剩余本金；提前结清释放 | 模拟业务确认 | 必须 | 建计划后账户分期占用 = 1000.00；结清后归零 |
-| BR-INS-06 | 已逾期、已争议、已分期的交易不可分期 | 模拟风险政策 | 必须 | 三类交易入口置灰，直接调接口返回 `INSTALLMENT_NOT_ELIGIBLE` |
-| BR-INS-07 | 提前结清收取剩余本金 1% 违约金，已收手续费不退 | 模拟定价 | 应该 | 剩余本金 600.00 时违约金 6.00，`settlementTotal` = 606.00 减手续费减免 |
-| BR-INS-08 | 计划创建后 T+1 生效，首期计入下一账单 | 模拟业务确认 | 必须 | 创建日为 D，首期到期日落在 D+1 之后的账单周期 |
+| BR-INS-01 | Single-purchase installment amount ≥ 100.00; statement installment ≥ 500.00 | Simulated business confirmation | Must | 99.99 is rejected with `INSTALLMENT_NOT_ELIGIBLE`; 100.00 can be submitted |
+| BR-INS-02 | Only 3/6/12 periods; monthly fee rate 0.60%/0.55%/0.50% | Simulated pricing | Must | Preview results for the three period options match the pricing table item by item; other period counts return `INVALID_TERM` |
+| BR-INS-03 | Per-period principal = principal/periods, with the last period absorbing the rounding residual; fees are charged as remaining principal × monthly fee rate, HALF_UP to 2 decimals | Simulated pricing | Must | 1000.00 over 6 periods: 166.66 per period, 166.70 for the last period, total = 1000.00 |
+| BR-INS-04 | The same transaction or the same statement can be successfully installed only once; the deduplication key is unique | Simulated business confirmation | Must | Duplicate submissions return the same plan number and the `installment_plan` count does not change |
+| BR-INS-05 | The limit occupied by an installment = remaining principal; early settlement releases it | Simulated business confirmation | Must | After plan creation the account installment occupation = 1000.00; after settlement it returns to zero |
+| BR-INS-06 | Overdue, disputed, or already installed transactions cannot be installed | Simulated risk policy | Must | The entry is greyed out for these three transaction types, and calling the API directly returns `INSTALLMENT_NOT_ELIGIBLE` |
+| BR-INS-07 | Early settlement charges a penalty fee of 1% of the remaining principal; fees already collected are not refunded | Simulated pricing | Should | With a remaining principal of 600.00 the penalty fee is 6.00 and `settlementTotal` = 606.00 minus the fee rebate |
+| BR-INS-08 | A plan takes effect at T+1 after creation, and the first period falls into the next statement | Simulated business confirmation | Must | When the creation date is D, the first due date falls in a statement cycle after D+1 |

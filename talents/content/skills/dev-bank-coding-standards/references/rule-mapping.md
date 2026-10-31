@@ -1,11 +1,11 @@
-# 规则→工具映射
+# Rule → tool mapping
 
-| 类别 | 本技能规则 | SonarQube映射 |
+| Category | Rules in this skill | SonarQube mapping |
 |------|-----------|---------------|
-| 命名 | naming-* | S00100/S00101 |
-| 异常 | exception-* | S2486/S2221 |
-| 日志 | logging-* | 自定义规则 |
-| 安全 | security-* | S2076/S3649 |
-| 资源 | resource-* | S2095/S3544 |
+| Naming | naming-* | S00100/S00101 |
+| Exception | exception-* | S2486/S2221 |
+| Logging | logging-* | Custom rules |
+| Security | security-* | S2076/S3649 |
+| Resource | resource-* | S2095/S3544 |
 
-规则分级：致命（阻断提交）/严重（必须修复）/告警（跟踪）。
+Severity levels: fatal (blocks submission) / critical (must be fixed) / major (tracked).

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "c89e5e0d-7d84-4e9a-94cd-0ecb750e5b48",
   "name": "User Maintenance and Delete Protection",
-  "description": "用户新增、修改与删除的开发范式：类型校验、密码哈希存储、禁止自删除与保留最后一名管理员",
-  "scenario": "User Maintenance and Delete Protection：实现用户新增、修改与删除，包含用户类型校验、密码哈希处理、禁止自删除及保留最后一名管理员。",
+  "description": "Development pattern for creating, updating and deleting users: type validation, hashed password storage, no self-deletion, and keeping the last admin",
+  "scenario": "User Maintenance and Delete Protection: implement creating, updating and deleting users, including user type validation, password hashing, no self-deletion, and keeping the last admin.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {

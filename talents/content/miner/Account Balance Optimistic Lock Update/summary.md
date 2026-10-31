@@ -1,30 +1,30 @@
-# Account Balance Optimistic Lock Update：开发范式总结
+# Account Balance Optimistic Lock Update: Development Pattern Summary
 
-> 一般性场景：实现账户余额更新的乐观锁机制，包含实体版本字段、事务内余额变更及并发更新冲突的统一错误响应。
+> General scenario: implement optimistic locking for account balance updates, including an entity version field, balance changes inside a transaction, and a unified error response for concurrent update conflicts.
 
-## 一、实现步骤
+## 1. Implementation steps
 
-### 步骤 1：在聚合根实体上添加乐观锁版本字段
+### Step 1: Add an optimistic lock version field to the aggregate root entity
 
-**实现逻辑**：在承载余额更新的聚合根实体（如 `Account`）上声明 `@Version` 注解的长整型字段，并映射到数据库 `version` 列。`@Version` 是 JPA/Hibernate 乐观锁的触发点：实体一旦托管，`save` 时 Hibernate 会自动生成带版本条件的 UPDATE（`WHERE id=? AND version=?`），并在并发修改导致影响行数为 0 时抛出 `OptimisticLockingFailureException`，整个事务回滚。
+**Implementation logic**: on the aggregate root entity that carries the balance updates (such as `Account`), declare a long field annotated with `@Version` and map it to the database `version` column. `@Version` is the trigger for JPA/Hibernate optimistic locking: once the entity is managed, Hibernate generates a versioned UPDATE on `save` (`WHERE id=? AND version=?`), and when a concurrent modification leaves 0 affected rows it throws `OptimisticLockingFailureException` and the whole transaction rolls back.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 版本字段用 `long` 而非 `Long`/`Integer`，映射为数据库 `BIGINT`。
-- 字段必须有 `@Column(name = "version", nullable = false)`，与 DDL 列名严格一致。
-- 新对象构造时必须显式初始化 `version = 0`，与数据库列 `DEFAULT 0` 对齐，避免插入行版本错位。
+- Use `long` for the version field, not `Long`/`Integer`, mapped to database `BIGINT`.
+- The field must have `@Column(name = "version", nullable = false)`, exactly matching the DDL column name.
+- New objects must explicitly initialize `version = 0` in the constructor, matching the column's `DEFAULT 0`, so inserted rows do not get a mismatched version.
 
-**注意事项**：
+**Notes**:
 
-- 冲突异常在 **flush/提交时**抛出，不在 `save()` 调用时抛出——业务代码不需要 try-catch，但必须在全局异常处理器兜底。
-- 变更必须在**同一事务**内先加载（取得托管实体）再修改，`save` 才会走 merge 分支、携带版本条件；否则退化为插入新行或无条件更新。
-- `@Version` 实体保存后版本号自动递增，返回给调用方的必须是递增后的新值。
+- The conflict exception is thrown **at flush/commit**, not when `save()` is called; business code does not need try-catch, but the global exception handler must catch it.
+- Changes must load the entity first (to get a managed entity) and then modify it **within the same transaction**, so that `save` takes the merge path with the version condition; otherwise it degrades into inserting a new row or an unconditional update.
+- After saving an `@Version` entity the version number increments automatically; what is returned to the caller must be the incremented new value.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 @Entity
-@Table(name = "<聚合表>")
+@Table(name = "<aggregate_table>")
 public class <AggregateRoot> {
     @Version
     @Column(name = "version", nullable = false)
@@ -37,24 +37,24 @@ public class <AggregateRoot> {
 }
 ```
 
-**参考文件**：`Account.java`（新增文件，内容起始行 154、终止行 156；构造初始化行 165）。
+**Reference files**: `Account.java` (new file, content start line 154, end line 156; constructor initialization line 165).
 
-### 步骤 2：数据库迁移脚本同步版本列
+### Step 2: Add the version column in the database migration script
 
-**实现逻辑**：建表迁移脚本（`V*__schema.sql`）中为聚合表增加 `version` 列，`BIGINT NOT NULL DEFAULT 0`。实体与 DDL 必须一致，因为仓库配置 `ddl-auto: validate` 在启动时校验两者，不一致直接启动失败。
+**Implementation logic**: in the table creation migration script (`V*__schema.sql`), add a `version` column to the aggregate table, `BIGINT NOT NULL DEFAULT 0`. The entity and the DDL must match, because the repository configures `ddl-auto: validate`, which checks both at startup and fails to start if they differ.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 列定义统一为 `version BIGINT NOT NULL DEFAULT 0`。
-- 使用 Flyway 版本化脚本管理（`src/main/resources/db/migration`），不依赖 Hibernate 自动建表。
-- 种子数据脚本必须给 `version` 列显式赋值 0，保证既有行与新实体初始版本一致。
+- The column is always defined as `version BIGINT NOT NULL DEFAULT 0`.
+- Manage it with versioned Flyway scripts (`src/main/resources/db/migration`); do not rely on Hibernate auto DDL.
+- Seed data scripts must set the `version` column to 0 explicitly, so existing rows match the initial version of new entities.
 
-**注意事项**：
+**Notes**:
 
-- 若 `ddl-auto` 为 `validate`，实体新增 `@Version` 字段后必须**同步提交**迁移脚本，否则服务无法启动。
-- 种子 INSERT 若列清单省略 `version`，需依赖 `DEFAULT 0` 生效；建议显式列出以保证可读性。
+- If `ddl-auto` is `validate`, adding an `@Version` field to the entity requires **committing the migration script together**, otherwise the service cannot start.
+- If a seed INSERT omits `version` from its column list, it relies on `DEFAULT 0`; listing it explicitly is recommended for readability.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```sql
 CREATE TABLE <aggregate_table> (
@@ -63,54 +63,54 @@ CREATE TABLE <aggregate_table> (
 );
 ```
 
-**参考文件**：`V1__account_schema.sql`（新增文件，内容起始行 369、终止行 383，`version` 列在行 382）。
+**Reference files**: `V1__account_schema.sql` (new file, content start line 369, end line 383; the `version` column is on line 382).
 
-### 步骤 3：在实体上集中实现余额变更领域行为
+### Step 3: Implement balance change behavior on the entity
 
-**实现逻辑**：将余额变更规则实现为聚合根上的领域方法（充血模型），如 `applyPosting(amount)`、`applyBillPayment(amount)`、`accrueInterest(amount)`。每个方法完成业务规则校验（金额正负、欠款是否存在、是否超额）与字段变更；规则失败抛领域异常 `BusinessRuleException("CODE", "message")`。规则及错误码可追溯遗留业务规则编号（如 BR-POST-006）。
+**Implementation logic**: implement the balance change rules as domain methods on the aggregate root (rich domain model), such as `applyPosting(amount)`, `applyBillPayment(amount)` and `accrueInterest(amount)`. Each method performs the business rule checks (amount sign, whether there is an amount owed, whether it is exceeded) and the field changes; a rule failure throws the domain exception `BusinessRuleException("CODE", "message")`. Rules and error codes can be traced to legacy business rule IDs (such as BR-POST-006).
 
-**规范约束**：
+**Standards and constraints**:
 
-- 领域行为写在实体上，不写在 Service 里堆 setter（仓库 Java 约定 §3）。
-- 金额统一 `BigDecimal`，用 `signum()`/`compareTo()` 判断正负与大小，禁止 `double`、禁止 `==` 比较。
-- 校验失败统一抛 `BusinessRuleException(code, message)`，`code` 用大写蛇形错误码。
-- 参数为空抛 `Objects.requireNonNull` 或同款业务异常，不静默处理。
+- Domain behavior lives on the entity; do not pile setters into a service (repository Java conventions §3).
+- Amounts are always `BigDecimal`; use `signum()`/`compareTo()` to check sign and size; `double` and `==` comparisons are forbidden.
+- Validation failures always throw `BusinessRuleException(code, message)`, with `code` as an upper snake case error code.
+- Null parameters throw via `Objects.requireNonNull` or the same kind of business exception; never handle them silently.
 
-**注意事项**：
+**Notes**:
 
-- 余额字段更新用 `currentBalance.add/subtract(...)` 重新赋值，不要用 `+=`（不可变 BigDecimal）。
-- 需要清零累计值的操作（如利息入账清零本期贷/借累计）在领域方法内一并完成，保持聚合内一致性。
-- 校验与变更必须原子完成——校验失败抛出异常即回滚整个事务。
+- Update balance fields by reassigning `currentBalance.add/subtract(...)`; do not use `+=` (BigDecimal is immutable).
+- Operations that reset accumulated values (such as interest posting resetting the cycle credit/debit totals) do so inside the domain method, keeping the aggregate consistent.
+- Validation and change must happen atomically: a failed validation throws and rolls back the whole transaction.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 public void apply<BizAction>(BigDecimal amount) {
-    // 1. 规则校验：不满足则 throw new BusinessRuleException("CODE", "message");
-    // 2. 字段变更：currentBalance = currentBalance.add/subtract(amount); ...
+    // 1. Rule check: if not met, throw new BusinessRuleException("CODE", "message");
+    // 2. Field change: currentBalance = currentBalance.add/subtract(amount); ...
 }
 ```
 
-**参考文件**：`Account.java`（新增文件，`applyPosting` 行 171-179、`applyBillPayment` 行 184-196、`accrueInterest` 行 201-206、`applyCashback` 行 212-218）。
+**Reference files**: `Account.java` (new file; `applyPosting` lines 171-179, `applyBillPayment` lines 184-196, `accrueInterest` lines 201-206, `applyCashback` lines 212-218).
 
-### 步骤 4：应用服务定义事务边界并编排"读-改-写"
+### Step 4: The application service defines the transaction boundary and orchestrates "read-modify-write"
 
-**实现逻辑**：创建用例应用服务（`@Service`），类级标注 `@Transactional` 界定事务边界；查询方法覆盖 `@Transactional(readOnly = true)`。每个变更方法按固定三步编排：`getById(accountId)`（读聚合根，未找到抛 `NotFoundException`）→ 调用领域方法变更状态 → `saveAccount(account)` 持久化。全部操作落在同一事务内，保证原子性与版本一致性。
+**Implementation logic**: create a use case application service (`@Service`) with class-level `@Transactional` to define the transaction boundary; query methods override it with `@Transactional(readOnly = true)`. Each change method follows the same three steps: `getById(accountId)` (read the aggregate root; throw `NotFoundException` if not found) → call the domain method to change state → persist with `saveAccount(account)`. All operations fall within the same transaction, ensuring atomicity and version consistency.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 事务边界放在**应用服务**层，不在 Controller 或 Repository（仓库分层规范：`interfaces → application → domain ← infrastructure`）。
-- 类级 `@Transactional` + 方法级 `readOnly = true` 覆盖查询。
-- 通过构造器注入仓储端口（`private final` 字段），不用字段注入。
-- 读聚合根使用仓储端口方法并 `orElseThrow` 抛领域异常。
+- The transaction boundary sits in the **application service** layer, not in the controller or repository (repository layering standard: `interfaces → application → domain ← infrastructure`).
+- Class-level `@Transactional` + method-level `readOnly = true` for queries.
+- Inject repository ports through the constructor (`private final` fields), not field injection.
+- Read the aggregate root through a repository port method and `orElseThrow` a domain exception.
 
-**注意事项**：
+**Notes**:
 
-- 变更方法**必须**在同一事务内先读后改再保存；若读与写分离在两个事务，乐观锁会因版本过期频繁冲突。
-- 幂等写入（如按业务键去重的入账）也应在此事务内"先查重 → 再变更 → 落幂等记录"，与乐观锁配合防重。
-- 不要把 `@Transactional` 加在领域实体或仓储接口上——事务是应用服务的使用场景属性。
+- Change methods **must** read, modify and save within the same transaction; if the read and write are in separate transactions, optimistic locking will conflict frequently because of stale versions.
+- Idempotent writes (such as postings deduplicated by business key) should also do "check for duplicates → change → record the idempotency entry" inside this transaction, working with optimistic locking to prevent duplicates.
+- Do not put `@Transactional` on domain entities or repository interfaces: the transaction is a property of the application service's use case.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 @Service
@@ -132,24 +132,24 @@ public class <Entity>ApplicationService {
 }
 ```
 
-**参考文件**：`AccountApplicationService.java`（新增文件，类级注解行 26-27；`getById` 行 38-43；`applyPosting` 行 56-60、`applyBillPayment` 行 62-66、`accrueInterest` 行 68-72、`creditCashback` 行 77-87）。
+**Reference files**: `AccountApplicationService.java` (new file; class-level annotations lines 26-27; `getById` lines 38-43; `applyPosting` lines 56-60, `applyBillPayment` lines 62-66, `accrueInterest` lines 68-72, `creditCashback` lines 77-87).
 
-### 步骤 5：仓储端口与 JPA 适配器桥接
+### Step 5: Bridge the repository port and the JPA adapter
 
-**实现逻辑**：在 domain 层定义仓储端口接口（纯接口、不依赖框架：`findByAccountId`/`saveAccount`/`findAllAccounts`），在 infrastructure 层用 Spring Data 接口实现并桥接：`AccountJpaRepository extends JpaRepository<Account, String>, AccountRepository`，用 `default` 方法把领域方法名映射到 Spring Data 内建方法（`findById`/`save`/`findAll`）。保持依赖倒置，domain 不感知持久化框架。
+**Implementation logic**: define the repository port interface in the domain layer (a plain interface with no framework dependency: `findByAccountId`/`saveAccount`/`findAllAccounts`), and implement and bridge it with a Spring Data interface in the infrastructure layer: `AccountJpaRepository extends JpaRepository<Account, String>, AccountRepository`, using `default` methods to map the domain method names to the built-in Spring Data methods (`findById`/`save`/`findAll`). This keeps dependency inversion: the domain is unaware of the persistence framework.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 仓储端口放 `domain/repository`，实现放 `infrastructure/persistence`。
-- 适配器接口同时继承 `JpaRepository<实体, 主键>` 与领域端口，`default` 方法做方法名桥接，避免在 domain 接口上引入框架注解。
-- 一个聚合根对应一个仓储端口与一个 JPA 适配器。
+- Repository ports go in `domain/repository`, implementations in `infrastructure/persistence`.
+- The adapter interface extends both `JpaRepository<entity, primary key>` and the domain port, with `default` methods bridging the method names, so no framework annotations are introduced on the domain interface.
+- One aggregate root has one repository port and one JPA adapter.
 
-**注意事项**：
+**Notes**:
 
-- 桥接方法名要与 Spring Data 派生查询语义区分；`findByAccountId` 桥接到 `findById` 而不是同名派生查询。
-- 不要为端口接口写实现类，Spring Data 接口代理即可。
+- Keep bridge method names distinct from Spring Data derived query semantics; `findByAccountId` bridges to `findById`, not to a derived query of the same name.
+- Do not write an implementation class for the port interface; the Spring Data interface proxy is enough.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 // domain/repository
@@ -170,26 +170,26 @@ public interface <Entity>JpaRepository extends JpaRepository<<Entity>, String>, 
 }
 ```
 
-**参考文件**：`AccountRepository.java`（新增文件，行 11-18）；`AccountJpaRepository.java`（新增文件，行 346-362）。
+**Reference files**: `AccountRepository.java` (new file, lines 11-18); `AccountJpaRepository.java` (new file, lines 346-362).
 
-### 步骤 6：统一异常处理——乐观锁冲突映射为 409
+### Step 6: Unified exception handling: map optimistic lock conflicts to 409
 
-**实现逻辑**：定义统一错误体 `ApiError(code, message, details)`（record + 静态工厂），用 `@RestControllerAdvice` 全局异常处理器把各类异常映射为 HTTP 语义：`NotFoundException` → 404、`BusinessRuleException` → 409、参数校验 `MethodArgumentNotValidException` → 400（details 汇总字段错误）、`OptimisticLockingFailureException` → 409 + `CONCURRENT_UPDATE` 错误码。乐观锁冲突文案沿用遗留系统提示语（如 "Record changed by some one else. Please review"），保持语义与用户习惯一致。
+**Implementation logic**: define a unified error body `ApiError(code, message, details)` (record + static factory), and use a `@RestControllerAdvice` global exception handler to map each kind of exception to HTTP semantics: `NotFoundException` → 404, `BusinessRuleException` → 409, parameter validation `MethodArgumentNotValidException` → 400 (details collects the field errors), `OptimisticLockingFailureException` → 409 + the `CONCURRENT_UPDATE` error code. The optimistic lock conflict message reuses the legacy system's prompt (such as "Record changed by some one else. Please review"), keeping the meaning and users' habits consistent.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 错误体统一 `{"code": "...", "message": "...", "details": [...]}` 结构（仓库 REST 约定 §4）。
-- HTTP 语义固定：404 未找到、409 业务规则冲突、400 校验失败、409 并发冲突。
-- 冲突错误码统一（如 `CONCURRENT_UPDATE`），全仓库一致。
-- `@RestControllerAdvice` 处理器按异常类型分方法，不写巨型 if-else。
+- The error body always has the structure `{"code": "...", "message": "...", "details": [...]}` (repository REST conventions §4).
+- Fixed HTTP semantics: 404 not found, 409 business rule conflict, 400 validation failure, 409 concurrency conflict.
+- The conflict error code is uniform (such as `CONCURRENT_UPDATE`) across the whole repository.
+- `@RestControllerAdvice` handlers have one method per exception type, not a giant if-else.
 
-**注意事项**：
+**Notes**:
 
-- `OptimisticLockingFailureException` 是 Spring Data 在 flush 时抛出的运行时异常，**必须**在全局处理器兜底，否则客户端收到 500 且无重试语义。
-- 校验失败要汇总字段明细到 `details`，便于调用方定位；用 `bindingResult.getFieldErrors()` 流式映射。
-- 错误码用大写蛇形、稳定可文档化（对应规则目录/API 文档）。
+- `OptimisticLockingFailureException` is a runtime exception that Spring Data throws at flush; it **must** be caught by the global handler, otherwise the client gets a 500 with no retry semantics.
+- Validation failures must collect field details into `details` so callers can locate the problem; map `bindingResult.getFieldErrors()` with a stream.
+- Error codes are upper snake case, stable and documentable (matching the rules catalog/API docs).
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 @RestControllerAdvice
@@ -203,24 +203,24 @@ public class GlobalExceptionHandler {
 }
 ```
 
-**参考文件**：`ApiError.java`（新增文件，行 11-16）；`GlobalExceptionHandler.java`（新增文件，行 36-65，乐观锁处理器行 60-65）。
+**Reference files**: `ApiError.java` (new file, lines 11-16); `GlobalExceptionHandler.java` (new file, lines 36-65; optimistic lock handler lines 60-65).
 
-### 步骤 7：响应 DTO 回传版本号支持重试闭环
+### Step 7: The response DTO returns the version to close the retry loop
 
-**实现逻辑**：响应 DTO（record）包含 `version` 字段，用静态工厂 `from(实体)` 拷贝实体全部字段并携带 `account.getVersion()`。客户端获得最新版本号，冲突后可按"重新读取 → 携带新版本重试"闭环，或提示用户刷新。
+**Implementation logic**: the response DTO (record) contains a `version` field, and the static factory `from(entity)` copies all entity fields and carries `account.getVersion()`. The client gets the latest version number and, after a conflict, can close the loop with "read again → retry with the new version", or ask the user to refresh.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 请求/响应 DTO 用 Java `record`（仓库 REST 约定 §4）。
-- 响应回传版本号，是乐观锁 API 契约的一部分，不可省略。
-- 工厂方法 `from(entity)` 集中完成实体 → DTO 映射，Controller 不手写字段拷贝。
+- Request/response DTOs use Java `record` (repository REST conventions §4).
+- Returning the version in the response is part of the optimistic locking API contract and cannot be omitted.
+- The factory method `from(entity)` does the entity → DTO mapping in one place; controllers do not copy fields by hand.
 
-**注意事项**：
+**Notes**:
 
-- 若更新请求允许携带期望版本号做前置校验，需在请求 DTO 中一并声明并在应用服务中比对（本案例为"事务内读取最新版本"模式，版本号仅用于响应与重试）。
-- 金额字段在 DTO 中保持数值类型（`1940.00`），时间 ISO-8601 字符串，遵守仓库序列化约定。
+- If update requests may carry an expected version for a pre-check, declare it in the request DTO as well and compare it in the application service (this case uses the "read the latest version inside the transaction" mode; the version is only used for responses and retries).
+- Amount fields stay numeric in the DTO (`1940.00`) and times are ISO-8601 strings, following the repository's serialization conventions.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 public record <Entity>Response(<Id> id, ... , long version) {
@@ -230,25 +230,25 @@ public record <Entity>Response(<Id> id, ... , long version) {
 }
 ```
 
-**参考文件**：`AccountResponse.java`（新增文件，行 80-110，`version` 组件行 93，工厂行 95-110）。
+**Reference files**: `AccountResponse.java` (new file, lines 80-110; `version` component line 93; factory lines 95-110).
 
-### 步骤 8：领域行为单元测试
+### Step 8: Unit tests for domain behavior
 
-**实现逻辑**：为聚合根领域方法编写纯 JUnit（无 Spring 上下文）+ AssertJ 断言的单测：覆盖各类余额变更的数值方向（正负金额对余额/本期累计的影响）、业务规则拒绝路径（断言抛出 `BusinessRuleException` 且 `code` 正确）、参数边界。控制器层用 `@SpringBootTest` + MockMvc + H2 的端到端用例补充错误码与 HTTP 状态验证。
+**Implementation logic**: write plain JUnit (no Spring context) unit tests with AssertJ assertions for the aggregate root's domain methods, covering the numeric direction of each kind of balance change (the effect of positive/negative amounts on the balance/cycle totals), business rule rejection paths (assert that `BusinessRuleException` is thrown with the right `code`), and parameter boundaries. At the controller layer, `@SpringBootTest` + MockMvc + H2 end-to-end cases add verification of error codes and HTTP status.
 
-**规范约束**：
+**Standards and constraints**:
 
-- 领域单测断言业务规则与错误码，不断言日志或实现细节（仓库测试约定 §7）。
-- 金额断言用 `isEqualByComparingTo(...)`（BigDecimal 比较，不用 `equals`/`==`）。
-- 异常断言用 AssertJ `assertThatThrownBy(...).isInstanceOf(...).extracting("code")...`。
-- 每个服务至少"领域单测 + 一个 @SpringBootTest/MockMvc 端到端用例"（H2 + Flyway 迁移 + 种子数据）。
+- Domain unit tests assert business rules and error codes, not logs or implementation details (repository testing conventions §7).
+- Amount assertions use `isEqualByComparingTo(...)` (BigDecimal comparison, not `equals`/`==`).
+- Exception assertions use AssertJ `assertThatThrownBy(...).isInstanceOf(...).extracting("code")...`.
+- Every service has at least "domain unit tests + one @SpringBootTest/MockMvc end-to-end case" (H2 + Flyway migrations + seed data).
 
-**注意事项**：
+**Notes**:
 
-- 端到端用例直接依赖种子数据的账户与初始版本，测试间需注意账户余额状态可能被前序用例修改。
-- 并发冲突路径的端到端模拟成本高，可用领域/仓储层测试代替；若需模拟可并发提交两个事务验证第二个失败。
+- End-to-end cases depend directly on the seed data's accounts and initial versions; be aware that earlier cases may have changed an account's balance.
+- Simulating the concurrency conflict path end to end is costly; domain/repository layer tests can replace it. If simulation is needed, commit two transactions concurrently and verify that the second fails.
 
-**历史可参考代码**（一般化表示）：
+**Historical reference code** (generalized):
 
 ```java
 @Test
@@ -266,16 +266,16 @@ void <action>Rejects<RuleViolation>() {
 }
 ```
 
-**参考文件**：`AccountTest.java`（新增文件，测试辅助行 20-25；记账用例行 27-36、39-47；拒绝路径用例行 50-65、79-89、92-101）。
+**Reference files**: `AccountTest.java` (new file; test helper lines 20-25; posting cases lines 27-36, 39-47; rejection path cases lines 50-65, 79-89, 92-101).
 
-## 二、其他概念与最佳实践
+## 2. Other concepts and best practices
 
-- **乐观并发控制（OCC）**：假设冲突少，提交时校验版本。与悲观锁（`SELECT FOR UPDATE`）相比无锁等待、不易死锁、与数据库无关。冲突率高的热点账户可针对单账户记账退化为行锁短事务（ADR-006 回退路径），其余保持乐观锁。
-- **丢失更新（Lost Update）问题**：无并发控制时，两个事务基于同一快照先后提交，后者静默覆盖前者。乐观锁使第二个提交失败而非覆盖，是余额/额度等不可合并字段的必须保障。
-- **事务与实体生命周期**：`@Version` 冲突在 flush/提交阶段抛出——事务边界设计必须保证读、改、写同事务，且全局异常处理器兜底，业务代码保持干净。
-- **充血模型与领域异常**：业务规则内聚在聚合根方法中，以 `BusinessRuleException(code, message)` 表达失败；错误码可追溯遗留规则编号（BR-/R-/NR-），支持审计与文档化。
-- **依赖倒置与分层**：domain 定义仓储端口、infrastructure 用 Spring Data 实现，依赖方向 `interfaces → application → domain ← infrastructure`；domain 不依赖 Spring Web/JPA 注解之外的框架细节。
-- **金额与日期建模**：金额一律 `BigDecimal`（DB `NUMERIC(12,2)`），日期 `LocalDate`，时间戳 `LocalDateTime`；遗留标识用零填充字符串（accountId 11 位等），禁止 `long` 丢失前导零。
-- **DDL 与实体强一致**：`ddl-auto: validate` 下，实体新增列必须同步 Flyway 迁移脚本，否则启动失败；迁移脚本是表结构的唯一权威。
-- **幂等与并发的配合**：跨服务入账/返现等场景用"业务键唯一表 + 事务内先查重后写入"实现幂等；与乐观锁并用时，重试方应重新读取最新版本。
-- **可观测与运维**：服务暴露 `/actuator/health` 探针；日志不打印卡号、SSN、密码等敏感字段；版本冲突错误码稳定可被监控与告警消费。
+- **Optimistic concurrency control (OCC)**: assumes conflicts are rare and checks the version at commit. Compared with pessimistic locking (`SELECT FOR UPDATE`) there is no lock waiting, deadlocks are unlikely, and it is database independent. Hot accounts with high conflict rates can fall back to short row-lock transactions for single-account posting (the ADR-006 fallback path), while everything else keeps optimistic locking.
+- **Lost update problem**: without concurrency control, two transactions based on the same snapshot commit one after the other and the later one silently overwrites the earlier. Optimistic locking makes the second commit fail instead of overwriting, a required safeguard for non-mergeable fields such as balances and credit limits.
+- **Transactions and entity lifecycle**: `@Version` conflicts are thrown at flush/commit, so the transaction boundary design must keep read, modify and write in the same transaction, with the global exception handler as the safety net, leaving business code clean.
+- **Rich domain model and domain exceptions**: business rules are cohesive inside aggregate root methods, with failures expressed as `BusinessRuleException(code, message)`; error codes can be traced to legacy rule IDs (BR-/R-/NR-), supporting audit and documentation.
+- **Dependency inversion and layering**: the domain defines repository ports and the infrastructure implements them with Spring Data; dependency direction `interfaces → application → domain ← infrastructure`; apart from JPA annotations, the domain depends on no framework details such as Spring Web.
+- **Modeling amounts and dates**: amounts are always `BigDecimal` (DB `NUMERIC(12,2)`), dates `LocalDate`, timestamps `LocalDateTime`; legacy identifiers are zero-padded strings (accountId is 11 digits, etc.), and `long` is forbidden because it loses leading zeros.
+- **Strict consistency between DDL and entities**: under `ddl-auto: validate`, a new entity column requires a matching Flyway migration script or startup fails; migration scripts are the single authority for the table structure.
+- **Idempotency working with concurrency control**: cross-service scenarios such as posting/cashback implement idempotency with "a unique business key table + check for duplicates before writing inside the transaction"; when combined with optimistic locking, the retrying side should read the latest version again.
+- **Observability and operations**: services expose the `/actuator/health` probe; logs never print sensitive fields such as card numbers, SSNs or passwords; the version conflict error code is stable and can be consumed by monitoring and alerting.

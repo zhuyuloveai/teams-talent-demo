@@ -1,18 +1,18 @@
-# 编码规范清单（五类）
+# Coding standards checklist (five categories)
 
-| 类别 | 检查项 |
+| Category | Check items |
 |------|--------|
-| 命名 | 类/方法/变量命名规范，常量命名，无拼音缩写 |
-| 异常 | 禁止吞异常，异常要分级处理，禁止捕获后忽略 |
-| 日志 | 关键操作打日志，含入参出参摘要，不含敏感信息 |
-| 安全 | 参数化查询，无硬编码密钥，输入校验，防注入 |
-| 资源 | 连接/流/锁正确释放，try-with-resources |
+| Naming | Class / method / variable naming conventions, constant naming, no pinyin abbreviations |
+| Exception | No swallowed exceptions; handle exceptions by severity; never catch and ignore |
+| Logging | Log key operations with a summary of inputs and outputs, without sensitive data |
+| Security | Parameterized queries, no hardcoded keys, input validation, injection prevention |
+| Resource | Connections / streams / locks released correctly, try-with-resources |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 行级问题 | 文件:行+规则+建议 |
-| 工具映射 | SonarQube规则编号 |
+| Line-level issues | file:line + rule + suggestion |
+| Tool mapping | SonarQube rule ID |

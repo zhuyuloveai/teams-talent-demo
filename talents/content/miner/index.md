@@ -1,12 +1,12 @@
-# 开发范式索引
+# Development Pattern Index
 
-> 自动生成，请勿手改。每次归档 spec 后由 icode-miner 引擎重建。
+> Generated automatically; do not edit by hand. The icode-miner engine rebuilds it each time a spec is archived.
 
-| 名称 | 描述 | 首次归档时间 |
+| Name | Description | First archived |
 | --- | --- | --- |
-| [Spending Cashback and Reward Issuance](<./Spending Cashback and Reward Issuance/summary.md>) | 实现消费后返现/积分奖励的开发范式：活动资格校验、按比例计算奖励、入账后触发发奖、幂等入账与失败重试 | 2026-10-27T11:06:20+08:00 |
-| [Cross-Service Idempotent Posting and Retry](<./Cross-Service Idempotent Posting and Retry/summary.md>) | 跨服务奖励幂等入账开发范式：重复评估检查、账户入账去重、失败保留待处理状态及人工重试 | 2026-10-27T17:44:44+08:00 |
-| [Campaign Eligibility and Validity Control](<./Campaign Eligibility and Validity Control/summary.md>) | 营销活动资格校验与有效期控制开发范式：活动状态机与时间窗、账户状态与目标账户组、报名及参与限制的判定链实现 | 2026-10-27T17:50:06+08:00 |
-| [Account Balance Optimistic Lock Update](<./Account Balance Optimistic Lock Update/summary.md>) | 账户余额更新并发控制的乐观锁实现范式：实体版本字段、事务内余额变更与统一 409 冲突响应 | 2026-10-27T18:45:20+08:00 |
-| [User Maintenance and Delete Protection](<./User Maintenance and Delete Protection/summary.md>) | 用户新增、修改与删除的开发范式：类型校验、密码哈希存储、禁止自删除与保留最后一名管理员 | 2026-10-27T18:50:50+08:00 |
-| [Unified Error Codes and Exception Handling](<./Unified Error Codes and Exception Handling/summary.md>) | 新增校验或调用其他服务时的错误处理范式：领域异常、出站失败转换、全局异常映射为统一错误响应 | 2026-10-24T17:10:00+08:00 |
+| [Spending Cashback and Reward Issuance](<./Spending Cashback and Reward Issuance/summary.md>) | Development pattern for cashback/points rewards after spending: campaign eligibility checks, proportional reward calculation, reward issuance triggered after posting, idempotent posting and failure retry | 2026-10-27T11:06:20+08:00 |
+| [Cross-Service Idempotent Posting and Retry](<./Cross-Service Idempotent Posting and Retry/summary.md>) | Development pattern for idempotent cross-service reward posting: duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry | 2026-10-27T17:44:44+08:00 |
+| [Campaign Eligibility and Validity Control](<./Campaign Eligibility and Validity Control/summary.md>) | Development pattern for marketing campaign eligibility checks and validity control: campaign state machine and time window, account status and target account groups, and the decision chain for enrollment and participation limits | 2026-10-27T17:50:06+08:00 |
+| [Account Balance Optimistic Lock Update](<./Account Balance Optimistic Lock Update/summary.md>) | Optimistic locking pattern for concurrent account balance updates: entity version field, in-transaction balance changes, and a unified 409 conflict response | 2026-10-27T18:45:20+08:00 |
+| [User Maintenance and Delete Protection](<./User Maintenance and Delete Protection/summary.md>) | Development pattern for creating, updating and deleting users: type validation, hashed password storage, no self-deletion, and keeping the last admin | 2026-10-27T18:50:50+08:00 |
+| [Unified Error Codes and Exception Handling](<./Unified Error Codes and Exception Handling/summary.md>) | Error handling pattern for adding validations or calling other services: domain exceptions, outbound failure translation, and global exception mapping to a unified error response | 2026-10-24T17:10:00+08:00 |

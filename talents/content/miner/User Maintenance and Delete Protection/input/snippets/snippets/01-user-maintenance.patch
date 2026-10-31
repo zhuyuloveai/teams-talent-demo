@@ -17,8 +17,8 @@ index 0000000..d15034e
 +import org.springframework.transaction.annotation.Transactional;
 +
 +/**
-+ * 用户目录用例。对应遗留程序 COUSR00C（列表）、COUSR01C（新增）、
-+ * COUSR02C（修改）、COUSR03C（删除）。
++ * User directory use cases. Correspond to legacy programs COUSR00C (list), COUSR01C (add),
++ * COUSR02C (update), COUSR03C (delete).
 + */
 +@Service
 +@Transactional
@@ -36,7 +36,7 @@ index 0000000..d15034e
 +    }
 +
 +    /**
-+     * BR-USER-05：按用户号升序分页，默认每页 10 条。
++     * BR-USER-05: paginate by user ID ascending, 10 per page by default.
 +     */
 +    @Transactional(readOnly = true)
 +    public PageResult<User> list(int page, int size) {
@@ -55,7 +55,7 @@ index 0000000..d15034e
 +    }
 +
 +    /**
-+     * BR-USER-01..04：新增用户；用户号重复 → 409 USER_ALREADY_EXISTS。
++     * BR-USER-01..04: add a user; duplicate user ID → 409 USER_ALREADY_EXISTS.
 +     */
 +    public User create(String rawUserId, UserDetails details, String password) {
 +        User user = new User(rawUserId, details, passwordHasher.hash(requirePassword(password)));
@@ -67,8 +67,8 @@ index 0000000..d15034e
 +    }
 +
 +    /**
-+     * BR-USER-06：修改用户，password 缺省表示保持不变；
-+     * NR-USER-01：不允许把最后一个管理员降级为普通用户。
++     * BR-USER-06: update a user; an omitted password means unchanged;
++     * NR-USER-01: the last admin must not be downgraded to a regular user.
 +     */
 +    public User update(String rawUserId, UserDetails details, String password) {
 +        User user = get(rawUserId);
@@ -86,7 +86,7 @@ index 0000000..d15034e
 +    }
 +
 +    /**
-+     * NR-USER-01/02：禁止删除自己、禁止删除最后一个管理员。
++     * NR-USER-01/02: users cannot delete themselves, and the last admin cannot be deleted.
 +     */
 +    public void delete(String rawUserId, String actingUserId) {
 +        User user = get(rawUserId);
@@ -115,7 +115,7 @@ index 0000000..d15034e
 +    }
 +
 +    /**
-+     * BR-USER-03：密码 8-64 位，前后空白去掉后保存（登录同样 trim，见 ADR-008）。
++     * BR-USER-03: password is 8-64 characters, saved with leading/trailing whitespace removed (login trims too, see ADR-008).
 +     */
 +    private static String requirePassword(String password) {
 +        if (password == null || password.isBlank()) {
@@ -147,10 +147,10 @@ index 0000000..52db76b
 +import java.util.regex.Pattern;
 +
 +/**
-+ * 用户聚合根。对应遗留安全文件 USRSEC，记录布局见 copybook CSUSR01Y。
++ * User aggregate root. Corresponds to the legacy security file USRSEC; record layout in copybook CSUSR01Y.
 + * <p>
-+ * BR-SGN-02：用户号比较前统一 trim + 大写（密码不转换，见 ADR-008）。
-+ * BR-SGN-04/05：仅 {@code userType = 'A'} 进入管理员菜单。
++ * BR-SGN-02: user IDs are trimmed and upper-cased before comparison (passwords are not converted, see ADR-008).
++ * BR-SGN-04/05: only {@code userType = 'A'} opens the admin menu.
 + */
 +@Entity
 +@Table(name = "sec_user")
@@ -198,14 +198,14 @@ index 0000000..52db76b
 +    }
 +
 +    /**
-+     * BR-SGN-02：用户号 trim + 大写，其余字符原样保留。
++     * BR-SGN-02: user ID is trimmed and upper-cased; other characters are kept as is.
 +     */
 +    public static String normalizeUserId(String rawUserId) {
 +        return rawUserId == null ? null : rawUserId.trim().toUpperCase(Locale.ROOT);
 +    }
 +
 +    /**
-+     * BR-USER-01/04：姓名必填且 1-20 位，用户类型仅 A/U。
++     * BR-USER-01/04: names are required and 1-20 characters; user type is only A/U.
 +     */
 +    public void applyDetails(UserDetails details) {
 +        if (details == null) {
@@ -217,7 +217,7 @@ index 0000000..52db76b
 +    }
 +
 +    /**
-+     * BR-USER-03：密码只保存 PBKDF2 哈希，从不落明文。
++     * BR-USER-03: only the PBKDF2 hash of the password is stored, never plain text.
 +     */
 +    public void changePassword(String passwordHash) {
 +        if (passwordHash == null || passwordHash.isBlank()) {
@@ -231,7 +231,7 @@ index 0000000..52db76b
 +    }
 +
 +    /**
-+     * BR-SGN-04/05：管理员进入 ADMIN 菜单，其余一律按普通用户处理。
++     * BR-SGN-04/05: admins open the ADMIN menu; everyone else is treated as a regular user.
 +     */
 +    public String landingMenu() {
 +        return isAdmin() ? "ADMIN" : "USER";
@@ -298,7 +298,7 @@ index 0000000..5500bd5
 +package com.carddemo.iam.domain.model;
 +
 +/**
-+ * 用户可维护字段集合。对应遗留安全文件 USRSEC（copybook CSUSR01Y）中的姓名与类型部分。
++ * Set of maintainable user fields. Corresponds to the name and type part of the legacy security file USRSEC (copybook CSUSR01Y).
 + */
 +public record UserDetails(String firstName, String lastName, String userType) {
 +}
@@ -316,7 +316,7 @@ index 0000000..118878c
 +import java.util.Optional;
 +
 +/**
-+ * 用户仓储端口。实现见 infrastructure.persistence.UserJpaRepository。
++ * User repository port. Implemented by infrastructure.persistence.UserJpaRepository.
 + */
 +public interface UserRepository {
 +
@@ -327,7 +327,7 @@ index 0000000..118878c
 +    User saveUser(User user);
 +
 +    /**
-+     * BR-USER-05：按用户号升序分页。
++     * BR-USER-05: paginate by user ID ascending.
 +     */
 +    List<User> findAllUsers(int page, int size);
 +
@@ -346,7 +346,7 @@ index 0000000..2254bd3
 +package com.carddemo.iam.domain.security;
 +
 +/**
-+ * 密码哈希端口。ADR-008：PBKDF2-HMAC-SHA256，每用户随机盐，只保存编码后的哈希。
++ * Password hashing port. ADR-008: PBKDF2-HMAC-SHA256, random salt per user, only the encoded hash is stored.
 + */
 +public interface PasswordHasher {
 +

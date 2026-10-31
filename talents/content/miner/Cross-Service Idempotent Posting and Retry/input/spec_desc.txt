@@ -1,1 +1,1 @@
-Cross-Service Idempotent Posting and Retry：实现跨服务奖励幂等入账，包含重复评估检查、账户入账去重、失败保留待处理状态及人工重试。
+Cross-Service Idempotent Posting and Retry: implement idempotent cross-service reward posting, including a duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry.

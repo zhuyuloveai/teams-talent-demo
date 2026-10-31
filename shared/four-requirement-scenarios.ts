@@ -5,7 +5,7 @@ export const fourRequirementScenarios = [
     "businessId": "REQ-2026-001",
     "id": "req-2026-001-v1",
     "projectId": "carddemo",
-    "title": "信用卡账单/消费分期",
+    "title": "Credit Card Statement/Purchase Installment",
     "artifactId": "a-req-2026-001",
     "version": 1,
     "sourceFile": "REQ-2026-001-installment.md",
@@ -19,71 +19,71 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-001/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-001\n原始需求 SHA256：6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13\n完整需求：Talents发布资料 four-requirements/REQ-2026-001/Original Requirement.md（原文v1.0）。\n范围：信用卡账单/消费分期，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "Business requirement ID: REQ-2026-001\nOriginal requirement SHA256: 6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13\nFull requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (source v1.0).\nScope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-001-cases-v1",
     "cases": [
       {
         "id": "REQ-2026-001-US-001",
-        "title": "US-001 · 存在 1000.00 元已入账消费，账户额度 20000.00",
-        "given": "存在 1000.00 元已入账消费，账户额度 20000.00；数据准备：交易 0000000000000200，账户 00000000006",
-        "steps": "选择 6 期试算并提交",
-        "expected": "依据 test-profile-v1：前5期本金166.66、末期166.70；各期手续费5.50/4.58/3.67/2.75/1.83/0.92，合计19.25；首期172.16，计划ACTIVE。原文总费33.00保留在原始文件。",
+        "title": "US-001 · A posted purchase of 1000.00 exists and the account limit is 20000.00",
+        "given": "A posted purchase of 1000.00 exists and the account limit is 20000.00; data setup: Transaction 0000000000000200, account 00000000006",
+        "steps": "Preview 6 periods and submit",
+        "expected": "Per test-profile-v1: principal 166.66 for each of the first 5 periods and 166.70 for the last; per-period fees 5.50/4.58/3.67/2.75/1.83/0.92, total 19.25; first period 172.16, plan ACTIVE. The source total fee of 33.00 stays in the original file.",
         "sourceSection": "§10 US-001"
       },
       {
         "id": "REQ-2026-001-US-002",
-        "title": "US-002 · 已用去重键 `ins-20261027-001` 创建过计划",
-        "given": "已用去重键 `ins-20261027-001` 创建过计划；数据准备：复用 US-001 数据",
-        "steps": "用同一去重键再次提交",
-        "expected": "返回同一 plan_id，`installment_plan` 与账务分录数不变",
+        "title": "US-002 · A plan was already created with the deduplication key `ins-20261027-001`",
+        "given": "A plan was already created with the deduplication key `ins-20261027-001`; data setup: Reuse US-001 data",
+        "steps": "Submit again with the same deduplication key",
+        "expected": "The same plan_id is returned and the `installment_plan` and accounting entry counts do not change",
         "sourceSection": "§10 US-002"
       },
       {
         "id": "REQ-2026-001-US-003",
-        "title": "US-003 · 交易已分期",
-        "given": "交易已分期；数据准备：复用 US-001 数据",
-        "steps": "再次申请分期",
-        "expected": "409 `ALREADY_INSTALLED`，页面展示「已分期」徽标",
+        "title": "US-003 · The transaction is already on an installment plan",
+        "given": "The transaction is already on an installment plan; data setup: Reuse US-001 data",
+        "steps": "Apply for an installment again",
+        "expected": "409 `ALREADY_INSTALLED`, and the page shows the \"Already installed\" badge",
         "sourceSection": "§10 US-003"
       },
       {
         "id": "REQ-2026-001-US-004",
-        "title": "US-004 · 计划创建成功",
-        "given": "计划创建成功；数据准备：复用 US-001 数据",
-        "steps": "查询账户额度视图与计划详情",
-        "expected": "分期占用 = 1000.00，还款计划 6 行合计 = 本金 + 手续费",
+        "title": "US-004 · The plan was created successfully",
+        "given": "The plan was created successfully; data setup: Reuse US-001 data",
+        "steps": "Query the account limit view and the plan details",
+        "expected": "Installment occupation = 1000.00, and the 6 repayment schedule rows total principal + fees",
         "sourceSection": "§10 US-004"
       },
       {
         "id": "REQ-2026-001-US-005",
-        "title": "US-005 · 计划剩余本金 600.00，`ACTIVE`",
-        "given": "计划剩余本金 600.00，`ACTIVE`；数据准备：计划 3 期已还 1 期",
-        "steps": "提前结清",
-        "expected": "剩余本金归零、额度释放 600.00、违约金 6.00 过账 ledger",
+        "title": "US-005 · The plan has a remaining principal of 600.00 and is `ACTIVE`",
+        "given": "The plan has a remaining principal of 600.00 and is `ACTIVE`; data setup: Plan has 3 periods with 1 already repaid",
+        "steps": "Settle early",
+        "expected": "Remaining principal drops to zero, 600.00 of limit is released, and the 6.00 penalty fee is posted to the ledger",
         "sourceSection": "§10 US-005"
       },
       {
         "id": "REQ-2026-001-US-006",
-        "title": "US-006 · 交易金额 99.99",
-        "given": "交易金额 99.99；数据准备：交易 0000000000000201",
-        "steps": "打开交易详情",
-        "expected": "入口置灰，提示「单笔消费满 100.00 元可申请分期」",
+        "title": "US-006 · The transaction amount is 99.99",
+        "given": "The transaction amount is 99.99; data setup: Transaction 0000000000000201",
+        "steps": "Open the transaction details",
+        "expected": "The entry is greyed out with the message \"A single purchase of 100.00 or more is required to apply for an installment\"",
         "sourceSection": "§10 US-006"
       },
       {
         "id": "REQ-2026-001-US-007",
-        "title": "US-007 · ledger-service 已停用",
-        "given": "ledger-service 已停用；数据准备：停用 ledger 容器",
-        "steps": "提交分期",
-        "expected": "503 `DOWNSTREAM_UNAVAILABLE`，无半完成资金状态",
+        "title": "US-007 · ledger-service is stopped",
+        "given": "ledger-service is stopped; data setup: Stop the ledger container",
+        "steps": "Submit an installment",
+        "expected": "503 `DOWNSTREAM_UNAVAILABLE`, with no half-completed funds state",
         "sourceSection": "§10 US-007"
       },
       {
         "id": "REQ-2026-001-US-008",
-        "title": "US-008 · 运营账号持有 `installment:read:any`",
-        "given": "运营账号持有 `installment:read:any`；数据准备：30 天计划数据 ≥ 20 条",
-        "steps": "导出 30 天分期清单",
-        "expected": "生成 CSV，24 小时内可下载，审计记录导出动作",
+        "title": "US-008 · The operations account holds `installment:read:any`",
+        "given": "The operations account holds `installment:read:any`; data setup: At least 20 plan records over 30 days",
+        "steps": "Export the installment list for 30 days",
+        "expected": "A CSV is generated, downloadable within 24 hours, and the export action is audited",
         "sourceSection": "§10 US-008"
       }
     ]
@@ -92,7 +92,7 @@ export const fourRequirementScenarios = [
     "businessId": "REQ-2026-002",
     "id": "req-2026-002-v1",
     "projectId": "carddemo",
-    "title": "信用卡挂失与补卡",
+    "title": "Credit Card Loss Reporting and Replacement",
     "artifactId": "a-req-2026-002",
     "version": 1,
     "sourceFile": "REQ-2026-002-card-loss.md",
@@ -106,71 +106,71 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-002/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-002/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-002\n原始需求 SHA256：3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9\n完整需求：Talents发布资料 four-requirements/REQ-2026-002/Original Requirement.md（原文v1.0）。\n范围：信用卡挂失与补卡，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "Business requirement ID: REQ-2026-002\nOriginal requirement SHA256: 3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9\nFull requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (source v1.0).\nScope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-002-cases-v1",
     "cases": [
       {
         "id": "REQ-2026-002-US-001",
-        "title": "US-001 · 存在 `ACTIVE` 卡 4000000000005740",
-        "given": "存在 `ACTIVE` 卡 4000000000005740；数据准备：卡与账户 00000000006",
-        "steps": "客户确认挂失",
-        "expected": "卡状态立即 `LOST`，旧卡授权被拒，审计可查",
+        "title": "US-001 · An `ACTIVE` card 4000000000005740 exists",
+        "given": "An `ACTIVE` card 4000000000005740 exists; data setup: Card and account 00000000006",
+        "steps": "The customer confirms the loss report",
+        "expected": "The card status becomes `LOST` immediately, authorization on the old card is declined, and the audit is queryable",
         "sourceSection": "§10 US-001"
       },
       {
         "id": "REQ-2026-002-US-002",
-        "title": "US-002 · 卡已 `LOST`",
-        "given": "卡已 `LOST`；数据准备：复用 US-001 数据",
-        "steps": "再次提交挂失",
-        "expected": "409 `CARD_ALREADY_LOST`，通知仅 1 条",
+        "title": "US-002 · The card is already `LOST`",
+        "given": "The card is already `LOST`; data setup: Reuse US-001 data",
+        "steps": "Submit the loss report again",
+        "expected": "409 `CARD_ALREADY_LOST`, and only 1 notification exists",
         "sourceSection": "§10 US-002"
       },
       {
         "id": "REQ-2026-002-US-003",
-        "title": "US-003 · 白金卡已挂失",
-        "given": "白金卡已挂失；数据准备：白金卡 4000000000009999",
-        "steps": "提交补卡申请",
-        "expected": "`feeAmount=0.00`、`feeStatus=WAIVED`，无 FEE 过账",
+        "title": "US-003 · A platinum card has been reported lost",
+        "given": "A platinum card has been reported lost; data setup: Platinum card 4000000000009999",
+        "steps": "Submit a replacement request",
+        "expected": "`feeAmount=0.00`, `feeStatus=WAIVED`, no FEE posting",
         "sourceSection": "§10 US-003"
       },
       {
         "id": "REQ-2026-002-US-004",
-        "title": "US-004 · 金卡已挂失",
-        "given": "金卡已挂失；数据准备：金卡 4000000000005740",
-        "steps": "提交补卡申请",
-        "expected": "`feeAmount=50.00`，生成 FEE 过账，`fee_batch_id` 回填",
+        "title": "US-004 · A gold card has been reported lost",
+        "given": "A gold card has been reported lost; data setup: Gold card 4000000000005740",
+        "steps": "Submit a replacement request",
+        "expected": "`feeAmount=50.00`, a FEE posting is created, and `fee_batch_id` is filled in",
         "sourceSection": "§10 US-004"
       },
       {
         "id": "REQ-2026-002-US-005",
-        "title": "US-005 · 存在进行中补卡工单",
-        "given": "存在进行中补卡工单；数据准备：复用 US-004 数据",
-        "steps": "再次提交补卡",
-        "expected": "409 `REPLACEMENT_EXISTS`，工单数不变",
+        "title": "US-005 · A replacement ticket is in progress",
+        "given": "A replacement ticket is in progress; data setup: Reuse US-004 data",
+        "steps": "Submit a replacement request again",
+        "expected": "409 `REPLACEMENT_EXISTS`, and the ticket count does not change",
         "sourceSection": "§10 US-005"
       },
       {
         "id": "REQ-2026-002-US-006",
-        "title": "US-006 · 工单状态 `CARD_PRODUCED`",
-        "given": "工单状态 `CARD_PRODUCED`；数据准备：工单 `replacement_id`",
-        "steps": "运营更新为 `SHIPPED` 并回填单号",
-        "expected": "客户进度页展示快递单号与预计到达日期",
+        "title": "US-006 · The ticket status is `CARD_PRODUCED`",
+        "given": "The ticket status is `CARD_PRODUCED`; data setup: Ticket `replacement_id`",
+        "steps": "Operations updates it to `SHIPPED` and fills in the tracking number",
+        "expected": "The customer progress page shows the tracking number and estimated arrival date",
         "sourceSection": "§10 US-006"
       },
       {
         "id": "REQ-2026-002-US-007",
-        "title": "US-007 · 新卡已生成未激活",
-        "given": "新卡已生成未激活；数据准备：新卡号 + 交易请求",
-        "steps": "用新卡发起交易",
-        "expected": "交易被拒，提示「新卡未激活」",
+        "title": "US-007 · A new card has been generated but not activated",
+        "given": "A new card has been generated but not activated; data setup: New card number + transaction request",
+        "steps": "Initiate a transaction with the new card",
+        "expected": "The transaction is declined with the message \"The new card is not activated\"",
         "sourceSection": "§10 US-007"
       },
       {
         "id": "REQ-2026-002-US-008",
-        "title": "US-008 · 停用 transaction-service",
-        "given": "停用 transaction-service；数据准备：停用与恢复容器",
-        "steps": "提交金卡补卡申请",
-        "expected": "工单创建成功且 `feeStatus=FEE_PENDING`；恢复后 24 小时内补收成功",
+        "title": "US-008 · transaction-service is stopped",
+        "given": "transaction-service is stopped; data setup: Stop and restore the container",
+        "steps": "Submit a gold card replacement request",
+        "expected": "The ticket is created successfully with `feeStatus=FEE_PENDING`; the fee is collected within 24 hours after recovery",
         "sourceSection": "§10 US-008"
       }
     ]
@@ -179,7 +179,7 @@ export const fourRequirementScenarios = [
     "businessId": "REQ-2026-003",
     "id": "req-2026-003-v1",
     "projectId": "carddemo",
-    "title": "信用卡额度调整申请与审批",
+    "title": "Credit Card Limit Increase Application and Approval",
     "artifactId": "a-req-2026-003",
     "version": 1,
     "sourceFile": "REQ-2026-003-limit-increase.md",
@@ -193,71 +193,71 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-003/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-003/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-003\n原始需求 SHA256：a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01\n完整需求：Talents发布资料 four-requirements/REQ-2026-003/Original Requirement.md（原文v1.0）。\n范围：信用卡额度调整申请与审批，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "Business requirement ID: REQ-2026-003\nOriginal requirement SHA256: a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01\nFull requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (source v1.0).\nScope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-003-cases-v1",
     "cases": [
       {
         "id": "REQ-2026-003-US-001",
-        "title": "US-001 · 当前额度 8000、产品上限 25000、无逾期、开卡 24 个月",
-        "given": "当前额度 8000、产品上限 25000、无逾期、开卡 24 个月；数据准备：账户 00000000006",
-        "steps": "申请 12000 并由初审与终审通过",
-        "expected": "状态 `APPROVED`，account 额度 12000，客户收到通知",
+        "title": "US-001 · Current limit 8000, product maximum 25000, no delinquency, card open for 24 months",
+        "given": "Current limit 8000, product maximum 25000, no delinquency, card open for 24 months; data setup: Account 00000000006",
+        "steps": "Apply for 12000 and pass initial review and final approval",
+        "expected": "Status `APPROVED`, account limit 12000, the customer receives the notification",
         "sourceSection": "§10 US-001"
       },
       {
         "id": "REQ-2026-003-US-002",
-        "title": "US-002 · 近 6 个月存在 1 个月逾期",
-        "given": "近 6 个月存在 1 个月逾期；数据准备：账单逾期数据 1 条",
-        "steps": "提交申请 12000",
-        "expected": "预审 `REJECTED`，展示「近 6 个月存在逾期记录」",
+        "title": "US-002 · 1 delinquent month in the past 6 months",
+        "given": "1 delinquent month in the past 6 months; data setup: 1 delinquent statement record",
+        "steps": "Submit an application for 12000",
+        "expected": "Pre-review `REJECTED`, showing \"There is a delinquency record in the past 6 months\"",
         "sourceSection": "§10 US-002"
       },
       {
         "id": "REQ-2026-003-US-003",
-        "title": "US-003 · 已存在进行中申请",
-        "given": "已存在进行中申请；数据准备：复用 US-001 数据",
-        "steps": "再次提交申请",
-        "expected": "409 `LIMIT_APPLICATION_EXISTS`，申请表仅 1 条",
+        "title": "US-003 · An in-progress application already exists",
+        "given": "An in-progress application already exists; data setup: Reuse the US-001 data",
+        "steps": "Submit the application again",
+        "expected": "409 `LIMIT_APPLICATION_EXISTS`, only 1 application record",
         "sourceSection": "§10 US-003"
       },
       {
         "id": "REQ-2026-003-US-004",
-        "title": "US-004 · 初审人与终审人为同一账号",
-        "given": "初审人与终审人为同一账号；数据准备：单账号双角色配置",
-        "steps": "执行终审",
-        "expected": "403 `SOD_VIOLATION`，申请状态不变",
+        "title": "US-004 · Initial reviewer and final approver are the same account",
+        "given": "Initial reviewer and final approver are the same account; data setup: Single account with both roles",
+        "steps": "Perform the final approval",
+        "expected": "403 `SOD_VIOLATION`, application status unchanged",
         "sourceSection": "§10 US-004"
       },
       {
         "id": "REQ-2026-003-US-005",
-        "title": "US-005 · 申请 8000→16000.01",
-        "given": "申请 8000→16000.01；数据准备：US-001 账户 + 材料",
-        "steps": "提交并进入审批",
-        "expected": "`dualApprovalRequired=true`，缺第二审批人时返回 `DUAL_APPROVAL_REQUIRED`",
+        "title": "US-005 · Apply for 8000→16000.01",
+        "given": "Apply for 8000→16000.01; data setup: US-001 account + documents",
+        "steps": "Submit and enter approval",
+        "expected": "`dualApprovalRequired=true`; returns `DUAL_APPROVAL_REQUIRED` when the second approver is missing",
         "sourceSection": "§10 US-005"
       },
       {
         "id": "REQ-2026-003-US-006",
-        "title": "US-006 · 审批通过后 account-service 停用",
-        "given": "审批通过后 account-service 停用；数据准备：停用与恢复容器",
-        "steps": "执行终审",
-        "expected": "状态 `APPROVED_PENDING`；恢复服务后自动生效且仅 1 次额度更新",
+        "title": "US-006 · account-service disabled after approval",
+        "given": "account-service disabled after approval; data setup: Disable and restore the container",
+        "steps": "Perform the final approval",
+        "expected": "Status `APPROVED_PENDING`; becomes effective automatically after recovery with only 1 limit update",
         "sourceSection": "§10 US-006"
       },
       {
         "id": "REQ-2026-003-US-007",
-        "title": "US-007 · 申请被拒绝",
-        "given": "申请被拒绝；数据准备：US-002 数据",
-        "steps": "打开客户进度页",
-        "expected": "展示拒绝原因与客服入口，拒绝原因为空时提交被拦截",
+        "title": "US-007 · The application was rejected",
+        "given": "The application was rejected; data setup: US-002 data",
+        "steps": "Open the customer progress page",
+        "expected": "Shows the rejection reason and the customer service entry; submission is blocked when the rejection reason is empty",
         "sourceSection": "§10 US-007"
       },
       {
         "id": "REQ-2026-003-US-008",
-        "title": "US-008 · 开卡 2 个月的账户",
-        "given": "开卡 2 个月的账户；数据准备：新开户 00000000007",
-        "steps": "提交提额申请",
-        "expected": "预审拒绝，提示「开卡满 3 个月后可申请提额」",
+        "title": "US-008 · An account whose card was opened 2 months ago",
+        "given": "An account whose card was opened 2 months ago; data setup: Newly opened account 00000000007",
+        "steps": "Submit a limit increase application",
+        "expected": "Pre-review rejects, prompting \"You can apply for a limit increase once the card has been open for 3 months\"",
         "sourceSection": "§10 US-008"
       }
     ]
@@ -266,7 +266,7 @@ export const fourRequirementScenarios = [
     "businessId": "REQ-2026-004",
     "id": "req-2026-004-v1",
     "projectId": "carddemo",
-    "title": "交易争议在线申请与处理",
+    "title": "Transaction Dispute Online Application and Handling",
     "artifactId": "a-req-2026-004",
     "version": 1,
     "sourceFile": "REQ-2026-004-dispute.md",
@@ -280,71 +280,71 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-004/test-profile.md"
     },
-    "creationDescription": "业务需求编号：REQ-2026-004\n原始需求 SHA256：341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484\n完整需求：Talents发布资料 four-requirements/REQ-2026-004/Original Requirement.md（原文v1.0）。\n范围：交易争议在线申请与处理，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。",
+    "creationDescription": "Business requirement ID: REQ-2026-004\nOriginal requirement SHA256: 341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484\nFull requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (source v1.0).\nScope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-004-cases-v1",
     "cases": [
       {
         "id": "REQ-2026-004-US-001",
-        "title": "US-001 · 90 天内已入账交易 299.00，无进行中争议",
-        "given": "90 天内已入账交易 299.00，无进行中争议；数据准备：交易 0000000000000200，账户 00000000006",
-        "steps": "提交 FRAUD 争议并上传 1 份 PDF",
-        "expected": "案件 `OPEN`，客户可查看时间线与 SLA 到期时间",
+        "title": "US-001 · A posted transaction of 299.00 within 90 days with no dispute in progress",
+        "given": "A posted transaction of 299.00 within 90 days with no dispute in progress; data setup: Transaction 0000000000000200, account 00000000006",
+        "steps": "Submit a FRAUD dispute and upload 1 PDF",
+        "expected": "Case `OPEN`, the customer can view the timeline and the SLA due time",
         "sourceSection": "§10 US-001"
       },
       {
         "id": "REQ-2026-004-US-002",
-        "title": "US-002 · 同一交易已有 `OPEN` 案件",
-        "given": "同一交易已有 `OPEN` 案件；数据准备：复用 US-001 数据",
-        "steps": "再次开案",
-        "expected": "409 `DISPUTE_EXISTS`，案件数不变",
+        "title": "US-002 · The same transaction already has an `OPEN` case",
+        "given": "The same transaction already has an `OPEN` case; data setup: Reuse the US-001 data",
+        "steps": "Open the case again",
+        "expected": "409 `DISPUTE_EXISTS`, the number of cases is unchanged",
         "sourceSection": "§10 US-002"
       },
       {
         "id": "REQ-2026-004-US-003",
-        "title": "US-003 · 交易尚未上传证据",
-        "given": "交易尚未上传证据；数据准备：复用 US-001 数据",
-        "steps": "提交 FRAUD 争议",
+        "title": "US-003 · The transaction has no evidence uploaded",
+        "given": "The transaction has no evidence uploaded; data setup: Reuse the US-001 data",
+        "steps": "Submit a FRAUD dispute",
         "expected": "409 `EVIDENCE_REQUIRED`",
         "sourceSection": "§10 US-003"
       },
       {
         "id": "REQ-2026-004-US-004",
-        "title": "US-004 · 案件 `UNDER_REVIEW`",
-        "given": "案件 `UNDER_REVIEW`；数据准备：案件号 + 账户余额初始值",
-        "steps": "临时入账 100.00 并重复提交",
-        "expected": "账户贷记 100.00 一次，案件 `PROVISIONAL_CREDIT`",
+        "title": "US-004 · Case `UNDER_REVIEW`",
+        "given": "Case `UNDER_REVIEW`; data setup: Case number + initial account balance",
+        "steps": "Provisional credit of 100.00 submitted twice",
+        "expected": "The account is credited 100.00 once and the case is `PROVISIONAL_CREDIT`",
         "sourceSection": "§10 US-004"
       },
       {
         "id": "REQ-2026-004-US-005",
-        "title": "US-005 · 案件已临时入账",
-        "given": "案件已临时入账；数据准备：复用 US-004 数据",
-        "steps": "发起 chargeback 并结案 `won=true`",
-        "expected": "状态 `WON` 后 `CLOSED`，客户收到通知，审计完整",
+        "title": "US-005 · The case has been provisionally credited",
+        "given": "The case has been provisionally credited; data setup: Reuse the US-004 data",
+        "steps": "Initiate chargeback and close with `won=true`",
+        "expected": "Status `WON` then `CLOSED`, the customer receives the notification, audit records are complete",
         "sourceSection": "§10 US-005"
       },
       {
         "id": "REQ-2026-004-US-006",
-        "title": "US-006 · 案件距 SLA 到期 23 小时",
-        "given": "案件距 SLA 到期 23 小时；数据准备：调整 `sla_due_at` 数据",
-        "steps": "执行每日 02:00 扫描",
-        "expected": "专员与主管收到提醒，`slaState=DUE_SOON`",
+        "title": "US-006 · 23 hours until the case SLA due time",
+        "given": "23 hours until the case SLA due time; data setup: Adjust the `sla_due_at` data",
+        "steps": "Run the daily 02:00 scan",
+        "expected": "The specialist and supervisor receive the reminder, `slaState=DUE_SOON`",
         "sourceSection": "§10 US-006"
       },
       {
         "id": "REQ-2026-004-US-007",
-        "title": "US-007 · 交易入账 91 天前",
-        "given": "交易入账 91 天前；数据准备：交易 0000000000000199",
-        "steps": "打开交易详情",
-        "expected": "入口置灰，提示「超过 90 天的交易请致电客服」",
+        "title": "US-007 · The transaction was posted 91 days ago",
+        "given": "The transaction was posted 91 days ago; data setup: Transaction 0000000000000199",
+        "steps": "Open the transaction details",
+        "expected": "Entry point greyed out, prompting \"Please call customer service for transactions older than 90 days\"",
         "sourceSection": "§10 US-007"
       },
       {
         "id": "REQ-2026-004-US-008",
-        "title": "US-008 · account-service 停用",
-        "given": "account-service 停用；数据准备：停用容器",
-        "steps": "发起临时入账 299.00",
-        "expected": "503 `DOWNSTREAM_UNAVAILABLE`，案件保持 `UNDER_REVIEW`，余额不变",
+        "title": "US-008 · account-service disabled",
+        "given": "account-service disabled; data setup: Disable the container",
+        "steps": "Initiate a provisional credit of 299.00",
+        "expected": "503 `DOWNSTREAM_UNAVAILABLE`, the case stays `UNDER_REVIEW`, the balance is unchanged",
         "sourceSection": "§10 US-008"
       }
     ]
@@ -361,21 +361,21 @@ export const fourRequirementScenariosV2: readonly FourRequirementScenario[] = fo
  manifest:`four-requirements/${source.businessId}/v2/provenance.json`,
  files:{...source.files,...Object.fromEntries(Object.entries(source.files).filter(([key])=>key!=='requirement').map(([key,path])=>[key,path.replace(/\/([^/]+)$/,'/v2/$1')]))},
  profileSha256:fourRequirementProfileV2Sha256,
- creationDescription:source.creationDescription+'\n试验口径版本：test-profile-v2\n试验口径 SHA256：'+fourRequirementProfileV2Sha256+'\n本任务明确锁定 v2 本地测试口径；原文全部13章及原US-001..008必须保留。除已明确测试参数外，其它待定政策须报告协调者，不得自行标为必须/已确认。',
+ creationDescription:source.creationDescription+'\nTest profile version: test-profile-v2\nTest profile SHA256: '+fourRequirementProfileV2Sha256+'\nThis task explicitly pins the v2 local test profile; all 13 chapters of the source and the original US-001..008 must be kept. Apart from the test parameters stated explicitly, report any other pending policy to the coordinator; do not mark it as Must/Confirmed on your own.',
  casesVersion:source.casesVersion.replace(/-v1$/,'-v2'),
- cases:source.cases.map(item=>source.businessId==='REQ-2026-001'&&item.id.endsWith('US-005')?{...item,given:'900.00元分3期，已实际归还首期本金300.00，计划ACTIVE且剩余本金600.00；保留原US-005条件，不以500/3替换',expected:'剩余本金归零，实际归还本金600.00仅释放一次；违约金6.00、feeRebate0.00、结清总额606.00，真实账务与占用一致；重复/并发重试不双释放'}:{...item,expected:item.expected.replaceAll('test-profile-v1','test-profile-v2')})
+ cases:source.cases.map(item=>source.businessId==='REQ-2026-001'&&item.id.endsWith('US-005')?{...item,given:'CNY 900.00 split into 3 periods, first-period principal of 300.00 actually repaid, plan ACTIVE with remaining principal 600.00; keep the original US-005 conditions, do not substitute 500/3',expected:'Remaining principal drops to zero and the actually repaid principal of 600.00 is released only once; penalty fee 6.00, feeRebate 0.00, settlement total 606.00; real accounting and occupation agree; repeated/concurrent retries do not release twice'}:{...item,expected:item.expected.replaceAll('test-profile-v1','test-profile-v2')})
 }));
 export const fourRequirementScenarioVersions: readonly FourRequirementScenario[] = [...fourRequirementScenarios,...fourRequirementScenariosV2];
 export const fourRequirementNodes: Record<FourRequirementNode,{knowledge:Array<{file:keyof FourRequirementScenario['files'];slot:string;reason:string}>;skills:string[];skillSlot:string}> = {
- prepare:{knowledge:[{file:'profile',slot:'business-documents',reason:'本次验证采用的独立试验口径，原始需求不改写'},{file:'requirement',slot:'business-documents',reason:'读取完整原始需求与验收范围'},{file:'rules',slot:'business-documents',reason:'核对需求明确的测试规则'},{file:'questions',slot:'business-documents',reason:'保留待确认与内部差异'},{file:'implementation',slot:'business-documents',reason:'识别真实基线与集成缺口'}],skills:['ba-requirement-analysis','ba-acceptance-criteria','bank-domain-payments'],skillSlot:'business-skills'},
- develop:{knowledge:[{file:'profile',slot:'development-knowledge',reason:'本次验证采用的独立试验口径，原始需求不改写'},{file:'requirement',slot:'development-knowledge',reason:'实现须追溯完整需求'},{file:'implementation',slot:'development-knowledge',reason:'按真实模块、协议与数据约束设计'},{file:'rules',slot:'development-knowledge',reason:'实现业务规则并覆盖边界'},{file:'questions',slot:'development-knowledge',reason:'不擅自决定未确认策略'}],skills:['arch-solution-design','dev-backend-service','dev-api-integration','dev-frontend-ui','dev-unit-test'],skillSlot:'development-skills'},
- verify:{knowledge:[{file:'profile',slot:'verification-knowledge',reason:'本次验证采用的独立试验口径，原始需求不改写'},{file:'requirement',slot:'verification-knowledge',reason:'检查全部需求覆盖'},{file:'acceptance',slot:'verification-knowledge',reason:'按原始场景形成实际测试证据'},{file:'questions',slot:'verification-knowledge',reason:'确认冲突已澄清或阻塞仍明确'}],skills:['dev-bank-coding-standards','dev-code-reviewer','qa-integration-test','sec-scan-review'],skillSlot:'quality-skills'},
- accept:{knowledge:[{file:'profile',slot:'acceptance-knowledge',reason:'本次验证采用的独立试验口径，原始需求不改写'},{file:'requirement',slot:'acceptance-knowledge',reason:'逐项核对原始范围与实际交付'},{file:'acceptance',slot:'acceptance-knowledge',reason:'核对测试报告和问题复验'},{file:'questions',slot:'acceptance-knowledge',reason:'确认未决项及决策依据'}],skills:['qa-uat-support'],skillSlot:'acceptance-skills'},
+ prepare:{knowledge:[{file:'profile',slot:'business-documents',reason:'Independent test profile used for this verification; the original requirement is not rewritten'},{file:'requirement',slot:'business-documents',reason:'Read the full original requirement and acceptance scope'},{file:'rules',slot:'business-documents',reason:'Check the test rules stated in the requirement'},{file:'questions',slot:'business-documents',reason:'Keep open questions and internal differences'},{file:'implementation',slot:'business-documents',reason:'Identify the real baseline and integration gaps'}],skills:['ba-requirement-analysis','ba-acceptance-criteria','bank-domain-payments'],skillSlot:'business-skills'},
+ develop:{knowledge:[{file:'profile',slot:'development-knowledge',reason:'Independent test profile used for this verification; the original requirement is not rewritten'},{file:'requirement',slot:'development-knowledge',reason:'Implementation must trace back to the full requirement'},{file:'implementation',slot:'development-knowledge',reason:'Design against the real modules, protocols and data constraints'},{file:'rules',slot:'development-knowledge',reason:'Implement the business rules and cover the boundaries'},{file:'questions',slot:'development-knowledge',reason:'Do not decide unconfirmed policies on your own'}],skills:['arch-solution-design','dev-backend-service','dev-api-integration','dev-frontend-ui','dev-unit-test'],skillSlot:'development-skills'},
+ verify:{knowledge:[{file:'profile',slot:'verification-knowledge',reason:'Independent test profile used for this verification; the original requirement is not rewritten'},{file:'requirement',slot:'verification-knowledge',reason:'Check coverage of all requirements'},{file:'acceptance',slot:'verification-knowledge',reason:'Produce real test evidence from the original scenarios'},{file:'questions',slot:'verification-knowledge',reason:'Confirm conflicts are clarified or blockers remain explicit'}],skills:['dev-bank-coding-standards','dev-code-reviewer','qa-integration-test','sec-scan-review'],skillSlot:'quality-skills'},
+ accept:{knowledge:[{file:'profile',slot:'acceptance-knowledge',reason:'Independent test profile used for this verification; the original requirement is not rewritten'},{file:'requirement',slot:'acceptance-knowledge',reason:'Check the original scope against the actual delivery item by item'},{file:'acceptance',slot:'acceptance-knowledge',reason:'Check the test reports and issue re-verification'},{file:'questions',slot:'acceptance-knowledge',reason:'Confirm open items and the basis for decisions'}],skills:['qa-uat-support'],skillSlot:'acceptance-skills'},
 };
 /** An unrelated same-title task cannot acquire a scenario; the exact source fingerprint is required. */
 export function fourRequirementScenario(projectId:string,task:{id:string;title:string;description?:string}) {
  if(projectId!=='carddemo'||!/^REQ-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(task.id))return undefined;
- const lines=task.description?.split('\n')??[],versions=lines.filter(line=>line.startsWith('试验口径版本：')),digests=lines.filter(line=>line.startsWith('试验口径 SHA256：'));
- const candidates=versions.length===0&&digests.length===0?fourRequirementScenarios:versions.length===1&&versions[0]==='试验口径版本：test-profile-v2'&&digests.length===1&&digests[0]==='试验口径 SHA256：'+fourRequirementProfileV2Sha256?fourRequirementScenariosV2:[];
- return candidates.find(s=>task.title===s.title&&lines.includes('业务需求编号：'+s.businessId)&&lines.includes('原始需求 SHA256：'+s.sourceSha256));
+ const lines=task.description?.split('\n')??[],versions=lines.filter(line=>line.startsWith('Test profile version: ')),digests=lines.filter(line=>line.startsWith('Test profile SHA256: '));
+ const candidates=versions.length===0&&digests.length===0?fourRequirementScenarios:versions.length===1&&versions[0]==='Test profile version: test-profile-v2'&&digests.length===1&&digests[0]==='Test profile SHA256: '+fourRequirementProfileV2Sha256?fourRequirementScenariosV2:[];
+ return candidates.find(s=>task.title===s.title&&lines.includes('Business requirement ID: '+s.businessId)&&lines.includes('Original requirement SHA256: '+s.sourceSha256));
 }

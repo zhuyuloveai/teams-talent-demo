@@ -30,8 +30,8 @@ index 0000000..3189e61
 +import java.util.UUID;
 +
 +/**
-+ * 奖励评估与发放（MK-REW-01..08）。
-+ * 幂等：同一活动同一交易只发一次；返现入账由 account-service 以 rewardId 再保证一次幂等。
++ * Reward evaluation and issuance (MK-REW-01..08).
++ * Idempotency: one reward per campaign per transaction; cashback posting is made idempotent again by account-service through rewardId.
 + */
 +@Service
 +@Transactional(noRollbackFor = RemoteServiceException.class)
@@ -178,7 +178,7 @@ index 0000000..1ba3697
 +import java.time.LocalDateTime;
 +
 +/**
-+ * 奖励发放记录。同一活动同一交易唯一（MK-REW-01 幂等）。
++ * Reward issuance record. Unique per campaign per transaction (MK-REW-01 idempotency).
 + */
 +@Entity
 +@Table(name = "reward_grant",
@@ -388,7 +388,7 @@ index 0000000..81a279a
 +import java.util.Optional;
 +
 +/**
-+ * account-service 出站适配器：读账户快照、返现入账（幂等键 rewardId）。
++ * account-service outbound adapter: reads account snapshots, posts cashback (idempotency key rewardId).
 + */
 +@Component
 +public class AccountClient {

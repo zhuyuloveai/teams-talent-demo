@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "4afb868c-410f-4109-a8cd-edac07937a95",
   "name": "Spending Cashback and Reward Issuance",
-  "description": "实现消费后返现/积分奖励的开发范式：活动资格校验、按比例计算奖励、入账后触发发奖、幂等入账与失败重试",
-  "scenario": "实现餐饮消费返现，包含活动资格校验、按比例计算奖励、消费入账后发奖、幂等入账及失败重试。",
+  "description": "Development pattern for cashback/points rewards after spending: campaign eligibility checks, proportional reward calculation, reward issuance triggered after posting, idempotent posting and failure retry",
+  "scenario": "Implement dining spending cashback, including campaign eligibility checks, proportional reward calculation, reward issuance after the purchase is posted, idempotent posting and failure retry.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {

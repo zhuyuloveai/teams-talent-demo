@@ -90,32 +90,32 @@ index 0000000..088f9a9
 +import jakarta.validation.constraints.Size;
 +
 +/**
-+ * BR-USER-01..04：新增用户五项必填；用户号 8 位字母数字、姓名 1-20、密码 8-64、类型 A/U。
++ * BR-USER-01..04: five required fields for a new user; user ID 8 alphanumeric characters, names 1-20, password 8-64, type A/U.
 + */
 +public record CreateUserRequest(
-+        @Schema(description = "用户号（8 位字母数字）", example = "USER0002",
++        @Schema(description = "User ID (8 alphanumeric characters)", example = "USER0002",
 +                requiredMode = Schema.RequiredMode.REQUIRED)
 +        @NotBlank(message = "User ID must be supplied.")
 +        @Pattern(regexp = "^[A-Za-z0-9]{8}$", message = "User ID must be 8 alphanumeric characters.")
 +        String userId,
 +
-+        @Schema(description = "名", example = "Ada", requiredMode = Schema.RequiredMode.REQUIRED)
++        @Schema(description = "First name", example = "Ada", requiredMode = Schema.RequiredMode.REQUIRED)
 +        @NotBlank(message = "First Name must be supplied.")
 +        @Size(max = 20, message = "First Name must be 20 characters or fewer.")
 +        String firstName,
 +
-+        @Schema(description = "姓", example = "Lovelace", requiredMode = Schema.RequiredMode.REQUIRED)
++        @Schema(description = "Last name", example = "Lovelace", requiredMode = Schema.RequiredMode.REQUIRED)
 +        @NotBlank(message = "Last Name must be supplied.")
 +        @Size(max = 20, message = "Last Name must be 20 characters or fewer.")
 +        String lastName,
 +
-+        @Schema(description = "密码（8-64 位）", example = "pass1234",
++        @Schema(description = "Password (8-64 characters)", example = "pass1234",
 +                requiredMode = Schema.RequiredMode.REQUIRED)
 +        @NotBlank(message = "Password must be supplied.")
 +        @Size(min = 8, max = 64, message = "Password must be 8 to 64 characters.")
 +        String password,
 +
-+        @Schema(description = "用户类型 A=管理员 / U=普通用户", example = "U",
++        @Schema(description = "User type A=admin / U=regular user", example = "U",
 +                allowableValues = {"A", "U"}, requiredMode = Schema.RequiredMode.REQUIRED)
 +        @NotNull(message = "User Type must be supplied.")
 +        @Pattern(regexp = "[AU]", message = "User Type must be A or U.")
@@ -140,7 +140,7 @@ index 0000000..73c6589
 +import jakarta.validation.constraints.Size;
 +
 +/**
-+ * BR-USER-06：修改用户；password 可省略（保持不变）。
++ * BR-USER-06: update a user; password may be omitted (kept unchanged).
 + */
 +public record UpdateUserRequest(
 +        @NotBlank(message = "First Name must be supplied.")
@@ -173,7 +173,7 @@ index 0000000..4a87940
 +import com.carddemo.iam.domain.model.User;
 +
 +/**
-+ * BR-USER-05：用户响应，绝不包含 password / passwordHash。
++ * BR-USER-05: user response; never contains password / passwordHash.
 + */
 +public record UserResponse(String userId, String firstName, String lastName, String userType,
 +                           long version) {

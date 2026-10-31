@@ -1,1 +1,1 @@
-Account Balance Optimistic Lock Update：实现账户余额更新的乐观锁机制，包含实体版本字段、事务内余额变更及并发更新冲突的统一错误响应。
+Account Balance Optimistic Lock Update: implement optimistic locking for account balance updates, including an entity version field, balance changes inside a transaction, and a unified error response for concurrent update conflicts.

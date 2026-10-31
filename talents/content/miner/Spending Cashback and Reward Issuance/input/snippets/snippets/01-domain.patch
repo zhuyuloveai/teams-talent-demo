@@ -20,8 +20,8 @@ index 0000000..c94e334
 +import java.util.Objects;
 +
 +/**
-+ * 营销活动聚合根。状态机：DRAFT → ACTIVE ⇄ PAUSED → ENDED。
-+ * 规则详见 docs/design/08-marketing-capability.md。
++ * Marketing campaign aggregate root. State machine: DRAFT → ACTIVE ⇄ PAUSED → ENDED.
++ * See docs/design/08-marketing-capability.md for the rules.
 + */
 +@Entity
 +@Table(name = "campaign")
@@ -110,7 +110,7 @@ index 0000000..c94e334
 +    }
 +
 +    /**
-+     * MK-CAM-01..06：只有 DRAFT 可编辑规则。
++     * MK-CAM-01..06: rules can only be edited in DRAFT.
 +     */
 +    public void applyDraft(CampaignDraft draft, LocalDateTime now) {
 +        if (status != CampaignStatus.DRAFT) {
@@ -186,7 +186,7 @@ index 0000000..c94e334
 +    }
 +
 +    /**
-+     * MK-ELI-09：现金返现预算是否足够。
++     * MK-ELI-09: whether the cash cashback budget is sufficient.
 +     */
 +    public boolean hasBudgetFor(BigDecimal rewardAmount) {
 +        if (!isCashback()) {
@@ -381,7 +381,7 @@ index 0000000..915bd6e
 +import java.time.LocalDateTime;
 +
 +/**
-+ * MK-ELI-01..09：资格判定。判定顺序即原因码优先级；命中第一个不满足条件即返回。
++ * MK-ELI-01..09: eligibility decision. The check order is the reason code priority; returns at the first unmet condition.
 + */
 +public final class EligibilityPolicy {
 +
@@ -412,7 +412,7 @@ index 0000000..915bd6e
 +    }
 +
 +    /**
-+     * 活动中心用：只判断"能否参与"，不含具体交易金额/类别。
++     * For the campaign center: only decides "can participate", without a specific transaction amount/category.
 +     */
 +    public static Evaluation evaluateParticipation(Campaign campaign, AccountSnapshot account,
 +                                                   boolean enrolled, LocalDateTime now) {
@@ -435,7 +435,7 @@ index 0000000..915bd6e
 +    }
 +
 +    /**
-+     * 交易发生后用：完整判定并计算奖励。
++     * For after a transaction: full decision and reward calculation.
 +     */
 +    public static Evaluation evaluateTransaction(Campaign campaign, AccountSnapshot account,
 +                                                 BigDecimal transactionAmount, String categoryCode,
@@ -485,7 +485,7 @@ index 0000000..5dc422d
 +import java.math.RoundingMode;
 +
 +/**
-+ * MK-REW-02：奖励计价。现金返现取固定额或比例（单笔封顶），积分取倍数向下取整。
++ * MK-REW-02: reward pricing. Cash cashback uses the fixed amount or the rate (capped per transaction); points use the multiplier, rounded down.
 + */
 +public final class RewardCalculator {
 +

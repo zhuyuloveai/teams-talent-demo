@@ -1,21 +1,21 @@
-# 联调报告
+# Integration report
 
-| 场景 | 结果 | 缺陷 |
+| Scenario | Result | Defect |
 |------|------|------|
-| 正常流程 | 通过 | |
-| 边界场景 | 通过 | |
-| 异常场景 | 通过 | DEF-<seq> |
-| 幂等测试 | 通过 | |
+| Normal flow | Passed | |
+| Boundary scenarios | Passed | |
+| Exception scenarios | Passed | DEF-<seq> |
+| Idempotency test | Passed | |
 
-## 结论
+## Conclusion
 
-<联调结论与遗留问题>
+<Integration conclusion and open issues>
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 契约schema | 请求/响应字段级 |
-| 幂等 | 幂等键与策略 |
+| Contract schema | Request/response at field level |
+| Idempotency | Idempotency key and strategy |

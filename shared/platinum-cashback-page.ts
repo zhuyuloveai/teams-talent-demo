@@ -1,8 +1,8 @@
 /** Explicit scenario selection, not keyword inference or an automatic adoption decision. */
 export const platinumCashbackPage = {
-  id: 'platinum-cashback-page-v1', projectId: 'carddemo', title: '白金卡消费返现权益说明页',
+  id: 'platinum-cashback-page-v1', projectId: 'carddemo', title: 'Platinum Card Spending Cashback Benefit Page',
   artifactId: 'a-platinum-cashback-page', version: 1,
-  description: '在信用卡详情中增加“消费返现权益”入口，白金卡客户可查看活动说明，非白金卡不展示入口。只确定白金卡、未来3个月、额外0.5%；页面展示适用客户/期限/比例，并区分已确认与待确认。日期起算、消费范围、上限、舍入、到账时间、退款口径待定。仅做权益入口和说明页，不改实际返现计算/入账。需求澄清形成PRD，后续设计代码/测试报告按现有四节点合同。',
+  description: 'Add a "Spending cashback benefit" entry to the credit card details. Platinum card customers can view the campaign description; non-platinum cards do not show the entry. Only platinum card, next 3 months and an extra 0.5% are fixed; the page shows eligible customers/period/rate and separates confirmed from to-be-confirmed items. Start date, spending scope, cap, rounding, crediting time and refund treatment are still open. Build only the benefit entry and description page; do not change the actual cashback calculation/posting. Requirement clarification produces the PRD; the later design, code and test reports follow the existing four-node contract.',
   manifest: 'platinum-cashback-page/provenance.json',
   files: {
     rules: 'platinum-cashback-page/Benefit Display Rules.md', questions: 'platinum-cashback-page/Open Questions Checklist.md',
@@ -13,24 +13,24 @@ export type ScenarioNode = 'prepare' | 'develop' | 'verify' | 'accept';
 type KnowledgeSelection = { file: keyof typeof platinumCashbackPage.files; slot: string; reason: string };
 export const platinumCashbackPageNodes: Record<ScenarioNode, { knowledge: KnowledgeSelection[]; skills: string[]; skillSlot: string }> = {
   prepare: { knowledge: [
-    { file: 'rules', slot: 'business-documents', reason: '核对权益说明页的确认边界与排除范围' },
-    { file: 'questions', slot: 'business-documents', reason: '在 PRD 中登记未决政策和资格字段缺口' },
-    { file: 'implementation', slot: 'business-documents', reason: '用实际卡片详情结构约束方案可行性' },
+    { file: 'rules', slot: 'business-documents', reason: 'Check the confirmed boundary and exclusions of the benefit page' },
+    { file: 'questions', slot: 'business-documents', reason: 'Record open policies and eligibility field gaps in the PRD' },
+    { file: 'implementation', slot: 'business-documents', reason: 'Use the actual card details structure to constrain solution feasibility' },
   ], skills: ['ba-requirement-analysis','ba-acceptance-criteria'], skillSlot: 'business-skills' },
   develop: { knowledge: [
-    { file: 'rules', slot: 'development-knowledge', reason: '限制本次只实现入口与说明展示' },
-    { file: 'implementation', slot: 'development-knowledge', reason: '复用实际静态 Web 模块和已存在接口' },
-    { file: 'questions', slot: 'development-knowledge', reason: '防止实现中补造未确认政策或等级字段' },
+    { file: 'rules', slot: 'development-knowledge', reason: 'Limit this change to the entry and description display' },
+    { file: 'implementation', slot: 'development-knowledge', reason: 'Reuse the actual static web modules and existing APIs' },
+    { file: 'questions', slot: 'development-knowledge', reason: 'Prevent the implementation from inventing unconfirmed policies or tier fields' },
   ], skills: ['arch-solution-design','dev-frontend-ui','dev-unit-test'], skillSlot: 'development-skills' },
   verify: { knowledge: [
-    { file: 'acceptance', slot: 'verification-knowledge', reason: '形成资格、文案、异常和不触发资金操作的检查' },
-    { file: 'rules', slot: 'verification-knowledge', reason: '核对实现与确认范围一致' },
-    { file: 'questions', slot: 'verification-knowledge', reason: '对未决政策不设置虚构测试预期' },
+    { file: 'acceptance', slot: 'verification-knowledge', reason: 'Build checks for eligibility, copy, error cases and no fund operations being triggered' },
+    { file: 'rules', slot: 'verification-knowledge', reason: 'Check that the implementation matches the confirmed scope' },
+    { file: 'questions', slot: 'verification-knowledge', reason: 'Set no invented test expectations for open policies' },
   ], skills: ['dev-code-reviewer','dev-unit-test','qa-integration-test','sec-scan-review'], skillSlot: 'quality-skills' },
   accept: { knowledge: [
-    { file: 'acceptance', slot: 'acceptance-knowledge', reason: 'Owner 对照交付物与检查报告逐项确认' },
-    { file: 'rules', slot: 'acceptance-knowledge', reason: '核对权益说明没有扩大到计算或入账' },
-    { file: 'questions', slot: 'acceptance-knowledge', reason: '明确遗留事项、解决依据或退回原因' },
+    { file: 'acceptance', slot: 'acceptance-knowledge', reason: 'Owner confirms each item against the deliverables and check reports' },
+    { file: 'rules', slot: 'acceptance-knowledge', reason: 'Check that the benefit description has not expanded into calculation or posting' },
+    { file: 'questions', slot: 'acceptance-knowledge', reason: 'State remaining items, the basis for resolution, or the reason for return' },
   ], skills: ['qa-uat-support'], skillSlot: 'acceptance-skills' },
 };
 export function matchesPlatinumCashbackPage(projectId:string,task:{id:string;title:string}){

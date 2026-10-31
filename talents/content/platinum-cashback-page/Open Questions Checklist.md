@@ -1,18 +1,18 @@
-# 待确认清单与术语
+# Open Questions Checklist and Terms
 
-本清单用于记录问题，不是把待定项预先决策。每项在 PRD 中应有确认人、结论/依据或明确待确认状态。
+This checklist records questions; it does not decide open items in advance. Each item in the PRD should have a confirmer, a conclusion/basis, or an explicit "To be confirmed" status.
 
-| 事项 | 当前状态 | 不允许自行推断的内容 |
+| Item | Current status | Must not be inferred |
 | --- | --- | --- |
-| 日期起算 | 待确认 | 不默认从当前日、报名日、开卡日或固定种子日期起算 |
-| 消费范围 | 待确认 | 不默认全部商户、全部币种或全部交易类型均符合 |
-| 返现上限 | 待确认 | 不默认无限额、单笔/日/月上限或沿用旧活动上限 |
-| 金额舍入 | 待确认 | 不默认四舍五入、截断或精度规则 |
-| 到账时间 | 待确认 | 不承诺实时、次日、账单日或固定工作日 |
-| 退款口径 | 待确认 | 不自行规定返现撤销、冲正顺序或部分退款比例 |
-| 白金资格来源 | 接口缺口待确认 | CardResponse 没有 cardType/tier/eligibility 字段；不能用卡号、姓名、状态猜测 |
-| 资格缺失/读取失败 | 页面行为待确认 | 不把无法读取等同白金或非白金；需确定保守提示及重试交互 |
+| Start date | To be confirmed | Do not default to starting from today, the enrollment date, the card opening date or a fixed seed date |
+| Spending scope | To be confirmed | Do not assume all merchants, all currencies or all transaction types qualify |
+| Cashback cap | To be confirmed | Do not assume no cap, a per-transaction/daily/monthly cap, or the cap of an old campaign |
+| Amount rounding | To be confirmed | Do not assume round-half-up, truncation or a precision rule |
+| Crediting time | To be confirmed | Do not promise real time, next day, statement date or a fixed number of business days |
+| Refund treatment | To be confirmed | Do not define cashback reversal, reversal order or partial refund ratios yourself |
+| Platinum eligibility source | API gap, to be confirmed | CardResponse has no cardType/tier/eligibility field; do not guess from card number, name or status |
+| Eligibility missing/read failure | Page behavior to be confirmed | Do not treat an unreadable value as platinum or non-platinum; a conservative message and retry interaction must be decided |
 
-“白金卡”描述适用客户资格；“未来 3 个月”是尚无起算依据的期限描述；“额外 0.5%”是额外权益比例。本次仅解释权益，不执行资格判定后的支付、奖励或账务处理。
+"Platinum card" describes customer eligibility; "next 3 months" describes a period that has no start basis yet; "extra 0.5%" is the extra benefit rate. This change only explains the benefit; it performs no payment, reward or accounting processing after an eligibility decision.
 
-任务实际说明是另一份独立输入。若创建时改了说明，例如改为其他比例，本文仍只是专用场景参考，不能覆盖该说明；应将差异列为待确认事项后再形成 PRD。
+The actual task description is a separate, independent input. If the description was changed at creation, for example to a different rate, this document is still only a reference for this scenario and cannot override that description; list the difference as an open question before forming the PRD.

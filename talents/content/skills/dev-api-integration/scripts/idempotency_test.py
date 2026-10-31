@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""幂等性测试：校验重复请求结果一致（输入请求JSON序列，输出对比）。"""
+"""Idempotency test: check that repeated requests return identical results (input: JSON list of responses; output: comparison)."""
 import argparse, json, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("responses_json", help="重复请求的响应列表JSON")
+    ap.add_argument("responses_json", help="JSON list of responses to the repeated request")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:

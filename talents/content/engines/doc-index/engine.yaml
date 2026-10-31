@@ -1,10 +1,10 @@
 schemaVersion: 1
 id: doc-rag
-name: 文档 RAG 检索
-description: 为文档集建立 BM25 + 向量混合检索索引，按问题找到相关段落
+name: Document RAG search
+description: Builds a hybrid BM25 + vector search index for a document set and finds the relevant passages for a question
 definitionVersion: "0.1.0"
 
-# 文档来源固定为执行前检查得到的快照；更新时输入文件中带上次构建的版本和变化的文件。
+# The document source is fixed to the snapshot taken by the pre-run check; on update the input file carries the last built version and the changed files.
 input:
   documents:
     type: array
@@ -30,7 +30,7 @@ output:
     path: rag-index
 
 applications:
-  - name: MCP 查询
+  - name: MCP query
     type: mcp
     command: docs-rag
     args: [serve, --mcp]
@@ -40,7 +40,7 @@ install:
   args: ["-m", "pip", "install", "--user", "icode-docs-rag==0.4.2"]
 
 uninstall:
-  description: 卸载 icode-docs-rag；保留已建立的索引和任务记录。
+  description: Uninstalls icode-docs-rag; keeps the built indexes and task records.
   command: python3
   args: ["-m", "pip", "uninstall", "-y", "icode-docs-rag"]
 

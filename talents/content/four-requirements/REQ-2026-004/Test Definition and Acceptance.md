@@ -1,39 +1,39 @@
-# REQ-2026-004 · 企业测试用例定义与验收
+# REQ-2026-004 · Enterprise Test Case Definition and Acceptance
 
-来源：原始需求 §9 场景矩阵与 §10 验收标准。版本 REQ-2026-004-cases-v1。以下均为待执行用例，不是已运行报告；存在冲突的期望必须关联PRD决策，禁止直接标通过。测试资产插件提供用例，Talent提供验证知识与Skill。
+Source: original requirement §9 Scenario matrix and §10 Acceptance criteria (executable). Version REQ-2026-004-cases-v1. All cases below are pending execution, not reports of completed runs; conflicting expectations must be linked to a PRD decision and must not be marked as passed directly. The test asset plugin provides the cases; Talent provides the verification knowledge and Skills.
 
-## 9. 场景矩阵
+## 9. Scenario matrix
 
-| 类型 | 场景 | 角色 | 数据/接口 | 预期 |
+| Type | Scenario | Role | Data/API | Expected |
 |------|------|------|-----------|------|
-| 主流程 | 90 天内已入账交易提交 FRAUD 争议并上传 1 份 PDF | 持卡人 | POST `/disputes` + `/evidence` | 201，案件 `OPEN`，`sla_due_at` = 提交时间 + 1 个工作日，客户可见时间线 |
-| 主流程 | 专员审核通过并发起临时入账 299.00 | 争议专员 | POST `/admin/disputes/{id}/review` + `/provisional-credit` | 案件 `PROVISIONAL_CREDIT`，账户贷记 299.00，客户可见入账状态 |
-| 主流程 | chargeback 胜诉结案 | 争议专员 | POST `/admin/disputes/{id}/chargeback` + `/resolve`（`won=true`） | 案件 `WON` 后 `CLOSED`，保留临时入账，通知已发 |
-| 边界 | 交易入账日距今天 90 天整 | 持卡人 | POST `/disputes` | 201，允许开案 |
-| 边界 | 交易入账日距今天 91 天 | 持卡人 | POST `/disputes` | 409 `DISPUTE_NOT_ELIGIBLE` |
-| 边界 | 临时入账金额 = 争议金额 | 争议专员 | POST `/provisional-credit`，`creditAmount` = `amount` | 200，入账成功 |
-| 边界 | 单案上传第 5 份证据 | 持卡人 | POST `/disputes/{id}/evidence` | 200，证据数达到上限 |
-| 异常 | 同一交易第 2 次开案 | 持卡人 | POST `/disputes` | 409 `DISPUTE_EXISTS` |
-| 异常 | FRAUD 原因未上传证据 | 持卡人 | POST `/disputes` | 409 `EVIDENCE_REQUIRED` |
-| 异常 | 临时入账重复提交 2 次 | 争议专员 | POST `/provisional-credit`，`provisionalCreditId` 固定 | 账户只贷记 1 次，第 2 次返回首次结果 |
-| 异常 | 临时入账金额 300.00 而争议金额 299.00 | 争议专员 | POST `/provisional-credit` | 409 `PROVISIONAL_CREDIT_EXCEEDS_AMOUNT` |
-| 异常 | 第 31 天发起 chargeback | 争议专员 | POST `/chargeback` | 409 `CHARGEBACK_WINDOW_EXPIRED` |
-| 时限 | 案件距 SLA 到期 23 小时 | 系统扫描 | 每日 02:00 扫描任务 | 专员与主管收到提醒，`slaState=DUE_SOON` |
-| 权限 | 客户 A 下载客户 B 的证据 | 持卡人 | GET 证据下载地址 | 403，无文件内容返回，审计记录拒绝 |
+| Main flow | Dispute a posted transaction within 90 days as FRAUD with 1 PDF uploaded | Cardholder | POST `/disputes` + `/evidence` | 201, case `OPEN`, `sla_due_at` = submission time + 1 business day, the timeline is visible to the customer |
+| Main flow | The specialist approves the review and initiates a provisional credit of 299.00 | Dispute specialist | POST `/admin/disputes/{id}/review` + `/provisional-credit` | Case `PROVISIONAL_CREDIT`, account credited 299.00, the credit status is visible to the customer |
+| Main flow | chargeback won and the case closed | Dispute specialist | POST `/admin/disputes/{id}/chargeback` + `/resolve` (`won=true`) | Case `WON` then `CLOSED`, the provisional credit is retained, the notification is sent |
+| Boundary | Transaction posting date exactly 90 days from today | Cardholder | POST `/disputes` | 201, the case can be opened |
+| Boundary | Transaction posting date 91 days from today | Cardholder | POST `/disputes` | 409 `DISPUTE_NOT_ELIGIBLE` |
+| Boundary | Provisional credit amount = dispute amount | Dispute specialist | POST `/provisional-credit`, `creditAmount` = `amount` | 200, crediting succeeds |
+| Boundary | Upload the 5th piece of evidence for one case | Cardholder | POST `/disputes/{id}/evidence` | 200, the evidence count reaches the limit |
+| Exception | Second case opening for the same transaction | Cardholder | POST `/disputes` | 409 `DISPUTE_EXISTS` |
+| Exception | FRAUD reason without evidence uploaded | Cardholder | POST `/disputes` | 409 `EVIDENCE_REQUIRED` |
+| Exception | Provisional credit submitted twice | Dispute specialist | POST `/provisional-credit`, `provisionalCreditId` fixed | The account is credited only once and the second call returns the first result |
+| Exception | Provisional credit amount 300.00 while the dispute amount is 299.00 | Dispute specialist | POST `/provisional-credit` | 409 `PROVISIONAL_CREDIT_EXCEEDS_AMOUNT` |
+| Exception | chargeback initiated on day 31 | Dispute specialist | POST `/chargeback` | 409 `CHARGEBACK_WINDOW_EXPIRED` |
+| Deadline | 23 hours until the case SLA due time | System scan | Daily 02:00 scan job | The specialist and supervisor receive the reminder, `slaState=DUE_SOON` |
+| Permission | Customer A downloads customer B's evidence | Cardholder | GET evidence download URL | 403, no file content returned, the denial is audited |
 
-## 10. 验收标准（可执行化）
+## 10. Acceptance criteria (executable)
 
-| 故事 | Given | When | Then | 数据准备 |
+| Story | Given | When | Then | Data preparation |
 |------|-------|------|------|---------|
-| US-001 | 90 天内已入账交易 299.00，无进行中争议 | 提交 FRAUD 争议并上传 1 份 PDF | 案件 `OPEN`，客户可查看时间线与 SLA 到期时间 | 交易 0000000000000200，账户 00000000006 |
-| US-002 | 同一交易已有 `OPEN` 案件 | 再次开案 | 409 `DISPUTE_EXISTS`，案件数不变 | 复用 US-001 数据 |
-| US-003 | 交易尚未上传证据 | 提交 FRAUD 争议 | 409 `EVIDENCE_REQUIRED` | 复用 US-001 数据 |
-| US-004 | 案件 `UNDER_REVIEW` | 临时入账 100.00 并重复提交 | 账户贷记 100.00 一次，案件 `PROVISIONAL_CREDIT` | 案件号 + 账户余额初始值 |
-| US-005 | 案件已临时入账 | 发起 chargeback 并结案 `won=true` | 状态 `WON` 后 `CLOSED`，客户收到通知，审计完整 | 复用 US-004 数据 |
-| US-006 | 案件距 SLA 到期 23 小时 | 执行每日 02:00 扫描 | 专员与主管收到提醒，`slaState=DUE_SOON` | 调整 `sla_due_at` 数据 |
-| US-007 | 交易入账 91 天前 | 打开交易详情 | 入口置灰，提示「超过 90 天的交易请致电客服」 | 交易 0000000000000199 |
-| US-008 | account-service 停用 | 发起临时入账 299.00 | 503 `DOWNSTREAM_UNAVAILABLE`，案件保持 `UNDER_REVIEW`，余额不变 | 停用容器 |
+| US-001 | A posted transaction of 299.00 within 90 days with no dispute in progress | Submit a FRAUD dispute and upload 1 PDF | Case `OPEN`, the customer can view the timeline and the SLA due time | Transaction 0000000000000200, account 00000000006 |
+| US-002 | The same transaction already has an `OPEN` case | Open the case again | 409 `DISPUTE_EXISTS`, the number of cases is unchanged | Reuse the US-001 data |
+| US-003 | The transaction has no evidence uploaded | Submit a FRAUD dispute | 409 `EVIDENCE_REQUIRED` | Reuse the US-001 data |
+| US-004 | Case `UNDER_REVIEW` | Provisional credit of 100.00 submitted twice | The account is credited 100.00 once and the case is `PROVISIONAL_CREDIT` | Case number + initial account balance |
+| US-005 | The case has been provisionally credited | Initiate chargeback and close with `won=true` | Status `WON` then `CLOSED`, the customer receives the notification, audit records are complete | Reuse the US-004 data |
+| US-006 | 23 hours until the case SLA due time | Run the daily 02:00 scan | The specialist and supervisor receive the reminder, `slaState=DUE_SOON` | Adjust the `sla_due_at` data |
+| US-007 | The transaction was posted 91 days ago | Open the transaction details | Entry point greyed out, prompting "Please call customer service for transactions older than 90 days" | Transaction 0000000000000199 |
+| US-008 | account-service disabled | Initiate a provisional credit of 299.00 | 503 `DOWNSTREAM_UNAVAILABLE`, the case stays `UNDER_REVIEW`, the balance is unchanged | Disable the container |
 
-## 执行证据要求
+## Execution Evidence Requirements
 
-功能测试、静态工具检查、Agent Review、安全报告和问题复测分别记录实际命令/工具版本/代码commit/退出码/报告路径。Owner验收依据为这些实际结果；知识发布不表示已验收。
+Functional tests, static tool checks, Agent Review, security reports and issue re-tests each record the actual command, tool version, code commit, exit code and report path. Owner acceptance is based on these actual results; publishing knowledge does not mean the requirement is accepted.

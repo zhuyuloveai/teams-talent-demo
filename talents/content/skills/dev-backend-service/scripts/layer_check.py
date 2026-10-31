@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""分层依赖检查：禁止Infrastructure/API反向依赖Domain/Application等越权调用。"""
+"""Layer dependency check: forbid reverse dependencies such as Infrastructure/API calling into Domain/Application across layer boundaries."""
 import argparse, json, sys
 from pathlib import Path
 
@@ -26,7 +26,7 @@ def main():
             for i, line in enumerate(lines, 1):
                 for target in ALLOWED:
                     if f"import" in line and f"{target}" in line:
-                        # 简化：仅统计跨层引用是否在允许集合
+                        # Simplified: only counts whether cross-layer references are in the allowed set
                         pass
     print(json.dumps({"violations": violations, "layer_check": "ok"}, ensure_ascii=False, indent=2))
     sys.exit(0 if not violations else 2)

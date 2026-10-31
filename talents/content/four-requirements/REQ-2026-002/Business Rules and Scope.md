@@ -1,42 +1,42 @@
-# REQ-2026-002 · 业务规则与范围
+# REQ-2026-002 · Business Rules and Scope
 
-来源：用户提供需求 v1.0，以下为完整章节原文；数值按原材料模拟属性使用。
+Source: user-provided requirement v1.0. The chapters below are quoted in full from the source; values are used according to their simulated status in the source material.
 
-## 3. 范围定义
+## 3. Scope Definition
 
 ### 3.1 In-Scope / Out-of-Scope
 
 **In-Scope**
 
-- 卡片挂失（立即冻结）、补卡申请、补卡进度、补卡工单。
-- 补卡费（模拟 50.00 元）计入账户。
-- 新卡号生成与旧卡失效、通知、审计。
-- 前台卡片详情、挂失向导、进度页；后台补卡队列。
+- Card loss reporting (immediate hold), replacement requests, replacement progress, replacement tickets.
+- Replacement fee (simulated 50.00) charged to the account.
+- New card number generation and old card invalidation, notifications, audit.
+- Front-end card details, loss reporting wizard, progress page; back-office replacement queue.
 
 **Out-of-Scope**
 
-- 快递物流实时轨迹（只记录快递单号与邮寄状态）。
-- 境外紧急补卡、临时虚拟卡。
-- 挂失后的争议交易处理（见 REQ-2026-004）。
+- Real-time courier tracking (only the tracking number and mailing status are recorded).
+- Overseas emergency replacement, temporary virtual cards.
+- Handling disputed transactions after a loss report (see REQ-2026-004).
 
-### 3.2 假设与依赖
+### 3.2 Assumptions and Dependencies
 
-| 编号 | 假设/依赖 | 说明 |
+| ID | Assumption/Dependency | Description |
 |------|----------|------|
-| A-01 | card-service 提供卡状态机并支持 `LOST` 状态 | 本需求扩展状态迁移，不新建卡表 |
-| A-02 | 费用通过 transaction-service 的 `FEE` 批次过账 | 补卡费不走独立收费通道 |
-| A-03 | 账户余额变更由 account-service 完成 | 补卡费影响可用余额与总账 |
-| A-04 | 快递单号由制卡运营人工回填 | 本期不接物流商接口 |
-| A-05 | 通知走 notification-service 模板 | 通知失败不回滚挂失与补卡 |
+| A-01 | card-service provides the card state machine and supports the `LOST` status | This requirement extends state transitions and does not create a card table |
+| A-02 | Fees are posted through the `FEE` batch of transaction-service | The replacement fee does not use a separate charging channel |
+| A-03 | Account balance changes are completed by account-service | The replacement fee affects the available balance and the general ledger |
+| A-04 | Tracking numbers are filled in manually by card production operations | No courier API integration in this phase |
+| A-05 | Notifications use notification-service templates | Notification failures do not roll back loss reporting or replacement |
 
-## 5. 业务规则
+## 5. Business Rules
 
-| 编号 | 规则 | 来源 | 优先级 | 验证点 |
+| ID | Rule | Source | Priority | Verification point |
 |------|------|------|--------|--------|
-| BR-LOST-01 | 仅 `ACTIVE` 卡可挂失；已挂失/冻结/销户返回 409 | 模拟业务确认 | 必须 | 三类非 ACTIVE 卡调用挂失接口均返回 `CARD_NOT_ACTIVE` |
-| BR-LOST-02 | 挂失不可撤销；补卡可取消（制卡前） | 模拟业务确认 | 必须 | 挂失接口无撤销路径；`SHIPPED` 后取消返回 `REPLACEMENT_NOT_CANCELLABLE` |
-| BR-LOST-03 | 补卡费 50.00 元，白金卡免收；费用计入账户 | 模拟定价 | 必须 | 白金卡 `feeStatus=WAIVED`；金卡/普卡生成 50.00 元 FEE 过账 |
-| BR-LOST-04 | 补卡生成新卡号，旧卡永久失效；新卡未激活前不可交易 | 模拟业务确认 | 必须 | 旧卡号授权返回拒绝；新卡 `ACTIVATED` 前交易被拒 |
-| BR-LOST-05 | 补卡工单状态：REQUESTED→CARD_PRODUCED→SHIPPED→ACTIVATED/CANCELLED | 模拟业务确认 | 必须 | 非法迁移被拒绝并返回 `INVALID_STATE_TRANSITION` |
-| BR-LOST-06 | 同一卡同一时间只能有一个进行中补卡工单 | 模拟业务确认 | 必须 | 并发两次申请，`card_replacement` 仅 1 条进行中记录 |
-| BR-LOST-07 | 挂失/补卡必须写审计（actor、卡号掩码、原因） | 模拟合规 | 必须 | 审计事件含 actor、maskedCardNumber、reason 三字段 |
+| BR-LOST-01 | Only `ACTIVE` cards can be reported lost; already lost/held/closed cards return 409 | Simulated business confirmation | Must | Calling the loss reporting API for all three non-ACTIVE card types returns `CARD_NOT_ACTIVE` |
+| BR-LOST-02 | Loss reporting cannot be undone; replacement can be cancelled (before card production) | Simulated business confirmation | Must | The loss reporting API has no undo path; cancelling after `SHIPPED` returns `REPLACEMENT_NOT_CANCELLABLE` |
+| BR-LOST-03 | Replacement fee 50.00, free for platinum cards; the fee is charged to the account | Simulated pricing | Must | Platinum card `feeStatus=WAIVED`; gold/classic cards post a 50.00 FEE |
+| BR-LOST-04 | Replacement generates a new card number and the old card is permanently invalidated; the new card cannot be used for transactions before activation | Simulated business confirmation | Must | Authorization on the old card number is declined; transactions on the new card are declined before `ACTIVATED` |
+| BR-LOST-05 | Replacement ticket statuses: REQUESTED→CARD_PRODUCED→SHIPPED→ACTIVATED/CANCELLED | Simulated business confirmation | Must | Invalid transitions are rejected with `INVALID_STATE_TRANSITION` |
+| BR-LOST-06 | Only one replacement ticket in progress per card at a time | Simulated business confirmation | Must | With two concurrent requests, `card_replacement` has only 1 record in progress |
+| BR-LOST-07 | Loss reporting/replacement must write an audit record (actor, masked card number, reason) | Simulated compliance | Must | The audit event contains the actor, maskedCardNumber, and reason fields |

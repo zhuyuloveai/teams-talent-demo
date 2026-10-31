@@ -1,44 +1,44 @@
-# REQ-2026-003 · 业务规则与范围
+# REQ-2026-003 · Business Rules and Scope
 
-来源：用户提供需求 v1.0，以下为完整章节原文；数值按原材料模拟属性使用。
+Source: user-provided requirement v1.0. The chapters below are quoted in full from the source; values are used according to their simulated status in the source material.
 
-## 3. 范围定义
+## 3. Scope definition
 
 ### 3.1 In-Scope / Out-of-Scope
 
 **In-Scope**
 
-- 永久额度申请（客户发起）。
-- 客户申请、资料补充、进度查询。
-- 系统预审：逾期、用卡时长、近 6 个月提额次数、产品上限。
-- 工作流审批（初审→终审）、额度更新、通知、审计。
-- 前台账户页提额入口、申请页、进度页；后台审批工作台。
+- Permanent limit applications (initiated by the customer).
+- Customer application, document supplement, and progress query.
+- Automated pre-review: delinquency, card tenure, number of limit increases in the past 6 months, product maximum.
+- Workflow approval (initial review→final approval), limit update, notification, audit.
+- Limit increase entry point on the front-end account page, application page, progress page; back-office approval workbench.
 
 **Out-of-Scope**
 
-- 自动提额（系统主动发起）。
-- 降额、临时额度到期恢复。
-- 收入证明 OCR 与外部征信接口接入。
+- Automatic limit increase (initiated by the system).
+- Limit decrease, restoration after temporary limit expiry.
+- Income proof OCR and external credit bureau integration.
 
-### 3.2 假设与依赖
+### 3.2 Assumptions and dependencies
 
-| 编号 | 假设/依赖 | 说明 |
+| ID | Assumption/Dependency | Description |
 |------|----------|------|
-| A-01 | account-service 提供额度读取与更新接口 | 本期沿用 `PUT /accounts/{id}` |
-| A-02 | limit-service 维护限额定义与产品最大额度 | 预审规则上限取自该服务 |
-| A-03 | workflow-service 提供审批任务与待办列表 | 初审与终审作为两个任务节点 |
-| A-04 | document-service 存储收入材料并返回 `documentId` | 本需求只保存引用 |
-| A-05 | 逾期数据由账单或催收服务提供 | 预审阶段调用只读接口 |
+| A-01 | account-service provides APIs to read and update the limit | This iteration reuses `PUT /accounts/{id}` |
+| A-02 | limit-service maintains limit definitions and the product maximum limit | The pre-review rule upper bound is taken from this service |
+| A-03 | workflow-service provides approval tasks and to-do lists | Initial review and final approval are two task nodes |
+| A-04 | document-service stores income documents and returns `documentId` | This requirement stores only the reference |
+| A-05 | Delinquency data is provided by the statement or collections service | A read-only API is called during pre-review |
 
-## 5. 业务规则
+## 5. Business rules
 
-| 编号 | 规则 | 来源 | 优先级 | 验证点 |
+| ID | Rule | Source | Priority | Verification point |
 |------|------|------|--------|--------|
-| BR-LIM-01 | 申请额度必须 > 当前额度且 ≤ 产品最大额度 | 模拟风险政策 | 必须 | 8000→8000 被拒；8000→25000 通过；8000→25000.01 返回 `LIMIT_EXCEEDS_PRODUCT_MAX` |
-| BR-LIM-02 | 近 6 个月有逾期或最低还款未清不得提额 | 模拟风险政策 | 必须 | 构造 1 个月逾期数据，预审置 `REJECTED` 且 `preReviewNote` 含 BR-LIM-02 |
-| BR-LIM-03 | 开卡不足 3 个月不得提额 | 模拟风险政策 | 必须 | 开卡 2 个月申请被拒，提示开卡满 3 个月后可申请 |
-| BR-LIM-04 | 同一账户 6 个月内最多 1 次成功提额；进行中申请只能 1 个 | 模拟风险政策 | 必须 | 第 2 次申请返回 `LIMIT_NOT_ELIGIBLE`；并发提交只落 1 条申请 |
-| BR-LIM-05 | 申请额度 > 当前额度 2 倍时，必须补充收入材料并双人审批 | 模拟风险政策 | 必须 | 8000→20000.01 无材料被拒；有材料时 `dualApprovalRequired=true` |
-| BR-LIM-06 | 审批人不能是申请人或初审人（SoD） | 模拟合规 | 必须 | 同一账号担任两个角色时返回 403 `SOD_VIOLATION` |
-| BR-LIM-07 | 审批通过后额度实时生效；拒绝必须填原因 | 模拟风险政策 | 必须 | 通过后 5 秒内 account 额度 = `approvedLimit`；拒绝无原因返回 `DECISION_NOTE_REQUIRED` |
-| BR-LIM-08 | 额度更新失败时申请保持 `APPROVED_PENDING`，可重试 | 模拟风险政策 | 必须 | 停用 account-service 后审批，状态为 `APPROVED_PENDING`，恢复后自动生效 |
+| BR-LIM-01 | The requested limit must be > the current limit and ≤ the product maximum limit | Simulated risk policy | Must | 8000→8000 rejected; 8000→25000 passes; 8000→25000.01 returns `LIMIT_EXCEEDS_PRODUCT_MAX` |
+| BR-LIM-02 | No limit increase when there is delinquency or an unpaid minimum payment in the past 6 months | Simulated risk policy | Must | Fabricate 1 month of delinquency data; pre-review sets `REJECTED` and `preReviewNote` contains BR-LIM-02 |
+| BR-LIM-03 | No limit increase when the card has been open for less than 3 months | Simulated risk policy | Must | Application with a card opened for 2 months is rejected, prompting that it can be applied for after 3 months |
+| BR-LIM-04 | At most 1 successful limit increase per account within 6 months; only 1 in-progress application is allowed | Simulated risk policy | Must | The second application returns `LIMIT_NOT_ELIGIBLE`; concurrent submissions persist only 1 application |
+| BR-LIM-05 | When the requested limit is > 2x the current limit, income documents must be supplied and dual approval is required | Simulated risk policy | Must | 8000→20000.01 without documents rejected; with documents `dualApprovalRequired=true` |
+| BR-LIM-06 | The approver must not be the applicant or the initial reviewer (SoD) | Simulated compliance | Must | The same account acting in both roles returns 403 `SOD_VIOLATION` |
+| BR-LIM-07 | After approval the limit takes effect immediately; a rejection must state a reason | Simulated risk policy | Must | Within 5 seconds after approval the account limit = `approvedLimit`; rejection without a reason returns `DECISION_NOTE_REQUIRED` |
+| BR-LIM-08 | When the limit update fails, the application stays `APPROVED_PENDING` and can be retried | Simulated risk policy | Must | Approve after disabling account-service; the status is `APPROVED_PENDING` and it becomes effective automatically after recovery |

@@ -30,8 +30,8 @@ index 0000000..3189e61
 +import java.util.UUID;
 +
 +/**
-+ * 奖励评估与发放（MK-REW-01..08）。
-+ * 幂等：同一活动同一交易只发一次；返现入账由 account-service 以 rewardId 再保证一次幂等。
++ * Reward evaluation and issuance (MK-REW-01..08).
++ * Idempotency: one reward per campaign per transaction; account-service guarantees idempotency of the cashback posting again by rewardId.
 + */
 +@Service
 +@Transactional(noRollbackFor = RemoteServiceException.class)
@@ -191,7 +191,7 @@ index 0000000..98bb096
 +import java.util.Optional;
 +
 +/**
-+ * 日终入账用例（CBTRN02C）。单笔拒付不中断整批（BR-POST-05/08）；同一交易号重复提交按幂等返回（NR-POST-01）。
++ * End-of-day posting use case (CBTRN02C). A single declined transaction does not interrupt the batch (BR-POST-05/08); a repeated submission of the same transaction ID returns idempotently (NR-POST-01).
 + */
 +@Service
 +@Transactional
@@ -296,7 +296,7 @@ index 0000000..98bb096
 +    }
 +
 +    /**
-+     * ADR-009：入账是资金事实，营销是附加权益。评估失败只告警，不影响入账结果。
++     * ADR-009: posting is a financial fact, marketing is an add-on benefit. A failed evaluation only raises an alert and does not affect the posting result.
 +     */
 +    private void evaluateRewards(TransactionRecord record, CardSnapshot card, PostingCommand command) {
 +        if (!marketingEnabled) {
@@ -331,8 +331,8 @@ index 0000000..dd6e9a9
 +import java.time.LocalDateTime;
 +
 +/**
-+ * marketing-service 出站适配器：消费入账后触发奖励评估。
-+ * 营销不可用不影响入账（调用方捕获异常并告警），见 ADR-009。
++ * marketing-service outbound adapter: triggers reward evaluation after a purchase is posted.
++ * Marketing being unavailable does not affect posting (the caller catches the exception and raises an alert), see ADR-009.
 + */
 +@Component
 +public class MarketingClient {

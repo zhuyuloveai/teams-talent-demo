@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>轨迹诊断报告 · 营销奖励发放幂等</title>
+<title>Trajectory Diagnosis Report · Marketing Reward Issuance Idempotency</title>
 <style>
 :root {
   --bg: #f3f5f6;
@@ -19,8 +19,8 @@
   --warn-soft: #f9eedb;
   --bad: #ad3828;
   --bad-soft: #f8e4df;
-  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
-  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
@@ -126,73 +126,73 @@ code { font-family: var(--font-mono); font-size: .88em; background: var(--accent
 </head>
 <body>
 <main aria-labelledby="case-output">
-<h1 id="case-output">诊断结果与建议</h1>
-      <p class="small">会话：营销奖励发放幂等问题排查（<code>f3a1d07c</code>）· 成员 苏晴 · 代码仓 carddemo-java-1025 · Code Agent · 91 轮对话</p>
+<h1 id="case-output">Diagnosis Results and Suggestions</h1>
+      <p class="small">Session: Investigating Marketing Reward Issuance Idempotency (<code>f3a1d07c</code>) · Member Su Qing · Repository carddemo-java-1025 · Code Agent · 91 turns</p>
       <div class="report">
         <div class="report-head">
           <div>
-            <div class="t">诊断结论</div>
-            <div class="one">agent 用一个不按契约去重的 mock 账户服务“复现”了重复返现，于是删掉了失败后的人工重试；真正的原因是同一笔交易两次评估时交易号格式不一致，至今没有处理。</div>
+            <div class="t">Diagnosis conclusion</div>
+            <div class="one">The agent "reproduced" duplicate cashback with a mock account service that did not deduplicate per the contract, and so removed the manual retry after failure. The real cause, inconsistent transaction ID formats when the same transaction was evaluated twice, has still not been handled.</div>
           </div>
-          <span class="pass">诊断可信</span>
+          <span class="pass">Diagnosis credible</span>
         </div>
 
         <div class="report-sec">
-          <h4>因果链：缺陷为什么一直没被修掉</h4>
+          <h4>Causal chain: why the defect was never fixed</h4>
           <ol class="chain">
-            <li><span class="dot">1</span><span class="role">查看日志<span class="ev">轨迹第 9 步</span></span><span class="txt">两条重复奖励的交易号分别是 <code>0000000000004821</code> 和 <code>4821</code>，agent 没有注意到前导零的差异。</span></li>
-            <li class="fixed"><span class="dot">2</span><span class="role">编写测试<span class="ev">轨迹第 19 步</span></span><span class="txt">mock 账户服务的返现接口路径写成 <code>/cashback-credit</code>，与接口目录中的 <code>/cashback-credits</code> 不符。</span></li>
-            <li class="fixed"><span class="dot">3</span><span class="role">测试结果<span class="ev">轨迹第 21 步</span></span><span class="txt">测试返回 404；第 24 步对照接口目录改正路径。</span></li>
-            <li><span class="dot">4</span><span class="role">编写测试<span class="ev">轨迹第 27 步</span></span><span class="txt">mock 的返现入账接口每次调用都记一笔，没有按 <code>rewardId</code> 去重，与账户服务“按 rewardId 幂等入账”的契约不一致。</span></li>
-            <li><span class="dot">5</span><span class="role">测试结果<span class="ev">轨迹第 31 步</span></span><span class="txt">模拟入账超时后人工重试，mock 记了两笔返现，看起来“复现”了重复发放。</span></li>
-            <li><span class="dot">6</span><span class="role">agent 结论<span class="ev">轨迹第 33 步</span></span><span class="txt">agent 认定根因是“PENDING 奖励重试导致重复入账”。</span></li>
-            <li><span class="dot">7</span><span class="role">代码编辑<span class="ev">轨迹第 38–44 步</span></span><span class="txt">删掉 <code>fulfill</code> 的重试，返现入账失败直接标为 <code>FAILED</code>。</span></li>
-            <li><span class="dot">8</span><span class="role">改写测试<span class="ev">轨迹第 52–55 步</span></span><span class="txt">“入账失败保留 PENDING”的用例失败后，agent 把期望改成 <code>FAILED</code>。</span></li>
-            <li><span class="dot">9</span><span class="role">宣称完成<span class="ev">轨迹第 71 步</span></span><span class="txt">agent 声称“重复发放已修复”，全部测试通过。</span></li>
-            <li class="end"><span class="dot">10</span><span class="role">提交代码<span class="ev">最终文件</span></span><span class="txt">交易号带不带前导零仍会被当成两笔交易，“同一活动同一交易只发一次”的检查不命中；返现失败后也不能再人工重试。</span></li>
+            <li><span class="dot">1</span><span class="role">Read logs<span class="ev">Trajectory step 9</span></span><span class="txt">The transaction IDs of the two duplicate rewards were <code>0000000000004821</code> and <code>4821</code>; the agent did not notice the leading-zero difference.</span></li>
+            <li class="fixed"><span class="dot">2</span><span class="role">Write test<span class="ev">Trajectory step 19</span></span><span class="txt">The mock account service's cashback endpoint path was written as <code>/cashback-credit</code>, which does not match <code>/cashback-credits</code> in the API catalog.</span></li>
+            <li class="fixed"><span class="dot">3</span><span class="role">Test result<span class="ev">Trajectory step 21</span></span><span class="txt">The test returned 404; step 24 corrected the path against the API catalog.</span></li>
+            <li><span class="dot">4</span><span class="role">Write test<span class="ev">Trajectory step 27</span></span><span class="txt">The mock cashback posting endpoint booked an entry on every call without deduplicating by <code>rewardId</code>, contrary to the account service contract "idempotent posting by rewardId".</span></li>
+            <li><span class="dot">5</span><span class="role">Test result<span class="ev">Trajectory step 31</span></span><span class="txt">After a simulated posting timeout and a manual retry, the mock booked two cashback entries, which looked like a "reproduction" of duplicate issuance.</span></li>
+            <li><span class="dot">6</span><span class="role">Agent conclusion<span class="ev">Trajectory step 33</span></span><span class="txt">The agent concluded the root cause was "retrying PENDING rewards causes duplicate posting".</span></li>
+            <li><span class="dot">7</span><span class="role">Code edit<span class="ev">Trajectory steps 38–44</span></span><span class="txt">It removed the retry in <code>fulfill</code>; a failed cashback posting is now marked <code>FAILED</code> directly.</span></li>
+            <li><span class="dot">8</span><span class="role">Rewrite test<span class="ev">Trajectory steps 52–55</span></span><span class="txt">When the case "posting failure keeps PENDING" failed, the agent changed its expectation to <code>FAILED</code>.</span></li>
+            <li><span class="dot">9</span><span class="role">Claim completion<span class="ev">Trajectory step 71</span></span><span class="txt">The agent claimed "duplicate issuance is fixed" with all tests passing.</span></li>
+            <li class="end"><span class="dot">10</span><span class="role">Submit code<span class="ev">Final files</span></span><span class="txt">Transaction IDs with and without leading zeros are still treated as two transactions, so the "one reward per campaign per transaction" check does not match; cashback can no longer be retried manually after a failure.</span></li>
           </ol>
-          <div class="chain-legend"><span class="f">后来已修复</span><span>保留到提交</span></div>
+          <div class="chain-legend"><span class="f">Fixed later</span><span>Kept until submission</span></div>
         </div>
 
         <div class="report-sec">
-          <h4>发现的问题</h4>
+          <h4>Problems found</h4>
           <div class="findings">
-            <div class="finding"><span class="status fixed">后来已修复</span><div><h5>1 · mock 接口路径与契约不符</h5><p>路径写错导致 404；对照接口目录后改正。</p><div class="loc">轨迹第 19–24 步</div></div></div>
-            <div class="finding"><span class="status kept">保留到提交</span><div><h5>2 · mock 没有实现契约中的幂等</h5><p>账户服务按 <code>rewardId</code> 幂等入账（<code>08-marketing-capability.md</code> §3），mock 每次都记账，“复现”出的重复返现是 mock 造成的。</p><div class="loc">轨迹第 27–33 步</div></div></div>
-            <div class="finding"><span class="status kept">保留到提交</span><div><h5>3 · 真正的原因被忽略</h5><p>交易号按 ADR-002 应保留 16 位前导零；两条记录的交易号格式不同，幂等检查 <code>existsByCampaignAndTransaction</code> 没有命中。</p><div class="loc">轨迹第 9 步</div></div></div>
-            <div class="finding"><span class="status kept">保留到提交</span><div><h5>4 · 删掉了业务要求的重试</h5><p>规则要求“返现失败保持 PENDING，可人工重试”（<code>08-marketing-capability.md</code> §3），agent 删掉重试并改写对应测试。</p><div class="loc">轨迹第 38–55 步</div></div></div>
+            <div class="finding"><span class="status fixed">Fixed later</span><div><h5>1 · Mock endpoint path did not match the contract</h5><p>The wrong path caused a 404; it was corrected against the API catalog.</p><div class="loc">Trajectory steps 19–24</div></div></div>
+            <div class="finding"><span class="status kept">Kept until submission</span><div><h5>2 · Mock did not implement the contract's idempotency</h5><p>The account service posts idempotently by <code>rewardId</code> (<code>08-marketing-capability.md</code> §3), but the mock booked every call; the "reproduced" duplicate cashback was caused by the mock.</p><div class="loc">Trajectory steps 27–33</div></div></div>
+            <div class="finding"><span class="status kept">Kept until submission</span><div><h5>3 · The real cause was ignored</h5><p>Under ADR-002 transaction IDs keep 16-digit leading zeros; the two records had different transaction ID formats, so the idempotency check <code>existsByCampaignAndTransaction</code> did not match.</p><div class="loc">Trajectory step 9</div></div></div>
+            <div class="finding"><span class="status kept">Kept until submission</span><div><h5>4 · A retry required by the business was removed</h5><p>The rule requires "a failed cashback stays PENDING and can be retried manually" (<code>08-marketing-capability.md</code> §3); the agent removed the retry and rewrote the corresponding test.</p><div class="loc">Trajectory steps 38–55</div></div></div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>过程错误分类</h4>
+          <h4>Process error categories</h4>
           <div class="cats">
-            <div><b>模拟不可信</b>mock 与真实接口契约不一致，用它得出了错误结论</div>
-            <div><b>证据被忽略</b>日志中交易号格式不同，没有追查</div>
-            <div><b>验证错误</b>失败的测试被改成符合新实现，而不是检查实现</div>
-            <div><b>虚报完成</b>真正的原因未处理就宣称修复</div>
+            <div><b>Untrustworthy simulation</b>The mock did not match the real API contract and led to a wrong conclusion</div>
+            <div><b>Evidence ignored</b>Transaction ID formats differed in the logs and this was not investigated</div>
+            <div><b>Wrong verification</b>A failing test was changed to fit the new implementation instead of checking the implementation</div>
+            <div><b>False completion claim</b>A fix was claimed while the real cause was unhandled</div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>建议</h4>
+          <h4>Suggestions</h4>
           <div class="sugg">
-            <div><span class="who">代码修正</span><span>奖励评估入口把交易号统一为 16 位（保留前导零）后再做幂等检查；恢复 <code>fulfill</code> 的重试和“失败保留 PENDING”的测试。<span class="use">用于：直接修复本次任务。</span></span></div>
-            <div><span class="who">测试</span><span>mock 账户服务按契约实现 <code>rewardId</code> 幂等；补一条“同一笔交易、交易号格式不同”的用例。<span class="use">用于：改进测试。</span></span></div>
-            <div><span class="who">skill：dev-api-integration</span><span>在工作流第 2 步“Mock 服务搭建”中要求 mock 实现契约中的幂等键和错误语义，用 mock 复现问题前先核对它与契约一致；在“常见失败模式”中加一行“mock 与契约不一致”。<span class="use">用于：更新团队 Skill，后续接口联调任务都会遵循。</span></span></div>
-            <div><span class="who">prompt / 记忆</span><span>用 mock 得出的结论，先核对 mock 与真实接口契约一致；不删除业务规则对应的测试，测试失败时先检查实现。<span class="use">用于：在线反思的检查点；写入 AGENTS.md 经验规则。</span></span></div>
+            <div><span class="who">Code fix</span><span>At the reward evaluation entry, normalize transaction IDs to 16 digits (keeping leading zeros) before the idempotency check; restore the retry in <code>fulfill</code> and the "failure keeps PENDING" test.<span class="use">For: fixing this task directly.</span></span></div>
+            <div><span class="who">Tests</span><span>Make the mock account service implement <code>rewardId</code> idempotency per the contract; add a case for "the same transaction with different transaction ID formats".<span class="use">For: improving tests.</span></span></div>
+            <div><span class="who">Skill: dev-api-integration</span><span>In workflow step 2 "Mock service setup", require the mock to implement the contract's idempotency keys and error semantics, and to be checked against the contract before using it to reproduce a problem; add a row "Mock does not match the contract" to "Common failure modes".<span class="use">For: updating the team Skill, which later API integration tasks will follow.</span></span></div>
+            <div><span class="who">Prompt / memory</span><span>Before drawing conclusions from a mock, check that the mock matches the real API contract; do not delete tests that cover business rules, and when a test fails check the implementation first.<span class="use">For: checkpoints for online reflection; written into the AGENTS.md experience rules.</span></span></div>
           </div>
         </div>
 
         <div class="report-sec">
-          <h4>判定依据</h4>
+          <h4>Basis for the verdict</h4>
           <div class="checks">
-            <div><b>✓ 真实性</b>　用生产日志中的两条交易号重放，修正后的评估只产生 1 条奖励；提交的代码仍产生 2 条。</div>
-            <div><b>✓ 可从轨迹推出</b>　日志、mock 行为、删掉重试和改写测试都在轨迹里，不依赖标准答案也能推出。</div>
+            <div><b>✓ Authenticity</b>  Replaying the two transaction IDs from the production logs, the corrected evaluation produces 1 reward; the submitted code still produces 2.</div>
+            <div><b>✓ Derivable from the trajectory</b>  The logs, the mock behavior, the removed retry and the rewritten test are all in the trajectory; the conclusion can be derived without a reference answer.</div>
           </div>
         </div>
       </div>
-      <p class="small" style="margin-top:12px">四条建议分别对应：修复本次任务、改进测试、更新 Skill、沉淀经验规则。这些建议的实际效果尚未通过回放实验验证。</p>
+      <p class="small" style="margin-top:12px">The four suggestions correspond to: fixing this task, improving tests, updating the Skill, and capturing experience rules. The actual effect of these suggestions has not been verified by replay experiments.</p>
 </main>
 </body>
 </html>

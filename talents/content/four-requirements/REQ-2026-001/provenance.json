@@ -5,7 +5,7 @@
   "projectId": "carddemo",
   "artifactId": "a-req-2026-001",
   "version": 1,
-  "exactTitle": "信用卡账单/消费分期",
+  "exactTitle": "Credit Card Statement/Purchase Installment",
   "sourceSha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13",
   "origin": "scenario-fixture",
   "sourceRequirement": {
@@ -19,7 +19,7 @@
     "version": "test-profile-v1",
     "path": "four-requirements/REQ-2026-001/test-profile.md",
     "sha256": "6a399929a5b2ae127a9af1b6bfc4492ba0f0924b45634745354f05f9f05db295",
-    "authority": "用户2026-10-28要求需求包端到端验证；测试实现口径由当前协调会话依据规则优先次序整理"
+    "authority": "On 2026-10-28 the user asked for end-to-end verification of the requirement package; the test implementation profile was compiled by the current coordination session according to the rule precedence"
   },
   "sourceFiles": [
     {

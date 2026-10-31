@@ -20,8 +20,8 @@ index 0000000..161896e
 +import java.util.List;
 +
 +/**
-+ * 账户用例服务。对应遗留程序 COACTVWC（查询）、COACTUPC（维护）、
-+ * CBTRN02C（记账）、COBIL00C（还款）、CBACT04C（利息入账）。
++ * Account use case service. Corresponds to the legacy programs COACTVWC (inquiry), COACTUPC (maintenance),
++ * CBTRN02C (posting), COBIL00C (bill payment), CBACT04C (interest posting).
 + */
 +@Service
 +@Transactional
@@ -72,7 +72,7 @@ index 0000000..161896e
 +    }
 +
 +    /**
-+     * 营销返现入账（幂等）：同一 rewardId 重复调用只入账一次。
++     * Marketing cashback posting (idempotent): repeated calls with the same rewardId post only once.
 +     */
 +    public Account creditCashback(String accountId, String rewardId, String campaignId, BigDecimal amount) {
 +        if (rewardCredits.existsByRewardId(rewardId)) {
@@ -106,7 +106,7 @@ index 0000000..b7ced16
 +import java.util.Objects;
 +
 +/**
-+ * 账户聚合根。对应遗留 VSAM 文件 ACCTDAT，记录布局见 copybook CVACT01Y（RECLN 300）。
++ * Account aggregate root. Corresponds to the legacy VSAM file ACCTDAT; record layout in copybook CVACT01Y (RECLN 300).
 + */
 +@Entity
 +@Table(name = "account")
@@ -166,7 +166,7 @@ index 0000000..b7ced16
 +    }
 +
 +    /**
-+     * BR-POST-006：记账。amount 为正表示消费/借款（增加欠款与本期贷方），为负表示还款/冲正。
++     * BR-POST-006: posting. A positive amount means a purchase/borrowing (increases the balance and current-cycle credit), a negative one a payment/reversal.
 +     */
 +    public void applyPosting(BigDecimal amount) {
 +        Objects.requireNonNull(amount, "amount must not be null");
@@ -179,7 +179,7 @@ index 0000000..b7ced16
 +    }
 +
 +    /**
-+     * BR-BILL-001/002：账单支付，金额恒等于当前余额，仅减少余额，不改本期贷/借累计。
++     * BR-BILL-001/002: bill payment; the amount always equals the current balance, only reduces the balance, and does not change the current-cycle credit/debit totals.
 +     */
 +    public void applyBillPayment(BigDecimal amount) {
 +        if (amount.signum() <= 0) {
@@ -196,7 +196,7 @@ index 0000000..b7ced16
 +    }
 +
 +    /**
-+     * BR-INT-001：月度利息入账，并清零本期贷/借累计（CBACT04C 1050-UPDATE-ACCOUNT）。
++     * BR-INT-001: monthly interest posting, and resets the current-cycle credit/debit totals (CBACT04C 1050-UPDATE-ACCOUNT).
 +     */
 +    public void accrueInterest(BigDecimal interest) {
 +        Objects.requireNonNull(interest, "interest must not be null");
@@ -206,8 +206,8 @@ index 0000000..b7ced16
 +    }
 +
 +    /**
-+     * NR-REWARD-01：营销返现入账，直接冲减欠款；余额可为负（表示溢缴/贷记）。
-+     * 幂等由调用方以 rewardId 保证（见 account_service.reward_credit）。
++     * NR-REWARD-01: marketing cashback posting, directly reduces the amount owed; the balance may be negative (overpayment/credit).
++     * Idempotency is guaranteed by the caller via rewardId (see account_service.reward_credit).
 +     */
 +    public void applyCashback(BigDecimal amount) {
 +        if (amount == null || amount.signum() <= 0) {
@@ -232,7 +232,7 @@ index 0000000..b7ced16
 +    }
 +
 +    /**
-+     * R-ACTUP-08/09/10：账户字段校验与更新。
++     * R-ACTUP-08/09/10: account field validation and update.
 +     */
 +    public void applyDetails(AccountDetails details) {
 +        Objects.requireNonNull(details, "details must not be null");
@@ -345,7 +345,7 @@ index 0000000..e7cfe38
 +import java.time.LocalDateTime;
 +
 +/**
-+ * 返现入账幂等记录：同一 rewardId 只允许入账一次（NR-REWARD-01）。
++ * Cashback posting idempotency record: each rewardId may be posted only once (NR-REWARD-01).
 + */
 +@Entity
 +@Table(name = "reward_credit")
