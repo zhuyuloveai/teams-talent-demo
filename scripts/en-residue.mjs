@@ -17,7 +17,7 @@ const fullSkills = new Set(['arch-solution-design', 'ba-acceptance-criteria', 'b
   'cobol-legacy-knowledge']);
 const allowed = [
   [/^(I18N|MIGRATION)\.md$|^analysis\/|^docs\/i18n\/|^i18n-baseline\.json$/, 'internal Chinese docs'],
-  [/^docs\/en-glossary\.md$|^scripts\/en-rename-map\.json$|^scripts\/i18n-(scan|vendor)\.mjs$/, 'translation tooling'],
+  [/^docs\/en-glossary\.md$|^scripts\/en-rename-map\.json$|^scripts\/i18n-(scan|vendor)\.mjs$|^scripts\/en-residue\.mjs$/, 'translation tooling'],
   [/^shared\/i18n\/(messages\/(zh|en)\.ts|format\.ts)$/, 'zh catalog / language names / zh number units'],
   [/^teams\/src\/task-labels-en\.ts$|^talents\/src\/demo\/catalog-en\.ts$/, 'lookup tables keyed by Chinese'],
   [/^teams\/src\/(operations|project-delivery-tasks|project-overview|imported-delivery|display-text|resource-sharing|source-plugins)\.ts$/, 'semantic keys / legacy matchers'],
