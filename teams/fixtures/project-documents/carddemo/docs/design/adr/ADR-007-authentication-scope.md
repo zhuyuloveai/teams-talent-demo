@@ -1,58 +1,58 @@
-# ADR-007: 鉴权强制校验的范围（POC 阶段）
+# ADR-007: Scope of Mandatory Authentication Checks (POC Phase)
 
-| 项 | 内容 |
+| Item | Content |
 |----|------|
-| 编号 | ADR-007 |
-| 日期 | 2026-10-25 |
-| 状态 | 已接受（有已知风险） |
-| 关联需求 | BR-SGN-01..05、BR-USER-* |
+| ID | ADR-007 |
+| Date | 2026-10-25 |
+| Status | Accepted (with known risks) |
+| Related requirements | BR-SGN-01..05, BR-USER-* |
 
-## 背景
+## Context
 
-遗留系统通过 CICS 终端会话 + USRSEC 文件实现登录，菜单分流管理员/普通用户，但**没有服务端
-细粒度授权**：COADM01C 不校验 `CDEMO-USER-TYPE`（`COADM01C.cbl:86-158`），普通用户菜单的
-"A" 标记全部为 "U"，权限差异只体现在登录后进入哪个菜单（`COMEN02Y.cpy:21-90`）。
+The legacy system authenticates through CICS terminal sessions + the USRSEC file and splits administrators/normal users by menu, but there is **no server-side
+fine-grained authorization**: COADM01C does not check `CDEMO-USER-TYPE` (`COADM01C.cbl:86-158`), and the "A" markers in the normal-user menu are all "U",
+so the permission difference only manifests in which menu is entered after login (`COMEN02Y.cpy:21-90`).
 
-目标系统是 HTTP 微服务，没有终端会话。完整方案需要网关 + OAuth2/JWT 资源服务器 + 权限模型，
-工作量与验证成本超出本次范围。
+The target system is a set of HTTP microservices without terminal sessions. A complete solution requires a gateway + OAuth2/JWT resource server + permission model,
+whose effort and validation cost exceed the scope of this phase.
 
-## 候选方案
+## Alternatives
 
-| 方案 | 描述 | 优点 | 缺点 |
+| Option | Description | Pros | Cons |
 |---|---|---|---|
-| 方案A：iam 签发 HMAC token，资源服务本期不强制校验 | 登录可用；token 可被网关/后续迭代校验 | 范围可控；契约先行 | 存在未授权访问风险（仅限本地演示） |
-| 方案B：每个服务内置 token 校验过滤器 | 资源服务自校验 | 无网关也可防护 | 6 份重复代码；密钥轮换复杂；测试与联调成本高 |
-| 方案C：引入 Spring Cloud Gateway + JWT 资源服务器 | 统一鉴权、限流、路由 | 架构完整；生产可演进 | 新增组件与依赖；增加部署与排障复杂度 |
+| Option A: iam issues an HMAC token; resource services do not enforce validation in this phase | Login works; the token can be validated by the gateway/future iterations | Controllable scope; contract first | Risk of unauthorized access (local demo only) |
+| Option B: a token validation filter built into every service | Resource services validate tokens themselves | Protects even without a gateway | 6 copies of duplicated code; complex key rotation; high testing and integration cost |
+| Option C: introduce Spring Cloud Gateway + JWT resource server | Unified authentication, rate limiting, routing | Complete architecture; evolvable to production | New components and dependencies; increased deployment and troubleshooting complexity |
 
-## 量化权衡表
+## Quantitative Trade-off Table
 
-| 方案 | 实现成本 | 性能开销 | 运维时效 | 审计性 | 风险 |
+| Option | Implementation cost | Performance overhead | Operational agility | Auditability | Risk |
 |---|---|---|---|---|---|
-| A | 低 | 无 | 即时 | 中（登录与签发有日志） | 高（默认拒绝缺失） |
-| B | 中 | 低（每请求一次校验） | 即时 | 中 | 低 |
-| C | 高 | 低（网关一跳） | 需网关发版 | 高（统一访问日志） | 低 |
+| A | Low | None | Immediate | Medium (login and issuance are logged) | High (deny-by-default is missing) |
+| B | Medium | Low (one validation per request) | Immediate | Medium | Low |
+| C | High | Low (one gateway hop) | Requires gateway releases | High (unified access logs) | Low |
 
-## 决策
+## Decision
 
-采用方案 A，并且**只在环回地址/本地 Compose 演示环境暴露端口**；生产化前必须实施方案 C。
-iam-service 提供 `POST /api/v1/auth/login` 与 `POST /api/v1/auth/verify`，token 为
-`base64(payload).base64(HMAC-SHA256(payload, secret))`，payload 含 userId、userType、过期时间。
+Adopt Option A and **expose ports only on the loopback address / local Compose demo environment**; Option C must be implemented before going to production.
+iam-service provides `POST /api/v1/auth/login` and `POST /api/v1/auth/verify`; the token is
+`base64(payload).base64(HMAC-SHA256(payload, secret))`, and the payload contains userId, userType, and the expiration time.
 
-风险登记：`docs/ops/01-docker-runbook.md` §7「已知安全缺口」，明确"未鉴权 API 不得暴露公网"。
+Risk register: `docs/ops/01-docker-runbook.md` §7 "Known Security Gaps" explicitly states that "unauthenticated APIs must not be exposed to the public internet".
 
-## 理由
+## Rationale
 
-1. 本期目标是验证领域拆分与业务语义迁移，不是生产安全基线。
-2. 鉴权是横切关注点，必须由网关统一实施，逐服务重复实现会形成不可维护的安全碎片。
-3. token 契约先行，后续接网关无需改业务服务。
+1. The goal of this phase is to validate domain decomposition and business semantics migration, not a production security baseline.
+2. Authentication is a cross-cutting concern that must be enforced centrally by the gateway; duplicating it in every service creates unmaintainable security fragments.
+3. The token contract comes first, so connecting a gateway later requires no changes to business services.
 
-## 后果（影响与回退路径）
+## Consequences (Impact and Rollback Path)
 
-- 影响：本地可直接 curl 调用；生产部署前必须增加网关与 mTLS/内网隔离。
-- 回退：若必须立即上线，采用方案 B 作为过渡（在 6 个服务加同一份 `TokenValidationFilter`）。
+- Impact: local curl calls work directly; a gateway plus mTLS/intranet isolation must be added before production deployment.
+- Rollback: if going live immediately is mandatory, use Option B as a transition (add the same `TokenValidationFilter` to all 6 services).
 
-## 证据
+## Evidence
 
 - `COSGN00C.cbl:209-257`
-- `COADM01C.cbl:86-158`（无身份校验）
-- `COMEN02Y.cpy:21-90`（权限标记全为 U）
+- `COADM01C.cbl:86-158` (no identity check)
+- `COMEN02Y.cpy:21-90` (permission markers are all U)

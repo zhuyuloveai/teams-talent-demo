@@ -1,21 +1,21 @@
 {
-  "note": "成员已共享到团队的 iCode 会话（演示数据）。交付会话 WORK-PLATINUM-001 在成员上报后才加入共享列表。",
+  "note": "Sessions members have shared with the team from iCode (demo data). The delivery session WORK-PLATINUM-001 joins the shared list only after the member reports it.",
   "sessions": [
-    { "id": "6b82c08d-eb3b-4bdc-b373-54fed16a7fcd", "memberId": "member", "title": "CardDemo 迁移与扩建（19 轮）", "updatedAt": "2026-10-26 23:58", "turns": 19, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001", "summary": "从 COBOL 业务提取与微服务迁移起步，扩展到 Web 界面、银行业务模块，第 18 轮重建高端卡多月消费返现能力。", "transcript": true },
-    { "id": "3f2a9c41d7e0", "memberId": "member", "title": "返现明细查询：分页游标与重复记录", "updatedAt": "2026-10-26 18:42", "turns": 58, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "MKT-002" },
-    { "id": "8b61e05a3c92", "memberId": "member", "title": "返现明细接口补充单元测试", "updatedAt": "2026-10-25 16:10", "turns": 24, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-002" },
-    { "id": "c47d1f80b2a6", "memberId": "su", "title": "账单返现汇总与明细合计不一致排查", "updatedAt": "2026-10-26 15:37", "turns": 63, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "MKT-003" },
-    { "id": "1e9b7d24f0c3", "memberId": "su", "title": "按账单周期聚合返现记录", "updatedAt": "2026-10-24 11:05", "turns": 41, "agent": "Code Agent", "model": "qwen3-coder", "requirementId": "MKT-003" },
-    { "id": "a05c3e9d61b8", "memberId": "yang", "title": "返现到账通知：关联交易摘要", "updatedAt": "2026-10-25 20:18", "turns": 37, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-004" },
-    { "id": "6d28f1b4e9a0", "memberId": "yang", "title": "营销奖励重复评估与幂等入账", "updatedAt": "2026-10-23 17:52", "turns": 71, "agent": "Code Agent", "model": "deepseek-pro" },
-    { "id": "f81c06a7d3e5", "memberId": "zhao", "title": "历史权益查询：切换条件后保留旧筛选", "updatedAt": "2026-10-24 14:26", "turns": 19, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-005" },
-    { "id": "29e4b8c0a17f", "memberId": "zhao", "title": "历史权益按实际日期排序", "updatedAt": "2026-10-22 10:48", "turns": 12, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-005" },
-    { "id": "d3a75e1c08b4", "memberId": "wang", "title": "营销奖励冲正与回滚处理", "updatedAt": "2026-10-23 09:58", "turns": 52, "agent": "Code Agent", "model": "deepseek-pro" },
-    { "id": "7c0f92e6b5d1", "memberId": "wang", "title": "解释 RewardCalculator 金额精度处理", "updatedAt": "2026-10-21 15:30", "turns": 9, "agent": "Q&A Agent", "model": "deepseek-flash" },
-    { "id": "b9e3047af2c6", "memberId": "owner", "title": "梳理白金卡返现待确认事项", "updatedAt": "2026-10-25 09:12", "turns": 16, "agent": "Q&A Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001" },
-    { "id": "05d8c2f1a9e7", "memberId": "member", "title": "营销活动资格策略 EligibilityPolicy 阅读", "updatedAt": "2026-10-20 19:44", "turns": 14, "agent": "Q&A Agent", "model": "deepseek-flash" },
-    { "id": "e6b19a3d7c42", "memberId": "su", "title": "账户服务：乐观锁冲突重试", "updatedAt": "2026-10-20 13:21", "turns": 38, "agent": "Code Agent", "model": "deepseek-pro" },
-    { "id": "4a7e0d5b2f91", "memberId": "yang", "title": "Docker Compose 本地联调失败排查", "updatedAt": "2026-10-19 21:06", "turns": 33, "agent": "Code Agent", "model": "deepseek-flash" }
+    { "id": "6b82c08d-eb3b-4bdc-b373-54fed16a7fcd", "memberId": "member", "title": "CardDemo migration and expansion (19 turns)", "updatedAt": "2026-10-26 23:58", "turns": 19, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001", "summary": "Started with COBOL business extraction and microservice migration, extended to a web UI and banking business modules, and rebuilt the premium-card multi-month spending cashback capability in turn 18.", "transcript": true },
+    { "id": "3f2a9c41d7e0", "memberId": "member", "title": "Cashback detail query: pagination cursor and duplicate records", "updatedAt": "2026-10-26 18:42", "turns": 58, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "MKT-002" },
+    { "id": "8b61e05a3c92", "memberId": "member", "title": "Add unit tests for the cashback detail API", "updatedAt": "2026-10-25 16:10", "turns": 24, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-002" },
+    { "id": "c47d1f80b2a6", "memberId": "su", "title": "Investigate statement cashback total not matching the sum of details", "updatedAt": "2026-10-26 15:37", "turns": 63, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "MKT-003" },
+    { "id": "1e9b7d24f0c3", "memberId": "su", "title": "Aggregate cashback records by statement cycle", "updatedAt": "2026-10-24 11:05", "turns": 41, "agent": "Code Agent", "model": "qwen3-coder", "requirementId": "MKT-003" },
+    { "id": "a05c3e9d61b8", "memberId": "yang", "title": "Cashback credited notification: linked transaction summary", "updatedAt": "2026-10-25 20:18", "turns": 37, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-004" },
+    { "id": "6d28f1b4e9a0", "memberId": "yang", "title": "Duplicate marketing reward evaluation and idempotent posting", "updatedAt": "2026-10-23 17:52", "turns": 71, "agent": "Code Agent", "model": "deepseek-pro" },
+    { "id": "f81c06a7d3e5", "memberId": "zhao", "title": "Benefit history query: old filters kept after changing conditions", "updatedAt": "2026-10-24 14:26", "turns": 19, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-005" },
+    { "id": "29e4b8c0a17f", "memberId": "zhao", "title": "Sort benefit history by actual date", "updatedAt": "2026-10-22 10:48", "turns": 12, "agent": "Code Agent", "model": "deepseek-flash", "requirementId": "MKT-005" },
+    { "id": "d3a75e1c08b4", "memberId": "wang", "title": "Marketing reward reversal and rollback handling", "updatedAt": "2026-10-23 09:58", "turns": 52, "agent": "Code Agent", "model": "deepseek-pro" },
+    { "id": "7c0f92e6b5d1", "memberId": "wang", "title": "Explain RewardCalculator amount precision handling", "updatedAt": "2026-10-21 15:30", "turns": 9, "agent": "Q&A Agent", "model": "deepseek-flash" },
+    { "id": "b9e3047af2c6", "memberId": "owner", "title": "Sort out open questions for platinum card cashback", "updatedAt": "2026-10-25 09:12", "turns": 16, "agent": "Q&A Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001" },
+    { "id": "05d8c2f1a9e7", "memberId": "member", "title": "Read the campaign eligibility policy EligibilityPolicy", "updatedAt": "2026-10-20 19:44", "turns": 14, "agent": "Q&A Agent", "model": "deepseek-flash" },
+    { "id": "e6b19a3d7c42", "memberId": "su", "title": "Account service: optimistic lock conflict retry", "updatedAt": "2026-10-20 13:21", "turns": 38, "agent": "Code Agent", "model": "deepseek-pro" },
+    { "id": "4a7e0d5b2f91", "memberId": "yang", "title": "Investigate failed local Docker Compose integration", "updatedAt": "2026-10-19 21:06", "turns": 33, "agent": "Code Agent", "model": "deepseek-flash" }
   ],
-  "delivery": { "id": "WORK-PLATINUM-001", "memberId": "member", "title": "白金卡消费返现 · 开发与修复", "turns": 74, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001", "summary": "实现白金卡资格、期间与 0.5% 额外返现；首次检查 E3 6/7（普通卡被纳入返现），修复 E4 后复测 E5 7/7。" }
+  "delivery": { "id": "WORK-PLATINUM-001", "memberId": "member", "title": "Platinum card spending cashback · Development and fix", "turns": 74, "agent": "Code Agent", "model": "deepseek-pro", "requirementId": "DEMO-MKT-001", "summary": "Implemented platinum card eligibility, period and the extra 0.5% cashback; first check E3 6/7 (standard cards included in cashback), fix E4, then retest E5 7/7." }
 }

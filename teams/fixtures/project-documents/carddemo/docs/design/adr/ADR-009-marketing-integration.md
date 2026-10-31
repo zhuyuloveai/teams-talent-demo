@@ -1,67 +1,67 @@
-# ADR-009: 营销奖励的评估与入账集成方式
+# ADR-009: Integration Approach for Marketing Reward Evaluation and Posting
 
-| 项 | 内容 |
+| Item | Content |
 |----|------|
-| 编号 | ADR-009 |
-| 日期 | 2026-10-26 |
-| 状态 | 已接受 |
-| 关联需求 | `docs/design/08-marketing-capability.md`、MK-REW-* |
+| ID | ADR-009 |
+| Date | 2026-10-26 |
+| Status | Accepted |
+| Related requirements | `docs/design/08-marketing-capability.md`, MK-REW-* |
 
-## 背景
+## Context
 
-新增营销能力后，消费入账需要触发奖励评估，返现需要真正进入账户余额。系统现状是：
-交易入账在 transaction-service 的本地事务内完成，账户余额在 account-service，二者通过同步
-REST 调用协作（ADR-005），没有消息中间件。必须决定：
+With the new marketing capability, purchase posting must trigger reward evaluation, and cashback must actually reach the account balance. In the current system,
+transaction posting completes inside a local transaction in transaction-service, the account balance lives in account-service, and the two cooperate through synchronous
+REST calls (ADR-005); there is no messaging middleware. We must decide:
 
-1. 奖励评估在入账链路的哪个位置触发；
-2. 营销不可用时是否影响入账；
-3. 返现入账如何保证幂等与可重试。
+1. Where in the posting path reward evaluation is triggered;
+2. Whether marketing unavailability affects posting;
+3. How cashback posting stays idempotent and retryable.
 
-## 候选方案
+## Alternatives
 
-| 方案 | 描述 | 优点 | 缺点 |
+| Option | Description | Pros | Cons |
 |---|---|---|---|
-| A：入账后同步调用 + 失败告警 + 幂等重试 | 入账事务提交后调用 marketing 评估；失败只记日志；返现由 marketing 调 account 幂等入账，失败保留 PENDING 可重试 | 无中间件；链路短；资金事实不受营销影响 | 营销不可用时奖励延迟，需要重试入口 |
-| B：事务性 Outbox + MQ 事件驱动 | 入账写 outbox，营销订阅 `TransactionPosted` | 彻底解耦；可重放 | 需要 MQ、消费幂等、积压与死信治理；演示环境成本高 |
-| C：日终批量结算 | 每天扫描当日交易批量发奖 | 实现简单；与账务批处理一致 | 奖励非实时；用户感知差；活动预算反馈滞后 |
+| A: synchronous call after posting + failure alert + idempotent retry | Call marketing evaluation after the posting transaction commits; failures are only logged; marketing calls account to post cashback idempotently, and failures stay PENDING and can be retried | No middleware; short call chain; financial facts are not affected by marketing | Rewards are delayed when marketing is unavailable; a retry entry point is needed |
+| B: transactional outbox + MQ event-driven | Posting writes to an outbox; marketing subscribes to `TransactionPosted` | Fully decoupled; replayable | Requires MQ, consumer idempotency, backlog and dead-letter governance; high cost for the demo environment |
+| C: end-of-day batch settlement | Scan the day's transactions daily and issue rewards in batch | Simple to implement; consistent with accounting batch processing | Rewards are not real-time; poor user experience; delayed campaign budget feedback |
 
-## 量化权衡表
+## Quantitative Trade-off Table
 
-| 方案 | 实现成本 | 性能开销 | 运维时效 | 审计性 | 风险 |
+| Option | Implementation cost | Performance overhead | Operational agility | Auditability | Risk |
 |---|---|---|---|---|---|
-| A | 低 | 入账 +2s 最坏（超时） | 秒级；失败可立即重试 | 高（奖励记录含交易号） | 中（营销短暂不可用时奖励延迟） |
-| B | 高 | 入账无额外阻塞 | 分钟级最终一致 | 高（事件可追溯） | 低（需治理） |
-| C | 低 | 无在线开销 | 次日 | 中 | 中高（预算/用户体验差） |
+| A | Low | Posting +2s worst case (timeout) | Seconds; failures can be retried immediately | High (reward records include the transaction ID) | Medium (rewards delayed while marketing is briefly unavailable) |
+| B | High | No extra blocking on posting | Eventual consistency within minutes | High (events are traceable) | Low (governance required) |
+| C | Low | No online overhead | Next day | Medium | Medium-high (poor budget control/user experience) |
 
-## 决策
+## Decision
 
-采用方案 A，并落实以下约束：
+Adopt Option A, with the following constraints:
 
-1. **营销不阻塞账务**：入账本地事务先提交，再调用 `POST /api/v1/reward-evaluations`；
-   调用异常只记 `WARN`（日志只含 transactionId），不回滚交易、不影响入账结果。
-2. **幂等**：`reward_grant` 对 `(campaign_id, transaction_id)` 唯一；重复评估返回既有奖励
-   （`duplicate=true`），不重复发奖。
-3. **返现入账幂等**：account-service 新增 `reward_credit.reward_id` 唯一键，
-   同一 `rewardId` 重复调用返回当前账户，不重复扣减欠款。
-4. **失败可重试**：现金奖励下游失败时保留 `PENDING`，通过
-   `POST /api/v1/rewards/{rewardId}/fulfill` 人工重试；重试仍幂等。
-5. **可见性**：活动效果接口展示发放成功率与预算使用率，PENDING 数量纳入监控。
+1. **Marketing does not block accounting**: the local posting transaction commits first, then `POST /api/v1/reward-evaluations` is called;
+   call exceptions are only logged as `WARN` (the log contains only the transactionId), the transaction is not rolled back, and the posting result is unaffected.
+2. **Idempotency**: `reward_grant` is unique on `(campaign_id, transaction_id)`; a repeated evaluation returns the existing reward
+   (`duplicate=true`) and does not issue the reward again.
+3. **Idempotent cashback posting**: account-service adds a unique key on `reward_credit.reward_id`;
+   repeated calls with the same `rewardId` return the current account and do not reduce the balance owed again.
+4. **Retryable failures**: when the downstream fails for a cash reward, it stays `PENDING` and can be retried manually through
+   `POST /api/v1/rewards/{rewardId}/fulfill`; retries remain idempotent.
+5. **Visibility**: the campaign performance API shows the issuance success rate and budget usage rate, and the PENDING count is monitored.
 
-方案 B 作为下一阶段演进：入账写 outbox，营销订阅事件；届时保留现有幂等键与接口语义。
+Option B is the next evolution step: posting writes to an outbox and marketing subscribes to events; the existing idempotency keys and API semantics are kept.
 
-## 理由
+## Rationale
 
-1. 消费入账是资金事实，营销是附加权益，二者失败域必须分离。
-2. 现有架构没有 MQ，引入方案 B 会显著扩大本次范围；方案 A 与 ADR-005 的同步调用风格一致。
-3. 幂等键（交易号、奖励号）同时服务同步重试与未来事件重放，不返工。
+1. Purchase posting is a financial fact and marketing is an add-on benefit; their failure domains must be separated.
+2. The current architecture has no MQ, so introducing Option B would significantly widen the scope of this phase; Option A matches the synchronous call style of ADR-005.
+3. The idempotency keys (transaction ID, reward ID) serve both synchronous retries and future event replay, so no rework is needed.
 
-## 后果（影响与回退路径）
+## Consequences (Impact and Rollback Path)
 
-- 影响：入账链路最坏增加 2 秒（营销超时）；营销不可用时奖励延迟，需人工重试或后续补偿作业。
-- 回退：关闭 transaction-service 的 `marketing.enabled` 开关即可停止调用；营销数据独立库，
-  不影响账务；如需彻底解耦，按方案 B 增加 outbox 与订阅，接口与幂等键不变。
+- Impact: the posting path gains at most 2 seconds in the worst case (marketing timeout); when marketing is unavailable, rewards are delayed and need a manual retry or a later compensation job.
+- Rollback: turning off the `marketing.enabled` switch in transaction-service stops the calls; marketing data lives in its own database,
+  so accounting is unaffected; for full decoupling, add the outbox and subscription per Option B, with APIs and idempotency keys unchanged.
 
-## 证据
+## Evidence
 
 - `docs/design/08-marketing-capability.md` §3.1
 - `docs/design/adr/ADR-005-cross-service-consistency.md`

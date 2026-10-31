@@ -1,176 +1,176 @@
 {
-  "title": "信用卡消费返现 · 项目交付流程",
-  "status": "项目交付与能力演进流程",
+  "title": "Credit Card Spending Cashback · Project Delivery Flow",
+  "status": "Project delivery and capability evolution flow",
   "date": "2026-10-26",
   "scenario": {
-    "parent_requirement": "针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。",
+    "parent_requirement": "Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months.",
     "source_local_time": "2026-10-26 00:39:12 Asia/Shanghai",
-    "slice": "针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。",
+    "slice": "Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months.",
     "why": [
-      "白金卡客户、3 个月、额外 0.5% 是当前需求范围。",
-      "活动日期、金额舍入及测试输入按本地流程参数验证；正式业务细则仍需确认。",
-      "本次交付记录与知识引用当前需求，不复用其他活动的检查结论。"
+      "Platinum card customers, 3 months and an extra 0.5% are the current requirement scope.",
+      "Campaign dates, amount rounding and test inputs are verified against local flow parameters; the formal business rules still need confirmation.",
+      "This delivery's records and knowledge reference the current requirement and do not reuse check results from other campaigns."
     ],
-    "seed": "白金卡客户 · 3 个月消费期间 · 额外返现 0.5%",
-    "roles": "项目 Owner 和项目成员是 Teams 协作身份；CardDemo 的管理员/持卡人是业务验收用例角色，不与 Teams 权限混同。"
+    "seed": "Platinum card customers · 3-month spending period · extra 0.5% cashback",
+    "roles": "Project Owner and project member are Teams collaboration identities; the CardDemo administrator/cardholder are business acceptance case roles and are not mixed up with Teams permissions."
   },
   "steps": [
     {
       "id": "S01",
-      "phase": "项目资源",
-      "role": "项目 Owner",
-      "place": "Teams / 项目内容与资源市场",
-      "action": "核对项目已有 Skill、Code Agent 与用户 Skill 的可用范围；如需供其他人复用，可单独发布某个 Skill 或 Agent。",
-      "screen": "项目资源展示用途、来源与版本；我的发布按具体资源展示共享范围和发布版本。",
-      "output": "项目可用资源及版本；按需产生单个资源的共享发布记录。",
-      "state": "项目已有资源直接可用；共享发布独立于需求分配和作业准备。",
+      "phase": "Project resources",
+      "role": "Project Owner",
+      "place": "Teams / Project content and Resource market",
+      "action": "Check the availability of the project's existing Skills, Code Agent and user Skills; to let others reuse one, publish an individual Skill or Agent.",
+      "screen": "Project resources show purpose, source and version; My publications shows the sharing scope and published version per resource.",
+      "output": "Resources and versions available to the project; per-resource sharing publish records as needed.",
+      "state": "Existing project resources are available directly; sharing publishes are independent of requirement assignment and work preparation.",
       "minutes": 1,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S02",
-      "phase": "需求准备",
-      "role": "项目 Owner",
-      "place": "Teams / 项目 / 需求",
-      "action": "确认当前“信用卡消费返现”需求：针对白金卡客户未来 3 个月的消费，额外增加 0.5% 消费返现；其余业务规则待确认。",
-      "screen": "沿用需求编号 DEMO-MKT-001，展示当前需求正文、已确认的三项口径与待确认事项。",
-      "output": "当前需求描述、三项已确认口径与待确认事项清单。",
-      "state": "需求：待确认 → 已确认 → 已指派。",
+      "phase": "Requirement preparation",
+      "role": "Project Owner",
+      "place": "Teams / Project / Requirements",
+      "action": "Confirm the current \"Credit card spending cashback\" requirement: Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months; other business rules are to be confirmed.",
+      "screen": "Keeps requirement ID DEMO-MKT-001 and shows the current requirement text, the three confirmed rules and the open questions.",
+      "output": "Current requirement description, the three confirmed rules and the list of open questions.",
+      "state": "Requirement: To be confirmed → Confirmed → Assigned.",
       "minutes": 1,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S03",
-      "phase": "需求准备",
-      "role": "项目成员",
-      "place": "Teams / 项目知识",
-      "action": "核对卡片资格、活动期间、金额舍入及重复入账规则。",
-      "screen": "消费记录、奖励计算、账户余额及规则关联。",
-      "output": "本次采用的知识版本与规则。",
-      "state": "知识：待核对 → 本次采用；影响范围涵盖前端、交易、营销、账户、数据库。",
+      "phase": "Requirement preparation",
+      "role": "Project member",
+      "place": "Teams / Project knowledge",
+      "action": "Check the rules for card eligibility, campaign period, amount rounding and duplicate posting.",
+      "screen": "Purchase records, reward calculation, account balance and related rules.",
+      "output": "Knowledge versions and rules adopted for this work.",
+      "state": "Knowledge: To be checked → Adopted for this work; impact covers frontend, transactions, marketing, accounts and database.",
       "minutes": 1.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S04",
-      "phase": "需求准备",
-      "role": "项目成员",
-      "place": "Teams / 项目能力与作业准备",
-      "action": "按本次需求直接选择项目或用户已有 Skill，采用项目 Code Agent，预览并冻结即将交给 iCode 的上下文。",
-      "screen": "需求、验收标准、知识快照、关键源码、Skill 版本及摘要、Agent 配置、工作目录、任务范围。",
-      "output": "可重看的作业上下文快照 Context-r1。",
-      "state": "资源可见 → 项目已采用 → 本次作业已绑定；后续更新不改写本次快照。",
+      "phase": "Requirement preparation",
+      "role": "Project member",
+      "place": "Teams / Project capabilities and work preparation",
+      "action": "Pick existing project or user Skills directly for this requirement, adopt the project Code Agent, then preview and freeze the context to hand over to iCode.",
+      "screen": "Requirement, acceptance criteria, knowledge snapshot, key source code, Skill versions and digests, Agent configuration, working directory, task scope.",
+      "output": "Reviewable work context snapshot Context-r1.",
+      "state": "Resource visible → Adopted by project → Bound to this work; later updates do not rewrite this snapshot.",
       "minutes": 1,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S05",
-      "phase": "开发与质量",
-      "role": "项目成员",
-      "place": "iCode / 需求作业",
-      "action": "开始开发并同步进度，关联当前需求的实现文件。",
-      "screen": "白金卡资格、期间与金额计算，保留操作记录。",
-      "output": "本次成果与关联文件。",
-      "state": "任务：已接收 → 开发中；作业：已准备 → 执行中。",
+      "phase": "Development and quality",
+      "role": "Project member",
+      "place": "iCode / Requirement work",
+      "action": "Start development, sync progress and link the implementation files of the current requirement.",
+      "screen": "Platinum card eligibility, period and amount calculation, with operation records kept.",
+      "output": "Results of this work and linked files.",
+      "state": "Task: Received → In development; Work: Prepared → Running.",
       "minutes": 2,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S06",
-      "phase": "开发与质量",
-      "role": "项目成员",
-      "place": "iCode / 质量检查",
-      "action": "检查普通卡资格遗漏，补充卡片等级判断后重新核对七项规则。",
-      "screen": "初检 6/7，修复后 7/7；安全状态独立保留。",
-      "output": "初检 E3、修复 E4、复测 E5 与限制说明。",
-      "state": "质量：待检查 → 未通过 → 修复中 → 功能检查通过；生产安全：待补证据。",
+      "phase": "Development and quality",
+      "role": "Project member",
+      "place": "iCode / Quality check",
+      "action": "Check the missing standard-card eligibility rule, add the card tier check, then recheck all seven rules.",
+      "screen": "Initial check 6/7, 7/7 after the fix; security status is kept separately.",
+      "output": "Initial check E3, fix E4, retest E5 and the limitations note.",
+      "state": "Quality: To be checked → Failed → Fixing → Functional checks passed; Production security: evidence pending.",
       "minutes": 2.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S07",
-      "phase": "开发与质量",
-      "role": "项目成员",
-      "place": "Teams / 提交交付",
-      "action": "回传成果，选择本次提交的代码快照、测试证据、功能入口和限制；提交给 Owner。",
-      "screen": "按验收标准展示结果与证据，并关联代码、检查报告和待处理事项。",
-      "output": "交付包 Delivery-r1，绑定需求修订、上下文快照与文件摘要。",
-      "state": "任务：开发中 → 待验收；成员仍可依据反馈提交 r2。",
+      "phase": "Development and quality",
+      "role": "Project member",
+      "place": "Teams / Submit delivery",
+      "action": "Report results back, select the code snapshot, test evidence, feature entry points and limitations for this submission, and submit to the Owner.",
+      "screen": "Shows results and evidence per acceptance criterion, linked to code, check reports and pending items.",
+      "output": "Delivery package Delivery-r1, bound to the requirement revision, context snapshot and file digests.",
+      "state": "Task: In development → Awaiting acceptance; the member can still submit r2 based on feedback.",
       "minutes": 0.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S08",
-      "phase": "验收",
-      "role": "项目 Owner",
-      "place": "Teams / 验收工作台",
-      "action": "完成120元消费、核对0.60元返现与重复处理，再运行七项边界检查。",
-      "screen": "消费、奖励、余额及验收结果。",
-      "output": "本次验收记录。",
-      "state": "任务：待验收 → 功能已验收；生产发布条件：未满足。",
+      "phase": "Acceptance",
+      "role": "Project Owner",
+      "place": "Teams / Acceptance workbench",
+      "action": "Make a CNY 120.00 purchase, check the CNY 0.60 cashback and duplicate handling, then run the seven boundary checks.",
+      "screen": "Purchase, reward, balance and acceptance results.",
+      "output": "Acceptance record for this work.",
+      "state": "Task: Awaiting acceptance → Functionally accepted; Production release conditions: not met.",
       "minutes": 1.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S09",
-      "phase": "追溯",
-      "role": "项目 Owner / 项目成员",
-      "place": "Teams / 需求追溯",
-      "action": "查看需求、上下文、检查、修复与验收关联。",
-      "screen": "本次操作时间线与记录来源。",
-      "output": "可追溯交付链路。",
-      "state": "追溯是交付后的读取视图；已有历史证据不因新版 Skill 而重写。",
+      "phase": "Traceability",
+      "role": "Project Owner / Project member",
+      "place": "Teams / Requirement traceability",
+      "action": "View the links between requirement, context, checks, fix and acceptance.",
+      "screen": "Timeline of this operation and record sources.",
+      "output": "Traceable delivery chain.",
+      "state": "Traceability is a read view after delivery; existing historical evidence is not rewritten by a new Skill version.",
       "minutes": 1.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S10",
-      "phase": "能力演进",
-      "role": "平台建议 / 项目成员核对",
-      "place": "Teams / 能力改进",
-      "action": "按卡片资格遗漏创建 Skill 与 Agent 改进候选。",
-      "screen": "问题依据、候选差异和评估范围。",
-      "output": "待评估候选版本。",
-      "state": "改进线索 → 候选草稿 → 待评估；本轮并未修改原 Skill 或真实 Agent。",
+      "phase": "Capability evolution",
+      "role": "Platform suggestion / Project member review",
+      "place": "Teams / Capability improvement",
+      "action": "Create Skill and Agent improvement candidates from the missing card eligibility rule.",
+      "screen": "Issue evidence, candidate diff and evaluation scope.",
+      "output": "Candidate versions to evaluate.",
+      "state": "Improvement lead → Candidate draft → To evaluate; this round did not modify the original Skill or the real Agent.",
       "minutes": 1.5,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     },
     {
       "id": "S11",
-      "phase": "能力演进",
-      "role": "项目 Owner",
-      "place": "Teams / 评估与发布",
-      "action": "查看基准案例与保留案例的评估结果，确认候选版本及项目适用范围，发布并选择下一条需求采用新版。",
-      "screen": "评估通过/失败、候选差异、发布记录、项目采用版本；上一条需求仍引用旧版本。",
-      "output": "发布记录、新版采用记录、下一需求的上下文快照。",
-      "state": "待评估 → 评估通过 → Owner确认 → 已发布 → 后续需求采用；失败候选返回修订。",
+      "phase": "Capability evolution",
+      "role": "Project Owner",
+      "place": "Teams / Evaluation and Publish",
+      "action": "Review evaluation results for the baseline and holdout cases, confirm the candidate version and project scope, publish, and pick the next requirement to adopt the new version.",
+      "screen": "Evaluation pass/fail, candidate diff, publish records, project adopted version; the previous requirement still references the old version.",
+      "output": "Publish records, new-version adoption records, context snapshot of the next requirement.",
+      "state": "To evaluate → Evaluation passed → Owner confirmed → Published → Adopted by later requirements; failed candidates go back for revision.",
       "minutes": 1,
-      "basis": "当前需求、上下文与本次操作记录。"
+      "basis": "The current requirement, its context and the records of this operation."
     }
   ],
   "acceptance_criteria": [
     {
       "id": "AC-01",
-      "given": "目标客户：白金卡客户",
-      "expected": "白金卡进入奖励计算，普通卡不参与；正式资格认定细则待确认。",
-      "evidence": "本地规则检查 CB-01、CB-02；正式服务证据待补充。"
+      "given": "Target customers: Platinum card customers",
+      "expected": "Platinum cards enter reward calculation and standard cards do not; the formal eligibility rules are to be confirmed.",
+      "evidence": "Local rule checks CB-01, CB-02; formal service evidence pending."
     },
     {
       "id": "AC-02",
-      "given": "消费期间：未来 3 个月",
-      "expected": "按配置的三个月窗口检查，开始包含、结束不包含；正式日期待确认。",
-      "evidence": "本地规则检查 CB-03 至 CB-05；正式服务证据待补充。"
+      "given": "Spending period: the next 3 months",
+      "expected": "Checked against the configured three-month window, start inclusive and end exclusive; formal dates are to be confirmed.",
+      "evidence": "Local rule checks CB-03 to CB-05; formal service evidence pending."
     },
     {
       "id": "AC-03",
-      "given": "消费返现：额外增加 0.5%",
-      "expected": "120.00 元额外返现0.60元，以整数分计算；其他正式业务细则待确认。",
-      "evidence": "本地规则检查 CB-01、CB-06、CB-07；正式服务证据待补充。"
+      "given": "Spending cashback: extra 0.5%",
+      "expected": "CNY 120.00 earns an extra CNY 0.60 cashback, calculated in integer cents; other formal business rules are to be confirmed.",
+      "evidence": "Local rule checks CB-01, CB-06, CB-07; formal service evidence pending."
     }
   ],
   "skill_groups": [
     {
-      "group": "理解存量与设计",
+      "group": "Understand legacy and design",
       "skills": [
         "cobol-legacy-knowledge",
         "arch-impact-analysis",
@@ -178,21 +178,21 @@
       ]
     },
     {
-      "group": "需求与验收标准",
+      "group": "Requirements and acceptance criteria",
       "skills": [
         "ba-requirement-analysis",
         "ba-acceptance-criteria"
       ]
     },
     {
-      "group": "开发实现",
+      "group": "Implementation",
       "skills": [
         "dev-backend-service",
         "dev-frontend-ui"
       ]
     },
     {
-      "group": "质量与安全",
+      "group": "Quality and security",
       "skills": [
         "dev-code-reviewer",
         "dev-unit-test",
@@ -201,7 +201,7 @@
       ]
     },
     {
-      "group": "验收与追溯",
+      "group": "Acceptance and traceability",
       "skills": [
         "qa-uat-support",
         "ba-requirement-tracing"
@@ -213,46 +213,46 @@
       "name": "dev-frontend-ui",
       "baseline_version": "1.0.0",
       "candidate_version": "1.1.0-candidate",
-      "status": "候选定义，由 Owner 确认后发布",
+      "status": "Candidate definition, published after Owner confirmation",
       "evidence": [
         "E3",
         "E4",
         "E5"
       ],
-      "reason": "卡片资格遗漏导致普通卡进入奖励计算。",
+      "reason": "The missing card eligibility rule let standard cards enter reward calculation.",
       "changes": [
-        "补充白金卡与普通卡正反向规则检查。",
-        "覆盖三个月期间的开始、结束边界。",
-        "以整数分核对额外0.5%及舍入，保留重复处理检查。"
+        "Add positive and negative rule checks for platinum and standard cards.",
+        "Cover the start and end boundaries of the three-month period.",
+        "Check the extra 0.5% and rounding in integer cents, and keep the duplicate-handling check."
       ],
       "evaluation": [
-        "白金卡120元返现0.60元。",
-        "普通卡不返现。",
-        "活动结束时刻不返现。"
+        "Platinum card CNY 120.00 earns CNY 0.60 cashback.",
+        "Standard cards get no cashback.",
+        "No cashback at the campaign end instant."
       ],
-      "comparison": "固定规则输入核对候选定义；外部模型对照评估未执行。"
+      "comparison": "The candidate definition is checked with fixed rule inputs; the external model comparison evaluation was not run."
     },
     "agent": {
       "name": "Code Agent",
       "baseline_revision": "r1",
       "candidate_revision": "r2-candidate",
-      "status": "配置候选，不改变基础模型",
+      "status": "Configuration candidate; the base model is unchanged",
       "evidence": [
         "E3",
         "E5"
       ],
-      "reason": "提交前需要独立核对所有验收规则，避免仅覆盖正向输入。",
+      "reason": "All acceptance rules must be checked independently before submission, so that coverage is not limited to positive inputs.",
       "changes": [
-        "按验收条目生成正向与反向检查清单。",
-        "保存输入、实际结果与规则版本，不将固定记录冒充真实模型运行。",
-        "区分功能验收和生产安全放行。"
+        "Generate positive and negative checklists per acceptance item.",
+        "Save inputs, actual results and rule versions; do not present fixed records as real model runs.",
+        "Keep functional acceptance separate from production security release."
       ],
       "evaluation": [
-        "规则缺失时阻止提交。",
-        "缺少执行报告时保留待验证。",
-        "七项规则通过后可进入功能验收，安全状态保持未验证。"
+        "Block submission when a rule is missing.",
+        "Keep the status as to be verified when the execution report is missing.",
+        "Once all seven rules pass, the work can go to functional acceptance; the security status stays unverified."
       ],
-      "comparison": "分别保存规则核对和模型实验状态，不把流程操作视为真实 Agent 实验。"
+      "comparison": "Rule checks and model experiment status are saved separately; flow operations are not treated as real Agent experiments."
     }
   },
   "trace": {
@@ -266,62 +266,62 @@
     "file": "teams/src/cashback.ts",
     "current_sha256": "2b61c0da081b662bedd3cf09cb41ea0d39247557bf73f0c5130521f02b294316",
     "mutation_after_sha256": "2b61c0da081b662bedd3cf09cb41ea0d39247557bf73f0c5130521f02b294316",
-    "join_rule": "需求 → 上下文 → 检查记录 → 修复 → 复测 → 验收；记录来源为本地工作流 fixture，不关联原生历史会话。"
+    "join_rule": "Requirement → Context → Check records → Fix → Retest → Acceptance; records come from a local workflow fixture and are not linked to native historical sessions."
   },
   "gaps": [
     {
-      "name": "生产安全",
-      "fact": "未接入真实企业身份认证及安全扫描。",
-      "demo": "安全状态保持未验证。",
-      "limit": "功能验收不等于生产放行。"
+      "name": "Production security",
+      "fact": "Real enterprise identity authentication and security scanning are not integrated.",
+      "demo": "Security status stays unverified.",
+      "limit": "Functional acceptance is not production release."
     },
     {
-      "name": "业务细则",
-      "fact": "正式活动日期、清算、退款、限制规则仍需确认。",
-      "demo": "当前仅验证明确列出的本地规则参数。",
-      "limit": "不得推断未定义规则为生产无限制。"
+      "name": "Business rules",
+      "fact": "Formal campaign dates, settlement, refund and limit rules still need confirmation.",
+      "demo": "Only the explicitly listed local rule parameters are verified for now.",
+      "limit": "Do not infer that undefined rules mean no limits in production."
     },
     {
-      "name": "执行与评估",
-      "fact": "工作流使用固定输入与操作记录；未调用外部模型、支付或原生 Agent。",
-      "demo": "保留来源标识和独立评估状态。",
-      "limit": "不将固定记录表述为真实历史执行。"
+      "name": "Execution and evaluation",
+      "fact": "The workflow uses fixed inputs and operation records; no external model, payment or native Agent is called.",
+      "demo": "Source labels and an independent evaluation status are kept.",
+      "limit": "Fixed records are not described as real historical runs."
     }
   ],
   "mock_contract": {
     "records": [
-      "项目/两种角色与权限",
-      "单个资源/共享发布与订阅记录/项目采用版本",
-      "需求及验收标准修订",
-      "知识快照/代码图谱",
-      "作业上下文/会话/工具事件",
-      "代码变更及文件摘要",
-      "检查报告/缺陷/复测",
-      "交付包/Owner验收",
-      "改进候选/评估/新版发布"
+      "Project/two roles and permissions",
+      "Individual resources/sharing publish and subscription records/project adopted versions",
+      "Requirement and acceptance criteria revisions",
+      "Knowledge snapshot/Code graph",
+      "Work context/Session/tool events",
+      "Code changes and file digests",
+      "Check reports/defects/retests",
+      "Delivery package/Owner acceptance",
+      "Improvement candidates/evaluation/new version publish"
     ],
     "checkpoints": [
-      "项目与需求准备",
-      "成员作业准备",
-      "UI检查失败",
-      "修复后待验收",
-      "验收完成待改进",
-      "候选待评估",
-      "新版已采用"
+      "Project and requirement preparation",
+      "Member work preparation",
+      "UI check failed",
+      "Fixed, awaiting acceptance",
+      "Accepted, improvement pending",
+      "Candidate to evaluate",
+      "New version adopted"
     ],
     "invariants": [
-      "角色切换共用一份状态；逐资源发布控制市场获取与订阅，项目和用户已有资源可直接选用。",
-      "能力采用与作业快照显式绑定；升级不会改写旧作业。",
-      "质量失败阻止当前交付通过；允许查看之前失败。",
-      "安全缺报告保持未验证；功能通过不自动变为生产放行。",
-      "评估与发布是不同动作；候选失败可回到修订。",
-      "每条记录保留来源类型；固定 fixture 与真实运行结果分别保存。"
+      "Role switching shares one state; per-resource publishing controls market access and subscriptions, and existing project and user resources can be selected directly.",
+      "Capability adoption is explicitly bound to the work snapshot; upgrades do not rewrite earlier work.",
+      "A quality failure blocks the current delivery from passing; earlier failures remain viewable.",
+      "Security without a report stays unverified; a functional pass does not automatically become a production release.",
+      "Evaluation and publish are separate actions; a failed candidate can go back for revision.",
+      "Every record keeps its source type; fixed fixtures and real run results are stored separately."
     ],
     "navigation": [
-      "共享能力",
-      "项目（需求/知识/交付/验收）",
-      "作业与追溯",
-      "能力改进"
+      "Shared",
+      "Project (requirements/knowledge/delivery/acceptance)",
+      "Work and traceability",
+      "Capability improvement"
     ]
   }
 }
