@@ -35,7 +35,7 @@
 
 <basis, citing requirements / standards / evidence>
 
-## Consequences and rollback path [L3 required]
+## Impact and Rollback Path [L3 required]
 
 <impact>; rollback: <rollback approach>
 
