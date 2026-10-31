@@ -1,10 +1,10 @@
-# CVSS分级与内部标准
+# CVSS levels and internal standards
 
-| 级别 | CVSS | 处置 |
+| Level | CVSS | Handling |
 |------|------|------|
-| 严重 | ≥9.0 | 立即阻断，24小时内处置 |
-| 高 | 7.0–8.9 | 发布阻断，需修复或豁免 |
-| 中 | 4.0–6.9 | 限期修复 |
-| 低 | <4.0 | 跟踪修复 |
+| Critical | ≥9.0 | Block immediately, handle within 24 hours |
+| High | 7.0–8.9 | Blocks release; must be fixed or waived |
+| Medium | 4.0–6.9 | Fix within a deadline |
+| Low | <4.0 | Track and fix |
 
-豁免要求：理由+有效期+责任人，经安全负责人审批。
+Waiver requirements: reason + validity period + owner, approved by the security owner.

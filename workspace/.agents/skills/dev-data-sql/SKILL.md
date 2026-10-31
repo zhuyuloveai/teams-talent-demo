@@ -1,6 +1,6 @@
 ---
 name: dev-data-sql
-description: 高质量数据层开发：建表SQL、数据访问层、迁移脚本（含回滚）、ETL、SQL性能优化、事务一致性、脱敏权限与数据验证。表结构设计、SQL开发、数据迁移、ETL脚本开发时使用。
+description: "High-quality data-layer development: DDL SQL, data access layer, migration scripts (with rollback), ETL, SQL performance tuning, transactional consistency, masking/permissions and data validation. Use for table design, SQL development, data migration and ETL script development."
 ---
 
 ## 元数据

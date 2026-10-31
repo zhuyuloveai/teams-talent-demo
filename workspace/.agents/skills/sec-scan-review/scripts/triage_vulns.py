@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""漏洞分级聚合：读取扫描结果JSON，按CVSS分级，输出处置建议与豁免到期提醒。"""
+"""Vulnerability level aggregation: read the scan results JSON, classify by CVSS, and output handling recommendations and waiver expiry reminders."""
 import argparse, json, sys
 from datetime import date
 
 def level(cvss):
-    if cvss >= 9.0: return "严重"
-    if cvss >= 7.0: return "高"
-    if cvss >= 4.0: return "中"
-    return "低"
+    if cvss >= 9.0: return "Critical"
+    if cvss >= 7.0: return "High"
+    if cvss >= 4.0: return "Medium"
+    return "Low"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("scan_json", help="扫描结果JSON（list of {id,title,cvss,false_positive,waiver_until}）")
+    ap.add_argument("scan_json", help="Scan results JSON (list of {id,title,cvss,false_positive,waiver_until})")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:
@@ -26,7 +26,7 @@ def main():
         if v.get("false_positive"):
             report["false_positives"].append(v.get("id"))
             continue
-        if lv in ("严重", "高"):
+        if lv in ("Critical", "High"):
             report["open_high"].append({"id": v.get("id"), "cvss": v.get("cvss"), "waiver_until": v.get("waiver_until")})
             if v.get("waiver_until"):
                 try:

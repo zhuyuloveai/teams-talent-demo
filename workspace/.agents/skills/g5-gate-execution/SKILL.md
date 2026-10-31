@@ -1,6 +1,6 @@
 ---
 name: g5-gate-execution
-description: G5安全阶段门禁执行器，统一运行漏洞分诊校验并汇总结果
+description: "G5 security-phase gate runner. Runs the vulnerability triage check and summarizes the results."
 ---
 
 ## 元数据

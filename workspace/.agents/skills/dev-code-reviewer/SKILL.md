@@ -1,114 +1,114 @@
 ---
 name: dev-code-reviewer
-description: 辅助代码评审：自动检查编码规范、常见缺陷、架构一致性、安全漏洞，生成按严重级别分类、可定位到代码行的评审意见。MR提交后、代码评审前使用。
+description: "Assist code review: automatically check coding standards, common defects, architecture consistency and security vulnerabilities, and produce review comments classified by severity and located to the code line. Use after the MR is submitted and before code review."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 技术委员会 |
-| category | 岗位技能 |
+| owner | Dev / Technical committee |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-code-reviewer 技能
+# dev-code-reviewer skill
 
-## 概述
+## Overview
 
-本技能用于辅助代码评审，自动检查规范、缺陷、架构一致性与安全问题。
+This skill assists code review by automatically checking standards, defects, architecture consistency and security issues.
 
-## 工作流
+## Workflow
 
-1. 读取MR变更内容
-2. 运行静态扫描+安全扫描
-3. 按评审检查清单逐项检查
-4. 生成评审意见（按严重级别分类）
-5. 标注需人工重点关注的区域
+1. Read the MR changes
+2. Run the static scan + security scan
+3. Check each item of the review checklist
+4. Produce review comments (classified by severity)
+5. Mark the areas that need focused human attention
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 评审意见草案、热点初判、走查清单对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，MR 提交后代码评审前 | 评审会 + 评审人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Draft review comments, initial hotspot assessment, walkthrough checklist alignment | No review needed |
+| L2 Standard (default) | Default level for bank production; after MR submission and before code review | Review meeting + reviewer sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金划拨代码、权限校验逻辑、SQL 变更、密钥/凭证处理、监管报送字段、生产数据访问时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the change involves fund transfer code, permission check logic, SQL changes, key / credential handling, regulatory reporting fields or production data access, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3评审意见按致命/严重/告警分级且定位到文件:行
-- 标注需人工深入的高风险区域（金额/权限/SQL）
-- 字段级安全审查：金额计算（精度/溢出/正负）、权限校验（鉴权/越权/水平越权）、SQL（注入/全表/无索引）逐字段标注风险点
-- 异常路径覆盖：catch 块是否吞异常、是否泄露堆栈、是否未释放资源、是否继续执行敏感操作
-- 并发安全审查：共享变量是否有竞态、锁粒度是否合理、是否有死锁风险、ThreadLocal 是否清理
-- 事务一致性审查：事务边界是否正确、是否跨服务事务、是否有补偿与冲正、@Transactional 是否生效
-- 幂等性审查：写操作是否有幂等键、重复请求是否安全、状态机是否防重复流转
+- At L3, review comments are classified as fatal / critical / major and located to file:line
+- Mark the high-risk areas that need deep human review (amounts / permissions / SQL)
+- Field-level security review: mark risk points field by field for amount calculation (precision / overflow / sign), permission checks (authentication / privilege escalation / horizontal privilege escalation) and SQL (injection / full table scan / no index)
+- Exception path coverage: whether catch blocks swallow exceptions, leak stack traces, leave resources unreleased, or continue with sensitive operations
+- Concurrency safety review: race conditions on shared variables, reasonable lock granularity, deadlock risk, whether ThreadLocal is cleaned up
+- Transaction consistency review: correct transaction boundaries, cross-service transactions, compensation and reversal, whether @Transactional actually takes effect
+- Idempotency review: whether write operations have an idempotency key, whether duplicate requests are safe, whether the state machine prevents duplicate transitions
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 致命识别率100%（review_analyzer.py 热点全覆盖 + 人工复核确认）
-- [ ] 评审意见定位到文件:行（每条意见含 file:line）
-- [ ] 误报率<20%（人工抽检确认）
-- [ ] 高风险区域全部标注（金额/权限/SQL/密钥/监管字段）
-- [ ] 异常路径审查完成（吞异常/资源未释放/堆栈泄露）
-- [ ] 并发安全审查完成（竞态/死锁/锁粒度）
-- [ ] 事务与幂等审查完成（事务边界/幂等键/状态机）
+- [ ] Fatal detection rate 100% (review_analyzer.py covers all hotspots + confirmed by human review)
+- [ ] Review comments located to file:line (each comment includes file:line)
+- [ ] False-positive rate <20% (confirmed by human sampling)
+- [ ] All high-risk areas marked (amounts / permissions / SQL / keys / regulatory fields)
+- [ ] Exception path review complete (swallowed exceptions / unreleased resources / stack trace leaks)
+- [ ] Concurrency safety review complete (race conditions / deadlocks / lock granularity)
+- [ ] Transaction and idempotency review complete (transaction boundaries / idempotency keys / state machine)
 
-> 主模板含【L3必填】深度字段：`templates/review-comments-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/review-comments-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/code-review-checklist.md` | 评审检查清单 |
-| `templates/review-comments-template.md` | 评审意见模板 |
+| `templates/code-review-checklist.md` | Review checklist |
+| `templates/review-comments-template.md` | Review comments template |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/review_analyzer.py` | 变更影响分析与热点风险识别 | 0 |
+| `scripts/review_analyzer.py` | Change impact analysis and hotspot risk identification | 0 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/review-focus.md` | 评审重点区域指南 |
+| `references/review-focus.md` | Guide to review focus areas |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 致命问题识别率100%
-- [ ] 评审意见具体到行
-- [ ] 误报率<20%
+- [ ] Fatal issue detection rate 100%
+- [ ] Review comments specific to the line
+- [ ] False-positive rate <20%
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 误报过多 | 正常代码被标记为违规 | 规则持续调优 + 误报标注白名单 | 标注误报后复检 |
-| 遗漏深层逻辑问题 | 资金计算/权限/并发问题未识别 | 标记"需人工深入"区域 + L3 字段级审查 | 补 L3 审查项后重审 |
-| 热点漏标 | 大文件/高风险文件未进入热点 | review_analyzer.py 阈值调优 + 风险后缀覆盖 | 调阈值后重跑分析 |
-| 评审意见无行号 | 意见只到文件级无法定位 | 强制 file:line 格式 + 模板约束 | 补行号后重审 |
-| 安全漏洞遗漏 | SQL 注入/越权/密钥泄露未识别 | 接入 SAST 工具 + L3 安全专项审查 | 补安全审查后重审 |
-| 并发问题遗漏 | 竞态/死锁未识别 | L3 并发安全审查 + 并发单测 | 补并发审查后重审 |
-| 事务边界错误未识别 | @Transactional 失效/跨服务事务无补偿 | L3 事务一致性审查 + 事务单测 | 补事务审查后重审 |
+| Too many false positives | Normal code flagged as violations | Continuous rule tuning + allowlist of labeled false positives | Label the false positives and recheck |
+| Deep logic issues missed | Fund calculation / permission / concurrency issues not found | Mark "needs deep human review" areas + L3 field-level review | Add the L3 review items and review again |
+| Hotspots not marked | Large / high-risk files not in the hotspot list | Tune review_analyzer.py thresholds + cover risky suffixes | Adjust thresholds and rerun the analysis |
+| Review comments without line numbers | Comments only at file level and cannot be located | Enforce the file:line format + template constraints | Add line numbers and review again |
+| Security vulnerabilities missed | SQL injection / privilege escalation / key leaks not found | Integrate a SAST tool + L3 security-specific review | Add the security review and review again |
+| Concurrency issues missed | Race conditions / deadlocks not found | L3 concurrency safety review + concurrency unit tests | Add the concurrency review and review again |
+| Transaction boundary errors missed | @Transactional not effective / cross-service transaction without compensation | L3 transaction consistency review + transaction unit tests | Add the transaction review and review again |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入 MR 代码评审 | 评审检查清单、分级评审意见、热点清单 | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级安全审查、异常路径审查、并发安全审查、事务与幂等审查 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | MR code review starts | Review checklist, severity-classified review comments, hotspot list | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level security review, exception path review, concurrency safety review, transaction and idempotency review | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级安全审查与并发安全审查须由资深评审人与安全负责人共同确认；Agent 起草，资深评审人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the field-level security review and concurrency safety review must be confirmed jointly by a senior reviewer and the security owner. The Agent drafts; the senior reviewer confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

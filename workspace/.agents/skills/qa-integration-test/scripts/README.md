@@ -1,51 +1,51 @@
-# scripts/ — 集成测试技能脚本
+# scripts/ — Integration test skill scripts
 
-本目录包含 `qa-integration-test` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `qa-integration-test` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `interface_contract_test.py` | 接口契约自动化测试：比对契约字段与接口响应样例，检测 missing 字段 | 0/2/3 |
-| `data_flow_verify.py` | 端到端数据一致性校验：比对各系统数据导出的关键字段 key 集合 | 0/2/3 |
+| `interface_contract_test.py` | Automated interface contract test: compare contract fields with interface response samples and detect missing fields | 0/2/3 |
+| `data_flow_verify.py` | End-to-end data consistency check: compare the key sets of critical fields in each system's data export | 0/2/3 |
 
 ---
 
 ## interface_contract_test.py
 
-### 用途
-对接口契约进行自动化测试。比对契约 JSON 中定义的接口字段与响应样例 JSON 中的实际字段，检测 missing 字段（契约定义但响应中缺失），输出每个接口的校验结果与整体通过率。
+### Purpose
+Runs automated tests on interface contracts. Compares the interface fields defined in the contract JSON with the actual fields in the response sample JSON, detects missing fields (defined in the contract but absent from the response), and outputs the result per interface and the overall pass rate.
 
-### 接口
+### Interface
 ```
 python interface_contract_test.py <contract_json> <responses_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `contract_json` | 契约 JSON 文件路径，格式为 `{"interfaces": [{"name": "...", "fields": ["f1", "f2"]}]}` |
-| `responses_json` | 响应 JSON 文件路径，格式为 `[{"name": "...", "response": {"f1": "v1"}}]` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `contract_json` | Path of the contract JSON file, format `{"interfaces": [{"name": "...", "fields": ["f1", "f2"]}]}` |
+| `responses_json` | Path of the response JSON file, format `[{"name": "...", "response": {"f1": "v1"}}]` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 全部接口契约通过（无 missing 字段） |
-| 2 | 契约校验失败（有接口存在 missing 字段） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | All interface contracts passed (no missing fields) |
+| 2 | Contract check failed (some interface has missing fields) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-> 退出码优先级：参数错误（3） > 契约失败（2） > 通过（0）。
+> Exit code priority: argument error (3) > contract failure (2) > passed (0).
 
-### 检查项
-1. **JSON 解析**：读取并解析契约 JSON 与响应 JSON 文件，解析失败返回退出码 3。
-2. **接口匹配**：按 name 字段匹配契约接口与响应样例。
-3. **字段校验**：对每个接口，检查契约定义的 fields 是否全部存在于响应中，缺失字段记入 missing。
-4. **通过率计算**：pass_rate = 通过接口数 / 总接口数。
-5. **门禁判定**：所有接口无 missing → 通过（exit=0）；否则 → 失败（exit=2）。
+### Checks
+1. **JSON parsing**: read and parse the contract JSON and response JSON files; a parse failure returns exit code 3.
+2. **Interface matching**: match contract interfaces and response samples by the name field.
+3. **Field check**: for each interface, check that all fields defined in the contract exist in the response; missing fields go into missing.
+4. **Pass rate**: pass_rate = interfaces passed / total interfaces.
+5. **Gate decision**: no interface has missing fields → passed (exit=0); otherwise → failed (exit=2).
 
-### 输入 JSON 格式
-契约 JSON：
+### Input JSON format
+Contract JSON:
 ```json
 {
   "interfaces": [
@@ -55,7 +55,7 @@ python interface_contract_test.py <contract_json> <responses_json> [--json]
 }
 ```
 
-响应 JSON：
+Response JSON:
 ```json
 [
   {"name": "transferService", "response": {"txnId": "T001", "amount": 100, "status": "SUCCESS"}},
@@ -63,7 +63,7 @@ python interface_contract_test.py <contract_json> <responses_json> [--json]
 ]
 ```
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "results": [
@@ -74,65 +74,65 @@ python interface_contract_test.py <contract_json> <responses_json> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本契约测试
-python skills/qa-integration-test/scripts/interface_contract_test.py 契约.json 响应.json
+# Basic contract test
+python skills/qa-integration-test/scripts/interface_contract_test.py contract.json responses.json
 
-# JSON 输出（供 Agent 消费）
-python skills/qa-integration-test/scripts/interface_contract_test.py 契约.json 响应.json --json
+# JSON output (for the Agent)
+python skills/qa-integration-test/scripts/interface_contract_test.py contract.json responses.json --json
 
-# CI 门禁（退出码驱动，契约全通过才放行）
-python skills/qa-integration-test/scripts/interface_contract_test.py 契约.json 响应.json && echo "契约测试通过" || echo "契约测试失败"
+# CI gate (driven by exit code; passes only when every contract passes)
+python skills/qa-integration-test/scripts/interface_contract_test.py contract.json responses.json && echo "Contract test passed" || echo "Contract test failed"
 ```
 
-### 能力边界
-- 仅校验字段存在性，不校验字段类型与取值范围（需由接口测试工具如 Postman/JMeter 完成）。
-- 按 name 字段匹配接口，name 须在契约与响应中一致。
-- 不校验请求字段（仅校验响应字段）。
-- 不校验错误码与超时（需由接口测试用例覆盖）。
+### Limits
+- Only checks that fields exist; does not check field types or value ranges (use an interface test tool such as Postman / JMeter).
+- Interfaces are matched by the name field; the name must be identical in the contract and the response.
+- Does not check request fields (only response fields).
+- Does not check error codes or timeouts (cover them with interface test cases).
 
-### 单测对应
-`tests/test_scripts.py` 中 `qa-integration-test/interface_contract_test.py` 条目（3 用例）：
-- `contract_pass`：响应字段全覆盖契约 → exit=0，pass_rate=1.0
-- `contract_fail`：响应缺字段 → exit=2，missing 非空
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `qa-integration-test/interface_contract_test.py` entry in `tests/test_scripts.py` (3 cases):
+- `contract_pass`: response fields fully cover the contract → exit=0, pass_rate=1.0
+- `contract_fail`: response lacks a field → exit=2, missing is not empty
+- `missing_file`: file does not exist → exit=3, output contains `error`
 
 ---
 
 ## data_flow_verify.py
 
-### 用途
-对端到端数据流进行一致性校验。输入各系统数据导出 JSON，比对各系统关键字段 key 集合是否一致，检测跨系统数据不一致的字段，用于数据流一致性门禁。
+### Purpose
+Checks end-to-end data flow consistency. Takes each system's data export JSON as input, compares whether the key sets of critical fields are identical across systems, and detects fields that are inconsistent across systems. Used as the data flow consistency gate.
 
-### 接口
+### Interface
 ```
 python data_flow_verify.py <systems_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `systems_json` | 系统数据 JSON 文件路径，格式为 `{"systemA": [{"key": "k1", "value": "v1"}], "systemB": [{"key": "k1", "value": "v2"}]}` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `systems_json` | Path of the system data JSON file, format `{"systemA": [{"key": "k1", "value": "v1"}], "systemB": [{"key": "k1", "value": "v2"}]}` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 数据流一致（各系统 key 集合相同） |
-| 2 | 数据流不一致（有系统 key 集合不同） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | Data flow consistent (all systems have the same key set) |
+| 2 | Data flow inconsistent (some system has a different key set) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-> 退出码优先级：参数错误（3） > 不一致（2） > 一致（0）。
+> Exit code priority: argument error (3) > inconsistent (2) > consistent (0).
 
-### 检查项
-1. **JSON 解析**：读取并解析系统数据 JSON 文件，解析失败返回退出码 3。
-2. **key 集合提取**：对每个系统，提取所有记录的 key 字段，去重排序形成 key 集合。
-3. **一致性比对**：以第一个系统的 key 集合为基准，比对其他系统的 key 集合是否一致。
-4. **差异输出**：不一致的系统记入 inconsistent，输出差异字段（对称差集，最多20个）。
-5. **门禁判定**：所有系统 key 集合一致 → 通过（exit=0）；否则 → 失败（exit=2）。
+### Checks
+1. **JSON parsing**: read and parse the system data JSON file; a parse failure returns exit code 3.
+2. **Key set extraction**: for each system, extract the key field of every record, deduplicate and sort into a key set.
+3. **Consistency comparison**: using the first system's key set as the baseline, compare whether the other systems' key sets match.
+4. **Difference output**: inconsistent systems go into inconsistent, with the differing fields (symmetric difference, at most 20).
+5. **Gate decision**: all key sets identical → passed (exit=0); otherwise → failed (exit=2).
 
-### 输入 JSON 格式
+### Input JSON format
 ```json
 {
   "transferSystem": [
@@ -147,7 +147,7 @@ python data_flow_verify.py <systems_json> [--json]
 }
 ```
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "systems": 2,
@@ -158,26 +158,26 @@ python data_flow_verify.py <systems_json> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本数据流校验
-python skills/qa-integration-test/scripts/data_flow_verify.py 系统数据.json
+# Basic data flow check
+python skills/qa-integration-test/scripts/data_flow_verify.py system-data.json
 
-# JSON 输出（供 Agent 消费）
-python skills/qa-integration-test/scripts/data_flow_verify.py 系统数据.json --json
+# JSON output (for the Agent)
+python skills/qa-integration-test/scripts/data_flow_verify.py system-data.json --json
 
-# CI 门禁（退出码驱动，数据一致才放行）
-python skills/qa-integration-test/scripts/data_flow_verify.py 系统数据.json && echo "数据流一致" || echo "数据流不一致"
+# CI gate (driven by exit code; passes only when data is consistent)
+python skills/qa-integration-test/scripts/data_flow_verify.py system-data.json && echo "Data flow consistent" || echo "Data flow inconsistent"
 ```
 
-### 能力边界
-- 仅校验 key 集合一致性，不校验 value 值一致性（需由数据比对工具完成）。
-- 以第一个系统为基准，其他系统与之比对（基准系统选择影响结果）。
-- 差异字段最多输出20个（避免输出过大）。
-- 不校验数据时效性与顺序（仅校验 key 存在性）。
+### Limits
+- Only checks key set consistency, not value consistency (use a data comparison tool).
+- The first system is the baseline and the others are compared with it (the choice of baseline system affects the result).
+- At most 20 differing fields are output (to keep the output small).
+- Does not check data freshness or order (only key existence).
 
-### 单测对应
-`tests/test_scripts.py` 中 `qa-integration-test/data_flow_verify.py` 条目（3 用例）：
-- `data_consistent`：各系统 key 集合相同 → exit=0，consistent=true
-- `data_inconsistent`：系统间 key 集合不同 → exit=2，inconsistent 非空
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `qa-integration-test/data_flow_verify.py` entry in `tests/test_scripts.py` (3 cases):
+- `data_consistent`: all systems have the same key set → exit=0, consistent=true
+- `data_inconsistent`: key sets differ between systems → exit=2, inconsistent is not empty
+- `missing_file`: file does not exist → exit=3, output contains `error`

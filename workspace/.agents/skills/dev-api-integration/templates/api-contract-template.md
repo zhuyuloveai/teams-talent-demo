@@ -1,21 +1,21 @@
-# 接口契约
+# Interface contract
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 接口 | <路径/方法> |
-| 协议 | REST/gRPC/MQ |
-| 请求 | <schema> |
-| 响应 | <schema> |
-| 错误码 | <错误码表> |
-| 超时 | <时间> |
-| 幂等 | <幂等键> |
-| 鉴权 | <Token/签名> |
+| Interface | <path/method> |
+| Protocol | REST/gRPC/MQ |
+| Request | <schema> |
+| Response | <schema> |
+| Error codes | <error code table> |
+| Timeout | <duration> |
+| Idempotency | <idempotency key> |
+| Authentication | <Token/signature> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 契约schema | 请求/响应字段级 |
-| 幂等 | 幂等键与策略 |
+| Contract schema | Request/response at field level |
+| Idempotency | Idempotency key and strategy |

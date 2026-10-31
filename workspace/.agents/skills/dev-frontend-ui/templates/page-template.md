@@ -1,19 +1,19 @@
-# 页面模板
+# Page template
 
 ```text
-页面结构：
-  Header（面包屑/标题）
-  Content（表单/表格/列表，含三态）
-  Footer（操作区）
+Page structure:
+  Header (breadcrumb / title)
+  Content (form / table / list, with all three states)
+  Footer (action area)
 ```
 
-表单校验：实时校验、提交校验、错误提示；接口对接：Mock先行。
+Form validation: live validation, submit validation, error messages. API integration: mock first.
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 三态 | loading/error/empty |
-| 兼容矩阵 | 浏览器/分辨率 |
+| Three states | loading/error/empty |
+| Compatibility matrix | Browsers / resolutions |

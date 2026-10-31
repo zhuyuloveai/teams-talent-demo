@@ -1,54 +1,54 @@
-# 用户故事清单
+# User Story List
 
-## 文档信息
+## Document information
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 关联需求文档 | <需求说明书链接> |
-| 版本 | v<版本> |
-| 编写人 | BA Agent (A-01) |
-| 编写日期 | <日期> |
+| Linked requirement document | <link to the requirement specification> |
+| Version | v<version> |
+| Author | BA Agent (A-01) |
+| Date | <date> |
 
-## 故事清单
+## Story list
 
-### US-<序号> <故事标题>
+### US-<number> <story title>
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 用户角色 | <角色，如：个人客户> |
-| 需求关联 | REQ-<xxx> |
-| 优先级 | 必须 / 应该 / 可选 |
-| 故事描述 | 作为<角色>，我希望<功能>，以便<价值> |
-| 依赖 | <依赖的需求/系统/服务，无则填无> |
+| User role | <role, e.g. retail customer> |
+| Linked requirement | REQ-<xxx> |
+| Priority | Must / Should / Could |
+| Story description | As a <role>, I want <capability>, so that <value> |
+| Dependencies | <requirements/systems/services it depends on; "None" if none> |
 
-**验收标准：**
+**Acceptance criteria:**
 
-| 编号 | 前置条件（Given） | 操作（When） | 预期结果（Then） | 优先级 |
+| ID | Precondition (Given) | Action (When) | Expected result (Then) | Priority |
 |------|------------------|-------------|-----------------|--------|
-| AC-<序号>-01 | <可验证的前置状态> | <可观察的操作> | <可验证的结果> | 必须 |
+| AC-<number>-01 | <verifiable precondition> | <observable action> | <verifiable result> | Must |
 
 ---
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 数据准备 | Given前置状态的数据构造方式（含数据来源与构造脚本） |
-| 边界值 | min/min-1/max/max+1 用例覆盖 |
-| 异常路径 | 接口异常/超时/并发/幂等场景独立验收标准 |
-| 追溯矩阵 | AC编号↔US↔REQ↔TC 四向追溯 |
-| 幂等性 | 资金类操作重复提交的预期行为 |
-| 合规边界 | 监管类需求的限额上限/报送时效验收 |
+| Data preparation | How the Given data is constructed (with data source and construction script) |
+| Boundary values | Cases covering min/min-1/max/max+1 |
+| Exception paths | Separate acceptance criteria for interface error / timeout / concurrency / idempotency |
+| Traceability matrix | Four-way trace: AC ID↔US↔REQ↔TC |
+| Idempotency | Expected behavior for duplicate submissions of fund operations |
+| Compliance boundary | Limit cap / reporting deadline acceptance for regulatory requirements |
 
-### L3 故事深度字段示例
+### L3 story depth field example
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 数据准备 | 测试用户（CUSTOMER-001）+ 日累计限额参数（LIMIT-5000）+ 身份验证令牌（TOKEN-VALID） |
-| 边界值覆盖 | min=0、min-1=N/A、max=50000、max+1=50001 |
-| 异常路径 | 接口超时（3s）、身份验证失败、并发提交、幂等重试 |
-| 追溯矩阵 | AC-002-01↔US-002↔REQ-002↔TC-002-01 |
-| 幂等性 | 重复提交同一调整请求，返回首次处理结果，不重复变更限额 |
-| 合规边界 | 限额上限50000元（依据：央行令〔2018〕第2号），超出须柜面办理 |
+| Data preparation | Test user (CUSTOMER-001) + daily cumulative limit parameter (LIMIT-5000) + identity verification token (TOKEN-VALID) |
+| Boundary value coverage | min=0, min-1=N/A, max=50000, max+1=50001 |
+| Exception paths | Interface timeout (3s), identity verification failure, concurrent submission, idempotent retry |
+| Traceability matrix | AC-002-01↔US-002↔REQ-002↔TC-002-01 |
+| Idempotency | When the same adjustment request is submitted twice, return the first result and do not change the limit again |
+| Compliance boundary | Limit cap CNY 50000 (basis: PBOC Order [2018] No. 2); amounts above it must be handled at the counter |

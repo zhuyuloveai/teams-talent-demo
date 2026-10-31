@@ -1,6 +1,6 @@
 ---
 name: sdlc-ux-enhancer
-description: SDLC用户体验增强，提供进度看板、门禁旁路记录、Agent推荐引擎与一键全流程触发能力
+description: "SDLC user experience enhancements, providing a progress dashboard, gate bypass records, an Agent recommendation engine and one-click full-pipeline triggering."
 ---
 
 ## 元数据

@@ -1,14 +1,14 @@
-# 需求追踪矩阵 (RTM)
+# Requirement Traceability Matrix (RTM)
 
-| 需求 | 故事 | 用例 | 测试结果 | 变更 |
+| Requirement | Story | Test case | Test result | Change |
 |------|------|------|---------|------|
-| REQ-<xxx> | US-<xxx> | TC-<xxx> | 通过 | RFC-<xxx> |
+| REQ-<xxx> | US-<xxx> | TC-<xxx> | Passed | RFC-<xxx> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 全链路 | REQ→US→TC→测试→RFC→REL |
-| 缺口 | 断链项与责任人 |
+| Full chain | REQ→US→TC→Test→RFC→REL |
+| Gaps | Broken links and owners |

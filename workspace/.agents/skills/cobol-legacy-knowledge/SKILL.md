@@ -1,118 +1,118 @@
 ---
 name: cobol-legacy-knowledge
-description: 从存量AS/400 COBOL代码提取可追溯的业务与系统知识（L1–L5五层模型），并通过适配层转化为BA/Arch岗位消费格式。需求/设计任务涉及存量系统时使用。
+description: "Extract traceable business and system knowledge (the L1–L5 five-level model) from legacy AS/400 COBOL code, and convert it through an adapter layer into the formats consumed by the BA / Arch roles. Use when a requirement / design task involves a legacy system."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | BA/Arch / 存量系统负责人 |
-| category | 领域技能 |
+| owner | BA/Arch / Legacy system owner |
+| category | Domain skill |
 | priority | P0 |
 | depth | L2 |
 
-# cobol-legacy-knowledge 技能
+# cobol-legacy-knowledge skill
 
-## 概述
+## Overview
 
-本技能复用工作区已有 `extract-cobol-knowledge` 技能（位于 `.skill_build/extract-cobol-knowledge`），负责从存量AS/400 COBOL代码提取五层业务模型，并通过适配层（legacy_adapter.py）转化为BA/Arch岗位消费格式。
+This skill reuses the `extract-cobol-knowledge` skill that already exists in the workspace (under `.skill_build/extract-cobol-knowledge`). It extracts the five-level business model from legacy AS/400 COBOL code and converts it through the adapter layer (legacy_adapter.py) into the formats consumed by the BA / Arch roles.
 
-## 工作流
+## Workflow
 
-1. 定位代码库与成员类型（COBOL/copybook/DDS/CL/RPG）
-2. 运行 `scan_as400_codebase.py`（复用现有技能脚本）生成技术清单
-3. 读取程序与copybook/DDS，逐程序提取语义
-4. 自底向上构建L5→L1五层模型
-5. 每条事实标注证据（程序/段/行），不明处标记未解决
-6. 按 `output_profile`（ba_requirement / arch_design）调用适配层输出岗位消费格式
+1. Locate the codebase and member types (COBOL / copybook / DDS / CL / RPG)
+2. Run `scan_as400_codebase.py` (reusing the existing skill script) to produce the technical inventory
+3. Read the programs and copybooks / DDS, and extract semantics program by program
+4. Build the five-level model bottom-up, L5 → L1
+5. Annotate every fact with evidence (program / paragraph / line); mark anything unclear as unresolved
+6. Call the adapter layer with the `output_profile` (ba_requirement / arch_design) to output the role-specific format
 
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 存量代码初探、五层模型草拟、思路对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，需求/设计任务涉及存量AS/400 COBOL系统 | BA/Arch负责人审核 + 存量系统负责人签字 |
-| L3 实施级 | 存量代码迁移/业务连续性风险/监管报送涉及存量/首次解耦存量系统 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | First look at legacy code, draft five-level model, approach alignment | No review needed |
+| L2 Standard (default) | Default level for bank production; requirement / design task involves a legacy AS/400 COBOL system | BA / Arch owner review + legacy system owner sign-off |
+| L3 Implementation | Legacy code migration / business continuity risk / regulatory reporting involving the legacy system / first decoupling of a legacy system | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更、存量代码迁移、业务连续性风险（核心账务/支付/清算）、首次解耦存量系统时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces, production data changes, legacy code migration, business continuity risk (core accounting / payments / clearing) or the first decoupling of a legacy system, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3五层模型逐条带证据（程序/段/行）+未解决标记
-- 岗位适配输出（BA/Arch profile）可复现
-- 存量代码风险量化：受影响程序数、copybook数、DDS表数、接口数、交易笔数五项可计算，标注高风险程序（核心账务/支付/清算）
-- 迁移影响评估：须说明本次变更对存量COBOL程序的迁移影响（需修改程序数、新增程序数、废弃程序数、数据迁移量）
-- 业务连续性保障：须识别变更期间的业务连续性风险（停机时长、回退方案、应急流程），核心账务/支付/清算程序须有独立BCP
-- 适配层纯转换证据：legacy_adapter.py 输出须与原始五层模型一致（无推断/无臆造），可逐字段比对
-- 未解决项跟踪：每条未解决项须含责任人、预计解决时间、临时处置方案，不可遗漏
+- At L3, every item of the five-level model carries evidence (program / paragraph / line) + unresolved markers
+- The role-specific output (BA / Arch profile) is reproducible
+- Quantify the legacy code risk: five computable figures (affected programs, copybooks, DDS files, interfaces, transaction volume); mark high-risk programs (core accounting / payments / clearing)
+- Migration impact assessment: state the migration impact of this change on the legacy COBOL programs (programs to modify, programs to add, programs to retire, data migration volume)
+- Business continuity: identify the business continuity risks during the change (downtime, rollback plan, emergency procedure); core accounting / payments / clearing programs need their own BCP
+- Evidence that the adapter layer is a pure conversion: the legacy_adapter.py output must match the original five-level model (no inference / no fabrication) and be comparable field by field
+- Unresolved item tracking: every unresolved item needs an owner, an expected resolution date and an interim handling plan; none may be left out
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 五层模型每条事实引用证据（程序名/段名/行号三项齐全）
-- [ ] legacy_adapter.py 退出码 0 且 `profile` 字段非空（ba_requirement/arch_design）
-- [ ] 存量代码风险量化（程序数/copybook数/DDS表数/接口数/交易笔数五项）
-- [ ] 迁移影响评估（需修改/新增/废弃程序数 + 数据迁移量）
-- [ ] 业务连续性风险识别（停机时长/回退方案/应急流程），核心程序有独立BCP
-- [ ] 适配层输出与原始五层模型逐字段一致（无推断/无臆造）
-- [ ] 未解决项含责任人、预计解决时间、临时处置方案三项
+- [ ] Every fact in the five-level model cites evidence (program name / paragraph name / line number, all three)
+- [ ] legacy_adapter.py exit code 0 and the `profile` field not empty (ba_requirement / arch_design)
+- [ ] Legacy code risk quantified (programs / copybooks / DDS files / interfaces / transaction volume, all five)
+- [ ] Migration impact assessed (programs to modify / add / retire + data migration volume)
+- [ ] Business continuity risks identified (downtime / rollback plan / emergency procedure); core programs have their own BCP
+- [ ] Adapter output matches the original five-level model field by field (no inference / no fabrication)
+- [ ] Unresolved items have owner, expected resolution date and interim handling plan (all three)
 
-> 主模板含【L3必填】深度字段：`templates/five-level-model.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/five-level-model.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/five-level-model.md` | L1–L5模型结构 |
-| `templates/output-schema.json` | 结构化输出Schema |
+| `templates/five-level-model.md` | L1–L5 model structure |
+| `templates/output-schema.json` | Structured output schema |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/legacy_adapter.py` | 五层模型 → 岗位消费格式（纯转换，不做推断） |
-| 复用 | `scripts/scan_as400_codebase.py（已内置）` |
+| `scripts/legacy_adapter.py` | Five-level model → role-specific format (pure conversion, no inference) |
+| Reused | `scripts/scan_as400_codebase.py (bundled)` |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/adaptation-map.md` | 五层模型→SDLC产出物映射 |
-| 复用 | `references/five-level-model.md（已内置）`、`as400-cobol-guide.md`、`output-schema.md` |
+| `references/adaptation-map.md` | Five-level model → SDLC artifact mapping |
+| Reused | `references/five-level-model.md (bundled)`, `as400-cobol-guide.md`, `output-schema.md` |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 每条事实引用证据
-- [ ] 不明之处标记未解决
-- [ ] 适配层输出与原始模型一致（无推断）
+- [ ] Every fact cites evidence
+- [ ] Anything unclear is marked unresolved
+- [ ] Adapter output matches the original model (no inference)
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 臆造规则 | 五层模型事实无证据引用 | 强制证据（程序名/段名/行号）+ 未解决标记 | 补全证据或标记未解决后重提交 |
-| 扫描与解读脱节 | 扫描结果与五层模型不一致 | 原始扫描结果独立存档 + 逐字段比对 | 重新解读并比对后重提交 |
-| 适配层推断 | legacy_adapter.py 输出含原始模型外信息 | 适配层纯转换校验（无推断/无臆造） | 修正适配层输出后重跑脚本 |
-| 存量风险未量化 | 仅写"影响较大"，无程序数/客户数/交易笔数 | 模板强制五项量化字段 | 补全量化数据后重提交 |
-| 迁移影响缺失 | 无需修改/新增/废弃程序数与数据迁移量 | 迁移影响评估章节强制 | 补全迁移影响后重提交 |
-| 业务连续性遗漏 | 核心程序无BCP/回退方案 | L3强制业务连续性章节 | 补全BCP与回退方案后重提交 |
-| 未解决项遗漏 | 未解决项无责任人/预计解决时间 | 未解决项跟踪字段必填 | 补全三项字段后重提交 |
+| Fabricated rules | Facts in the five-level model have no evidence | Mandatory evidence (program name / paragraph name / line number) + unresolved markers | Complete the evidence or mark as unresolved, then resubmit |
+| Scan and interpretation disconnected | Scan results disagree with the five-level model | Archive the raw scan results separately + compare field by field | Reinterpret, compare and resubmit |
+| Adapter inference | legacy_adapter.py output contains information not in the original model | Check that the adapter is a pure conversion (no inference / no fabrication) | Fix the adapter output and rerun the script |
+| Legacy risk not quantified | Only says "large impact", with no number of programs / customers / transactions | Template enforces five quantified fields | Complete the quantified data and resubmit |
+| Missing migration impact | No count of programs to modify / add / retire, no data migration volume | Migration impact assessment section is mandatory | Complete the migration impact and resubmit |
+| Business continuity missed | Core programs have no BCP / rollback plan | L3 enforces the business continuity section | Complete the BCP and rollback plan and resubmit |
+| Unresolved items incomplete | Unresolved items have no owner / expected resolution date | Unresolved item tracking fields are required | Complete all three fields and resubmit |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 需求/设计任务涉及存量AS/400 COBOL系统 | 全部【L2必填】章节（代码库定位/技术清单/五层模型/证据标注/岗位适配） | 评审退回，降为草稿 |
-| L2 → L3 | 存量代码迁移/业务连续性风险/监管报送涉及存量/首次解耦存量系统 | 存量风险五项量化、迁移影响评估、业务连续性BCP、适配层纯转换证据、未解决项跟踪 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Requirement / design task involves a legacy AS/400 COBOL system | All [L2 required] sections (codebase location / technical inventory / five-level model / evidence annotation / role adaptation) | Review rejected, downgrade to draft |
+| L2 → L3 | Legacy code migration / business continuity risk / regulatory reporting involving the legacy system / first decoupling of a legacy system | Five quantified legacy risk figures, migration impact assessment, business continuity BCP, evidence of pure adapter conversion, unresolved item tracking | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的存量代码风险量化与业务连续性保障须由 BA/Arch 与存量系统负责人共同确认；Agent 起草五层模型与适配产出，存量系统负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the legacy code risk quantification and business continuity plan must be confirmed jointly by BA / Arch and the legacy system owner. The Agent drafts the five-level model and the adapted output; the legacy system owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

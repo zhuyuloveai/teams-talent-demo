@@ -1,118 +1,118 @@
 ---
 name: qa-uat-support
-description: 支持业务用户完成UAT：范围确认、场景梳理、用例评审、环境数据准备、培训支持、执行跟踪与验收材料。UAT阶段用户验收测试支持与协调时使用。
+description: "Support business users through UAT: scope confirmation, scenario mapping, case review, environment and data preparation, training and support, execution tracking and acceptance materials. Use for supporting and coordinating user acceptance testing in the UAT phase."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | QA / UAT协调人 |
-| category | 岗位技能 |
+| owner | QA / UAT coordinator |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# qa-uat-support 技能
+# qa-uat-support skill
 
-## 概述
+## Overview
 
-本技能用于支持业务用户完成UAT，确保业务验收顺利高效。
+This skill supports business users through UAT so that business acceptance runs smoothly and efficiently.
 
-## 工作流
+## Workflow
 
-1. UAT准备：范围确认、场景梳理、UAT计划
-2. 用例评审：评审业务用户编写的UAT用例
-3. 环境与数据：部署检查、脱敏数据准备、账号权限
-4. 培训与支持：操作培训、FAQ、实时答疑
-5. 执行跟踪：进度、问题分类（缺陷/变更/操作）
-6. 缺陷管理：登记、分派、验证关闭、趋势
-7. UAT报告：执行汇总、缺陷分析、验收意见、遗留风险
-8. 验收支持：协助业务负责人签字，整理验收材料
+1. UAT preparation: scope confirmation, scenario mapping, UAT plan
+2. Case review: review the UAT cases written by business users
+3. Environment and data: deployment check, masked data preparation, accounts and permissions
+4. Training and support: operation training, FAQ, live Q&A
+5. Execution tracking: progress, issue classification (defect / change / operation)
+6. Defect management: logging, assignment, verification and closure, trends
+7. UAT report: execution summary, defect analysis, acceptance opinion, residual risks
+8. Acceptance support: help the business owner sign off, compile the acceptance materials
 
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | UAT支持思路探索、场景梳理讨论、Demo 走查 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，UAT阶段用户验收测试支持与协调 | UAT评审会 + QA负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Exploring the UAT support approach, scenario mapping discussion, demo walkthrough | No review needed |
+| L2 Standard (default) | Default level for bank production; supporting and coordinating user acceptance testing in the UAT phase | UAT review meeting + QA owner sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更、资金冲正/幂等场景UAT、核心账务系统首次上线UAT时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: for UAT involving anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces, production data changes, fund reversal / idempotency scenarios, or the first go-live of a core accounting system, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 输出UAT场景映射+问题分类（缺陷/变更/操作）+验收材料，问题分类由 uat_defect_classifier.py 自动初判
-- 核心业务场景100%覆盖，场景映射含业务流程↔UAT用例↔验收标准三向追溯
-- UAT进度由 uat_progress_tracker.py 每日汇总，执行率与通过率数据与实际一致
-- 环境与数据贴近生产：脱敏生产数据、数据量级折算、账号权限与生产一致
-- UAT用例须经业务负责人确认签字，资金类场景须有业务验收标准
-- 验收材料完整：UAT报告、缺陷分析、验收意见、遗留风险、业务负责人签字
+- Output UAT scenario mapping + issue classification (defect / change / operation) + acceptance materials; issues are classified first by uat_defect_classifier.py
+- Core business scenarios 100% covered; the scenario mapping traces three ways: business process ↔ UAT case ↔ acceptance criteria
+- uat_progress_tracker.py summarizes UAT progress daily; execution rate and pass rate match the actual data
+- Environment and data close to production: masked production data, scaled data volumes, accounts and permissions identical to production
+- UAT cases must be confirmed and signed by the business owner; fund-related scenarios must have business acceptance criteria
+- Complete acceptance materials: UAT report, defect analysis, acceptance opinion, residual risks, business owner sign-off
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 核心业务场景100%覆盖（场景映射无遗漏）
-- [ ] UAT用例经业务负责人确认签字
-- [ ] 问题分类准确（uat_defect_classifier.py 初判 + 人工复核）
-- [ ] UAT进度由 uat_progress_tracker.py 每日汇总且数据一致
-- [ ] 环境数据贴近生产（脱敏数据+量级折算+账号权限一致）
-- [ ] 资金类场景有业务验收标准
-- [ ] 验收材料完整（UAT报告/缺陷分析/验收意见/遗留风险/签字）
+- [ ] Core business scenarios 100% covered (nothing missing from the scenario mapping)
+- [ ] UAT cases confirmed and signed by the business owner
+- [ ] Accurate issue classification (initial classification by uat_defect_classifier.py + human review)
+- [ ] UAT progress summarized daily by uat_progress_tracker.py, with consistent data
+- [ ] Environment data close to production (masked data + scaled volumes + identical accounts and permissions)
+- [ ] Fund-related scenarios have business acceptance criteria
+- [ ] Acceptance materials complete (UAT report / defect analysis / acceptance opinion / residual risks / sign-off)
 
-> 主模板含【L3必填】深度字段：`templates/uat-plan-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/uat-plan-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/uat-plan-template.md` | UAT计划 |
-| `templates/uat-report-template.md` | UAT报告 |
+| `templates/uat-plan-template.md` | UAT plan |
+| `templates/uat-report-template.md` | UAT report |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/uat_progress_tracker.py` | UAT进度与问题跟踪 |
-| `scripts/uat_defect_classifier.py` | UAT问题自动分类 |
+| `scripts/uat_progress_tracker.py` | UAT progress and issue tracking |
+| `scripts/uat_defect_classifier.py` | Automatic UAT issue classification |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/uat-guide.md` | UAT管理流程 |
+| `references/uat-guide.md` | UAT management process |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 核心业务场景100%覆盖
-- [ ] UAT用例经业务确认
-- [ ] 环境数据贴近生产
+- [ ] Core business scenarios 100% covered
+- [ ] UAT cases confirmed by the business
+- [ ] Environment data close to production
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 业务用户时间不够 | UAT执行进度缓慢，核心场景未覆盖 | 提前协调时间+集中UAT+并行执行 | 重新协调时间后继续UAT |
-| 需求理解偏差 | UAT用例与业务实际流程不符 | UAT前业务走查+操作培训+用例确认签字 | 修正用例后重新确认 |
-| 环境/数据问题 | UAT环境故障或数据不贴近生产 | UAT前预演检查+脱敏数据+量级折算 | 修复环境/数据后重跑 |
-| 问题分类不准 | 缺陷/变更/操作分类错误 | uat_defect_classifier.py 初判 + 人工复核 | 重新分类后重审 |
-| 核心场景未覆盖 | UAT结束后核心业务场景有遗漏 | 场景映射门禁（业务流程↔用例↔验收标准） | 补充场景用例后重测 |
-| 用例未经业务确认 | UAT用例未经业务负责人签字 | 用例确认签字门禁 | 补充签字后重审 |
-| 验收材料不全 | 缺UAT报告/缺陷分析/验收意见/签字 | 验收材料清单门禁（五要素齐全） | 补充缺失材料后重审 |
+| Business users short on time | Slow UAT progress, core scenarios not covered | Book time early + focused UAT sessions + parallel execution | Rebook time and continue UAT |
+| Requirement misunderstanding | UAT cases do not match the real business process | Business walkthrough before UAT + operation training + signed case confirmation | Fix the cases and confirm again |
+| Environment / data problems | UAT environment failures or data not close to production | Dry-run check before UAT + masked data + scaled volumes | Fix the environment / data and rerun |
+| Inaccurate issue classification | Defect / change / operation misclassified | Initial classification by uat_defect_classifier.py + human review | Reclassify and review again |
+| Core scenarios not covered | Core business scenarios missing after UAT ends | Scenario mapping gate (business process ↔ case ↔ acceptance criteria) | Add scenario cases and test again |
+| Cases not confirmed by the business | UAT cases not signed by the business owner | Case confirmation sign-off gate | Get the sign-off and review again |
+| Incomplete acceptance materials | Missing UAT report / defect analysis / acceptance opinion / sign-off | Acceptance materials checklist gate (all five elements) | Add the missing materials and review again |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式UAT支持 | 全部【L2必填】章节（范围确认/用例评审/环境数据/培训支持/执行跟踪/缺陷管理/UAT报告/验收支持） | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 场景映射三向追溯、问题分类自动初判、进度脚本汇总、环境数据贴近生产、业务确认签字、验收材料五要素 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Formal UAT support starts | All [L2 required] sections (scope confirmation / case review / environment and data / training and support / execution tracking / defect management / UAT report / acceptance support) | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Three-way scenario mapping traceability, automatic initial issue classification, scripted progress summary, environment data close to production, business sign-off, five elements of acceptance materials | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的UAT用例与验收标准须由业务负责人确认签字；Agent 起草，业务负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, UAT cases and acceptance criteria must be confirmed and signed by the business owner. The Agent drafts; the business owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

@@ -2,101 +2,101 @@
 template_name: impact-checklist
 version: 1.0.0
 owner: BA / Arch
-description: 需求影响分析检查清单
+description: Requirement impact analysis checklist
 ---
 
-# {{需求名称}} 影响分析检查清单
+# {{Requirement name}} Impact Analysis Checklist
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 需求编号 | REQ-{{YYYY}}-{{NNN}} |
-| 分析日期 | {{YYYY-MM-DD}} |
-| 分析人 | {{分析人}} |
+| Requirement ID | REQ-{{YYYY}}-{{NNN}} |
+| Analysis date | {{YYYY-MM-DD}} |
+| Analyst | {{analyst}} |
 
-## 影响维度检查
+## Impact dimension checks
 
-### 业务影响 [必检]
+### Business impact [mandatory]
 
-- [ ] 影响的业务线/部门
-- [ ] 影响的业务流程
-- [ ] 对业务运营的影响（正面/负面）
-- [ ] 业务用户需要培训吗？
-- [ ] 业务制度/操作规程需要更新吗？
+- [ ] Affected business lines/departments
+- [ ] Affected business processes
+- [ ] Impact on business operations (positive/negative)
+- [ ] Do business users need training?
+- [ ] Do business policies/operating procedures need updating?
 
-### 系统影响 [必检]
+### System impact [mandatory]
 
-- [ ] 涉及的系统清单
-- [ ] 新增/修改的功能模块
-- [ ] 接口变更（入/出）
-- [ ] 数据模型变更
-- [ ] 性能影响
-- [ ] 安全影响
-- [ ] 可用性影响
+- [ ] List of systems involved
+- [ ] New/modified functional modules
+- [ ] Interface changes (inbound/outbound)
+- [ ] Data model changes
+- [ ] Performance impact
+- [ ] Security impact
+- [ ] Availability impact
 
-### 数据影响 [必检]
+### Data impact [mandatory]
 
-- [ ] 新增/修改的数据实体
-- [ ] 存量数据迁移需求
-- [ ] 数据量变化
-- [ ] 数据安全等级变化
-- [ ] 数据保留期限变化
+- [ ] New/modified data entities
+- [ ] Migration of existing data
+- [ ] Change in data volume
+- [ ] Change in data security level
+- [ ] Change in data retention period
 
-### 接口影响 [条件必填]
+### Interface impact [conditionally required]
 
-- [ ] 新增接口
-- [ ] 修改现有接口（是否影响现有调用方？）
-- [ ] 接口协议变化
-- [ ] 上下游系统影响
+- [ ] New interfaces
+- [ ] Changes to existing interfaces (do they affect existing callers?)
+- [ ] Interface protocol changes
+- [ ] Impact on upstream and downstream systems
 
-### 人员/组织影响 [必检]
+### People/organization impact [mandatory]
 
-- [ ] 新增角色/岗位
-- [ ] 岗位职责变化
-- [ ] 人员培训需求
-- [ ] 操作习惯改变
+- [ ] New roles/positions
+- [ ] Changes to job responsibilities
+- [ ] Training needs
+- [ ] Changes to working habits
 
-### 合规影响 [必检]
+### Compliance impact [mandatory]
 
-- [ ] 涉及新的监管要求
-- [ ] 现有合规要求变化
-- [ ] SoD职责分离变化
-- [ ] 审计要求变化
+- [ ] New regulatory requirements involved
+- [ ] Changes to existing compliance requirements
+- [ ] Changes to SoD (segregation of duties)
+- [ ] Changes to audit requirements
 
-### 运维影响 [条件必填]
+### Operations impact [conditionally required]
 
-- [ ] 新增监控项
-- [ ] 运维操作变化
-- [ ] 发布/回滚复杂度变化
-- [ ] 支持/维护成本变化
+- [ ] New monitoring items
+- [ ] Changes to operational procedures
+- [ ] Change in release/rollback complexity
+- [ ] Change in support/maintenance cost
 
-## 影响汇总
+## Impact summary
 
-| 维度 | 影响程度 | 说明 |
+| Dimension | Impact level | Notes |
 |------|---------|------|
-| 业务 | 高/中/低 | ... |
-| 系统 | 高/中/低 | ... |
-| 数据 | 高/中/低 | ... |
-| 人员 | 高/中/低 | ... |
-| 合规 | 高/中/低 | ... |
-| 运维 | 高/中/低 | ... |
+| Business | High/Medium/Low | ... |
+| System | High/Medium/Low | ... |
+| Data | High/Medium/Low | ... |
+| People | High/Medium/Low | ... |
+| Compliance | High/Medium/Low | ... |
+| Operations | High/Medium/Low | ... |
 
-## 受影响的干系人
+## Affected stakeholders
 
-| 角色/部门 | 影响内容 | 通知方式 |
+| Role/department | Impact | Notification |
 |-----------|---------|---------|
-| {{部门/角色}} | {{影响内容}} | 会议/邮件/通知 |
+| {{department/role}} | {{impact}} | Meeting/email/notice |
 
-## 风险与建议
+## Risks and recommendations
 
-（本次变更的主要风险和应对建议）
+(Main risks of this change and recommended mitigations)
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 字段级需求表 | 功能需求逐字段定义类型/必填/格式/校验/默认值/来源 |
-| 异常与错误矩阵 | 异常场景/系统行为/错误码/用户提示四要素 |
-| 数据字典 | 实体/字段/含义/约束/来源 |
-| 场景矩阵 | 正常/边界/异常 × 角色/数据/接口 × 预期 |
+| Field-level requirement table | Type / required / format / validation / default / source defined per field of each functional requirement |
+| Exception and error matrix | Four elements: exception scenario / system behavior / error code / user message |
+| Data dictionary | Entity / field / meaning / constraint / source |
+| Scenario matrix | Happy / boundary / exception × role / data / interface × expected result |

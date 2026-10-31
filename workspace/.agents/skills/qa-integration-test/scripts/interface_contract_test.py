@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""接口契约自动化测试：比对契约字段与接口响应样例。"""
+"""Automated interface contract test: compare contract fields with interface response samples."""
 import argparse, json, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("contract_json", help="契约JSON: {interfaces:[{name, fields}]}")
-    ap.add_argument("responses_json", help="响应JSON: [{name, response:{...}}]")
+    ap.add_argument("contract_json", help="Contract JSON: {interfaces:[{name, fields}]}")
+    ap.add_argument("responses_json", help="Response JSON: [{name, response:{...}}]")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:

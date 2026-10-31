@@ -1,146 +1,146 @@
-# <功能名称> 需求说明书
+# <Feature name> Requirement Specification
 
-> 深度标记：【L2必填】标准评审级必须包含；【L3必填】实施级必须包含（高风险/监管/复杂集成）。
+> Depth markers: [L2 required] must be present at the standard review level; [L3 required] must be present at the implementation level (high risk / regulatory / complex integration).
 
-## 文档信息
+## Document information
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 文档编号 | REQ-<年份>-<seq> |
-| 版本 | v<版本> |
-| 业务负责人 | <角色> |
-| 需求来源 | <来源工单/诉求> |
+| Document ID | REQ-<year>-<seq> |
+| Version | v<version> |
+| Business owner | <role> |
+| Requirement source | <source ticket/request> |
 
-## 修订记录
+## Revision history
 
-| 版本 | 日期 | 修改人 | 修改内容 |
+| Version | Date | Changed by | Change |
 |------|------|--------|---------|
-| v1.0 | <日期> | BA Agent | 初稿 |
+| v1.0 | <date> | BA Agent | First draft |
 
-## 1. 背景与目标 【L2必填】
+## 1. Background and goals [L2 required]
 
-### 1.1 业务背景
+### 1.1 Business background
 
-<为什么做>
+<why we do it>
 
-### 1.2 业务目标（可量化）
+### 1.2 Business goals (quantified)
 
-| 目标 | 量化指标 |
+| Goal | Metric |
 |------|---------|
-| <目标> | <指标> |
+| <goal> | <metric> |
 
-### 1.3 术语表 【L3必填】
+### 1.3 Glossary [L3 required]
 
-| 术语 | 定义 |
+| Term | Definition |
 |------|------|
-| <术语> | <定义> |
+| <term> | <definition> |
 
-## 2. 用户角色与权限 【L2必填】
+## 2. User roles and permissions [L2 required]
 
-| 角色 | 职责 | 权限点 |
+| Role | Responsibilities | Permissions |
 |------|------|--------|
-| <角色> | <职责> | <权限> |
+| <role> | <responsibilities> | <permissions> |
 
-## 3. 范围定义 【L2必填】
+## 3. Scope definition [L2 required]
 
 ### 3.1 In-Scope / Out-of-Scope
 
-<范围>
+<scope>
 
-### 3.2 假设与依赖
+### 3.2 Assumptions and dependencies
 
-<假设/依赖>
+<assumptions/dependencies>
 
-## 4. 功能需求 【L2必填】
+## 4. Functional requirements [L2 required]
 
-### 4.1 功能清单总览
+### 4.1 Feature overview
 
-| 模块 | 功能点 | 优先级 | 来源 |
+| Module | Feature | Priority | Source |
 |------|--------|--------|------|
-| <模块> | <功能> | 必须/应该/可选 | <来源> |
+| <module> | <feature> | Must/Should/Could | <source> |
 
-### 4.2 详细功能需求（每条REQ）
+### 4.2 Detailed functional requirements (one per REQ)
 
-#### REQ-<seq> <功能名称>
+#### REQ-<seq> <feature name>
 
-**功能描述**：<描述>
+**Description**: <description>
 
-**字段级需求表 【L3必填】**：
+**Field-level requirement table [L3 required]**:
 
-| 字段 | 类型 | 必填 | 格式/校验 | 默认值 | 来源 |
+| Field | Type | Required | Format/validation | Default | Source |
 |------|------|------|----------|--------|------|
-| <字段> | <类型> | 是/否 | <校验规则> | <默认> | <来源> |
+| <field> | <type> | Yes/No | <validation rule> | <default> | <source> |
 
-**异常矩阵 【L3必填】**：
+**Exception matrix [L3 required]**:
 
-| 异常场景 | 系统行为 | 错误码 | 用户提示 |
+| Exception scenario | System behavior | Error code | User message |
 |---------|---------|--------|---------|
-| <异常> | <行为> | <码> | <提示> |
+| <exception> | <behavior> | <code> | <message> |
 
-## 5. 业务规则 【L2必填】
+## 5. Business rules [L2 required]
 
-| 编号 | 规则 | 来源 | 优先级 | 验证点 |
+| ID | Rule | Source | Priority | Verification point |
 |------|------|------|--------|--------|
-| BR-<seq> | <规则> | <来源> | 必须 | <验证点> |
+| BR-<seq> | <rule> | <source> | Must | <verification point> |
 
-## 6. 非功能需求 【L2必填】
+## 6. Non-functional requirements [L2 required]
 
-| 维度 | 指标 | 验证方法 |
+| Dimension | Metric | Verification method |
 |------|------|---------|
-| 性能 | <指标> | <方法> |
-| 安全 | <要求> | <方法> |
+| Performance | <metric> | <method> |
+| Security | <requirement> | <method> |
 
-## 7. 接口与集成 【L2必填】
+## 7. Interfaces and integration [L2 required]
 
-| 接口 | 方向 | 说明 |
+| Interface | Direction | Description |
 |------|------|------|
-| <接口> | <方向> | <说明> |
+| <interface> | <direction> | <description> |
 
-## 8. 数据需求 【L2必填】
+## 8. Data requirements [L2 required]
 
-### 8.1 数据字典 【L3必填】
+### 8.1 Data dictionary [L3 required]
 
-| 实体/字段 | 含义 | 类型/约束 | 来源 |
+| Entity/field | Meaning | Type/constraint | Source |
 |-----------|------|----------|------|
-| <字段> | <含义> | <约束> | <来源> |
+| <field> | <meaning> | <constraint> | <source> |
 
-### 8.2 数据安全 【L2必填】
+### 8.2 Data security [L2 required]
 
-<脱敏/加密/留存要求>
+<masking/encryption/retention requirements>
 
-## 9. 场景矩阵 【L3必填】
+## 9. Scenario matrix [L3 required]
 
-| 场景 | 角色 | 数据/接口 | 预期 |
+| Scenario | Role | Data/interface | Expected result |
 |------|------|-----------|------|
-| <场景> | <角色> | <数据> | <预期> |
+| <scenario> | <role> | <data> | <expected result> |
 
-## 10. 验收标准（可执行化）【L2必填】
+## 10. Acceptance criteria (executable) [L2 required]
 
-| 故事 | Given | When | Then | 数据准备 |
+| Story | Given | When | Then | Data preparation |
 |------|-------|------|------|---------|
-| US-<seq> | <前置> | <操作> | <预期> | <数据> |
+| US-<seq> | <precondition> | <action> | <expected result> | <data> |
 
-## 11. 依赖与约束 【L2必填】
+## 11. Dependencies and constraints [L2 required]
 
-<约束>
+<constraints>
 
-## 12. 风险与假设 【L2必填】
+## 12. Risks and assumptions [L2 required]
 
-| 风险/假设 | 影响 | 应对 |
+| Risk/assumption | Impact | Mitigation |
 |-----------|------|------|
-| <项> | <影响> | <应对> |
+| <item> | <impact> | <mitigation> |
 
-## 13. 合规标注 【L2必填】
+## 13. Compliance notes [L2 required]
 
-<监管/制度/SoD要求>
+<regulatory/policy/SoD requirements>
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 字段级需求表 | 功能需求逐字段定义类型/必填/格式/校验/默认值/来源 |
-| 异常与错误矩阵 | 异常场景/系统行为/错误码/用户提示四要素 |
-| 数据字典 | 实体/字段/含义/约束/来源 |
-| 场景矩阵 | 正常/边界/异常 × 角色/数据/接口 × 预期 |
+| Field-level requirement table | Type / required / format / validation / default / source defined per field of each functional requirement |
+| Exception and error matrix | Four elements: exception scenario / system behavior / error code / user message |
+| Data dictionary | Entity / field / meaning / constraint / source |
+| Scenario matrix | Happy / boundary / exception × role / data / interface × expected result |

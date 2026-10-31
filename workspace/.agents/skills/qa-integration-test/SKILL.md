@@ -1,120 +1,120 @@
 ---
 name: qa-integration-test
-description: 确保跨系统/跨模块集成正确：集成范围确认、SIT环境规划、接口/数据流/业务场景/异常容错/幂等测试与联调管理。SIT阶段多系统/模块集成测试设计与执行时使用。
+description: "Ensure cross-system / cross-module integration is correct: integration scope confirmation, SIT environment planning, interface / data flow / business scenario / exception and fault tolerance / idempotency tests, and integration management. Use for designing and running multi-system / multi-module integration tests in the SIT phase."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | QA / 集成测试负责人 |
-| category | 岗位技能 |
+| owner | QA / Integration test owner |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# qa-integration-test 技能
+# qa-integration-test skill
 
-## 概述
+## Overview
 
-本技能用于确保跨系统/跨模块的接口、数据、业务流程集成正确。
+This skill ensures that interfaces, data and business processes integrate correctly across systems / modules.
 
-## 工作流
+## Workflow
 
-1. 集成范围确认：系统/模块/接口/数据流/依赖关系
-2. SIT环境规划：拓扑、部署顺序、数据准备
-3. 接口测试用例：请求/响应格式、字段、错误码、超时、重试
-4. 数据流测试：端到端一致性、字段映射、转换规则
-5. 业务场景测试：跨系统业务流程串联
-6. 异常与容错：接口超时、下游故障、降级/熔断、重试
-7. 幂等性测试：重复提交、消息重投、网络抖动
-8. 联调执行管理：计划、进度、问题定位、缺陷归属
-9. 集成测试报告：覆盖率、缺陷、风险、结论
+1. Confirm the integration scope: systems / modules / interfaces / data flows / dependencies
+2. Plan the SIT environment: topology, deployment order, data preparation
+3. Interface test cases: request / response format, fields, error codes, timeouts, retries
+4. Data flow tests: end-to-end consistency, field mapping, transformation rules
+5. Business scenario tests: chain business processes across systems
+6. Exceptions and fault tolerance: interface timeouts, downstream failures, degradation / circuit breaking, retries
+7. Idempotency tests: duplicate submission, message redelivery, network jitter
+8. Integration execution management: plan, progress, issue diagnosis, defect ownership
+9. Integration test report: coverage, defects, risks, conclusion
 
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | SIT设计思路探索、集成范围讨论、Demo 走查 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，SIT阶段集成测试设计与执行 | 测试评审会 + QA负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Exploring the SIT design approach, integration scope discussion, demo walkthrough | No review needed |
+| L2 Standard (default) | Default level for bank production; integration test design and execution in the SIT phase | Test review meeting + QA owner sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更、资金冲正/幂等集成、跨系统账务对接时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces, production data changes, fund reversal / idempotency integration or cross-system accounting integration, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 输出接口契约测试+数据流校验+异常容错+幂等四类测试，由 interface_contract_test.py 与 data_flow_verify.py 自动校验
-- 接口契约测试覆盖请求/响应字段、错误码、超时、重试，契约字段无 missing
-- 数据流测试覆盖端到端一致性，跨系统关键字段 key 集合一致（无 inconsistent）
-- 异常容错测试覆盖接口超时/下游故障/降级/熔断/重试场景，每类有独立用例
-- 幂等性测试覆盖重复提交/消息重投/网络抖动，资金类接口幂等性100%验证
-- 联调缺陷归属判定基于契约测试结果与日志定位，减少归属争议
+- Output four kinds of tests: interface contract tests + data flow checks + exception and fault tolerance + idempotency, validated automatically with interface_contract_test.py and data_flow_verify.py
+- Interface contract tests cover request / response fields, error codes, timeouts and retries, with no missing contract fields
+- Data flow tests cover end-to-end consistency; the key sets of critical fields match across systems (no inconsistent)
+- Exception and fault tolerance tests cover interface timeout / downstream failure / degradation / circuit breaking / retry, with a separate case for each
+- Idempotency tests cover duplicate submission / message redelivery / network jitter; idempotency of fund-related interfaces is 100% verified
+- Defect ownership during integration is decided from contract test results and log diagnosis, to reduce ownership disputes
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 接口覆盖率100%（关键接口全部覆盖）
-- [ ] 接口契约测试通过（interface_contract_test.py 退出码 0，无 missing 字段）
-- [ ] 数据流一致性通过（data_flow_verify.py 退出码 0，无 inconsistent）
-- [ ] 异常容错用例覆盖五类（超时/下游故障/降级/熔断/重试）
-- [ ] 资金类接口幂等性100%验证（重复提交/消息重投/网络抖动）
-- [ ] 核心业务场景端到端跑通
-- [ ] 联调缺陷归属有契约测试与日志证据
+- [ ] Interface coverage 100% (all key interfaces covered)
+- [ ] Interface contract tests passed (interface_contract_test.py exit code 0, no missing fields)
+- [ ] Data flow consistency passed (data_flow_verify.py exit code 0, no inconsistent)
+- [ ] Exception and fault tolerance cases cover five kinds (timeout / downstream failure / degradation / circuit breaking / retry)
+- [ ] Idempotency of fund-related interfaces 100% verified (duplicate submission / message redelivery / network jitter)
+- [ ] Core business scenarios run end to end
+- [ ] Integration defect ownership backed by contract test and log evidence
 
-> 主模板含【L3必填】深度字段：`templates/sit-plan-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/sit-plan-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/sit-plan-template.md` | SIT计划 |
-| `templates/interface-testcase-template.md` | 接口用例 |
+| `templates/sit-plan-template.md` | SIT plan |
+| `templates/interface-testcase-template.md` | Interface test case |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/interface_contract_test.py` | 接口契约自动化测试 |
-| `scripts/data_flow_verify.py` | 端到端数据一致性校验 |
+| `scripts/interface_contract_test.py` | Automated interface contract test |
+| `scripts/data_flow_verify.py` | End-to-end data consistency check |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/sit-guide.md` | SIT指南 |
+| `references/sit-guide.md` | SIT guide |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 接口覆盖率100%
-- [ ] 核心场景通过
-- [ ] 数据一致
-- [ ] 幂等验证通过
+- [ ] Interface coverage 100%
+- [ ] Core scenarios passed
+- [ ] Data consistent
+- [ ] Idempotency verified
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 环境不稳定 | SIT环境频繁故障导致用例阻塞 | 环境健康检查+自动部署+环境监控 | 修复环境后重跑用例 |
-| 缺陷归属争议 | 跨系统缺陷无法判定责任方 | 契约测试+日志定位（interface_contract_test.py） | 基于契约测试结果重新判定归属 |
-| 接口契约不一致 | 响应字段与契约定义不符 | interface_contract_test.py 拦截 missing 字段 | 修正契约或响应后重跑契约测试 |
-| 数据流不一致 | 跨系统关键字段 key 集合不同 | data_flow_verify.py 拦截 inconsistent | 对齐字段映射后重跑数据流校验 |
-| 幂等性未验证 | 资金类接口未测重复提交/消息重投 | 资金类接口幂等性100%门禁 | 补充幂等用例后重测 |
-| 异常容错遗漏 | 缺超时/下游故障/降级/熔断/重试用例 | 异常容错用例checklist强制五类 | 补充异常容错用例后重审 |
-| 测试数据不一致 | 各系统测试数据未对齐 | 数据脚本化+版本管理+数据重置机制 | 重置数据后重跑用例 |
+| Unstable environment | Frequent SIT environment failures block cases | Environment health checks + automated deployment + environment monitoring | Fix the environment and rerun the cases |
+| Defect ownership disputes | Cannot decide which party owns a cross-system defect | Contract tests + log diagnosis (interface_contract_test.py) | Re-decide ownership from the contract test results |
+| Interface contract mismatch | Response fields differ from the contract definition | interface_contract_test.py blocks missing fields | Fix the contract or the response and rerun the contract test |
+| Data flow inconsistency | Key sets of critical fields differ across systems | data_flow_verify.py blocks inconsistent | Align the field mapping and rerun the data flow check |
+| Idempotency not verified | Duplicate submission / message redelivery not tested for fund-related interfaces | 100% idempotency gate for fund-related interfaces | Add idempotency cases and test again |
+| Missing exception and fault tolerance cases | No timeout / downstream failure / degradation / circuit breaking / retry cases | Exception and fault tolerance checklist enforces all five kinds | Add the cases and review again |
+| Inconsistent test data | Test data not aligned across systems | Scripted data + version control + data reset mechanism | Reset the data and rerun the cases |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式SIT评审 | 全部【L2必填】章节（集成范围/SIT环境/接口用例/数据流/业务场景/异常容错/幂等/联调管理） | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 接口契约测试、数据流一致性校验、异常容错五类、资金类幂等性100%、联调缺陷归属证据 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Formal SIT review starts | All [L2 required] sections (integration scope / SIT environment / interface cases / data flow / business scenarios / exception and fault tolerance / idempotency / integration management) | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Interface contract tests, data flow consistency check, five kinds of exception and fault tolerance, 100% idempotency for fund-related interfaces, evidence for integration defect ownership | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的接口契约与资金类幂等性验证须由 QA 与各系统负责人共同确认；Agent 起草，各系统负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the interface contracts and the idempotency verification of fund-related interfaces must be confirmed jointly by QA and the owner of each system. The Agent drafts; each system owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

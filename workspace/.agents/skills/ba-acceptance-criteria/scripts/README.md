@@ -1,63 +1,63 @@
-# scripts/ — 验收标准技能脚本
+# scripts/ — Acceptance criteria Skill scripts
 
-本目录包含 `ba-acceptance-criteria` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts of the `ba-acceptance-criteria` Skill. All scripts follow the same interface convention: CLI invocation, JSON output, exit code indicates the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `rtm_check.py` | 需求追溯矩阵（RTM）校验：故事↔需求关联、孤儿需求检测、验收结构完整性 | 0/1/2/3 |
+| `rtm_check.py` | Requirement traceability matrix (RTM) check: story↔requirement links, orphan requirement detection, acceptance structure completeness | 0/1/2/3 |
 
 ---
 
 ## rtm_check.py
 
-### 用途
-校验用户故事文档与需求说明书之间的追溯关系完整性。检测三类问题：(1) 故事引用了不存在于需求文档中的 REQ 编号（未关联故事）；(2) 需求文档中的 REQ 编号未被任何故事覆盖（孤儿需求）；(3) 故事缺少 Given/When/Then 验收结构。
+### Purpose
+Checks that the traceability between the user story document and the requirement specification is complete. Detects three kinds of problems: (1) a story references a REQ ID that does not exist in the requirement document (unlinked story); (2) a REQ ID in the requirement document is not covered by any story (orphan requirement); (3) a story lacks the Given/When/Then acceptance structure.
 
-### 接口
+### Interface
 ```
 python rtm_check.py <requirement_doc.md> <stories_doc.md> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `requirement_doc` | 需求说明书路径（.md），须含 `REQ-xxx` 格式的功能需求编号 |
-| `stories_doc` | 用户故事文档路径（.md），须含 `US-xxx` 格式的故事标题 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `requirement_doc` | Path to the requirement specification (.md); must contain functional requirement IDs in `REQ-xxx` format |
+| `stories_doc` | Path to the user story document (.md); must contain story headings in `US-xxx` format |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 全部通过（所有故事已关联、无孤儿需求、验收结构完整） |
-| 1 | 警告（故事缺少 Given/When/Then 验收结构，但关联关系正确） |
-| 2 | 失败（存在未关联故事或孤儿需求） |
-| 3 | 参数错误（文件不存在 / 未找到 REQ 编号 / 未找到 US 故事） |
+| 0 | All passed (every story linked, no orphan requirements, acceptance structure complete) |
+| 1 | Warning (a story lacks the Given/When/Then acceptance structure, but the links are correct) |
+| 2 | Failure (unlinked stories or orphan requirements) |
+| 3 | Argument error (file not found / no REQ IDs found / no US stories found) |
 
-> 退出码优先级：未关联或孤儿（2） > 验收结构缺失（1） > 通过（0）。即同时存在关联问题与结构缺失时，返回 2。
+> Exit code precedence: unlinked or orphan (2) > missing acceptance structure (1) > pass (0). If link problems and missing structure occur together, the script returns 2.
 
-### 检查项
-1. **REQ 编号提取**：从需求文档中提取所有 `REQ-xxx`（三位数字）编号，保持出现顺序。仅匹配三位数字格式（REQ-001），避免误匹配文档编号（REQ-2026-xxxx）。
-2. **故事切分**：按 `US-xxx` 标题（Markdown 标题级别 2-4）切分故事区块，每个区块独立校验。
-3. **关联校验**：每条故事区块内提取 REQ 编号，与需求文档中的 REQ 列表比对。未匹配到任何有效 REQ 的故事标记为"未关联"。
-4. **孤儿需求检测**：需求文档中未被任何故事引用的 REQ 编号标记为"孤儿需求"。
-5. **验收结构检查**：每条故事区块检查是否包含 Given（前置条件/Given）、When（操作/When）、Then（预期结果/Then）三要素。支持中英文标记。
+### Checks
+1. **REQ ID extraction**: extracts every `REQ-xxx` (three-digit) ID from the requirement document, in order of appearance. Only the three-digit format (REQ-001) is matched, so document IDs (REQ-2026-xxxx) are not picked up.
+2. **Story splitting**: splits story sections by `US-xxx` headings (Markdown heading levels 2-4); each section is checked on its own.
+3. **Link check**: extracts the REQ IDs inside each story section and compares them with the REQ list from the requirement document. A story that matches no valid REQ is marked "unlinked".
+4. **Orphan requirement detection**: a REQ ID in the requirement document that no story references is marked an "orphan requirement".
+5. **Acceptance structure check**: checks that each story section contains all three elements: Given (Precondition/Given), When (Action/When), Then (Expected result/Then).
 
-### REQ 编号格式
-- 匹配模式：`REQ-\d{3}`（如 REQ-001、REQ-002）
-- 不匹配：REQ-2026-001（避免误匹配文档编号）
-- 故事标题模式：`US-\d+`（如 US-1、US-001）
+### REQ ID format
+- Matched pattern: `REQ-\d{3}` (for example REQ-001, REQ-002)
+- Not matched: REQ-2026-001 (to avoid matching document IDs)
+- Story heading pattern: `US-\d+` (for example US-1, US-001)
 
-### 验收结构标记
-脚本识别以下标记（中英文均可）：
-| 要素 | 中文标记 | 英文标记 |
+### Acceptance structure markers
+The script recognizes the following markers (either form works):
+| Element | Label marker | Keyword marker |
 |------|---------|---------|
-| Given（前置条件） | 前置条件 | Given |
-| When（操作） | 操作 | When |
-| Then（预期结果） | 预期结果 | Then |
+| Given (precondition) | Precondition | Given |
+| When (action) | Action | When |
+| Then (expected result) | Expected result | Then |
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "total_stories": 5,
@@ -66,7 +66,7 @@ python rtm_check.py <requirement_doc.md> <stories_doc.md> [--json]
     {
       "story_id": "US-005",
       "found_reqs": ["REQ-999"],
-      "reason": "未关联到需求文档中的有效REQ编号"
+      "reason": "Not linked to a valid REQ ID in the requirement document"
     }
   ],
   "orphan_stories": ["REQ-003"],
@@ -77,20 +77,20 @@ python rtm_check.py <requirement_doc.md> <stories_doc.md> [--json]
 }
 ```
 
-### 调用示例
+### Invocation examples
 ```bash
-# 基本校验
-python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用户故事.md
+# Basic check
+python skills/ba-acceptance-criteria/scripts/rtm_check.py requirement-spec.md user-stories.md
 
-# JSON 输出（供 Agent 消费）
-python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用户故事.md --json
+# JSON output (for the Agent)
+python skills/ba-acceptance-criteria/scripts/rtm_check.py requirement-spec.md user-stories.md --json
 
-# CI 门禁（退出码驱动）
-python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用户故事.md && echo "RTM校验通过" || echo "RTM校验失败"
+# CI gate (driven by the exit code)
+python skills/ba-acceptance-criteria/scripts/rtm_check.py requirement-spec.md user-stories.md && echo "RTM check passed" || echo "RTM check failed"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `ba-acceptance-criteria/rtm_check.py` 条目（3 用例）：
-- `linked_stories`：故事正确关联需求 → exit=0，输出含 `linked`
-- `unlinked_story_fails`：故事引用不存在的REQ → exit=2，输出含 `unlinked`
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Matching unit tests
+The `ba-acceptance-criteria/rtm_check.py` entry in `tests/test_scripts.py` (3 cases):
+- `linked_stories`: stories correctly linked to requirements → exit=0, output contains `linked`
+- `unlinked_story_fails`: a story references a REQ that does not exist → exit=2, output contains `unlinked`
+- `missing_file`: file not found → exit=3, output contains `error`

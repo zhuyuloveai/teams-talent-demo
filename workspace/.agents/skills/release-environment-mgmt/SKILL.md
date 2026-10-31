@@ -1,6 +1,6 @@
 ---
 name: release-environment-mgmt
-description: 管理多套环境（DEV/SIT/UAT/PROD/DR）的配置、版本与可用性，检测环境漂移。环境准备、配置变更、环境一致性检查时使用。
+description: "Manages configuration, versions and availability across multiple environments (DEV/SIT/UAT/PROD/DR) and detects environment drift. Use for environment preparation, configuration changes and environment consistency checks."
 ---
 
 ## 元数据

@@ -1,48 +1,48 @@
-# 验收标准（Given/When/Then）
+# Acceptance Criteria (Given/When/Then)
 
-## 故事
+## Story
 
-- 故事编号：US-<序号>
-- 标题：<故事标题>
-- 需求关联：REQ-<xxx>
-- 优先级：<必须/应该/可选>
+- Story ID: US-<number>
+- Title: <story title>
+- Linked requirement: REQ-<xxx>
+- Priority: <Must/Should/Could>
 
-## 验收标准
+## Acceptance criteria
 
-### AC-<序号>-01 <标准标题>
+### AC-<number>-01 <criterion title>
 
-| 要素 | 内容 |
+| Element | Content |
 |------|------|
-| 前置条件（Given） | <可验证的前置状态，如：用户已登录且当前日累计限额为5000元> |
-| 操作（When） | <可观察的操作，如：用户提交调高日累计限额至20000元> |
-| 预期结果（Then） | <可验证的结果，如：系统提示"限额调整成功"，当日累计限额更新为20000元> |
+| Precondition (Given) | <verifiable precondition, e.g. the user is logged in and the current daily cumulative limit is CNY 5000> |
+| Action (When) | <observable action, e.g. the user submits a raise of the daily cumulative limit to CNY 20000> |
+| Expected result (Then) | <verifiable result, e.g. the system shows "Limit adjusted successfully" and the daily cumulative limit is updated to CNY 20000> |
 
-**可测试性自检：**
+**Testability self-check:**
 
-- [ ] 前置条件可构造（数据/状态可准备）
-- [ ] 操作可执行（有明确入口与步骤）
-- [ ] 预期结果可验证（有明确输出/状态变化/提示信息）
-- [ ] 无模糊词（大概/等等/尽快/尽可能）
+- [ ] The precondition can be constructed (data/state can be prepared)
+- [ ] The action can be executed (clear entry point and steps)
+- [ ] The expected result can be verified (clear output / state change / message)
+- [ ] No vague words (roughly / etc. / as soon as possible / as far as possible)
 
 ---
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 数据准备 | Given前置状态的数据构造方式（含数据来源与构造脚本） |
-| 边界值 | min/min-1/max/max+1 用例覆盖 |
-| 异常路径 | 接口异常/超时/并发/幂等场景独立验收标准 |
-| 追溯矩阵 | AC编号↔US↔REQ↔TC 四向追溯 |
-| 幂等性 | 资金类操作重复提交的预期行为 |
-| 合规边界 | 监管类需求的限额上限/报送时效验收 |
+| Data preparation | How the Given data is constructed (with data source and construction script) |
+| Boundary values | Cases covering min/min-1/max/max+1 |
+| Exception paths | Separate acceptance criteria for interface error / timeout / concurrency / idempotency |
+| Traceability matrix | Four-way trace: AC ID↔US↔REQ↔TC |
+| Idempotency | Expected behavior for duplicate submissions of fund operations |
+| Compliance boundary | Limit cap / reporting deadline acceptance for regulatory requirements |
 
-### L3 验收标准示例（含深度字段）
+### L3 acceptance criteria example (with depth fields)
 
-| 编号 | 前置条件（Given） | 操作（When） | 预期结果（Then） | 数据准备 | 边界值 | 异常路径 | 追溯 |
+| ID | Precondition (Given) | Action (When) | Expected result (Then) | Data preparation | Boundary value | Exception path | Trace |
 |------|------------------|-------------|-----------------|---------|--------|---------|------|
-| AC-002-01 | 用户已登录且日累计限额5000元 | 提交调高至20000元并通过身份验证 | 提示"调整成功"，新限额立即生效 | 测试用户+限额参数配置 | 5000→20000（正常） | 身份验证失败→拒绝 | US-002↔REQ-002↔TC-002-01 |
-| AC-002-02 | 用户提交限额超过上限50000元 | 提交调整 | 提示"超出系统允许范围"，限额不变 | 测试用户+上限参数 | 50001（超限） | - | US-002↔REQ-002↔TC-002-02 |
-| AC-002-03 | 重复提交同一调整请求 | 二次提交 | 系统返回首次处理结果，不重复变更 | 测试用户+重复请求构造 | - | 幂等性验证 | US-002↔REQ-002↔TC-002-03 |
+| AC-002-01 | The user is logged in with a daily cumulative limit of CNY 5000 | Submits a raise to CNY 20000 and passes identity verification | Shows "Adjusted successfully"; the new limit takes effect immediately | Test user + limit parameter configuration | 5000→20000 (normal) | Identity verification fails → rejected | US-002↔REQ-002↔TC-002-01 |
+| AC-002-02 | The user submits a limit above the CNY 50000 cap | Submits the adjustment | Shows "Exceeds the allowed range"; limit unchanged | Test user + cap parameter | 50001 (over limit) | - | US-002↔REQ-002↔TC-002-02 |
+| AC-002-03 | The same adjustment request is submitted twice | Second submission | The system returns the first result and does not change the limit again | Test user + duplicate request construction | - | Idempotency check | US-002↔REQ-002↔TC-002-03 |

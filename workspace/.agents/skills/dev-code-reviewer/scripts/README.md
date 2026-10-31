@@ -1,65 +1,65 @@
-# scripts/ — 代码评审技能脚本
+# scripts/ — Code review skill scripts
 
-本目录包含 `dev-code-reviewer` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `dev-code-reviewer` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `review_analyzer.py` | 变更影响分析与热点风险识别：按文件统计变更行数并标记热点 | 0 |
+| `review_analyzer.py` | Change impact analysis and hotspot risk identification: count changed lines per file and mark hotspots | 0 |
 
 ---
 
 ## review_analyzer.py
 
-### 用途
-辅助代码评审：扫描变更代码目录，按文件统计行数并结合文件类型风险权重计算风险分，标记需人工重点评审的热点文件（大文件/高风险文件）。
+### Purpose
+Assists code review: scans the changed code directory, counts lines per file, computes a risk score using the file type risk weight, and marks the hotspot files that need focused human review (large files / high-risk files).
 
-### 接口
+### Interface
 ```
 python review_analyzer.py <code_root> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `code_root` | 变更代码目录路径，递归扫描 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `code_root` | Path of the changed code directory, scanned recursively |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 分析完成（无论是否检出热点） |
+| 0 | Analysis complete (whether or not hotspots were found) |
 
-> 本脚本为**辅助分析**，不阻断流程；退出码恒为 0，评审决策由人工根据 hotspots 清单判断。
+> This script is an **analysis aid** and does not block the flow; the exit code is always 0, and reviewers decide based on the hotspots list.
 
-### 检查项
-1. **文件类型风险权重**：
-   - `.java`/`.py`/`.js` → 风险权重 1
-   - `.sql` → 风险权重 2（SQL 变更风险更高）
-2. **行数统计**：统计每个风险文件的行数。
-3. **风险分计算**：`score = lines * risk_weight`。
-4. **热点标记**：score > 100 的文件进入 hotspots 清单。
-5. **空目录兼容**：目录不存在或无风险文件时输出空 hotspots（exit=0）。
+### Checks
+1. **File type risk weight**:
+   - `.java`/`.py`/`.js` → risk weight 1
+   - `.sql` → risk weight 2 (SQL changes are riskier)
+2. **Line count**: count the lines of each risky file.
+3. **Risk score**: `score = lines * risk_weight`.
+4. **Hotspot marking**: files with score > 100 go into the hotspots list.
+5. **Empty directory handling**: when the directory does not exist or has no risky files, output empty hotspots (exit=0).
 
-### 风险权重表
-| 文件后缀 | 风险权重 | 说明 |
+### Risk weight table
+| File suffix | Risk weight | Description |
 |---------|---------|------|
-| `.java` | 1 | Java 源码 |
-| `.py` | 1 | Python 源码 |
-| `.js` | 1 | JavaScript 源码 |
-| `.sql` | 2 | SQL 脚本（数据变更风险更高） |
+| `.java` | 1 | Java source |
+| `.py` | 1 | Python source |
+| `.js` | 1 | JavaScript source |
+| `.sql` | 2 | SQL script (data changes are riskier) |
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```
 src/
-├── BigService.java    (400 行，score=400)
-├── migration.sql      (60 行，score=120)
-└── Small.java         (10 行，score=10)
+├── BigService.java    (400 lines, score=400)
+├── migration.sql      (60 lines, score=120)
+└── Small.java         (10 lines, score=10)
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "hotspots": [
@@ -69,30 +69,30 @@ src/
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本热点分析
+# Basic hotspot analysis
 python skills/dev-code-reviewer/scripts/review_analyzer.py src/
 
-# 大文件热点场景（400 行 Java 文件）
+# Large file hotspot case (400-line Java file)
 python skills/dev-code-reviewer/scripts/review_analyzer.py large_src/
 
-# CI 集成（输出热点供评审人关注）
+# CI integration (output hotspots for reviewers)
 python skills/dev-code-reviewer/scripts/review_analyzer.py src/ > review_hotspots.json
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-code-reviewer/review_analyzer.py` 条目（3 用例）：
-- `hotspot_detected`：400 行 Java 文件 → exit=0，输出含 `hotspots`
-- `small_file`：`class A {}` 小文件 → exit=0，输出含 `hotspots`
-- `missing_dir`：目录不存在 → exit=0，输出含 `hotspots`
+### Unit tests
+The `dev-code-reviewer/review_analyzer.py` entry in `tests/test_scripts.py` (3 cases):
+- `hotspot_detected`: 400-line Java file → exit=0, output contains `hotspots`
+- `small_file`: small file `class A {}` → exit=0, output contains `hotspots`
+- `missing_dir`: directory does not exist → exit=0, output contains `hotspots`
 
 ---
 
-## 能力边界
+## Limits
 
-- 本脚本为**热点识别辅助工具**，不替代人工代码评审。
-- 风险分仅基于**行数 × 文件类型权重**，无法识别真正的业务风险（如资金计算/权限校验/并发问题）；深层风险须由 L3 字段级审查覆盖。
-- 仅扫描 `.java`/`.py`/`.js`/`.sql` 文件，其他类型（如 `.go`/`.ts`/`.vue`）不进入热点清单。
-- 阈值固定为 score > 100，无法配置；如需调整阈值须修改脚本。
-- 资金类 MR 的评审须在 L3 档位下额外覆盖字段级安全审查、并发安全审查、事务一致性审查。
+- This script is a **hotspot identification aid** and does not replace human code review.
+- The risk score is based only on **line count × file type weight** and cannot recognize real business risk (such as fund calculations / permission checks / concurrency issues); deep risks must be covered by the L3 field-level review.
+- Only `.java`/`.py`/`.js`/`.sql` files are scanned; other types (such as `.go`/`.ts`/`.vue`) never enter the hotspot list.
+- The threshold is fixed at score > 100 and is not configurable; changing it requires editing the script.
+- At L3, review of fund-related MRs must additionally cover field-level security review, concurrency safety review and transaction consistency review.

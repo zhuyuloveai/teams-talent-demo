@@ -1,6 +1,6 @@
 ---
 name: pm-status-reporting
-description: 自动汇总项目数据，生成标准化的周报/月报/里程碑报告，标注偏差根因与异常项。周报、月报、里程碑报告、状态更新时使用。
+description: "Automatically aggregates project data into standardized weekly/monthly/milestone reports, flagging deviation root causes and anomalies. Use for weekly reports, monthly reports, milestone reports and status updates."
 ---
 
 ## 元数据

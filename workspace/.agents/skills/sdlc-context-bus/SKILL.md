@@ -1,6 +1,6 @@
 ---
 name: sdlc-context-bus
-description: SDLC上下文总线与Agent协作机制，提供结构化上下文传递、回调修复、并行编排与条件分支能力
+description: "SDLC context bus and Agent collaboration mechanism, providing structured context passing, callback-based fixes, parallel orchestration and conditional branching."
 ---
 
 ## 元数据

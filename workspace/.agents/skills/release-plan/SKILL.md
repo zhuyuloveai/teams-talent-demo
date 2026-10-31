@@ -1,6 +1,6 @@
 ---
 name: release-plan
-description: 产出可执行、可回滚、可验证的发布计划：变更包与制品校验、发布顺序与窗口、灰度策略、投产检查单。G5安全放行通过、进入发布准备时使用。
+description: "Produces an executable, reversible, verifiable release plan: change package and artifact verification, release order and window, canary strategy, go-live checklist. Use after G5 security clearance passes, when entering release preparation."
 ---
 
 ## 元数据

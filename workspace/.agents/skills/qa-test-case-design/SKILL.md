@@ -1,6 +1,6 @@
 ---
 name: qa-test-case-design
-description: 从需求与验收标准导出可执行、可追溯的测试用例集（正常/边界/异常/回归），并关联RTM。测试策略定稿后使用。
+description: "Derives an executable, traceable test case set (normal/boundary/exception/regression) from requirements and acceptance criteria and links it to the RTM. Use after the test strategy is finalized."
 ---
 
 ## 元数据

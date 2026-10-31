@@ -1,6 +1,6 @@
 ---
 name: qa-defect-management
-description: 缺陷的记录、分类、跟踪、验证、统计与退出风险评估，确保缺陷闭环管理。发现缺陷、缺陷生命周期管理、测试退出评估时使用。
+description: "Records, classifies, tracks, verifies and reports on defects and assesses exit risk, ensuring closed-loop defect management. Use when a defect is found, for defect lifecycle management and for test exit assessment."
 ---
 
 ## 元数据

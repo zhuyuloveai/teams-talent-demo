@@ -1,8 +1,8 @@
-# 评审重点区域
+# Review focus areas
 
-- 金额/限额计算与状态转换
-- 鉴权与权限校验
-- 数据访问与SQL
-- 异常处理与资源释放
-- 日志与敏感信息
-- 大文件（>200行）与高复杂度方法
+- Amount / limit calculations and state transitions
+- Authentication and permission checks
+- Data access and SQL
+- Exception handling and resource release
+- Logging and sensitive data
+- Large files (>200 lines) and high-complexity methods

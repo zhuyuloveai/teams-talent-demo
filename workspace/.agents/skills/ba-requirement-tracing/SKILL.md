@@ -1,106 +1,106 @@
 ---
 name: ba-requirement-tracing
-description: 维护需求追踪矩阵（RTM），确保需求→故事→用例→测试→变更全链路可追溯。需求变更、迭代规划、审计追溯检查时使用。
+description: Maintain the requirement traceability matrix (RTM) so the full chain requirement → story → test case → test → change is traceable. Use for requirement changes, iteration planning and audit traceability checks.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | BA / 需求条线资深BA |
-| category | 岗位技能 |
+| owner | BA / Senior BA, requirements line |
+| category | Role skill |
 | priority | P1 |
 | depth | L2 |
 
-# ba-requirement-tracing 技能
+# ba-requirement-tracing Skill
 
-## 概述
+## Overview
 
-本技能用于维护需求追踪矩阵，保证全链路可追溯。
+This Skill maintains the requirement traceability matrix so the full chain stays traceable.
 
-## 工作流
+## Workflow
 
-1. 读取需求清单与用户故事清单
-2. 校验故事与需求的关联关系（rtm_check.py）
-3. 识别孤儿故事与无故事需求
-4. 生成RTM报告
-5. 需求变更时同步更新追溯链
+1. Read the requirement list and the user story list
+2. Check the links between stories and requirements (rtm_check.py)
+3. Identify orphan stories and requirements without stories
+4. Generate the RTM report
+5. Update the trace chain whenever a requirement changes
 
 
-## 档位切换规则
+## Depth level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | RTM草拟、追溯关系探索、思路对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，需求变更/迭代规划/审计追溯检查 | BA负责人审核 + PM确认 |
-| L3 实施级 | 高风险项目/监管报送/跨系统集成/首次上线/审计追溯 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Drafting the RTM, exploring trace links, aligning ideas | No review needed |
+| L2 Standard (default) | Default level for bank production; requirement changes / iteration planning / audit traceability checks | BA lead review + PM confirmation |
+| L3 Implementation | High-risk project / regulatory reporting / cross-system integration / first go-live / audit traceability | ARB/compliance review + all depth gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更、审计追溯检查、监管检查临近（≤ 30 天）时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces, production data changes, audit traceability checks, or a regulatory inspection is near (≤ 30 days), upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3输出全链路追溯：需求→故事→用例→测试→变更→发布
-- 自动识别断链并生成缺口报告
-- 追溯链完整性量化：六链路节点齐全（需求/故事/用例/测试/变更/发布），每节点覆盖率可计算
-- 断链项分级处理：断链按影响度分级（高/中/低），高风险断链须 24 小时内修复并附责任人
-- 影响项分类：每条追溯项须分类（新增/修改/删除）与状态（草稿/评审中/已定稿/已废弃）
-- RTM 可导出多格式：CSV（审计用）、JSON（Agent 消费用）、Markdown（人工评审用）
-- 审计追溯检查前须生成完整追溯报告，含覆盖率统计与断链清单
+- L3 produces a full-chain trace: requirement → story → test case → test → change → release
+- Automatically identify broken links and generate a gap report
+- Quantify trace chain completeness: all six chain nodes present (requirement / story / test case / test / change / release), with a computable coverage rate per node
+- Handle broken links by severity: grade each broken link by impact (high/medium/low); high-risk broken links must be fixed within 24 hours and have an owner
+- Classify trace items: every trace item has a type (added/modified/deleted) and a status (draft/in review/finalized/obsolete)
+- The RTM can be exported in several formats: CSV (for audit), JSON (for the Agent), Markdown (for human review)
+- Before an audit traceability check, generate a complete trace report with coverage statistics and a broken-link list
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] rtm_check.py 退出码 0（无未关联故事、无孤儿需求、验收结构完整）
-- [ ] 六链路节点覆盖率 100%（需求/故事/用例/测试/变更/发布）
-- [ ] 断链项分级处理（高/中/低），高风险断链 24 小时内修复并附责任人
-- [ ] 每条追溯项分类（新增/修改/删除）与状态（草稿/评审中/已定稿/已废弃）齐全
-- [ ] RTM 可导出 CSV/JSON/Markdown 三格式
-- [ ] 审计追溯报告含覆盖率统计与断链清单
-- [ ] 需求变更时追溯链同步更新（变更ID关联到受影响故事/用例/测试）
+- [ ] rtm_check.py exit code 0 (no unlinked stories, no orphan requirements, acceptance structure complete)
+- [ ] 100% coverage of all six chain nodes (requirement / story / test case / test / change / release)
+- [ ] Broken links are graded (high/medium/low); high-risk broken links fixed within 24 hours with an owner
+- [ ] Every trace item has a type (added/modified/deleted) and a status (draft/in review/finalized/obsolete)
+- [ ] The RTM can be exported as CSV/JSON/Markdown
+- [ ] The audit trace report contains coverage statistics and a broken-link list
+- [ ] The trace chain is updated when a requirement changes (the change ID is linked to the affected stories / test cases / tests)
 
-> 主模板含【L3必填】深度字段：`templates/rtm-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/rtm-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/rtm-template.md` | RTM模板 |
+| `templates/rtm-template.md` | RTM template |
 
-## 脚本
+## Scripts
 
-复用 `scripts/rtm_check.py（已内置）`。
+Reuses `scripts/rtm_check.py (bundled)`.
 
-## 质量门禁
+## Quality gates
 
-- [ ] 每个需求至少关联1个故事
-- [ ] 无孤儿项
-- [ ] 可按需求ID追溯到测试结果
+- [ ] Every requirement is linked to at least 1 story
+- [ ] No orphan items
+- [ ] Test results can be traced by requirement ID
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| ID编码不规范 | 需求/故事/用例ID格式不统一 | 强制校验（REQ-xxx/US-xxx/TC-xxx 格式） | 规范化ID后重跑 rtm_check.py |
-| 关联断裂 | 故事未关联需求或用例未关联故事 | rtm_check.py 自动识别并告警 | 补全关联后重跑脚本，退出码=0 才通过 |
-| 孤儿需求 | 需求未被任何故事覆盖 | rtm_check.py 孤儿检测 | 拆分故事覆盖需求后重跑脚本 |
-| 链路节点缺失 | 追溯链缺用例/测试/变更节点 | 六链路节点覆盖率校验 | 补全缺失节点后重新生成 RTM |
-| 断链未分级 | 断链项无高/中/低分级与责任人 | 断链分级字段必填 | 补全分级与责任人后重提交 |
-| 变更未同步追溯 | 需求变更后追溯链未更新 | 变更流程门禁：变更ID须关联受影响项 | 同步更新追溯链后重提交 |
-| RTM不可导出 | 仅 Markdown 格式，审计无法消费 | 强制三格式导出（CSV/JSON/Markdown） | 补全 CSV/JSON 导出后重提交 |
+| Non-standard ID format | Requirement / story / test case IDs use inconsistent formats | Enforced format check (REQ-xxx/US-xxx/TC-xxx) | Normalize the IDs and rerun rtm_check.py |
+| Broken links | A story is not linked to a requirement, or a test case is not linked to a story | rtm_check.py detects and warns automatically | Complete the links and rerun the script; it passes only with exit code 0 |
+| Orphan requirements | A requirement is not covered by any story | rtm_check.py orphan detection | Split stories to cover the requirement and rerun the script |
+| Missing chain nodes | The trace chain lacks test case / test / change nodes | Six-node coverage check | Add the missing nodes and regenerate the RTM |
+| Broken links not graded | Broken links have no high/medium/low grade or owner | Broken-link grade field is mandatory | Add the grade and owner and resubmit |
+| Change not reflected in the trace | The trace chain was not updated after a requirement change | Change process gate: the change ID must be linked to the affected items | Update the trace chain and resubmit |
+| RTM cannot be exported | Markdown only; audit cannot consume it | Mandatory three-format export (CSV/JSON/Markdown) | Add the CSV/JSON export and resubmit |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 需求变更/迭代规划/审计追溯检查 | 全部【L2必填】章节（关联校验/孤儿检测/RTM报告/变更同步） | 评审退回，降为草稿 |
-| L2 → L3 | 高风险项目/监管报送/跨系统集成/首次上线/审计追溯 | 六链路覆盖率、断链分级、追溯项分类与状态、三格式导出、审计追溯报告 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Requirement change / iteration planning / audit traceability check | All [L2 required] sections (link check / orphan detection / RTM report / change sync) | Review rejected; downgrade to draft |
+| L2 → L3 | High-risk project / regulatory reporting / cross-system integration / first go-live / audit traceability | Six-node coverage, broken-link grading, trace item type and status, three-format export, audit trace report | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的追溯链完整性与断链分级须由 BA 与审计负责人共同确认；Agent 起草 RTM，BA 负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: L3 trace chain completeness and broken-link grading must be confirmed jointly by the BA and the audit owner. The Agent drafts the RTM; the BA lead confirms before finalization. Any downgrade requires PM + compliance approval, with the reason recorded.

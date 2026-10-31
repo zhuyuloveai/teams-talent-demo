@@ -1,164 +1,164 @@
 ---
 name: ba-requirement-analysis
-description: 把原始业务诉求转化为结构化、可开发、可测试的需求说明书，覆盖背景、目标、范围、功能需求、非功能需求、业务规则、依赖、风险、合规标注。
+description: Turn a raw business request into a structured requirement specification that can be developed and tested, covering background, goals, scope, functional requirements, non-functional requirements, business rules, dependencies, risks and compliance notes.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | BA / 需求条线资深BA |
-| category | 岗位技能 |
+| owner | BA / Senior BA, requirements line |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# ba-requirement-analysis 技能
+# ba-requirement-analysis Skill
 
-## 概述
+## Overview
 
-本技能用于将原始业务诉求转化为标准化的银行软件需求说明书。核心目标是：**模糊诉求 → 结构化需求 + 可测试验收标准 + 完整影响分析**。
+This Skill turns a raw business request into a standardized bank software requirement specification. Core goal: **vague request → structured requirements + testable acceptance criteria + complete impact analysis**.
 
-## 工作流
+## Workflow
 
-### Step 1: 输入核对与缺口识别
+### Step 1: Check the input and identify gaps
 
-读取原始诉求与全部背景材料，对照以下检查清单识别信息缺口：
+Read the raw request and all background material, and identify information gaps against this checklist:
 
-- [ ] 业务目标是什么？（为什么做？要解决什么问题？）
-- [ ] 目标用户/角色是谁？（谁在用？）
-- [ ] 业务范围和边界在哪里？（做什么？不做什么？）
-- [ ] 优先级和时间要求？
-- [ ] 涉及哪些业务规则和监管要求？
-- [ ] 有哪些现有系统和接口？
-- [ ] 数据来源和去向？
-- [ ] 非功能需求（性能/安全/可用性）有要求吗？
+- [ ] What is the business goal? (Why do it? What problem does it solve?)
+- [ ] Who are the target users/roles? (Who uses it?)
+- [ ] Where are the business scope and boundaries? (What is in? What is out?)
+- [ ] What are the priority and timing requirements?
+- [ ] Which business rules and regulatory requirements apply?
+- [ ] Which existing systems and interfaces are involved?
+- [ ] Where does the data come from and where does it go?
+- [ ] Are there non-functional requirements (performance / security / availability)?
 
-### Step 2: 生成澄清问题清单
+### Step 2: Produce the clarification question list
 
-如果有信息缺口，生成澄清问题清单。**每条问题必须说明"为什么需要知道"**，让提问对象理解上下文。
+If there are information gaps, produce a clarification question list. **Every question must state "why we need to know"**, so the person asked understands the context.
 
-模板见：`templates/clarification-questions.md`
+Template: `templates/clarification-questions.md`
 
-> 原则：能通过已有资料和领域知识推断的，不要问。只问真正需要业务确认的关键问题。
+> Principle: do not ask what can be inferred from existing material and domain knowledge. Ask only the key questions that truly need business confirmation.
 
-### Step 3: 编写需求说明书
+### Step 3: Write the requirement specification
 
-澄清信息齐备后，按 `templates/requirement-spec-template.md` 模板编写。
+Once the clarifications are complete, write the specification using the `templates/requirement-spec-template.md` template.
 
-**各章节编写要点：**
+**Key points per section:**
 
-1. **背景与目标**：说清楚"为什么做"，业务价值是什么，量化目标（如果有）
-2. **用户角色**：列出所有涉众角色，每个角色的职责和使用场景
-3. **功能范围**：明确 in-scope / out-of-scope，边界要清晰
-4. **功能需求**：按模块/功能点组织，每条需求有唯一编号（REQ-xxx）
-5. **业务规则**：逐条列出，标注来源（监管文号/业务制度/老系统规则）
-6. **非功能需求**：性能、安全、可用性、可维护性，每项可量化可验证
-7. **接口与集成**：对内对外接口，数据流向
-8. **数据需求**：数据实体、数据量、数据保留、数据安全
-9. **依赖与约束**：技术约束、时间约束、资源约束
-10. **风险与假设**：识别项目风险和关键假设
-11. **合规标注**：涉及的监管要求、行内制度、SoD要求
+1. **Background and goals**: state clearly "why we do it", the business value, and quantified goals (if any)
+2. **User roles**: list all stakeholder roles, with each role's responsibilities and usage scenarios
+3. **Functional scope**: state in-scope / out-of-scope explicitly with clear boundaries
+4. **Functional requirements**: organize by module/feature; each requirement has a unique ID (REQ-xxx)
+5. **Business rules**: list one by one and cite the source (regulation reference / business policy / legacy system rule)
+6. **Non-functional requirements**: performance, security, availability, maintainability; each one quantified and verifiable
+7. **Interfaces and integration**: internal and external interfaces, data flow
+8. **Data requirements**: data entities, data volume, data retention, data security
+9. **Dependencies and constraints**: technical, time and resource constraints
+10. **Risks and assumptions**: identify project risks and key assumptions
+11. **Compliance notes**: applicable regulatory requirements, internal bank policies, SoD requirements
 
-### Step 4: 业务规则标注
+### Step 4: Annotate business rules
 
-每条业务规则必须包含：
-- **规则编号**：BR-xxx
-- **规则描述**：清晰完整的规则表述
-- **来源**：[监管文号] / [行内制度编号] / [业务部门确认] / [存量系统]
-- **优先级**：必须 / 应该 / 可选
+Every business rule must contain:
+- **Rule ID**: BR-xxx
+- **Rule description**: a clear and complete statement of the rule
+- **Source**: [regulation reference] / [internal policy ID] / [confirmed by business department] / [legacy system]
+- **Priority**: Must / Should / Could
 
-### Step 5: 质量自检
+### Step 5: Quality self-check
 
-运行 `scripts/spec_completeness.py` 做完整性检查，加上人工自检：
+Run `scripts/spec_completeness.py` for the completeness check, plus a manual self-check:
 
-- [ ] 所有章节无空项，不适用的注明N/A和原因
-- [ ] 无二义模糊词（大概/等等/尽快/尽量/可能），未确认的标[待确认]
-- [ ] 每条功能需求可独立验证
-- [ ] 每条业务规则有来源标注
-- [ ] 非功能需求有量化指标和验证方法
-- [ ] 接口有明确的请求/响应格式和错误码
-- [ ] 风险有对应的应对措施
+- [ ] No section is empty; sections that do not apply say N/A with the reason
+- [ ] No ambiguous vague words (roughly / etc. / as soon as possible / as far as possible / possibly); unconfirmed items are marked [To be confirmed]
+- [ ] Every functional requirement can be verified on its own
+- [ ] Every business rule cites its source
+- [ ] Non-functional requirements have quantified metrics and a verification method
+- [ ] Interfaces have clear request/response formats and error codes
+- [ ] Every risk has a mitigation
 
-### Step 6: 输出评审版本
+### Step 6: Produce the review version
 
-生成待G1评审的需求包：
-- 需求说明书（主文档）
-- 澄清问题清单（已闭环的）
-- 需求自检报告
-- 业务规则溯源清单
+Produce the requirement package for the G1 review:
+- Requirement specification (main document)
+- Clarification question list (closed)
+- Requirement self-check report
+- Business rule source list
 
 
-## 档位切换规则
+## Depth level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 探索、思路对齐、Demo 走查 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档 | 需求评审会 + 业务负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Exploration, aligning ideas, demo walkthroughs | No review needed |
+| L2 Standard (default) | Default level for bank production | Requirement review meeting + business owner sign-off |
+| L3 Implementation | Fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB/compliance review + all depth gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces or production data changes, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 输出字段级需求表：字段/类型/必填/格式/校验规则/默认值/来源（【L3必填】）
-- 输出异常与错误矩阵：异常场景/系统行为/错误码/用户提示，覆盖参数/业务/系统/安全4类
-- 输出数据字典与场景矩阵（角色×数据×接口×预期），验收标准可执行化（Given/When/Then+数据准备）
+- Produce a field-level requirement table: field / type / required / format / validation rule / default / source ([L3 required])
+- Produce an exception and error matrix: exception scenario / system behavior / error code / user message, covering 4 categories: parameter / business / system / security
+- Produce a data dictionary and a scenario matrix (role × data × interface × expected result); make acceptance criteria executable (Given/When/Then + data preparation)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 每条功能需求有字段级定义（字段表非空）
-- [ ] 异常矩阵覆盖4类异常且每项含错误码与提示
-- [ ] 场景矩阵覆盖正常/边界/异常，验收标准含数据准备
+- [ ] Every functional requirement has field-level definitions (field table not empty)
+- [ ] The exception matrix covers all 4 categories, and every item has an error code and a message
+- [ ] The scenario matrix covers happy / boundary / exception cases, and acceptance criteria include data preparation
 
-> 主模板含【L3必填】深度字段：`templates/requirement-spec-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/requirement-spec-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/requirement-spec-template.md` | 需求说明书标准模板 |
-| `templates/clarification-questions.md` | 澄清问题清单模板 |
-| `templates/impact-checklist.md` | 影响分析检查清单 |
+| `templates/requirement-spec-template.md` | Standard requirement specification template |
+| `templates/clarification-questions.md` | Clarification question list template |
+| `templates/impact-checklist.md` | Impact analysis checklist |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/spec_completeness.py` | 需求说明书完整性与空项检查 |
-| `scripts/ambiguity_check.py` | 模糊词扫描与标注 |
+| `scripts/spec_completeness.py` | Completeness and empty-field check of the requirement specification |
+| `scripts/ambiguity_check.py` | Scan for and flag vague words |
 
-## 参考资料
+## References
 
-- `references/requirement-writing-guide.md`：需求编写规范
-- `references/regulatory-mapping.md`：监管要求映射表（银行常用）
-- `references/bank-domain-glossary.md`：银行业务术语表
-- `references/sample-requirements/`：历史优秀需求案例
+- `references/requirement-writing-guide.md`: requirement writing rules
+- `references/regulatory-mapping.md`: regulatory requirement mapping (common in banking)
+- `references/bank-domain-glossary.md`: banking business glossary
+- `references/sample-requirements/`: examples of good past requirements
 
-## 常见失败模式与规避
+## Common failure modes and mitigation
 
-| 失败模式 | 表现 | 规避措施 |
+| Failure mode | Symptom | Mitigation |
 |---------|------|---------|
-| 信息不足强行填充 | 需求内容空洞，缺少关键业务规则 | 强制输出澄清问题清单；信息缺口≥3项时不写完整说明书，只出初稿+缺口清单 |
-| 术语二义 | 使用"大概""尽量""尽快"等模糊表述 | 自检词表扫描拦截，命中即标注[待确认] |
-| 业务规则臆造 | 无来源地"创造"业务规则 | 每条业务规则必须标注来源；无法确认的标记为[推断]并提示人工确认 |
-| 影响分析遗漏 | 漏掉受影响的系统或干系人 | 基于存量系统清单做交叉检查；按维度强制检查 |
-| 非功能需求空洞 | "性能要快""要安全"这种没量化的描述 | NFR模板强制量化字段；无量化指标的标注[待确认] |
-| 格式不统一 | 需求编号混乱、描述风格不一 | 模板强制格式；编号自动生成校验 |
+| Filling in despite missing information | Hollow requirements, key business rules missing | Always produce the clarification question list; with ≥3 information gaps, do not write the full specification, only a first draft + gap list |
+| Ambiguous terms | Vague wording such as "roughly", "as far as possible", "as soon as possible" | Self-check word list scan; every hit is marked [To be confirmed] |
+| Invented business rules | Business rules "created" without a source | Every business rule must cite its source; anything that cannot be confirmed is marked [Inferred] and flagged for human confirmation |
+| Gaps in impact analysis | Affected systems or stakeholders are missed | Cross-check against the existing system inventory; mandatory checks per dimension |
+| Hollow non-functional requirements | Unquantified statements such as "must be fast", "must be secure" | The NFR template forces quantified fields; anything without a metric is marked [To be confirmed] |
+| Inconsistent format | Messy requirement IDs, inconsistent writing style | Template enforces the format; IDs are generated and checked automatically |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式需求评审 | 全部【L2必填】章节（背景/角色/范围/功能/规则/NFR/接口/数据/风险/合规） | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级需求表、异常矩阵、数据字典、场景矩阵 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Entering formal requirement review | All [L2 required] sections (background / roles / scope / functions / rules / NFR / interfaces / data / risks / compliance) | Review rejected; downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level requirement table, exception matrix, data dictionary, scenario matrix | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级需求表与异常矩阵须由 BA 与业务负责人共同确认；Agent 起草，业务确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: the L3 field-level requirement table and exception matrix must be confirmed jointly by the BA and the business owner. The Agent drafts; the business confirms before finalization. Any downgrade requires PM + compliance approval, with the reason recorded.

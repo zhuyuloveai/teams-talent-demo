@@ -1,6 +1,6 @@
 ---
 name: sod-compliance-check
-description: 自动检测职责分离（SoD）冲突：角色权限冲突、门禁执行人与审批人冲突、间接冲突（传递闭包）。门禁评审、配置变更、审计抽检时使用。
+description: "Automatically detects segregation of duties (SoD) conflicts: role permission conflicts, gate executor vs. approver conflicts, and indirect conflicts (transitive closure). Use for gate reviews, configuration changes and audit sampling."
 ---
 
 ## 元数据

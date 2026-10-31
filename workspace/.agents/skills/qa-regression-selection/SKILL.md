@@ -1,6 +1,6 @@
 ---
 name: qa-regression-selection
-description: 智能选择回归测试范围：变更分析、影响分析、风险分级、用例选择与回归报告。缺陷修复后、需求变更后、版本发布前使用。
+description: "Smart regression test scope selection: change analysis, impact analysis, risk grading, test case selection and regression report. Use after defect fixes, after requirement changes and before version releases."
 ---
 
 ## 元数据

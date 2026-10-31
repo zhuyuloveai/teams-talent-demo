@@ -1,6 +1,6 @@
 ---
 name: sec-threat-model
-description: 在设计阶段通过STRIDE分析识别安全威胁并确定缓解措施，覆盖认证/授权/数据/输入校验/日志/会话。设计定稿前、涉及认证/数据/接口的功能时使用。
+description: "Identifies security threats and determines mitigations through STRIDE analysis during design, covering authentication/authorization/data/input validation/logging/sessions. Use before design is finalized and for features involving authentication/data/interfaces."
 ---
 
 ## 元数据

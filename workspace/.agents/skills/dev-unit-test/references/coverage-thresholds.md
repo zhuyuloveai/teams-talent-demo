@@ -1,16 +1,16 @@
-# 覆盖率阈值与关键路径
+# Coverage thresholds and key paths
 
-## 默认阈值
+## Default thresholds
 
-| 指标 | 阈值 |
+| Metric | Threshold |
 |------|------|
-| 行覆盖 | ≥80% |
-| 分支覆盖 | ≥70% |
-| 关键路径覆盖 | 100% |
+| Line coverage | ≥80% |
+| Branch coverage | ≥70% |
+| Key path coverage | 100% |
 
-## 关键路径定义
+## Key path definition
 
-- 核心业务规则计算
-- 状态转换与回滚
-- 边界与异常处理
-- 安全校验
+- Core business rule calculations
+- State transitions and rollback
+- Boundary and exception handling
+- Security checks

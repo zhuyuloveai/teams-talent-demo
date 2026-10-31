@@ -1,6 +1,6 @@
 ---
 name: release-deployment-runbook
-description: 生成可执行的部署操作手册：命令级步骤、预期结果、验证方法、前置/后置检查与异常处理。发布执行前、部署操作中使用。
+description: "Generates an executable deployment runbook: command-level steps, expected results, verification methods, pre/post checks and exception handling. Use before release execution and during deployment."
 ---
 
 ## 元数据

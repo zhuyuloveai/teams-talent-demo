@@ -1,57 +1,57 @@
-# scripts/ — 需求分析技能脚本
+# scripts/ — Requirement analysis Skill scripts
 
-本目录包含 `ba-requirement-analysis` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts of the `ba-requirement-analysis` Skill. All scripts follow the same interface convention: CLI invocation, JSON output, exit code indicates the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `spec_completeness.py` | 需求说明书完整性与空项检查、业务规则来源、编号唯一性、模糊词扫描，输出质量得分 | 0/1/2/3 |
-| `ambiguity_check.py` | 模糊词扫描与标注（30+ 词，分级分类，含上下文） | 0/1/2/3 |
+| `spec_completeness.py` | Requirement specification completeness and empty-field check, business rule sources, ID uniqueness, vague word scan; outputs a quality score | 0/1/2/3 |
+| `ambiguity_check.py` | Scan for and flag vague words (30+ words, graded and categorized, with context) | 0/1/2/3 |
 
 ---
 
 ## spec_completeness.py
 
-### 用途
-检查需求说明书是否包含所有必需章节、字段是否为空、业务规则是否有来源、需求编号是否唯一、是否存在模糊词。输出质量得分（0–100）与 PASS/WARNING/FAIL 结论。
+### Purpose
+Checks that the requirement specification contains every required section, that fields are not empty, that business rules cite a source, that requirement IDs are unique, and whether vague words are present. Outputs a quality score (0–100) and a PASS/WARNING/FAIL verdict.
 
-### 接口
+### Interface
 ```
 python spec_completeness.py <requirement_doc.md> [--json] [--strict]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `requirement_doc` | 需求说明书路径（.md） |
-| `--json` | 输出 JSON 格式（默认输出人类可读文本） |
-| `--strict` | 严格模式：模糊词也计为失败（默认模糊词仅警告） |
+| `requirement_doc` | Path to the requirement specification (.md) |
+| `--json` | Output JSON (human-readable text by default) |
+| `--strict` | Strict mode: vague words also count as failure (by default they are only a warning) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 全部通过 |
-| 1 | 有警告（可选字段缺失或模糊词，且未加 --strict） |
-| 2 | 失败（必填章节缺失 / 业务规则无来源 / 需求编号重复 / --strict 下有模糊词） |
-| 3 | 参数错误（文件不存在） |
+| 0 | All passed |
+| 1 | Warning (optional fields missing or vague words, without --strict) |
+| 2 | Failure (required section missing / business rule without source / duplicate requirement ID / vague words with --strict) |
+| 3 | Argument error (file not found) |
 
-### 检查项
-1. **章节完整性**：13 个必选章节（文档信息/修订记录/背景与目标/用户角色/范围定义/功能需求/业务规则/非功能需求/安全需求/数据需求/数据安全/风险与应对/合规标注）
-2. **空字段**：占位符 `{{...}}` / `_待回复_` / `[待确认]` / `TODO|FIXME`
-3. **模糊词**：大概/可能/尽量/尽快/等等/之类/适当/相应/相关/有关/等
-4. **业务规则来源**：`BR-xxx` 表格行是否有来源列非空
-5. **需求编号唯一性**：`[REQ-xxx]` 是否重复
+### Checks
+1. **Section completeness**: 13 required sections (Document information / Revision history / Background and goals / User roles / Scope definition / Functional requirements / Business rules / Non-functional requirements / Security requirements / Data requirements / Data security / Risks and mitigation / Compliance notes), matched against the headings of `templates/requirement-spec-template.md` (case-insensitive)
+2. **Empty fields**: placeholders `{{...}}` / `_Awaiting reply_` / `[To be confirmed]` / `TODO|FIXME`
+3. **Vague words**: roughly / possibly / as far as possible / as soon as possible / etc. / and so on / appropriate / corresponding / relevant / related / and the like
+4. **Business rule source**: whether the source column of each `BR-xxx` table row is non-empty
+5. **Requirement ID uniqueness**: whether any `[REQ-xxx]` is duplicated
 
-### 评分规则
-满分 100；缺失必选章节 -5/项、业务规则无来源 -2/项、空字段 -1/项（上限 20）、重复编号 -10/项。
+### Scoring
+Maximum 100; -5 per missing required section, -2 per business rule without source, -1 per empty field (capped at 20), -10 per duplicate ID.
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "filepath": "requirement.md",
   "score": 85,
-  "section_check": {"missing_count": 1, "missing_required": ["合规标注"]},
+  "section_check": {"missing_count": 1, "missing_required": ["Compliance notes"]},
   "empty_fields": {"total_empty": 3},
   "ambiguity": {"total_ambiguous": 2},
   "business_rules": {"total_rules": 5, "missing_source_count": 1},
@@ -60,80 +60,81 @@ python spec_completeness.py <requirement_doc.md> [--json] [--strict]
 }
 ```
 
-### 调用示例
+### Invocation examples
 ```bash
-# 基本检查（人类可读）
+# Basic check (human readable)
 python skills/ba-requirement-analysis/scripts/spec_completeness.py tests/demo-output/02-requirement-spec-draft.md
 
-# JSON 输出（供 Agent 消费）
+# JSON output (for the Agent)
 python skills/ba-requirement-analysis/scripts/spec_completeness.py requirement.md --json
 
-# 严格模式（模糊词也阻断）
+# Strict mode (vague words also block)
 python skills/ba-requirement-analysis/scripts/spec_completeness.py requirement.md --strict --json
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `ba-requirement-analysis/spec_completeness.py` 条目（3 用例）：
-- `missing_file`：文件不存在 → exit=3
-- `draft_warning`：草稿文档 → exit∈{0,1}，输出含 `score`
-- `empty_doc_fails`：空文档 → exit=2，输出含 `score`
+### Matching unit tests
+The `ba-requirement-analysis/spec_completeness.py` entry in `tests/test_scripts.py` (3 cases):
+- `missing_file`: file not found → exit=3
+- `draft_warning`: draft document → exit∈{0,1}, output contains `score`
+- `empty_doc_fails`: empty document → exit=2, output contains `score`
 
 ---
 
 ## ambiguity_check.py
 
-### 用途
-扫描文档中的模糊表述词汇，按严重度（high/medium）与类别（程度/时间/范围/可能性/数量/质量）分类，输出位置、上下文与修改建议。30+ 词的分级词表。
+### Purpose
+Scans a document for vague wording, classifies each hit by severity (high/medium) and category (degree / time / scope / likelihood / quantity / quality), and outputs the position, context and a suggested fix. Uses a graded list of 30+ words.
 
-### 接口
+### Interface
 ```
 python ambiguity_check.py <document.md> [--json] [--threshold N]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `document` | 文档路径（.md） |
-| `--json` | 输出 JSON 格式 |
-| `--threshold` | 高严重度模糊词阈值，超过则失败（默认 10） |
+| `document` | Path to the document (.md) |
+| `--json` | Output JSON |
+| `--threshold` | Threshold of high-severity vague words; reaching it fails (default 10) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 无模糊词 |
-| 1 | 有少量模糊词（警告，未超阈值） |
-| 2 | 大量模糊词（高严重度 ≥ threshold） |
-| 3 | 参数错误（文件不存在） |
+| 0 | No vague words |
+| 1 | A few vague words (warning, below the threshold) |
+| 2 | Many vague words (high severity ≥ threshold) |
+| 3 | Argument error (file not found) |
 
-### 词表分类
-| 类别 | 示例词 |
+### Word list categories
+| Category | Example words |
 |------|--------|
-| 程度 | 大概/大约/左右/差不多/尽量/尽可能/适当/相应 |
-| 时间 | 尽快/及时/定期/不定期/暂时 |
-| 范围 | 等/等等/之类/相关/有关/其他 |
-| 可能性 | 可能/也许/或许 |
-| 数量 | 一些/若干/多数/少数/大量/少量 |
-| 质量 | 比较好/较好/良好/正常/合理 |
+| degree | roughly / approximately / or so / more or less / as far as possible / as much as possible / appropriate / corresponding |
+| time | as soon as possible / promptly / regularly / from time to time / temporarily |
+| scope | etc. / and so on / and the like / relevant / related / other |
+| likelihood | possibly / maybe / perhaps |
+| quantity | some / several / most / a few / a large number of / a small number of |
+| quality | fairly good / better / good / normal / reasonable |
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "total_findings": 5,
   "high_severity": 3,
   "medium_severity": 2,
-  "by_word": {"大概": {"count": 2, "severity": "high", "category": "程度"}},
-  "findings": [{"word": "大概", "line": 12, "context": "...", "suggestion": "请给出具体数值或范围"}],
+  "by_word": {"roughly": {"count": 2, "severity": "high", "category": "degree"}},
+  "findings": [{"word": "roughly", "line": 12, "context": "...", "suggestion": "Give a specific value or range"}],
   "verdict": "WARNING"
 }
 ```
 
-### 特殊处理
-- 跳过代码块（``` 包裹的行）
-- 紧邻 `[待确认]` 标注的模糊词跳过（已标记为待确认）
-- 输出前 50 处详情，按词聚合统计
+### Special handling
+- Words are matched as whole words, case-insensitively
+- Lines that start a code fence (```) are skipped
+- A vague word immediately followed by a `[To be confirmed]` marker is skipped (already flagged as to be confirmed)
+- Details of the first 50 findings are output, plus counts per word
 
-### 单测对应
-`tests/test_scripts.py` 中 `ba-requirement-analysis/ambiguity_check.py` 条目（3 用例）：
-- `missing_file`：文件不存在 → exit=3
-- `draft_has_ambiguous`：草稿文档 → exit∈{0,1}，输出含 `total_findings`
-- `clean_doc_passes`：无模糊词文档 → exit=0，输出含 `total_findings`
+### Matching unit tests
+The `ba-requirement-analysis/ambiguity_check.py` entry in `tests/test_scripts.py` (3 cases):
+- `missing_file`: file not found → exit=3
+- `draft_has_ambiguous`: draft document → exit∈{0,1}, output contains `total_findings`
+- `clean_doc_passes`: document without vague words → exit=0, output contains `total_findings`

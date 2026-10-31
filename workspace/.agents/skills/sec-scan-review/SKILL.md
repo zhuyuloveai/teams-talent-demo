@@ -1,116 +1,116 @@
 ---
 name: sec-scan-review
-description: 将SAST/DAST/依赖扫描结果按CVSS与内部标准分级，识别误报，给出修复/豁免处置意见与放行/打回结论。构建完成、发布前或依赖更新后使用。
+description: "Classify SAST / DAST / dependency scan results by CVSS and internal standards, identify false positives, give fix / waiver recommendations, and conclude with release / reject. Use after the build, before release, or after dependency updates."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Sec / 安全条线负责人 |
-| category | 岗位技能 |
+| owner | Sec / Security line owner |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# sec-scan-review 技能
+# sec-scan-review skill
 
-## 概述
+## Overview
 
-本技能用于把扫描结果转化为可处置的漏洞分级与放行意见。
+This skill turns scan results into actionable vulnerability levels and a release recommendation.
 
-## 工作流
+## Workflow
 
-1. 拉取SAST/DAST/依赖扫描结果
-2. 按CVSS与内部标准分级
-3. 识别并标注误报
-4. 给出处置意见（修复/豁免）
-5. 汇总放行/打回结论
+1. Pull the SAST / DAST / dependency scan results
+2. Classify by CVSS and internal standards
+3. Identify and mark false positives
+4. Give a handling recommendation (fix / waiver)
+5. Summarize the release / reject conclusion
 
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 扫描结果初步分流、误报快速标注、内部沟通 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，构建完成后或发布前扫描评审 | 安全工程师 + Sec负责人签字 |
-| L3 实施级 | 涉及资金安全/外部接口/监管报送/首次上线/高危漏洞(CVSS≥9.0)批量出现 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Initial triage of scan results, quick false-positive marking, internal discussion | No review needed |
+| L2 Standard (default) | Default level for bank production; scan review after the build or before release | Security engineer + Sec owner sign-off |
+| L3 Implementation | Involves fund safety / external interfaces / regulatory reporting / first go-live / many high-severity vulnerabilities (CVSS≥9.0) at once | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：扫描发现 CVSS≥9.0 严重漏洞、涉及反洗钱/客户资金/跨行接口的漏洞、监管通报同源漏洞、生产数据泄露路径相关漏洞、依赖组件存在已知被利用漏洞(KEV)时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the scan finds critical vulnerabilities with CVSS≥9.0, vulnerabilities involving anti-money laundering / customer funds / interbank interfaces, vulnerabilities of the same origin as a regulatory notice, vulnerabilities on a production data leak path, or dependency components with known exploited vulnerabilities (KEV), upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3扫描评审输出CVSS分级+误报说明+处置/豁免（含有效期）
-- 放行结论与证据一致
-- 每条漏洞标注CWE编号与攻击路径（入口点→受影响资产→潜在影响），高危漏洞须给出PoC或可达性证据
-- 豁免须含补偿控制清单（如WAF规则/网络隔离/限流）并验证补偿控制有效；豁免有效期≤90天且到期自动重审
-- 漏洞修复须有回归验证证据（修复后扫描退出码0或同源扫描项清零），不得仅以"已合并PR"作为关闭依据
-- 攻击面覆盖矩阵：SAST/DAST/依赖扫描/容器/密钥扫描覆盖率达到100%，缺项须说明替代控制
-- 严重/高危漏洞按SLA跟踪（严重24h分派/72h修复，高48h分派/7d修复），逾期自动升级
+- At L3, the scan review outputs CVSS levels + false-positive explanations + handling / waivers (with validity period)
+- The release conclusion is consistent with the evidence
+- Each vulnerability is annotated with its CWE ID and attack path (entry point → affected asset → potential impact); high-severity vulnerabilities need a PoC or reachability evidence
+- A waiver must include a list of compensating controls (such as WAF rules / network isolation / rate limiting) and the compensating controls must be verified as effective; waiver validity ≤90 days, with automatic re-review on expiry
+- A vulnerability fix needs regression verification evidence (scan exit code 0 after the fix, or the same-origin scan items cleared); "PR merged" alone is not grounds for closure
+- Attack surface coverage matrix: SAST / DAST / dependency scan / container / secret scan coverage reaches 100%; any gap must state the alternative control
+- Critical / high vulnerabilities are tracked against SLA (critical: assign within 24h / fix within 72h; high: assign within 48h / fix within 7d); overdue items escalate automatically
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 中高危清零或豁免（豁免含理由+责任人+有效期≤90天+补偿控制）
-- [ ] 每条漏洞有CWE映射与攻击路径说明
-- [ ] 高危漏洞修复有回归验证证据（同源扫描清零）
-- [ ] 豁免项补偿控制已验证有效
-- [ ] 攻击面覆盖率100%（SAST+DAST+依赖+容器+密钥）
-- [ ] 严重/高危漏洞SLA达标率≥95%（24h分派/72h修复）
-- [ ] triage_vulns.py 退出码 0（verdict=PASS，无open_high）
+- [ ] Medium and high cleared or waived (waiver includes reason + owner + validity ≤90 days + compensating controls)
+- [ ] Every vulnerability has a CWE mapping and an attack path description
+- [ ] High-severity fixes have regression verification evidence (same-origin scan cleared)
+- [ ] Compensating controls for waived items verified as effective
+- [ ] Attack surface coverage 100% (SAST + DAST + dependency + container + secret)
+- [ ] SLA compliance for critical / high vulnerabilities ≥95% (24h assignment / 72h fix)
+- [ ] triage_vulns.py exit code 0 (verdict=PASS, no open_high)
 
-> 主模板含【L3必填】深度字段：`templates/vuln-review-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/vuln-review-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/vuln-review-template.md` | 漏洞评审模板 |
-| `templates/waiver-template.md` | 豁免申请模板 |
+| `templates/vuln-review-template.md` | Vulnerability review template |
+| `templates/waiver-template.md` | Waiver request template |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/triage_vulns.py` | 分级聚合、误报标记、豁免到期提醒 |
+| `scripts/triage_vulns.py` | Level aggregation, false-positive marking, waiver expiry reminders |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/cvss-levels.md` | CVSS分级与内部标准 |
+| `references/cvss-levels.md` | CVSS levels and internal standards |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 中高危清零或有正式豁免（理由+有效期+责任人）
-- [ ] 分级与证据一致
-- [ ] 误报有说明
+- [ ] Medium and high cleared or formally waived (reason + validity period + owner)
+- [ ] Levels consistent with the evidence
+- [ ] False positives explained
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 分级偏差 | CVSS与内部标准不一致，高危误判为中危 | triage_vulns.py分级+安全工程师抽检≥20% | 修正分级并重跑脚本后重试 |
-| 豁免无期 | 豁免缺少有效期或已过期未重审 | 豁免模板强校验有效期≤90天+到期自动告警 | 补齐有效期与补偿控制后重审 |
-| 误报未标注 | 误报漏洞仍占用处置工时，污染放行结论 | 误报须含证据（PoC失败/不可达）并标注原因 | 补充误报证据后重新分级 |
-| 修复无验证 | 仅以"PR已合并"关闭漏洞，未做回归扫描 | 修复后须重跑同源扫描并对比清零 | 补跑扫描后重试，未清零则重新打开 |
-| 攻击面缺项 | 漏掉容器/密钥/依赖扫描，覆盖不全 | L3要求覆盖矩阵100%，缺项须说明替代控制 | 补齐扫描覆盖后重试 |
-| CWE缺失 | 漏洞无CWE映射，无法关联修复知识库 | 强制CWE字段填写，从扫描器原始结果映射 | 补齐CWE后重试 |
-| SLA逾期 | 严重漏洞24h未分派或72h未修复 | SLA跟踪看板+逾期自动升级至CISO | 立即分派并启动应急修复流程 |
+| Misclassification | CVSS and internal standards disagree; a high is misjudged as medium | Classification with triage_vulns.py + security engineer spot-checks ≥20% | Fix the classification, rerun the script and retry |
+| Waiver without expiry | Waiver has no validity period, or has expired without re-review | Waiver template strictly enforces validity ≤90 days + automatic expiry alert | Add the validity period and compensating controls, then review again |
+| False positives not marked | False positives still consume handling effort and distort the release conclusion | False positives must carry evidence (PoC failed / unreachable) and a stated reason | Add the false-positive evidence and reclassify |
+| Fix not verified | Vulnerability closed only because "the PR was merged", without a regression scan | After the fix, rerun the same-origin scan and confirm it is cleared | Rerun the scan and retry; reopen if not cleared |
+| Attack surface gaps | Container / secret / dependency scans skipped; incomplete coverage | L3 requires a 100% coverage matrix; gaps must state the alternative control | Complete the scan coverage and retry |
+| Missing CWE | Vulnerability has no CWE mapping and cannot be linked to the fix knowledge base | CWE field mandatory, mapped from the raw scanner results | Add the CWE and retry |
+| SLA overdue | Critical vulnerability not assigned within 24h or not fixed within 72h | SLA tracking dashboard + automatic escalation to the CISO when overdue | Assign immediately and start the emergency fix process |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式发布前扫描评审 | 全部【L2必填】章节（CVSS分级/误报标注/处置意见/放行结论） | 评审退回，降为草稿 |
-| L2 → L3 | CVSS≥9.0/资金安全/监管报送/跨行接口/KEV漏洞 | CWE映射+攻击路径+补偿控制+回归验证证据+SLA跟踪+攻击面覆盖矩阵 | 风险降级或漏洞全部清零，经ARB确认可回 L2 |
+| L1 → L2 | Formal pre-release scan review starts | All [L2 required] sections (CVSS levels / false-positive marking / handling recommendations / release conclusion) | Review rejected, downgrade to draft |
+| L2 → L3 | CVSS≥9.0 / fund safety / regulatory reporting / interbank interfaces / KEV vulnerabilities | CWE mapping + attack path + compensating controls + regression verification evidence + SLA tracking + attack surface coverage matrix | Risk downgraded or all vulnerabilities cleared; may return to L2 after ARB confirmation |
 
-**人工兜底点**：L3 的豁免补偿控制有效性验证与攻击面覆盖矩阵须由安全工程师与Sec负责人共同确认；Agent 起草分级与处置意见，Sec负责人确认后定稿。降级须经 ARB + 合规审批并记录原因。
+**Human fallback point**: at L3, the verification of compensating controls for waivers and the attack surface coverage matrix must be confirmed jointly by the security engineer and the Sec owner. The Agent drafts the classification and handling recommendations; the Sec owner confirms and finalizes. A downgrade requires ARB + compliance approval, with the reason recorded.

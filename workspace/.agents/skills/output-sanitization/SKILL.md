@@ -1,6 +1,6 @@
 ---
 name: output-sanitization
-description: 自动扫描并脱敏Agent产出中的敏感信息（手机号/账号/证件号/密钥/IP/生产数据片段），高危命中直接阻断提交。任何Agent产出提交前、对外输出前使用。
+description: "Automatically scans and masks sensitive information in Agent output (phone numbers/account numbers/ID numbers/keys/IPs/production data fragments); high-severity hits block submission outright. Use before any Agent output is submitted or shared externally."
 ---
 
 ## 元数据

@@ -1,6 +1,6 @@
 ---
 name: g8-gate-execution
-description: G8管理阶段门禁执行器，统一运行门禁采集/全链路追溯/SoD合规/脱敏检查并汇总结果
+description: "G8 governance-phase gate runner. Runs the gate collection/end-to-end traceability/SoD compliance/masking checks together and summarizes the results."
 ---
 
 ## 元数据

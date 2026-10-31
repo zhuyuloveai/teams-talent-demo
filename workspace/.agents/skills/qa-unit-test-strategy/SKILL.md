@@ -1,6 +1,6 @@
 ---
 name: qa-unit-test-strategy
-description: 制定单测策略（覆盖率阈值、测试范围、关键路径清单），审核开发单测计划与覆盖率，必要时阻断提测。开发自测前、单测覆盖率审核、UT阶段质量把关时使用。
+description: "Sets the unit test strategy (coverage thresholds, test scope, critical path list), reviews developers' unit test plans and coverage, and blocks handover to test when necessary. Use before developer self-testing, for unit test coverage review and for UT-phase quality control."
 ---
 
 ## 元数据

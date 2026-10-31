@@ -1,28 +1,28 @@
-# UAT报告
+# UAT report
 
-| 指标 | 数值 |
+| Metric | Value |
 |------|------|
-| 场景执行率 | % |
-| 关键场景通过率 | % |
-| 缺陷（P1/P2/P3） | n/n/n |
+| Scenario execution rate | % |
+| Key scenario pass rate | % |
+| Defects (P1/P2/P3) | n/n/n |
 
-## 问题分类
+## Issue classification
 
-| 类型 | 数量 | 说明 |
+| Type | Count | Notes |
 |------|------|------|
-| 缺陷 | | |
-| 需求变更 | | |
-| 操作问题 | | |
+| Defect | | |
+| Requirement change | | |
+| Operation issue | | |
 
-## 验收意见
+## Acceptance opinion
 
-<业务验收结论与遗留风险>
+<Business acceptance conclusion and residual risks>
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 场景映射 | 业务场景↔UAT用例 |
-| 问题分类 | 缺陷/变更/操作 |
+| Scenario mapping | Business scenario ↔ UAT case |
+| Issue classification | Defect / change / operation |

@@ -1,19 +1,19 @@
-# 接口测试用例
+# Interface test case
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 用例编号 | SIT-<seq> |
-| 接口 | <接口> |
-| 请求 | <样例> |
-| 预期响应 | <响应> |
-| 场景 | 正常/边界/异常/容错/幂等 |
-| 前置 | <数据/状态> |
+| Case ID | SIT-<seq> |
+| Interface | <interface> |
+| Request | <sample> |
+| Expected response | <response> |
+| Scenario | Normal/Boundary/Exception/Fault tolerance/Idempotency |
+| Precondition | <data/state> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 接口覆盖 | 接口清单与覆盖 |
-| 数据流 | 端到端一致性校验 |
+| Interface coverage | Interface list and coverage |
+| Data flow | End-to-end consistency check |

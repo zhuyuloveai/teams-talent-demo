@@ -1,23 +1,23 @@
-# 页面地图
+# Page map
 
-| 系统 | 入口 | 主要内容 |
+| System | Entry | Main content |
 | --- | --- | --- |
-| Teams | 工作台 | 待办、交付进展、用量与运营 |
-| Teams | 项目列表 | 项目查找、创建与进入 |
-| Teams | 项目概览 | 需求/问题指标、待办、项目资料、知识与 Skill 摘要 |
-| Teams | 任务管理 | 需求、问题、通用任务；分配、来源和交付入口 |
-| Teams | 任务交付 | 所有实际任务共用澄清、开发、验证、验收；节点输入/结果（交付物与标准）/执行过程（CLI 进展与会话对话（用户输入与模型可见回复））与常驻任务资料，知识自动导入、验收后数据归集 |
-| Teams | 项目设置 | 成员和配置 |
-| Teams | 个人设置 | 当前角色与权限、Owner 工作区重置 |
-| Teams | 团队 | 成员与协作 |
-| Teams | 资源市场/订阅/发布 | 发现、采用和共享能力 |
-| Teams | Agent 管理 | 本机工具与配置 |
-| Teams | 企业连接 | 服务连接、外部资料 |
-| Teams | 团队作业/追溯 | 执行活动和交付记录 |
-| Talent | 项目知识 | 概览、文档、图谱、构建记录 |
-| Talent | 轨迹分析 | 单需求/多需求分析 |
-| Talent | 能力演进 | 候选、评估、发布与采用 |
+| Teams | Workspace | To-dos, delivery progress, usage and operations |
+| Teams | Project list | Find, create and open projects |
+| Teams | Project overview | Requirement/issue metrics, to-dos, project material, knowledge and Skill summary |
+| Teams | Task management | Requirements, issues, general tasks; assignment, source and delivery entry |
+| Teams | Task delivery | All actual tasks share clarification, development, verification and acceptance; node input / result (deliverables and criteria) / execution process (CLI progress and the session conversation: user input and model-visible replies) plus always-visible task material; automatic knowledge import and data collection after acceptance |
+| Teams | Project settings | Members and configuration |
+| Teams | Personal settings | Current role and permissions, Owner workspace reset |
+| Teams | Team | Members and collaboration |
+| Teams | Resource marketplace / subscriptions / publishing | Discover, adopt and share capabilities |
+| Teams | Agent management | Local tools and configuration |
+| Teams | Enterprise connections | Service connections, external material |
+| Teams | Team work / traceability | Execution activity and delivery records |
+| Talent | Project knowledge | Overview, documents, graph, build records |
+| Talent | Trajectory analysis | Single-requirement / multi-requirement analysis |
+| Talent | Capability evolution | Candidates, evaluation, publishing and adoption |
 
-Owner 管理需求分配、验收和能力发布，也可作为任务交付人。项目成员可浏览项目内“我的任务”和“其他任务”；启动 iCode、采用输入和同步进度只允许任务当前交付人。Talent 按当前项目、任务、节点返回知识与 Skill，页面与 CLI 共用同一结果，不将新建议冒充历史采用。没有独立演示导航。项目切换不得将其他项目的数据带入当前记录。
+The Owner manages requirement assignment, acceptance and capability publishing, and can also be a task assignee. Project members can browse "My tasks" and "Other tasks" in the project; starting iCode, adopting input and syncing progress are allowed only for the task's current assignee. Talent returns knowledge and Skills for the current project, task and node; the page and the CLI share the same result, and new suggestions are never presented as historical adoptions. There is no separate demo navigation. Switching projects must not bring another project's data into the current record.
 
-通用任务用于环境准备、技术优化、文档整理等工作。Owner 可创建和分配，当前交付人可开始处理并填写完成说明；不计入需求或问题数量，也不生成需求验收、测试或发布证据。iCode Teams 导入任务也使用同一四节点界面，原阶段映射后保留来源节点与证据；没有对应记录的阶段显示未提供，不生成本地采用、CLI 进度或验收记录。Credit Card 的项目标识仍为 `carddemo`，需求与会话范围保持不变。
+General tasks are for work such as environment preparation, technical optimization and documentation. The Owner can create and assign them, and the current assignee can start them and fill in a completion note. They do not count toward the number of requirements or issues and do not produce requirement acceptance, test or release evidence. Tasks imported from iCode Teams use the same four-node UI; their original stages are mapped while keeping the source node and evidence. Stages without a matching record show "Not provided" and produce no local adoption, CLI progress or acceptance record. The Credit Card project ID is still `carddemo`, and the requirement and session scope are unchanged.

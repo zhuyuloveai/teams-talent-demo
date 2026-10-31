@@ -12,9 +12,9 @@
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 证据 | 程序/段/行引用 |
-| 适配 | 岗位消费profile |
+| Evidence | Program / paragraph / line reference |
+| Adaptation | Role-specific profile |

@@ -1,209 +1,229 @@
 # Teams × iCode × Talents
 
-两个独立启动的演示项目，通过共享数据目录交换数据：
+Two demo projects that start independently and exchange data through a shared data directory:
 
-| 项目 | 目录 | 地址 | 负责 |
+| Project | Directory | URL | Responsibility |
 |---|---|---|---|
-| iCode Teams | `teams/` | http://127.0.0.1:45970/teams | 团队协作：项目、需求、交付、验收、会话共享 |
-| iCode Talents | `talents/` | http://127.0.0.1:45980/talents | 知识挖掘（Owner）：来源、知识任务、产物审阅、提交知识与改进 PR |
+| iCode Teams | `teams/` | http://127.0.0.1:46970/teams | Team collaboration: projects, requirements, delivery, acceptance, session sharing |
+| iCode Talents | `talents/` | http://127.0.0.1:46980/talents | Knowledge mining (Owner): sources, knowledge tasks, artifact review, knowledge and improvement PRs |
 
-演示需求：信用卡消费返现，针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现（DEMO-MKT-001，项目「Credit Card」）。
+Demo requirement: credit card spending cashback. Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months (DEMO-MKT-001, project "Credit Card").
 
-## 启动
+## English demo
 
-安装 Node.js 24 与 Git：
+This is the `demo-en` branch, the English-only fork of the demo. Its defaults differ from the Chinese `main` so both can run on one machine:
+
+- Teams runs at http://127.0.0.1:46970/teams, Talents at http://127.0.0.1:46980/talents, and the trace API on port 8013. The UI defaults to English.
+- Use a separate clone of this branch; do not switch an existing Chinese checkout:
+
+  ```sh
+  git clone -b demo-en https://github.com/zhuyuloveai/teams-talent-demo.git teams-talent-demo-en
+  ```
+
+- The English CardDemo business code is the `devb-en` branch of https://github.com/JeffyLiu003/carddemo-java-1025. Clone it into its own parent directory. The clone directory must still be named `carddemo-java-1025`:
+
+  ```sh
+  git clone -b devb-en https://github.com/JeffyLiu003/carddemo-java-1025.git /absolute/path/en/carddemo-java-1025
+  ```
+
+- In Teams, open Credit Card → Project overview → Workspace settings and bind the English clone: its local directory, its origin, and base branch `devb-en` (the form pre-fills `devb-en`).
+- Talents Skill-improvement PRs (and knowledge PRs) then target `devb-en`.
+
+## Start
+
+Install Node.js 24 and Git:
 
 ```sh
-git clone https://github.com/zhuyuloveai/teams-talent-demo.git
-cd teams-talent-demo
-npm run setup      # Teams 与 Talents 各自 npm ci
-npm run dev        # 构建并同时启动两边，Ctrl+C 一起停止
+git clone -b demo-en https://github.com/zhuyuloveai/teams-talent-demo.git teams-talent-demo-en
+cd teams-talent-demo-en
+npm run setup      # npm ci for Teams and for Talents
+npm run dev        # build and start both; Ctrl+C stops both
 ```
 
-- 后台启停：`npm start` / `npm stop`（macOS 也可双击 `Start Demo.command` / `Stop Demo.command`，Windows 用 `start-demo.cmd`）。
-- 单独启动：`cd teams && npm run dev`，或 `cd talents && npm run dev`。另一边没启动时，读取 `shared/seed/` 中提交的初始数据。
+- Background start/stop: `npm start` / `npm stop`. On macOS you can also double-click `Start Demo.command` / `Stop Demo.command`; on Windows use `start-demo.cmd`.
+- Start one side only: `cd teams && npm run dev`, or `cd talents && npm run dev`. When the other side is not running, the committed initial data in `shared/seed/` is used.
 
-任务追溯保留 CLI 进度与原生会话正文。Teams 启动的 iCode 不再启用 OTLP Trace，无需安装 Trace 服务或 exporter。
+Task traceability keeps CLI progress and the native session transcript. iCode started by Teams no longer enables OTLP Trace, so you do not need to install a Trace service or exporter.
 
-服务仅监听本机。Teams 的配置见 [快速启动](teams/docs/quick-start.md)，Talents 见 [talents/README.md](talents/README.md)。
+Services listen on the local machine only. For Teams configuration see [Quick start](teams/docs/quick-start.md); for Talents see [talents/README.md](talents/README.md).
 
-## 四需求预置资料
+## Preloaded material for four requirements
 
-新 checkout 执行 `npm run setup`、`npm start`（或前台 `npm run dev`）后，Talents 的 Credit Card 项目产物列表和 Teams 的「项目知识」可查看以下四份模拟需求的 v1、v2 发布资料。每版包含完整原文、测试口径、业务规则、差异、实现约束、验收定义和来源摘要；Teams 按节点加载仓内真实 Skill 包。原始需求与本地测试口径是演示输入，不是生产政策签字，也不代表任何业务功能或测试已经完成。
+On a fresh checkout, after `npm run setup` and `npm start` (or `npm run dev` in the foreground), the Credit Card project's artifact list in Talents and "Project knowledge" in Teams show the v1 and v2 published material for the four simulated requirements below. Each version contains the full original text, test profile, business rules, differences, implementation constraints, acceptance definition and source summary. Teams loads the real Skill packages in the repository for each node. The original requirements and the local test profile are demo input. They are not signed-off production policy, and they do not mean any business feature or test has been completed.
 
-| 业务编号 | 新建需求标题（精确匹配） |
+| Business ID | New requirement title (exact match) |
 |---|---|
-| REQ-2026-001 | 信用卡账单/消费分期 |
-| REQ-2026-002 | 信用卡挂失与补卡 |
-| REQ-2026-003 | 信用卡额度调整申请与审批 |
-| REQ-2026-004 | 交易争议在线申请与处理 |
+| REQ-2026-001 | Credit Card Statement/Purchase Installment |
+| REQ-2026-002 | Credit Card Loss Reporting and Replacement |
+| REQ-2026-003 | Credit Card Limit Increase Application and Approval |
+| REQ-2026-004 | Transaction Dispute Online Application and Handling |
 
-在 Teams 的 Credit Card 项目进入「任务管理 → 需求 → 新建需求」，分别填写下方标题和完整背景。以下统一选择 v2 资料；背景代码块中的业务编号、原文 SHA256、口径版本及 SHA256 均须保留，才能匹配对应知识、Skill 和测试用例。运行时任务 ID 由 Teams 自动创建。
+In the Teams Credit Card project, go to "Task management → Requirements → New requirement" and enter each title and full background below. All four use the v2 material. Keep the business requirement ID, original requirement SHA256, test profile version and test profile SHA256 lines in the background block unchanged; they are needed to match the corresponding knowledge, Skills and test cases. Teams creates the runtime task ID automatically.
 
 ### REQ-2026-001
 
-**需求标题：** 信用卡账单/消费分期
+**Requirement title:** Credit Card Statement/Purchase Installment
 
-**需求背景（完整复制到新建需求的描述中）：**
+**Requirement background (copy all of it into the new requirement's description):**
 
 ```text
-业务背景：持卡人需要将单笔已入账消费或账单中的可分期金额分摊到后续月份，降低当期还款压力。提供 3、6、12 期试算与申请、分期和还款计划查询、提前结清，以及客服查询与协助处理；对接交易、账户、账单、总账、通知与审计，保持额度占用、费用与账务一致。
+Business background: Cardholders need to spread a single posted purchase, or the installment-eligible amount of a statement, over the following months to reduce the current repayment burden. Provide 3-, 6- and 12-installment trial calculation and application, installment and repayment schedule queries, early payoff, and customer service lookup and assistance; integrate with transactions, accounts, statements, general ledger, notifications and audit, keeping credit limit usage, fees and accounting consistent.
 
-业务需求编号：REQ-2026-001
-原始需求 SHA256：6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13
-完整需求：Talents发布资料 four-requirements/REQ-2026-001/Original Requirement.md（原文v1.0）。
-范围：信用卡账单/消费分期，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
-试验口径版本：test-profile-v2
-试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-本任务明确锁定 v2 本地测试口径；原文全部13章及原US-001..008必须保留。除已明确测试参数外，其它待定政策须报告协调者，不得自行标为必须/已确认。
+Business requirement ID: REQ-2026-001
+Original requirement SHA256: 6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13
+Full requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (original v1.0).
+Scope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Test profile version: test-profile-v2
+Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
+This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
 ```
 
 ### REQ-2026-002
 
-**需求标题：** 信用卡挂失与补卡
+**Requirement title:** Credit Card Loss Reporting and Replacement
 
-**需求背景（完整复制到新建需求的描述中）：**
+**Requirement background (copy all of it into the new requirement's description):**
 
 ```text
-业务背景：持卡人遗失信用卡后，需要立即挂失冻结，并在线申请补卡、查看制卡与邮寄进度。提供客户自助和客服代办入口、补卡费用处理、运营补卡队列、新卡生成与旧卡失效，以及通知和审计；物流范围为运营回填快递单号与邮寄状态。
+Business background: After losing a credit card, cardholders need to report the loss and freeze the card immediately, then apply online for a replacement and track card production and mailing. Provide customer self-service and agent-assisted entry points, replacement fee handling, an operations replacement queue, new card generation and old card deactivation, plus notifications and audit; the logistics scope is operations entering the courier tracking number and mailing status.
 
-业务需求编号：REQ-2026-002
-原始需求 SHA256：3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9
-完整需求：Talents发布资料 four-requirements/REQ-2026-002/Original Requirement.md（原文v1.0）。
-范围：信用卡挂失与补卡，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
-试验口径版本：test-profile-v2
-试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-本任务明确锁定 v2 本地测试口径；原文全部13章及原US-001..008必须保留。除已明确测试参数外，其它待定政策须报告协调者，不得自行标为必须/已确认。
+Business requirement ID: REQ-2026-002
+Original requirement SHA256: 3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9
+Full requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (original v1.0).
+Scope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Test profile version: test-profile-v2
+Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
+This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
 ```
 
 ### REQ-2026-003
 
-**需求标题：** 信用卡额度调整申请与审批
+**Requirement title:** Credit Card Limit Increase Application and Approval
 
-**需求背景（完整复制到新建需求的描述中）：**
+**Requirement background (copy all of it into the new requirement's description):**
 
 ```text
-业务背景：持卡人需要根据消费与用卡情况申请永久额度调整，并在线提交材料、查看审批进度。提供系统资格预审、资料补充、初审与终审工作台；批准后更新账户额度，拒绝时明确原因，并保留权限隔离、通知和完整审计记录。
+Business background: Cardholders need to apply for a permanent credit limit adjustment based on their spending and card usage, submit supporting documents online and track approval progress. Provide system eligibility pre-screening, document supplements, and first-review and final-review workbenches; update the account credit limit on approval, state the reason clearly on rejection, and keep permission isolation, notifications and a complete audit trail.
 
-业务需求编号：REQ-2026-003
-原始需求 SHA256：a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01
-完整需求：Talents发布资料 four-requirements/REQ-2026-003/Original Requirement.md（原文v1.0）。
-范围：信用卡额度调整申请与审批，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
-试验口径版本：test-profile-v2
-试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-本任务明确锁定 v2 本地测试口径；原文全部13章及原US-001..008必须保留。除已明确测试参数外，其它待定政策须报告协调者，不得自行标为必须/已确认。
+Business requirement ID: REQ-2026-003
+Original requirement SHA256: a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01
+Full requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (original v1.0).
+Scope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Test profile version: test-profile-v2
+Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
+This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
 ```
 
 ### REQ-2026-004
 
-**需求标题：** 交易争议在线申请与处理
+**Requirement title:** Transaction Dispute Online Application and Handling
 
-**需求背景（完整复制到新建需求的描述中）：**
+**Requirement background (copy all of it into the new requirement's description):**
 
 ```text
-业务背景：持卡人对已入账交易有异议时，需要从交易详情在线提交争议原因、金额和证据，并查询进度、补充材料或撤案。提供后台案件受理、复核、临时入账、拒付与结案流程，对接交易快照、证据文件、账户、通知和审计，保留处理时限与证据链。
+Business background: When cardholders dispute a posted transaction, they need to submit the dispute reason, amount and evidence online from the transaction details, then track progress, add documents or withdraw the case. Provide back-office case intake, review, provisional credit, chargeback and case closure, integrating with transaction snapshots, evidence files, accounts, notifications and audit, and keep processing deadlines and the evidence chain.
 
-业务需求编号：REQ-2026-004
-原始需求 SHA256：341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484
-完整需求：Talents发布资料 four-requirements/REQ-2026-004/Original Requirement.md（原文v1.0）。
-范围：交易争议在线申请与处理，必须读取完整原文全部13章后开展；当前任务摘要不缩减功能、接口、数据、安全与验收范围。第5章明确模拟值用于本次测试；第12.3事项保留投产待确认，内部矛盾按资料差异清单澄清，不伪造Owner确认。
-试验口径版本：test-profile-v2
-试验口径 SHA256：b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-本任务明确锁定 v2 本地测试口径；原文全部13章及原US-001..008必须保留。除已明确测试参数外，其它待定政策须报告协调者，不得自行标为必须/已确认。
+Business requirement ID: REQ-2026-004
+Original requirement SHA256: 341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484
+Full requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (original v1.0).
+Scope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Test profile version: test-profile-v2
+Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
+This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
 ```
 
-### 命令行预览与已有环境追加
+### Command-line preview and adding to an existing environment
 
-也可在服务启动后运行以下只读命令，查看相同标题和来源描述：
+After the services start, you can also run this read-only command to see the same titles and source descriptions:
 
 ```sh
 cd talents
-node --import tsx tools/register-four-requirements.ts --endpoint http://127.0.0.1:45980 --version 2
+node --import tsx tools/register-four-requirements.ts --endpoint http://127.0.0.1:46980 --version 2
 ```
 
-上述命令不带 `--apply`，仅显示资料和可复制描述，不创建任务或调用模型。新环境已自动登记两版，无需再次注册。已有有效 Talents 状态保持原样；需要增量补入资料时，先分别预览 `--version 1`、`--version 2`，核对后对相应命令追加 `--apply`。只追加缺少的来源，同 ID 内容冲突会明确拒绝。显式重置 Talents 后也包含两版预置资料；重置仍会清除 Talents 用户状态，不用于升级已有数据。
+Without `--apply`, the command only shows the material and copyable descriptions; it does not create tasks or call a model. A new environment registers both versions automatically, so you do not need to register again. Existing valid Talents state is left as is. To add material incrementally, first preview `--version 1` and `--version 2` separately, check them, then append `--apply` to the matching command. Only missing sources are added; conflicting content under the same ID is rejected explicitly. An explicit Talents reset also restores both preloaded versions; the reset still clears Talents user state and is not a way to upgrade existing data.
 
-Teams 单独启动时可读取已提交的 `shared/seed/talents/`；Talents 启动后发布到 `shared/data/talents/`。这两处都保留 v1、v2，已采用的节点快照不会自动升级。正常启动只初始化资料；分配需求或确认准备会触发既有知识获取与原生会话流程，实际执行仍需本机 iCode、模型配置和工作目录。源码 ZIP 的资料读取不依赖 Git；验证 provenance 历史源码的测试需要包含来源提交的 Git clone。
+When Teams runs on its own it reads the committed `shared/seed/talents/`; once Talents starts it publishes to `shared/data/talents/`. Both locations keep v1 and v2, and node snapshots that have already been adopted are not upgraded automatically. A normal start only initializes the material. Assigning a requirement or confirming preparation triggers the existing knowledge retrieval and native session flow; actual execution still needs local iCode, a model configuration and a working directory. Reading the material from a source ZIP does not need Git; the tests that verify provenance against historical source need a Git clone that contains the source commits.
 
-## CardDemo 开发初始化
+## CardDemo development setup
 
-实际业务开发前，核对 **JDK 21、Maven 3.9+、Node.js 24、Git 和 Teams 实际使用的 iCode**。平台继续在 `main` 运行；业务代码从独立仓库检出，在「项目概览 → 工作区设置」配置本机目录、origin 和交付基线分支。新需求自动使用业务仓库的独立任务 worktree，PR 目标以绑定的基线为准；未配置时不能启动，不提供内嵌业务工程默认目录。
+Before actual business development, check **JDK 21, Maven 3.9+, Node.js 24, Git and the iCode that Teams actually uses**. The platform keeps running from this repository; the business code is checked out from a separate repository, and you configure its local directory, origin and delivery base branch in "Project overview → Workspace settings". New requirements automatically use a separate task worktree of the business repository, and PRs target the bound base branch. Without this configuration a task cannot start; there is no built-in default directory for an embedded business project.
 
-初始化命令、macOS/Windows 工具核对、CLI/TUI 使用及真实测试要求见 [CardDemo 初始化与交付检查](teams/docs/carddemo-development.md)。Java 单元与服务内接口测试使用 H2；Docker/PostgreSQL 用于独立跨服务验证。当前未接通的静态分析、安全扫描须明确登记，预置结果不能替代真实单测。
+For setup commands, macOS/Windows tool checks, CLI/TUI usage and real testing requirements, see [CardDemo setup and delivery checks](teams/docs/carddemo-development.md). Java unit tests and in-service API tests use H2; Docker/PostgreSQL is for separate cross-service verification. Static analysis and security scanning that are not wired in yet must be recorded explicitly; preset results cannot replace real unit tests.
 
-## 按需求重置
+## Reset a requirement
 
-在仓库根目录使用同一条跨平台命令。先结束目标需求正在运行的 iCode 会话，将示例中的 `REQ-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` 替换为任务列表中的完整 ID；iCode Teams 项目的 `--project` 使用 `teams`。
+Use the same cross-platform command from the repository root. First end any running iCode session for the target requirement, and replace `REQ-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` in the example with the full ID from the task list. For the iCode Teams project, use `--project teams`.
 
-当前主需求也支持重置：页面显示的 `MKT-001` 对应内部任务 ID `DEMO-MKT-001`，命令使用 `--project carddemo --task DEMO-MKT-001`。它保留需求和分配，仅清回开始前；`--remove` 仍只适用于新建的 `REQ-…` 需求。
+The main requirement can also be reset: `MKT-001` shown on the page has the internal task ID `DEMO-MKT-001`, so the command uses `--project carddemo --task DEMO-MKT-001`. It keeps the requirement and its assignment and only returns it to its pre-start state; `--remove` still applies only to newly created `REQ-…` requirements.
 
 ```sh
 npm run reset:task -- --project carddemo --task REQ-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-默认输出 JSON 预览，不修改数据。核对项目、任务及将清理的文件后，追加 `--apply` 执行：
+By default the command prints a JSON preview and changes nothing. After checking the project, the task and the files to be cleaned, append `--apply` to run it:
 
 ```sh
 npm run reset:task -- --project carddemo --task REQ-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --apply
 ```
 
-重置保留需求内容、交付人和计划完成日期，清除该需求的交付流程记录及预览中列出的独占生成资料、Teams 管理的会话运行目录，使需求可以从开始前重新运行。其他需求、业务代码、原始资料和原生 iCode 全局历史保留。工具会核对活动会话与服务归属，必要时暂时停止并重新启动所属 Teams 服务，不构建应用；无法安全确认范围时会拒绝执行。
+The reset keeps the requirement content, assignee and planned completion date. It clears the requirement's delivery flow records, the exclusively generated material listed in the preview, and the session run directories managed by Teams, so the requirement can run again from the start. Other requirements, business code, original material and native iCode global history are kept. The tool checks active sessions and service ownership, and if needed temporarily stops and restarts the owning Teams service without building the app. It refuses to run when it cannot safely confirm the scope.
 
-原始来源会话、trace 原始存档，以及缺少任务 ID、无法确认归属的历史分析均保留；这些来源资料不构成本次重新执行的四节点进度。
+Original source sessions, raw trace archives, and historical analyses that lack a task ID or whose ownership cannot be confirmed are kept; this source material does not count as four-node progress for the rerun.
 
-执行会自动备份，默认位置为 Teams 当前 runtime 下的 `task-reset-backups/<UUID>`，实际路径以输出为准。`--remove` 可与任务参数一起使用，仅用于删除本地新建的 `REQ-…` 需求；不带 `--apply` 时仍然只预览。撤回时只使用该次输出的备份目录，无需重新指定项目或任务：
+The command backs up automatically, by default to `task-reset-backups/<UUID>` under the current Teams runtime; the actual path is shown in the output. `--remove` can be combined with the task arguments and only deletes locally created `REQ-…` requirements; without `--apply` it still only previews. To undo, use only the backup directory from that run's output; you do not need to specify the project or task again:
 
 ```sh
 npm run reset:task -- --restore "/absolute/path/to/task-reset-backups/backup-id"
 npm run reset:task -- --restore "/absolute/path/to/task-reset-backups/backup-id" --apply
 ```
 
-恢复前同样先核对预览并结束目标会话；备份后的新变化会接受冲突检查。需要纳入自定义目录中的 Teams CLI 回执时，可加 `--receipt-root` 并提供绝对目录，仍按精确项目和任务范围处理。
+Before restoring, also check the preview and end the target session; changes made after the backup are checked for conflicts. To include Teams CLI receipts from a custom directory, add `--receipt-root` with an absolute directory; it is still limited to the exact project and task.
 
-macOS 入口为 `./Reset Task.command`，Windows 为 `reset-task.cmd`，参数与上述命令一致；无参数时只显示帮助。也可在 `teams/` 内执行 `npm run reset:task -- …`。入口沿用已有本机配置，不会自动安装依赖或选择某个任务。
+The macOS launcher is `./Reset Task.command` and the Windows launcher is `reset-task.cmd`. They take the same arguments as the command above, and with no arguments they only show help. You can also run `npm run reset:task -- …` inside `teams/`. The launchers use the existing local configuration; they do not install dependencies or pick a task.
 
-## 数据怎么流动
+## How data flows
 
 ```
-Teams ── HTTP：GET /api/shared/teams（长轮询 /changes）──▶ Talents
-         成员与角色、项目、代码仓（含项目工作区绑定的本机目录、origin、基线分支）、设计文档、项目 Skill、成员共享的会话
-Teams ── shared/data/teams/task-sessions/ ──▶ Talents（读取尚未实现）
-         独立需求验收后自动归集的任务会话
+Teams ── HTTP: GET /api/shared/teams (long poll /changes) ──▶ Talents
+         Members and roles, projects, repositories (incl. the local directory, origin and base branch bound in the project workspace), design documents, project Skills, sessions shared by members
+Teams ── shared/data/teams/task-sessions/ ──▶ Talents (reading not implemented yet)
+         Task sessions collected automatically after a standalone requirement is accepted
 
 Talents ── shared/data/talents/knowledge.json + files/ ──▶ Teams
-           远端索引，以及尚未改为 PR 提交的已有知识产物
+           Remote indexes, and existing knowledge artifacts not yet switched to PR submission
 
-Talents ── gh（PR）──▶ 代码仓
-           审阅后的知识文件、Skill 修改、AGENTS.md 规则，由开发者审阅合入
+Talents ── gh (PR) ──▶ Repository
+           Reviewed knowledge files, Skill changes and AGENTS.md rules, reviewed and merged by developers
 ```
 
-- Talents 使用时 Teams 必须在运行：Talents 每次都向 Teams 读取当前数据，页面在 Teams 数据变化时（长轮询）或重新获得焦点时自动更新。Teams 未运行时，Talents 顶部提示未连接，仍可查看自己的任务和产物。
-- 共享目录的每个子目录只有一个写入方。格式定义在 [shared/contracts.ts](shared/contracts.ts)；目录可用 `DEMO_SHARED_DIR` 指定，默认 `shared/data`（不入库）。
-- 成员、项目、代码仓和设计文档以 Teams 为准，在 Talents 中只读；Talents 只登记本地文档来源。
-- Talents 只有管理员入口，对应 Teams Owner（挖掘、审阅、提交 PR）；Teams 只向 Owner 展示 Talents 入口。没有开发者端，开发者在代码托管平台审阅并合入 PR。
-- 文件类知识和轨迹诊断建议都以 PR 提交，Talents 只保存 PR 链接和提交内容，不查询合入状态，也不直接更新 Teams 中的 Skill 版本。
-- Teams「项目知识」页展示共享目录中的产物并可预览原文；任务准备只要求 Skill 可读，项目知识为空不阻止准备。
-- 任务输入由 Teams 按当前节点组装：需求与真实 Skill 包来自 Teams，加上共享目录中 Talents 写入的项目知识（没有时为空），已采用版本保持固定。
-- 轨迹诊断与改进 PR 在 Talents 中完成，Teams 只负责共享交付会话。
+- Teams must be running while Talents is in use. Talents reads current data from Teams every time, and the page updates automatically when Teams data changes (long poll) or when the page regains focus. When Teams is not running, Talents shows "Not connected to iCode Teams" at the top, and you can still view its own tasks and artifacts.
+- Each subdirectory of the shared directory has exactly one writer. The format is defined in [shared/contracts.ts](shared/contracts.ts). The directory can be set with `DEMO_SHARED_DIR` and defaults to `shared/data` (not committed).
+- Members, projects, repositories and design documents come from Teams and are read-only in Talents; Talents only registers local document sources.
+- Talents has only an Admin entry, which corresponds to the Teams Owner (mining, review, PR submission); Teams shows the Talents entry only to the Owner. There is no Developer view; developers review and merge PRs on the code hosting platform.
+- File-type knowledge and trajectory diagnosis suggestions are all submitted as PRs. Talents only stores the PR link and the submitted content; it does not check merge status or update Skill versions in Teams directly.
+- The Teams "Project knowledge" page shows the artifacts in the shared directory and can preview the original text. Task preparation only requires the Skills to be readable; empty project knowledge does not block preparation.
+- Teams assembles task input for the current node: the requirement and real Skill packages come from Teams, plus the project knowledge Talents wrote to the shared directory (empty if there is none). Adopted versions stay fixed.
+- Trajectory diagnosis and improvement PRs happen in Talents; Teams only shares delivery sessions.
 
-## 演示主线
+## Demo storyline
 
-1. Teams：Owner 查看项目知识，从 Talents 入口进入知识挖掘。
-2. Talents：文档集新增白金卡规则 → 审阅业务知识 v2 草稿 → 提交知识 PR。
-3. Teams：成员准备上下文、开发、检查失败 → 修复 → 提交，Owner 验收后，Teams 自动归集交付会话并共享给 Talents。
-4. Talents：用当前已有共享会话做轨迹诊断（新任务会话导出后的自动读取尚未接入） → 逐条提交改进 PR（修改 Skill 或向 AGENTS.md 补充规则）。
-5. 代码托管平台：开发者审阅并合入 PR。
+1. Teams: the Owner checks project knowledge and opens knowledge mining through the Talents entry.
+2. Talents: add the platinum card rule to the document set → review the business knowledge v2 draft → submit the knowledge PR.
+3. Teams: a member prepares context, develops, checks fail → fixes → submits. After the Owner accepts, Teams automatically collects the delivery sessions and shares them with Talents.
+4. Talents: run trajectory diagnosis on the shared sessions already available (automatic reading of newly exported task sessions is not wired in yet) → submit improvement PRs one by one (change a Skill or add rules to AGENTS.md).
+5. Code hosting platform: developers review and merge the PRs.
 
-## 开发边界
+## Development boundaries
 
-此仓库以隔离状态和预置数据验证交互，不连接银行支付系统。原生 iCode 准备与执行会调用本机已配置的模型，须按任务入口确认或显式 CLI 指令发起；初始化预览不启动模型。界面结果不能替代生产运行、模型实验或安全扫描证据。活动日期、金额舍入等测试假设见 [设计说明](teams/docs/demo-design.md)。仓内 Java/业务 Skill 快照（`workspace/`）为来源资料，不代表白金卡规则已经部署到 Java 服务。
+This repository uses isolated state and preloaded data to verify interactions; it does not connect to any bank payment system. Native iCode preparation and execution call the locally configured model and must be started by confirming at the task entry or by an explicit CLI command; the setup preview does not start a model. UI results cannot replace evidence from production runs, model experiments or security scans. Test assumptions such as campaign dates and amount rounding are in the [design notes](teams/docs/demo-design.md). The Java/business Skill snapshot in the repository (`workspace/`) is source material; it does not mean the platinum card rule has been deployed to the Java services.
 
-从旧的 `demo/` 目录迁移到当前结构，见 [MIGRATION.md](MIGRATION.md)。
+To migrate from the old `demo/` directory to the current structure, see [MIGRATION.md](MIGRATION.md).
 
-## 验证
+## Verification
 
 ```sh
-npm test                                   # Teams 单元测试 + HTTP 集成 + Talents 测试
+npm test                                   # Teams unit tests + HTTP integration + Talents tests
 cd teams && npm run typecheck && npm run build && npm run test:e2e
 cd talents && npm run typecheck && npm run build && npm run test:e2e && npm run test:codegraph:e2e
 ```

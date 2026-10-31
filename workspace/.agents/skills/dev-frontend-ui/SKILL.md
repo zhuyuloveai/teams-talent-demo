@@ -1,121 +1,121 @@
 ---
 name: dev-frontend-ui
-description: 按UI设计稿与交互规范像素级实现前端界面：组件复用、状态管理、表单校验、接口对接、响应式、A11y、i18n与性能优化。前端页面/组件开发任务时使用。
+description: "Implement frontend UIs pixel-accurately from UI designs and interaction specs: component reuse, state management, form validation, API integration, responsive layout, A11y, i18n and performance optimization. Use for frontend page / component development tasks."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 前端技术负责人 |
-| category | 岗位技能 |
+| owner | Dev / Frontend tech lead |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-frontend-ui 技能
+# dev-frontend-ui skill
 
-## 概述
+## Overview
 
-本技能用于按设计稿与交互规范高质量实现前端界面。
+This skill implements frontend UIs with high quality according to the designs and interaction specs.
 
-## 工作流
+## Workflow
 
-1. 读取UI设计稿与交互规范，提取尺寸/颜色/字体/间距
-2. 组件拆分与复用分析（优先复用组件库）
-3. 页面布局与样式实现（响应式）
-4. 交互逻辑实现（表单校验、状态切换、loading/error/空状态）
-5. 状态管理实现
-6. 接口对接（Mock先行，loading/error边界）
-7. 国际化（i18n）与可访问性（A11y）
-8. 性能优化（按需加载、缓存、包体积）
-9. 自检：UI还原度、交互走查、兼容性
+1. Read the UI design and interaction spec; extract sizes / colors / fonts / spacing
+2. Analyze component breakdown and reuse (prefer the component library)
+3. Implement page layout and styles (responsive)
+4. Implement interaction logic (form validation, state switching, loading / error / empty states)
+5. Implement state management
+6. Integrate APIs (mock first, loading / error boundaries)
+7. Internationalization (i18n) and accessibility (A11y)
+8. Performance optimization (on-demand loading, caching, bundle size)
+9. Self-check: design fidelity, interaction walkthrough, compatibility
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 页面原型讨论、组件拆分探索、设计稿对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，前端页面/组件开发任务 | 前端评审 + 设计师走查签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Page prototype discussion, component breakdown exploration, design alignment | No review needed |
+| L2 Standard (default) | Default level for bank production; frontend page / component development tasks | Frontend review + designer walkthrough sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金操作页面（转账/支付/理财）、客户敏感信息展示（卡号/身份证/余额）、监管报送页面、生产数据回写表单时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: for pages with fund operations (transfer / payment / wealth management), display of sensitive customer data (card number / ID card number / balance), regulatory reporting pages, or forms that write back production data, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3输出组件三态（loading/error/empty）、i18n、A11y与还原度自检
-- 交互走查清单与兼容矩阵
-- 字段级校验：金额输入（精度/正负/上限）、卡号（格式/校验位/Luhn）、手机号（11位/正则）、身份证（18位/校验位）逐字段定义校验规则与错误提示
-- 异常路径覆盖：接口超时、5xx、网络断开、签名失败、防重放失败逐路径给出 loading/error/重试 UI
-- 表单安全：敏感字段（密码/卡号）不回显明文、防粘贴、自动补全禁用、键盘记录防护、提交防抖与防重复
-- 状态管理：资金类状态机（待提交→处理中→成功/失败）防重复流转，失败可重试且幂等
-- 边界值：金额 min/max 及 ±1、字段长度上限、分页 size 上限、文件上传大小上限逐项构造用例
+- At L3, output the three component states (loading / error / empty), i18n, A11y and a design fidelity self-check
+- Interaction walkthrough checklist and compatibility matrix
+- Field-level validation: define validation rules and error messages field by field for amount input (precision / sign / upper limit), card number (format / check digit / Luhn), mobile number (11 digits / regex) and ID card number (18 digits / check digit)
+- Exception path coverage: for each of API timeout, 5xx, network disconnect, signature failure and replay-protection failure, provide the loading / error / retry UI
+- Form security: sensitive fields (password / card number) never echo plain text, block paste, disable autocomplete, protect against keylogging, debounce submission and prevent duplicate submission
+- State management: fund-related state machines (pending submission → processing → success / failure) prevent duplicate transitions; failures can be retried idempotently
+- Boundary values: build cases for amount min/max and ±1, maximum field length, maximum page size and maximum upload file size
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 还原度≥95%（ui_lint.py 无 raw color，设计令牌全覆盖）
-- [ ] 三态齐全（loading/error/empty 每个数据组件均覆盖）
-- [ ] A11y 达标（a11y_check.py 退出码 0，img 有 alt、可点击元素有 label）
-- [ ] i18n 完整（无硬编码中文，文案走 i18n 资源）
-- [ ] 字段级校验完整（金额/卡号/手机号/身份证校验规则）
-- [ ] 包体积达标（bundle_analyze.py 无超限文件，total_kb 在阈值内）
-- [ ] 表单安全到位（敏感字段不回显/防重复提交/防粘贴）
+- [ ] Design fidelity ≥95% (ui_lint.py finds no raw colors, design tokens fully used)
+- [ ] All three states present (every data component covers loading / error / empty)
+- [ ] A11y compliant (a11y_check.py exit code 0, img has alt, clickable elements have a label)
+- [ ] i18n complete (no hardcoded UI text; all copy comes from i18n resources)
+- [ ] Field-level validation complete (validation rules for amount / card number / mobile number / ID card number)
+- [ ] Bundle size within limits (bundle_analyze.py finds no oversized files, total_kb within threshold)
+- [ ] Form security in place (sensitive fields not echoed / duplicate submission prevented / paste blocked)
 
-> 主模板含【L3必填】深度字段：`templates/component-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/component-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/component-template.md` | 组件结构模板 |
-| `templates/page-template.md` | 页面结构模板 |
+| `templates/component-template.md` | Component structure template |
+| `templates/page-template.md` | Page structure template |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/ui_lint.py` | 设计还原度检查（颜色/尺寸） | 0/1 |
-| `scripts/a11y_check.py` | 可访问性扫描 | 0/1 |
-| `scripts/bundle_analyze.py` | 包体积分析 | 0 |
+| `scripts/ui_lint.py` | Design fidelity check (colors / sizes) | 0/1 |
+| `scripts/a11y_check.py` | Accessibility scan | 0/1 |
+| `scripts/bundle_analyze.py` | Bundle size analysis | 0 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/frontend-standards.md` | 前端规范与兼容矩阵 |
+| `references/frontend-standards.md` | Frontend standards and compatibility matrix |
 
-## 质量门禁
+## Quality gates
 
-- [ ] UI还原度≥95%
-- [ ] 交互走查无遗漏
-- [ ] 兼容性达标
-- [ ] 无控制台错误
+- [ ] Design fidelity ≥95%
+- [ ] Interaction walkthrough complete
+- [ ] Compatibility requirements met
+- [ ] No console errors
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 设计稿理解偏差 | 尺寸/颜色/间距与设计稿不符 | 关键页面走查确认 + ui_lint.py | 修正后重跑 lint |
-| 组件复用不足 | 重复造轮子/组件库未推广 | 组件库 review + 推广 | 改用组件库后重审 |
-| 性能问题 | 包体积超限/首屏加载慢 | bundle_analyze.py + 按需加载 | 拆包/懒加载后重测体积 |
-| 三态缺失 | 只有正常态，缺 loading/error/empty | L3 强制三态 + 模板约束 | 补三态后重审 |
-| A11y 不达标 | img 无 alt/按钮无 label/对比度不足 | a11y_check.py 扫描 + A11y 规范 | 补 alt/label 后重跑扫描 |
-| 字段校验缺失 | 金额负数/卡号格式错未拦截 | L3 字段级校验规则 | 补校验后重跑边界用例 |
-| 表单不安全 | 密码回显明文/可重复提交/可粘贴 | L3 表单安全规范 | 补安全措施后重审 |
+| Design misunderstanding | Sizes / colors / spacing differ from the design | Walkthrough confirmation of key pages + ui_lint.py | Fix and rerun lint |
+| Insufficient component reuse | Reinventing the wheel / component library not adopted | Component library review + adoption | Switch to the component library and review again |
+| Performance problems | Bundle too large / slow first screen | bundle_analyze.py + on-demand loading | Split bundles / lazy load, then measure size again |
+| Missing states | Only the normal state; loading / error / empty missing | L3 enforces three states + template constraints | Add the three states and review again |
+| A11y not compliant | img without alt / button without label / insufficient contrast | a11y_check.py scan + A11y standards | Add alt / label and rerun the scan |
+| Missing field validation | Negative amounts / malformed card numbers not blocked | L3 field-level validation rules | Add validation and rerun the boundary cases |
+| Insecure forms | Password echoed in plain text / duplicate submission possible / paste allowed | L3 form security standards | Add the security measures and review again |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式前端开发/前端评审 | 组件三态、设计令牌、A11y、i18n、交互走查清单 | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级校验规则、异常路径 UI、表单安全、状态机防重复、包体积门禁 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Formal frontend development / frontend review starts | Three component states, design tokens, A11y, i18n, interaction walkthrough checklist | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level validation rules, exception path UI, form security, state machine duplicate prevention, bundle size gate | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级校验规则与表单安全须由前端负责人与安全负责人共同确认；Agent 起草，前端负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, field-level validation rules and form security must be confirmed jointly by the frontend owner and the security owner. The Agent drafts; the frontend owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

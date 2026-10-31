@@ -1,6 +1,6 @@
 ---
 name: change-window-scheduling
-description: 根据变更类型、风险等级与业务影响安排变更窗口，检测窗口冲突（业务高峰/冻结期）。RFC提交后、变更窗口安排时使用。
+description: "Schedules change windows based on change type, risk level and business impact, and detects window conflicts (business peaks/freeze periods). Use after an RFC is submitted, when scheduling the change window."
 ---
 
 ## 元数据

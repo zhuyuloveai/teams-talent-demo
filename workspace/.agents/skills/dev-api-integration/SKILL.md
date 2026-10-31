@@ -1,120 +1,120 @@
 ---
 name: dev-api-integration
-description: 确保接口契约正确实现：契约确认、Mock先行、联调验证、异常降级、幂等性、安全加固、可观测性与契约测试。前后端联调、跨系统接口对接、第三方集成时使用。
+description: "Ensure interface contracts are implemented correctly: contract confirmation, mock-first, integration verification, exception handling and degradation, idempotency, security hardening, observability and contract testing. Use for frontend-backend integration, cross-system interface integration and third-party integration."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 集成负责人 |
-| category | 岗位技能 |
+| owner | Dev / Integration owner |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-api-integration 技能
+# dev-api-integration skill
 
-## 概述
+## Overview
 
-本技能用于确保接口契约正确实现与联调顺利。
+This skill ensures interface contracts are implemented correctly and integration runs smoothly.
 
-## 工作流
+## Workflow
 
-1. 接口契约确认（格式/字段/错误码/超时）
-2. Mock服务搭建（契约驱动，前后端并行）
-3. 接口代码实现（客户端SDK/HTTP Client，含序列化与错误处理）
-4. 联调验证（正常→边界→异常）
-5. 异常与降级（超时重试、熔断、幂等）
-6. 安全加固（鉴权、签名、防重放、加密）
-7. 可观测性（traceId透传、脱敏日志、指标）
-8. 契约测试（contract_validate.py）
+1. Confirm the interface contract (format / fields / error codes / timeouts)
+2. Set up a mock service (contract-driven, frontend and backend work in parallel)
+3. Implement the interface code (client SDK / HTTP client, including serialization and error handling)
+4. Verify the integration (normal → boundary → exception)
+5. Exceptions and degradation (timeout retry, circuit breaking, idempotency)
+6. Security hardening (authentication, signing, replay protection, encryption)
+7. Observability (traceId propagation, masked logs, metrics)
+8. Contract testing (contract_validate.py)
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 接口草案讨论、契约字段探索、Mock 联调前对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，前后端联调、跨系统接口对接、第三方集成 | 接口评审 + 集成负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Interface draft discussion, contract field exploration, alignment before mock integration | No review needed |
+| L2 Standard (default) | Default level for bank production; frontend-backend integration, cross-system interface integration, third-party integration | Interface review + integration owner sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金划拨、反洗钱接口、监管报送、跨行直连、第三方支付、生产数据回写时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves fund transfers, anti-money-laundering interfaces, regulatory reporting, direct interbank connections, third-party payments or write-back of production data, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3输出完整接口契约（schema+错误码+超时+幂等）并做契约测试
-- 异常/降级/安全加固/可观测性逐项验证
-- 字段级校验：金额（精度/正负/币种）、限额（单笔/日累计）、客户号（格式/有效性）、时间（时区/格式）逐字段定义校验规则与错误码
-- 异常路径覆盖：超时、重试、熔断、降级、限流、网络抖动、5xx、签名失败、防重放失败逐路径给出响应与重试策略
-- 接口schema：请求/响应字段含类型、必填、枚举、长度、示例值，OpenAPI 3.0 描述并由 contract_validate.py 校验
-- 幂等性：写接口定义幂等键（业务流水号）、幂等有效期、重复响应策略（返回首结果 vs 拒绝），并由 idempotency_test.py 验证
-- 边界值：金额 min/max 及 ±1、字段长度上限、分页 size 上限、超时阈值 ±10% 逐项构造用例
+- At L3, output the complete interface contract (schema + error codes + timeouts + idempotency) and run contract tests
+- Verify exceptions / degradation / security hardening / observability item by item
+- Field-level validation: define validation rules and error codes field by field for amount (precision / sign / currency), limits (per transaction / daily cumulative), customer ID (format / validity) and time (time zone / format)
+- Exception path coverage: for each of timeout, retry, circuit breaking, degradation, rate limiting, network jitter, 5xx, signature failure and replay-protection failure, give the response and retry strategy
+- Interface schema: request / response fields include type, required, enum, length and example value; describe in OpenAPI 3.0 and validate with contract_validate.py
+- Idempotency: write interfaces define an idempotency key (business serial number), idempotency validity period and duplicate-response strategy (return the first result vs reject), verified with idempotency_test.py
+- Boundary values: build cases for amount min/max and ±1, maximum field length, maximum page size, and timeout threshold ±10%
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 契约测试通过率100%（contract_validate.py 退出码 0）
-- [ ] 异常路径全覆盖（超时/重试/熔断/降级/限流/5xx/签名失败）
-- [ ] 幂等性测试通过（idempotency_test.py 退出码 0，含重复提交场景）
-- [ ] 字段级校验规则定义完整（金额/限额/客户号/时间/币种）
-- [ ] 接口schema含类型/必填/枚举/长度/示例（OpenAPI 3.0）
-- [ ] 安全加固到位（鉴权/签名/防重放/加密/脱敏日志）
-- [ ] 可观测性完整（traceId透传/关键指标埋点/脱敏日志）
+- [ ] Contract test pass rate 100% (contract_validate.py exit code 0)
+- [ ] All exception paths covered (timeout / retry / circuit breaking / degradation / rate limiting / 5xx / signature failure)
+- [ ] Idempotency test passed (idempotency_test.py exit code 0, including duplicate submission)
+- [ ] Field-level validation rules fully defined (amount / limit / customer ID / time / currency)
+- [ ] Interface schema includes type / required / enum / length / example (OpenAPI 3.0)
+- [ ] Security hardening in place (authentication / signing / replay protection / encryption / masked logs)
+- [ ] Observability complete (traceId propagation / key metric instrumentation / masked logs)
 
-> 主模板含【L3必填】深度字段：`templates/api-contract-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/api-contract-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/api-contract-template.md` | 接口契约模板 |
-| `templates/integration-test-report.md` | 联调报告 |
+| `templates/api-contract-template.md` | Interface contract template |
+| `templates/integration-test-report.md` | Integration report |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/contract_validate.py` | 契约校验（schema） | 0/2/3 |
-| `scripts/mock_server.py` | 基于契约生成Mock服务 | 0/3 |
-| `scripts/idempotency_test.py` | 幂等性测试 | 0/2/3 |
+| `scripts/contract_validate.py` | Contract validation (schema) | 0/2/3 |
+| `scripts/mock_server.py` | Generate a mock service from the contract | 0/3 |
+| `scripts/idempotency_test.py` | Idempotency test | 0/2/3 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/integration-standards.md` | 集成规范 |
+| `references/integration-standards.md` | Integration standards |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 契约测试通过率100%
-- [ ] 异常场景全覆盖
-- [ ] 幂等测试通过
-- [ ] 安全加固到位
+- [ ] Contract test pass rate 100%
+- [ ] All exception scenarios covered
+- [ ] Idempotency test passed
+- [ ] Security hardening in place
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 契约理解偏差 | 实现字段与契约不符/缺字段/类型错 | 契约测试左移+contract_validate.py 自动校验 | 修正字段后重跑契约校验 |
-| 接口性能问题 | P95超阈值/超时堆积 | 超时/重试策略调优+慢查询分析 | 调参后重跑基准对比 |
-| 版本不兼容 | 升级后客户端报错/字段缺失 | 接口版本管理+向后兼容契约 | 回退版本或加兼容字段后重试 |
-| 幂等性缺失 | 重复请求产生重复扣款/重复下单 | 幂等键+idempotency_test.py 验证 | 补幂等键后重跑幂等测试 |
-| 异常路径漏处理 | 超时/5xx时无降级或无限重试 | 异常路径清单逐项实现+熔断限流 | 补降级逻辑后重跑异常路径用例 |
-| 安全加固不足 | 鉴权缺失/签名可重放/日志泄露敏感信息 | 鉴权+签名+防重放+脱敏日志 | 补安全措施后重跑安全扫描 |
-| 字段级校验缺失 | 金额负数/超限额/客户号格式错未拦截 | 字段级校验规则+错误码映射 | 补校验规则后重跑边界用例 |
+| Contract misunderstanding | Implemented fields differ from the contract / missing fields / wrong types | Shift contract tests left + automatic validation with contract_validate.py | Fix the fields and rerun contract validation |
+| Interface performance problems | P95 above threshold / timeouts pile up | Tune timeout / retry strategy + slow query analysis | Rerun the baseline comparison after tuning |
+| Version incompatibility | Client errors / missing fields after upgrade | Interface version management + backward-compatible contract | Roll back the version or add compatibility fields, then retry |
+| Missing idempotency | Duplicate requests cause duplicate debits / duplicate orders | Idempotency key + verification with idempotency_test.py | Add the idempotency key and rerun the idempotency test |
+| Unhandled exception paths | No degradation or unbounded retries on timeout / 5xx | Implement the exception path list item by item + circuit breaking and rate limiting | Add degradation logic and rerun the exception path cases |
+| Insufficient security hardening | Missing authentication / replayable signatures / sensitive data in logs | Authentication + signing + replay protection + masked logs | Add the security measures and rerun the security scan |
+| Missing field-level validation | Negative amounts / over-limit / malformed customer IDs not blocked | Field-level validation rules + error code mapping | Add the validation rules and rerun the boundary cases |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式联调/接口评审 | 完整契约（schema+错误码+超时）、Mock配置、联调记录 | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级校验规则、异常路径清单、幂等键定义、安全加固证据、可观测性埋点 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Formal integration / interface review starts | Complete contract (schema + error codes + timeouts), mock configuration, integration records | Review rejected, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level validation rules, exception path list, idempotency key definition, security hardening evidence, observability instrumentation | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级校验规则与异常路径策略须由集成负责人与安全负责人共同确认；Agent 起草，集成负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, field-level validation rules and exception path strategies must be confirmed jointly by the integration owner and the security owner. The Agent drafts; the integration owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

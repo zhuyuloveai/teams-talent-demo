@@ -1,20 +1,20 @@
-# 五层业务模型（L1–L5）
+# Five-level business model (L1–L5)
 
-| 层级 | 名称 | 内容 |
+| Level | Name | Content |
 |------|------|------|
-| L1 | 业务模型 | 业务能力、宏观流程、领域边界 |
-| L2 | 领域模型 | 业务实体、关系、统一语言 |
-| L3 | 流程模型 | 详细流程、活动、业务规则 |
-| L4 | 系统模型 | 程序、模块、数据存储 |
-| L5 | 实现模型 | 批次作业、调度、运行时拓扑 |
+| L1 | Business model | Business capabilities, macro processes, domain boundaries |
+| L2 | Domain model | Business entities, relationships, ubiquitous language |
+| L3 | Process model | Detailed processes, activities, business rules |
+| L4 | System model | Programs, modules, data stores |
+| L5 | Implementation model | Batch jobs, scheduling, runtime topology |
 
-每条事实必须标注证据：程序名/段/行号。
+Every fact must be annotated with evidence: program name / paragraph / line number.
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 证据 | 程序/段/行引用 |
-| 适配 | 岗位消费profile |
+| Evidence | Program / paragraph / line reference |
+| Adaptation | Role-specific profile |

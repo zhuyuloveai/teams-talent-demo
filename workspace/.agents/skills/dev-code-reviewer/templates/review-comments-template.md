@@ -1,14 +1,14 @@
-# 评审意见
+# Review comments
 
-| # | 严重级别 | 文件:行 | 问题 | 建议 |
+| # | Severity | File:line | Issue | Suggestion |
 |---|---------|--------|------|------|
-| 1 | 致命/严重/告警 | src/foo.java:42 | <问题> | <建议> |
+| 1 | Fatal/Critical/Major | src/foo.java:42 | <issue> | <suggestion> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 行级意见 | 文件:行+严重级别+建议 |
-| 人工重点 | 高风险区域标注 |
+| Line-level comments | file:line + severity + suggestion |
+| Human focus | High-risk areas marked |

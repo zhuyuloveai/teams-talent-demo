@@ -1,68 +1,68 @@
-﻿# ISO 20022 报文标准参考
+# ISO 20022 Message Standard Reference
 
-## 1. 概述
+## 1. Overview
 
-ISO 20022 是金融业通用报文标准，定义了支付、清算、证券等领域的统一报文格式。银行支付系统开发中常见以下报文族：
+ISO 20022 is the common message standard of the financial industry. It defines uniform message formats for payments, clearing, securities and other areas. These message families are common in bank payment system development:
 
-| 报文族 | 前缀 | 用途 | 典型场景 |
+| Message family | Prefix | Purpose | Typical scenario |
 |--------|------|------|---------|
-| pain | 支付发起 | Customer Credit Transfer Initiation | 客户发起转账 |
-| pacs | 支付清算 | FIToFIPaymentStatusReport / CreditTransfer | 跨行清算 |
-| camt | 现金管理 | BankToCustomerStatement / Notification | 对账文件 |
-| pacs.008 | 跨行贷记 | FI to FI Customer Credit Transfer | 跨行转账 |
-| pacs.004 | 冲正 | Payment Reversal | 交易冲正 |
-| camt.053 | 对账单 | Bank to Customer Statement | 日终对账 |
-| camt.054 | 通知 | Bank to Customer Debit Credit Notification | 交易通知 |
+| pain | Payment initiation | Customer Credit Transfer Initiation | Customer initiates a transfer |
+| pacs | Payment clearing and settlement | FIToFIPaymentStatusReport / CreditTransfer | Interbank clearing |
+| camt | Cash management | BankToCustomerStatement / Notification | Reconciliation files |
+| pacs.008 | Interbank credit transfer | FI to FI Customer Credit Transfer | Interbank transfer |
+| pacs.004 | Reversal | Payment Reversal | Transaction reversal |
+| camt.053 | Statement | Bank to Customer Statement | End-of-day reconciliation |
+| camt.054 | Notification | Bank to Customer Debit Credit Notification | Transaction notification |
 
-## 2. 核心报文结构（pacs.008 示例）
+## 2. Core message structure (pacs.008 example)
 
 ```
 <Document>
   <FIToFICstmrCdtTrf>
-    <GrpHdr>            -- 报文头（全局信息）
-      <MsgId>           -- 报文唯一标识
-      <CreDtTm>         -- 创建时间
-      <NbOfTxs>         -- 交易笔数
-      <SttlmInf>        -- 结算信息
+    <GrpHdr>            -- Group header (global information)
+      <MsgId>           -- Unique message identifier
+      <CreDtTm>         -- Creation time
+      <NbOfTxs>         -- Number of transactions
+      <SttlmInf>        -- Settlement information
     </GrpHdr>
-    <CdtTrfTxInf>       -- 贷记转账信息（可多条）
-      <PmtId>           -- 支付标识
-        <EndToEndId>    -- 端到端标识（全链路唯一）
-        <TxId>          -- 交易标识
-        <UETR>          -- 唯一端到端交易参考（UUID）
+    <CdtTrfTxInf>       -- Credit transfer information (may repeat)
+      <PmtId>           -- Payment identification
+        <EndToEndId>    -- End-to-end identifier (unique across the chain)
+        <TxId>          -- Transaction identifier
+        <UETR>          -- Unique end-to-end transaction reference (UUID)
       </PmtId>
-      <IntrBkSttlmAmt>  -- 行间结算金额
-      <ChrgBr>          -- 手续费承担方
-      <CdtrAgt>         -- 收款行
-      <DbtrAgt>         -- 付款行
-      <Cdtr>            -- 收款人
-      <Dbtr>            -- 付款人
-      <RmtInf>          -- 附言信息
+      <IntrBkSttlmAmt>  -- Interbank settlement amount
+      <ChrgBr>          -- Charge bearer
+      <CdtrAgt>         -- Creditor agent (payee bank)
+      <DbtrAgt>         -- Debtor agent (payer bank)
+      <Cdtr>            -- Creditor (payee)
+      <Dbtr>            -- Debtor (payer)
+      <RmtInf>          -- Remittance information
     </CdtTrfTxInf>
   </FIToFICstmrCdtTrf>
 </Document>
 ```
 
-## 3. 开发约束
+## 3. Development constraints
 
-| 约束 | 说明 |
+| Constraint | Description |
 |------|------|
-| 字段长度 | 严格按ISO 20022定义，不得超长截断 |
-| 字符编码 | UTF-8，金额字段不含千分位 |
-| 必填校验 | GrpHdr/MsgId/CreDtTm/NbOfTxs 必填 |
-| 唯一性 | EndToEndId 和 UETR 须全局唯一 |
-| 幂等性 | 相同 MsgId 重复提交应返回相同结果 |
-| 时区 | CreDtTm 使用 UTC，展示时按本地时区转换 |
+| Field length | Follow the ISO 20022 definitions strictly; never truncate over-length values |
+| Character encoding | UTF-8; amount fields have no thousands separators |
+| Mandatory checks | GrpHdr/MsgId/CreDtTm/NbOfTxs are mandatory |
+| Uniqueness | EndToEndId and UETR must be globally unique |
+| Idempotency | A repeated submission with the same MsgId must return the same result |
+| Time zone | CreDtTm uses UTC; convert to the local time zone for display |
 
-## 4. 本行报文适配
+## 4. Our bank's message adaptations
 
-本行在 ISO 20022 基础上做如下适配：
+Our bank adapts ISO 20022 as follows:
 
-| 标准字段 | 本行适配 | 原因 |
+| Standard field | Our adaptation | Reason |
 |---------|---------|------|
-| BIC | 改用行内机构号 | 本行跨机构用内部编码 |
-| IBAN | 改用本行账号 | 国内账户无IBAN |
-| Currency | 默认CNY | 人民币优先 |
-| RmtInf | 限制140字符 | 行内存储字段长度限制 |
+| BIC | Replaced by the internal institution code | Our bank uses internal codes across institutions |
+| IBAN | Replaced by our bank account number | Domestic accounts have no IBAN |
+| Currency | Defaults to CNY | RMB first |
+| RmtInf | Limited to 140 characters | Length limit of the internal storage field |
 
-> 适配映射须在 `references/iso20022-mapping.md` 中维护，报文解析/生成脚本须校验映射一致性。
+> The adaptation mapping must be maintained in `references/iso20022-mapping.md`; message parsing/generation scripts must check that the mapping is consistent.

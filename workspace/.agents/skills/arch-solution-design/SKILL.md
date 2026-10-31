@@ -1,123 +1,123 @@
 ---
 name: arch-solution-design
-description: 把需求说明书转化为可落地、合规、可演进的方案设计与架构决策（ADR），覆盖总体设计、模块/服务、接口、数据、部署、演进与NFR应答，并用脚本校验需求覆盖矩阵。在G1需求签字通过后进入设计阶段时使用。
+description: Turn a requirement specification into a solution design and architecture decision records (ADRs) that are implementable, compliant and evolvable, covering overall design, modules/services, interfaces, data, deployment, evolution and NFR responses, and use a script to check the requirement coverage matrix. Use when entering the design phase after the G1 requirement sign-off.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Arch / 架构条线负责人 |
-| category | 岗位技能 |
+| owner | Arch / Architecture line lead |
+| category | Role skill |
 | priority | P0 |
 
-# arch-solution-design 技能
+# arch-solution-design Skill
 
-## 概述
+## Overview
 
-本技能用于把需求说明书转化为**可落地、合规、可演进**的方案设计，保证设计阶段结束前需求100%被覆盖、关键决策有依据、NFR有量化应答。
+This Skill turns a requirement specification into a solution design that is **implementable, compliant and evolvable**. It ensures that before the design phase ends, 100% of the requirements are covered, key decisions are justified, and NFRs have quantified responses.
 
-## 工作流
+## Workflow
 
-### Step 1: 核对需求与存量知识
+### Step 1: Check the requirements and existing knowledge
 
-读取需求说明书，结合 `cobol-legacy-knowledge` 存量知识（如涉及存量系统）确认影响面与约束。输出：设计输入清单（需求编号、存量影响点、约束）。
+Read the requirement specification and, if legacy systems are involved, combine it with the existing knowledge from `cobol-legacy-knowledge` to confirm the impact and constraints. Output: design input list (requirement IDs, legacy impact points, constraints).
 
-### Step 2: 梳理边界上下文与依赖
+### Step 2: Map bounded contexts and dependencies
 
-确定业务上下文、边界（in-scope/out-of-scope）、依赖系统与数据边界、技术约束。输出：边界上下文清单。
+Determine the business context, boundaries (in-scope/out-of-scope), dependent systems and data boundaries, and technical constraints. Output: bounded context list.
 
-### Step 3: 列出候选方案
+### Step 3: List candidate options
 
-对每个关键架构决策点列出**≥2个候选方案**，比较利弊。禁止直接给结论而无权衡。
+For each key architecture decision point, list **≥2 candidate options** and compare their pros and cons. Giving a conclusion directly without trade-offs is forbidden.
 
-### Step 4: 编写ADR
+### Step 4: Write ADRs
 
-按 `templates/adr-template.md` 为每个决策编写架构决策记录：背景、候选方案、选择、理由、影响、状态、证据。
+Write an architecture decision record for each decision using `templates/adr-template.md`: context, candidate options, choice, rationale, consequences, status, evidence.
 
-### Step 5: 编写设计文档
+### Step 5: Write the design document
 
-按 `templates/solution-design-template.md` 编写：总体设计、模块/服务、接口、数据、部署、演进。包含**需求覆盖矩阵**（每条REQ↔设计章节）。
+Write it using `templates/solution-design-template.md`: overall design, modules/services, interfaces, data, deployment, evolution. Include a **requirement coverage matrix** (each REQ ↔ design section).
 
-### Step 6: 逐项应答NFR与合规
+### Step 6: Respond to each NFR and compliance item
 
-按 `templates/nfr-response-table.md` 逐项应答性能、安全、可用性、可扩展性、可维护性，每项给量化指标与验证方法；标注合规项与责任人。
+Using `templates/nfr-response-table.md`, respond to performance, security, availability, scalability and maintainability one by one, each with a quantified metric and a verification method; mark compliance items and their owners.
 
-### Step 7: 运行需求覆盖校验
+### Step 7: Run the requirement coverage check
 
-运行 `scripts/design_coverage.py <需求说明书.md> <设计文档.md>`：
+Run `scripts/design_coverage.py <requirement-spec.md> <design-doc.md>`:
 
-- 校验需求是否全部被设计覆盖（孤儿需求检测）
-- 输出覆盖矩阵报告（JSON）
+- Checks that every requirement is covered by the design (orphan requirement detection)
+- Outputs a coverage matrix report (JSON)
 
-退出码：0=通过；2=存在未覆盖需求；3=参数错误。
+Exit codes: 0 = pass; 2 = uncovered requirements exist; 3 = argument error.
 
-### Step 8: 输出待G2评审材料
+### Step 8: Produce the G2 review materials
 
-汇总设计包：设计文档、ADR列表、NFR应答表、影响分析（由 `arch-impact-analysis` 负责）、覆盖校验报告。
+Assemble the design package: design document, ADR list, NFR response table, impact analysis (owned by `arch-impact-analysis`), coverage check report.
 
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 输出接口契约：请求/响应schema、字段级定义、错误码全集、超时/重试/幂等（【L3必填】）
-- 输出数据模型（字段级）、安全设计（认证/授权/加密/审计）、容量估算
-- ADR含量化权衡表（成本/性能/运维/审计/风险对比）
+- Produce interface contracts: request/response schema, field-level definitions, full error code set, timeout/retry/idempotency ([L3 required])
+- Produce the data model (field level), security design (authentication / authorization / encryption / audit) and capacity estimate
+- ADRs include a quantified trade-off table (cost / performance / operations / audit / risk comparison)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 接口契约可被contract_validate校验
-- [ ] 错误码全集覆盖业务/系统/安全
-- [ ] ADR备选≥2且含量化权衡
-- [ ] 容量与灰度回退条件量化
+- [ ] Interface contracts can be validated by contract_validate
+- [ ] The full error code set covers business / system / security
+- [ ] ADRs have ≥2 alternatives with quantified trade-offs
+- [ ] Capacity and canary rollback conditions are quantified
 
-> 主模板含【L3必填】深度字段：`templates/solution-design-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/solution-design-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/solution-design-template.md` | 方案设计文档标准模板（对齐EPS DDD目标架构） |
-| `templates/adr-template.md` | 架构决策记录模板 |
-| `templates/nfr-response-table.md` | NFR逐项应答表 |
+| `templates/solution-design-template.md` | Standard solution design document template (aligned with the EPS DDD target architecture) |
+| `templates/adr-template.md` | Architecture decision record template |
+| `templates/nfr-response-table.md` | NFR response table |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/design_coverage.py` | 生成需求↔设计覆盖矩阵，检测未覆盖需求 |
+| `scripts/design_coverage.py` | Generates the requirement ↔ design coverage matrix and detects uncovered requirements |
 
-## 参考资料
+## References
 
-| 资料 | 用途 | 何时读取 |
+| Reference | Purpose | When to read |
 |------|------|---------|
-| `references/architecture-standards.md` | 架构标准、设计输入边界、模板对齐说明 | 设计开始前 |
-| EPS_目标架构需求说明书_DDD.md | 目标架构参考（工作区根目录） | 设计总体架构时 |
-| cobol-legacy-knowledge产出 | 存量系统规则与模型 | 涉及存量系统时 |
+| `references/architecture-standards.md` | Architecture standards, design input boundaries, template alignment | Before the design starts |
+| EPS target architecture requirement specification (DDD) | Target architecture reference (workspace root) | When designing the overall architecture |
+| cobol-legacy-knowledge output | Legacy system rules and models | When legacy systems are involved |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 需求覆盖矩阵完整（design_coverage.py无未覆盖项）
-- [ ] 每个ADR含背景/候选/选择/理由/影响
-- [ ] NFR逐项量化，无"默认满足"空答
-- [ ] 设计结论引用证据（需求ID/存量知识/标准条款）
-- [ ] 合规项已标注责任人与验证方式
-- [ ] 设计输入未超出需求与标准范围（防过度设计）
+- [ ] The requirement coverage matrix is complete (design_coverage.py reports no uncovered items)
+- [ ] Every ADR contains context / candidates / choice / rationale / consequences
+- [ ] Every NFR is quantified; no empty "met by default" answers
+- [ ] Design conclusions cite evidence (requirement ID / legacy knowledge / standard clause)
+- [ ] Compliance items have an owner and a verification method
+- [ ] Design inputs do not go beyond the requirements and standards (no over-engineering)
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 设计脱离需求 | 方案未覆盖部分需求 | design_coverage.py拦截 | 补覆盖后重试 |
-| 技术选型武断 | 无备选、无理由 | ADR模板强制"候选/选择/理由" | 补ADR后重试 |
-| NFR缺失 | 性能/安全/可用性未应答 | 模板强制NFR章节 | 补NFR后重试 |
-| 过度设计 | 引入超出需求的技术复杂度 | 设计输入限定在需求与标准范围 | 收敛范围后重试 |
-| 存量耦合不清 | 未考虑老系统约束 | 调用cobol-legacy-knowledge | 补存量分析后重试 |
+| Design detached from requirements | The solution does not cover some requirements | Caught by design_coverage.py | Add coverage and retry |
+| Arbitrary technology choice | No alternatives, no rationale | The ADR template forces "candidates / choice / rationale" | Add the ADR and retry |
+| Missing NFRs | Performance / security / availability not answered | The template forces an NFR section | Add the NFRs and retry |
+| Over-engineering | Technical complexity beyond the requirements | Design inputs limited to the requirements and standards | Narrow the scope and retry |
+| Unclear legacy coupling | Legacy system constraints not considered | Use cobol-legacy-knowledge | Add the legacy analysis and retry |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""包体积分析：汇总目录下静态资源/源码文件体积，标记超大文件。"""
+"""Bundle size analysis: total the size of static assets / source files in a directory and mark oversized files."""
 import argparse, json, sys
 from pathlib import Path
 

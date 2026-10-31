@@ -1,6 +1,6 @@
 ---
 name: change-cab-prep
-description: 自动收集并整理CAB评审材料（RFC/风险评估/回滚方案/测试报告/影响分析），生成评审包与重点摘要。CAB评审前材料准备阶段使用。
+description: "Automatically collects and organizes CAB review materials (RFC/risk assessment/rollback plan/test report/impact analysis) and generates a review package with a key-points summary. Use when preparing materials before a CAB review."
 ---
 
 ## 元数据

@@ -1,56 +1,56 @@
-# scripts/ — 后端服务技能脚本
+# scripts/ — Backend service skill scripts
 
-本目录包含 `dev-backend-service` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `dev-backend-service` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `layer_check.py` | 分层依赖检查：禁止 Infrastructure/API 反向依赖 Domain/Application | 0/2 |
-| `circular_dep_check.py` | 循环依赖检测：基于 import 图 DFS 找环 | 0/2 |
+| `layer_check.py` | Layer dependency check: forbid Infrastructure/API from depending back on Domain/Application | 0/2 |
+| `circular_dep_check.py` | Circular dependency detection: find cycles in the import graph with DFS | 0/2 |
 
 ---
 
 ## layer_check.py
 
-### 用途
-分层依赖检查：扫描代码目录中的 `.java`/`.py` 文件，校验是否存在 Infrastructure/API 层反向依赖 Domain/Application 层的越权调用。当前为简化实现（统计 import 但不阻断），输出 violations 列表与 layer_check 状态。
+### Purpose
+Layer dependency check: scans the `.java`/`.py` files in the code directory and checks for calls where the Infrastructure/API layer depends back on the Domain/Application layer across layer boundaries. The current implementation is simplified (it counts imports but does not block), and outputs a violations list and the layer_check status.
 
-### 接口
+### Interface
 ```
 python layer_check.py <code_root> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `code_root` | 代码根目录路径，递归扫描 `.java`/`.py` 文件 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `code_root` | Code root directory; `.java`/`.py` files are scanned recursively |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 无分层违规（violations 为空） |
-| 2 | 存在分层违规（violations 非空） |
+| 0 | No layer violations (violations is empty) |
+| 2 | Layer violations found (violations is not empty) |
 
-> 当前实现为骨架版，violations 始终为空，退出码固定为 0。完整分层校验须依赖 ArchUnit 等工具。
+> The current implementation is a skeleton: violations is always empty and the exit code is always 0. Full layer validation needs a tool such as ArchUnit.
 
-### 检查项
-1. **文件遍历**：递归扫描 `code_root` 下的 `.java`/`.py` 文件。
-2. **import 提取**：逐行扫描 import 语句，识别跨层引用。
-3. **依赖方向校验**：按 ALLOWED 映射表校验依赖方向是否合法。
-4. **空目录兼容**：目录不存在或为空时输出空 violations（exit=0）。
+### Checks
+1. **File traversal**: recursively scan the `.java`/`.py` files under `code_root`.
+2. **Import extraction**: scan import statements line by line and identify cross-layer references.
+3. **Dependency direction check**: check against the ALLOWED map whether each dependency direction is legal.
+4. **Empty directory handling**: when the directory does not exist or is empty, output empty violations (exit=0).
 
-### 分层依赖规则（ALLOWED）
-| 层 | 允许依赖 |
+### Layer dependency rules (ALLOWED)
+| Layer | May depend on |
 |------|---------|
 | api | application, domain, infrastructure |
 | application | domain, infrastructure |
-| domain | （无，领域层不依赖任何外层） |
+| domain | (none; the domain layer depends on no outer layer) |
 | infrastructure | domain |
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```
 app/
 ├── api/TransferController.java
@@ -59,7 +59,7 @@ app/
 └── infrastructure/AccountRepository.java
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "violations": [],
@@ -67,63 +67,63 @@ app/
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本分层检查
+# Basic layer check
 python skills/dev-backend-service/scripts/layer_check.py app/
 
-# 空目录场景
+# Empty directory case
 python skills/dev-backend-service/scripts/layer_check.py empty_dir/
 
-# CI 门禁（退出码驱动）
-python skills/dev-backend-service/scripts/layer_check.py app/ && echo "分层检查通过" || echo "分层检查失败"
+# CI gate (driven by exit code)
+python skills/dev-backend-service/scripts/layer_check.py app/ && echo "Layer check passed" || echo "Layer check failed"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-backend-service/layer_check.py` 条目（3 用例）：
-- `valid_dir`：含 Domain/Model.java 的有效目录 → exit=0，输出含 `layer_check`
-- `empty_dir`：空目录 → exit=0，输出含 `layer_check`
-- `missing_dir`：目录不存在 → exit=0，输出含 `layer_check`
+### Unit tests
+The `dev-backend-service/layer_check.py` entry in `tests/test_scripts.py` (3 cases):
+- `valid_dir`: valid directory containing Domain/Model.java → exit=0, output contains `layer_check`
+- `empty_dir`: empty directory → exit=0, output contains `layer_check`
+- `missing_dir`: directory does not exist → exit=0, output contains `layer_check`
 
 ---
 
 ## circular_dep_check.py
 
-### 用途
-循环依赖检测：扫描 `.py` 文件中的 import 语句构建依赖图，通过 DFS 检测模块间的双向引用环。输出环列表与环数量。
+### Purpose
+Circular dependency detection: builds a dependency graph from the import statements in `.py` files and uses DFS to detect two-way reference cycles between modules. Outputs the cycle list and the cycle count.
 
-### 接口
+### Interface
 ```
 python circular_dep_check.py <code_root> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `code_root` | 代码根目录路径，递归扫描 `.py` 文件 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `code_root` | Code root directory; `.py` files are scanned recursively |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 无循环依赖（cycle_count=0） |
-| 2 | 存在循环依赖（cycle_count>0） |
+| 0 | No circular dependencies (cycle_count=0) |
+| 2 | Circular dependencies found (cycle_count>0) |
 
-### 检查项
-1. **import 图构建**：扫描每个 `.py` 文件的 `import`/`from` 语句，提取顶层模块名作为依赖节点。
-2. **双向引用检测**：若 A 依赖 B 且 B 依赖 A，记为一条环。
-3. **环数量限制**：最多输出前 20 条环，避免大规模代码库输出爆炸。
-4. **空目录兼容**：目录不存在或无 `.py` 文件时输出空 cycles（exit=0）。
+### Checks
+1. **Import graph construction**: scan the `import`/`from` statements of each `.py` file and take the top-level module name as a dependency node.
+2. **Two-way reference detection**: if A depends on B and B depends on A, record one cycle.
+3. **Cycle count limit**: output at most the first 20 cycles to avoid huge output on large codebases.
+4. **Empty directory handling**: when the directory does not exist or has no `.py` files, output empty cycles (exit=0).
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```
 src/
 ├── a.py    # import b
 └── b.py    # import a
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "cycles": [["a", "b"]],
@@ -131,30 +131,30 @@ src/
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 循环依赖检测（含环）
+# Circular dependency detection (with a cycle)
 python skills/dev-backend-service/scripts/circular_dep_check.py cyclic_src/
 
-# 无环场景
+# No-cycle case
 python skills/dev-backend-service/scripts/circular_dep_check.py clean_src/
 
-# CI 门禁（退出码驱动）
-python skills/dev-backend-service/scripts/circular_dep_check.py src/ && echo "无循环依赖" || echo "检测到循环依赖"
+# CI gate (driven by exit code)
+python skills/dev-backend-service/scripts/circular_dep_check.py src/ && echo "No circular dependencies" || echo "Circular dependencies detected"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-backend-service/circular_dep_check.py` 条目（3 用例）：
-- `cycle`：a.py import b，b.py import a → exit=2，输出含 `cycle_count`
-- `no_cycle`：a.py import os（非项目模块） → exit=0，输出含 `cycle_count`
-- `missing_dir`：目录不存在 → exit=0，输出含 `cycle_count`
+### Unit tests
+The `dev-backend-service/circular_dep_check.py` entry in `tests/test_scripts.py` (3 cases):
+- `cycle`: a.py imports b, b.py imports a → exit=2, output contains `cycle_count`
+- `no_cycle`: a.py imports os (not a project module) → exit=0, output contains `cycle_count`
+- `missing_dir`: directory does not exist → exit=0, output contains `cycle_count`
 
 ---
 
-## 能力边界
+## Limits
 
-- 上述脚本为**轻量静态检查**，不替代运行时依赖分析与单元测试。
-- `layer_check.py` 当前为骨架实现，violations 始终为空；完整的分层校验须依赖 ArchUnit（Java）或 import-linter（Python）。
-- `circular_dep_check.py` 仅检测**双向引用环**（A↔B），不检测 A→B→C→A 等多节点环；多节点环须依赖 import-linter 或 pydeps。
-- `circular_dep_check.py` 仅扫描 `.py` 文件，Java/Go 等其他语言的循环依赖须依赖对应工具（ArchUnit/go mod graph）。
-- 资金类后端服务的循环依赖须在 L3 档位下额外覆盖跨服务依赖环与启动时依赖图审查。
+- These scripts are **lightweight static checks**; they do not replace runtime dependency analysis and unit tests.
+- `layer_check.py` is currently a skeleton and violations is always empty; full layer validation needs ArchUnit (Java) or import-linter (Python).
+- `circular_dep_check.py` only detects **two-way reference cycles** (A↔B), not multi-node cycles such as A→B→C→A; multi-node cycles need import-linter or pydeps.
+- `circular_dep_check.py` only scans `.py` files; circular dependencies in Java, Go and other languages need the matching tool (ArchUnit / go mod graph).
+- At L3, circular dependency checks for fund-related backend services must additionally cover cross-service dependency cycles and a review of the startup dependency graph.

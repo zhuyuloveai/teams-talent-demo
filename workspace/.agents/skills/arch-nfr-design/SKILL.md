@@ -1,6 +1,6 @@
 ---
 name: arch-nfr-design
-description: 系统梳理并设计非功能需求（性能/可用性/安全/可扩展性/可维护性/合规），逐项量化指标与验证方法。架构设计阶段、功能需求初步明确后使用。
+description: "Systematically identifies and designs non-functional requirements (performance/availability/security/scalability/maintainability/compliance), quantifying each metric and its verification method. Use during architecture design, once functional requirements are broadly clear."
 ---
 
 ## 元数据

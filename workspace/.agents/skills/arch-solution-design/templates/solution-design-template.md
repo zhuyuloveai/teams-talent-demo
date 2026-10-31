@@ -1,119 +1,119 @@
-# <系统/功能名称> 方案设计
+# <System/feature name> Solution Design
 
-> 深度标记：【L2必填】评审级必须包含；【L3必填】实施级必须包含。
+> Depth markers: [L2 required] must be present at the review level; [L3 required] must be present at the implementation level.
 
-## 文档信息
+## Document information
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 文档编号 | ARCH-<seq> |
-| 关联需求 | REQ-<xxx> |
-| 版本 | v<版本> |
+| Document ID | ARCH-<seq> |
+| Linked requirement | REQ-<xxx> |
+| Version | v<version> |
 
-## 1. 设计范围 【L2必填】
+## 1. Design scope [L2 required]
 
-| In-Scope | Out-of-Scope | 依赖系统 | 技术约束 |
+| In-Scope | Out-of-Scope | Dependent systems | Technical constraints |
 |----------|--------------|----------|---------|
-| <范围> | <排除> | <依赖> | <约束> |
+| <scope> | <excluded> | <dependencies> | <constraints> |
 
-## 2. 需求覆盖矩阵 【L2必填】
+## 2. Requirement coverage matrix [L2 required]
 
-| 需求 | 功能描述 | 设计章节 |
+| Requirement | Description | Design section |
 |------|---------|---------|
-| REQ-<xxx> | <描述> | §<章节> |
+| REQ-<xxx> | <description> | §<section> |
 
-## 3. 总体设计 【L2必填】
+## 3. Overall design [L2 required]
 
-### 3.1 组件与调用链
+### 3.1 Components and call chain
 
-<组件图/调用链说明>
+<component diagram / call chain description>
 
-### 3.2 模块/服务划分
+### 3.2 Module/service breakdown
 
-| 模块/服务 | 职责 | 边界 | 依赖 |
+| Module/service | Responsibility | Boundary | Dependencies |
 |----------|------|------|------|
-| <名称> | <职责> | <边界> | <依赖> |
+| <name> | <responsibility> | <boundary> | <dependencies> |
 
-## 4. 接口契约 【L3必填】
+## 4. Interface contracts [L3 required]
 
-### 4.1 <接口名>（请求/响应 schema）
+### 4.1 <interface name> (request/response schema)
 
-请求参数：
-| 参数 | 类型 | 必填 | 校验 |
+Request parameters:
+| Parameter | Type | Required | Validation |
 |------|------|------|------|
-| <参数> | <类型> | 是/否 | <校验> |
+| <parameter> | <type> | Yes/No | <validation> |
 
-响应：
+Response:
 ```json
-{ "code": "200", "message": "success", "data": { <字段>: <值> } }
+{ "code": "200", "message": "success", "data": { <field>: <value> } }
 ```
 
-**错误码全集**：
-| 错误码 | 场景 | 说明 |
+**Full error code set**:
+| Error code | Scenario | Description |
 |--------|------|------|
-| <码> | <场景> | <说明> |
+| <code> | <scenario> | <description> |
 
-**超时/重试/幂等**：<策略>
+**Timeout/retry/idempotency**: <strategy>
 
-## 5. 数据模型 【L3必填】
+## 5. Data model [L3 required]
 
-| 实体/字段 | 类型 | 约束 | 说明 |
+| Entity/field | Type | Constraint | Description |
 |-----------|------|------|------|
-| <字段> | <类型> | <约束> | <说明> |
+| <field> | <type> | <constraint> | <description> |
 
-## 6. 安全设计 【L3必填】
+## 6. Security design [L3 required]
 
-| 项 | 设计 |
+| Item | Design |
 |----|------|
-| 认证 | <方案> |
-| 授权 | <角色/权限> |
-| 输入校验 | <白名单/校验> |
-| 敏感信息 | <加密/脱敏> |
-| 审计 | <留痕> |
+| Authentication | <approach> |
+| Authorization | <roles/permissions> |
+| Input validation | <allowlist/validation> |
+| Sensitive information | <encryption/masking> |
+| Audit | <trail> |
 
-## 7. 性能与容量估算 【L3必填】
+## 7. Performance and capacity estimate [L3 required]
 
-| 项 | 估算 |
+| Item | Estimate |
 |----|------|
-| 关键路径开销 | <估算> |
-| QPS/容量 | <估算> |
-| 缓存策略 | <策略> |
+| Critical path overhead | <estimate> |
+| QPS/capacity | <estimate> |
+| Caching strategy | <strategy> |
 
-## 8. 部署与灰度 【L2必填】
+## 8. Deployment and canary release [L2 required]
 
-| 顺序 | 步骤 | 验证 |
+| Order | Step | Verification |
 |------|------|------|
-| 1 | <步骤> | <验证> |
+| 1 | <step> | <verification> |
 
-**灰度阈值与回退触发**【L3必填】：<比例/指标/触发条件>
+**Canary thresholds and rollback triggers** [L3 required]: <percentage/metric/trigger condition>
 
-## 9. 演进与兼容 【L3必填】
+## 9. Evolution and compatibility [L3 required]
 
-| 项 | 说明 |
+| Item | Description |
 |----|------|
-| 向后兼容 | <说明> |
-| 接口兼容 | <说明> |
-| 后续扩展 | <扩展点> |
+| Backward compatibility | <description> |
+| Interface compatibility | <description> |
+| Future extensions | <extension points> |
 
-## 10. NFR与合规应答 【L2必填】
+## 10. NFR and compliance responses [L2 required]
 
-| 类别 | 指标 | 设计措施 | 验证 |
+| Category | Metric | Design measure | Verification |
 |------|------|---------|------|
-| 性能 | <指标> | <措施> | <验证> |
+| Performance | <metric> | <measure> | <verification> |
 
-## 11. 风险与待确认项 【L2必填】
+## 11. Risks and open questions [L2 required]
 
-| 风险/待确认 | 影响 | 应对 |
+| Risk/open question | Impact | Mitigation |
 |-------------|------|------|
-| <项> | <影响> | <应对> |
+| <item> | <impact> | <mitigation> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 接口契约 | 请求/响应schema+字段级+错误码全集 |
-| 数据模型 | 字段级ER与约束 |
-| 安全设计 | 认证/授权/加密/审计四要素 |
-| 容量估算 | QPS/资源/缓存策略 |
+| Interface contracts | Request/response schema + field level + full error code set |
+| Data model | Field-level ER and constraints |
+| Security design | Four elements: authentication / authorization / encryption / audit |
+| Capacity estimate | QPS / resources / caching strategy |

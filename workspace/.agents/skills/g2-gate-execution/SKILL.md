@@ -1,6 +1,6 @@
 ---
 name: g2-gate-execution
-description: G2设计阶段门禁执行器，统一运行需求-设计覆盖矩阵和ADR格式校验并汇总结果
+description: "G2 design-phase gate runner. Runs the requirement-design coverage matrix and ADR format checks together and summarizes the results."
 ---
 
 ## 元数据

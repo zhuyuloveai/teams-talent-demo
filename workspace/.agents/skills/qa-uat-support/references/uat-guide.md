@@ -1,6 +1,6 @@
-# UAT管理流程
+# UAT management process
 
-- 准备：范围/场景/计划/数据/账号
-- 执行：进度跟踪、问题分类、缺陷闭环
-- 验收：业务签字、验收材料归档
-- 关键：核心场景100%、P1清零、数据贴近生产
+- Preparation: scope / scenarios / plan / data / accounts
+- Execution: progress tracking, issue classification, defect closure
+- Acceptance: business sign-off, archiving of acceptance materials
+- Key points: core scenarios 100%, P1 cleared, data close to production

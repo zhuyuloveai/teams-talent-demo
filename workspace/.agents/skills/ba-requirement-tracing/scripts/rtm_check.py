@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
-用户故事-需求关联（RTM）校验脚本
+User story to requirement linkage (RTM) check script
 
-校验用户故事与需求ID的关联完整性，并检查每条故事是否包含
-Given/When/Then（前置/操作/预期）验收结构。
-遵循技能脚本接口规范：CLI调用，JSON输出，退出码表示结果。
+Checks that user stories are fully linked to requirement IDs, and that every
+story contains a Given/When/Then (precondition / action / expected result)
+acceptance structure.
+Follows the Skill script interface convention: CLI invocation, JSON output,
+exit code indicates the result.
 
-用法:
+Usage:
     python rtm_check.py <requirement_doc.md> <stories_doc.md> [--json]
 
-退出码:
-    0 - 全部通过
-    1 - 有警告（故事缺少验收结构）
-    2 - 失败（存在未关联故事或孤儿需求）
-    3 - 参数错误
+Exit codes:
+    0 - all checks passed
+    1 - warning (a story lacks acceptance structure)
+    2 - failure (unlinked stories or orphan requirements)
+    3 - argument error
 """
 
 import argparse
@@ -22,14 +24,14 @@ import re
 import sys
 from pathlib import Path
 
-# 只匹配三位功能需求编号（REQ-001），避免误匹配文档编号 REQ-2026-xxxx
+# Match only three-digit functional requirement IDs (REQ-001) so document IDs such as REQ-2026-xxxx are not matched
 REQ_PATTERN = re.compile(r"\bREQ-\d{3}\b")
 STORY_HEADING_PATTERN = re.compile(r"^#{2,4}\s*(US-\d+)\b[^\n]*", re.MULTILINE)
 
 ACCEPTANCE_MARKERS = {
-    "given": [r"前置条件", r"\bGiven\b"],
-    "when": [r"操作", r"\bWhen\b"],
-    "then": [r"预期结果", r"\bThen\b"],
+    "given": [r"\bPrecondition", r"\bGiven\b"],
+    "when": [r"\bAction\b", r"\bWhen\b"],
+    "then": [r"\bExpected result", r"\bThen\b"],
 }
 
 
@@ -39,12 +41,12 @@ def read_file(filepath: str) -> str:
 
 
 def extract_req_ids(content: str) -> list[str]:
-    """提取文档中出现的功能需求编号（保持出现顺序）。"""
+    """Extract the functional requirement IDs in the document (in order of appearance)."""
     return list(dict.fromkeys(REQ_PATTERN.findall(content)))
 
 
 def split_stories(content: str) -> dict[str, str]:
-    """按 US-xxx 标题切分故事区块，返回 {story_id: section_text}。"""
+    """Split story sections by US-xxx headings and return {story_id: section_text}."""
     matches = list(STORY_HEADING_PATTERN.finditer(content))
     stories = {}
     for idx, match in enumerate(matches):
@@ -62,27 +64,27 @@ def check_acceptance_structure(section: str) -> dict[str, bool]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="RTM校验：故事↔需求关联")
-    parser.add_argument("requirement_doc", help="需求说明书路径(.md)")
-    parser.add_argument("stories_doc", help="用户故事文档路径(.md)")
-    parser.add_argument("--json", action="store_true", help="输出JSON格式（默认）")
+    parser = argparse.ArgumentParser(description="RTM check: story <-> requirement linkage")
+    parser.add_argument("requirement_doc", help="Path to the requirement specification (.md)")
+    parser.add_argument("stories_doc", help="Path to the user story document (.md)")
+    parser.add_argument("--json", action="store_true", help="Output JSON (the default)")
     args = parser.parse_args()
 
     try:
         req_text = read_file(args.requirement_doc)
         story_text = read_file(args.stories_doc)
     except OSError as exc:
-        print(json.dumps({"error": f"读取文件失败: {exc}"}, ensure_ascii=False))
+        print(json.dumps({"error": f"Failed to read file: {exc}"}, ensure_ascii=False))
         sys.exit(3)
 
     req_ids = extract_req_ids(req_text)
     stories = split_stories(story_text)
 
     if not req_ids:
-        print(json.dumps({"error": "需求文档中未找到REQ-xxx功能需求编号"}, ensure_ascii=False))
+        print(json.dumps({"error": "No REQ-xxx functional requirement IDs found in the requirement document"}, ensure_ascii=False))
         sys.exit(3)
     if not stories:
-        print(json.dumps({"error": "用户故事文档中未找到US-xxx故事"}, ensure_ascii=False))
+        print(json.dumps({"error": "No US-xxx stories found in the user story document"}, ensure_ascii=False))
         sys.exit(3)
 
     linked_stories = []
@@ -99,7 +101,7 @@ def main() -> None:
                 {
                     "story_id": story_id,
                     "found_reqs": found,
-                    "reason": "未关联到需求文档中的有效REQ编号",
+                    "reason": "Not linked to a valid REQ ID in the requirement document",
                 }
             )
         structure = check_acceptance_structure(section)

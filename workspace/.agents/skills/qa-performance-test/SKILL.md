@@ -1,6 +1,6 @@
 ---
 name: qa-performance-test
-description: 系统化实施性能测试：需求分析、计划、场景设计（基准/负载/压力/稳定性/并发）、脚本、执行、结果分析与报告。性能测试需求、性能验收、性能问题复现时使用。
+description: "Systematic performance testing: requirement analysis, planning, scenario design (baseline/load/stress/soak/concurrency), scripting, execution, result analysis and reporting. Use for performance test requirements, performance acceptance and reproducing performance issues."
 ---
 
 ## 元数据

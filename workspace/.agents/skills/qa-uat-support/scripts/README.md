@@ -1,177 +1,177 @@
-# scripts/ — UAT支持技能脚本
+# scripts/ — UAT support skill scripts
 
-本目录包含 `qa-uat-support` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `qa-uat-support` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `uat_progress_tracker.py` | UAT进度跟踪：输入场景执行结果JSON，输出执行率与状态分布 | 0/3 |
-| `uat_defect_classifier.py` | UAT问题分类：按关键词将问题分为缺陷/需求变更/操作问题 | 0/3 |
+| `uat_progress_tracker.py` | UAT progress tracking: take a JSON list of scenario execution results and output the execution rate and status distribution | 0/3 |
+| `uat_defect_classifier.py` | UAT issue classification: classify issues by keyword as Defect / Requirement change / Operation issue | 0/3 |
 
 ---
 
 ## uat_progress_tracker.py
 
-### 用途
-对UAT场景执行结果进行进度汇总统计。输入执行结果 JSON 数组（每条含场景ID与状态），输出总数、状态分布、执行率，供UAT日报与验收评估使用。
+### Purpose
+Summarizes the progress of UAT scenario execution. Takes a JSON array of execution results (each with a scenario ID and status) and outputs the total, status distribution and execution rate, for the UAT daily report and acceptance assessment.
 
-### 接口
+### Interface
 ```
 python uat_progress_tracker.py <results_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `results_json` | 执行结果 JSON 文件路径，格式为 `[{"id":"US-001", "status":"通过"}, ...]`，status 取值：通过/失败/阻塞/未执行 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `results_json` | Path of the execution results JSON file, format `[{"id":"US-001", "status":"Passed"}, ...]`; status values: Passed / Failed / Blocked / Not executed |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 汇总成功（数据采集与统计无错误） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | Summary succeeded (no errors in data collection and counting) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-> 注：本脚本只做数据汇总，不判定UAT是否通过。退出码 0 表示汇总成功，不代表UAT通过。
+> Note: this script only summarizes data and does not decide whether UAT passed. Exit code 0 means the summary succeeded, not that UAT passed.
 
-### 检查项
-1. **JSON 解析**：读取并解析执行结果 JSON 文件，解析失败返回退出码 3。
-2. **状态统计**：按 status 字段聚合统计各状态数量（通过/失败/阻塞/未执行）。
-3. **执行率计算**：执行率 = (总数 - 未执行数) / 总数。
-4. **空数据处理**：总数为 0 时执行率返回 0，不抛异常。
+### Checks
+1. **JSON parsing**: read and parse the execution results JSON file; a parse failure returns exit code 3.
+2. **Status counting**: count records per status field value (Passed / Failed / Blocked / Not executed).
+3. **Execution rate**: execution rate = (total - not executed) / total.
+4. **Empty data handling**: when the total is 0, the execution rate is 0 and no exception is raised.
 
-### 输入 JSON 格式
+### Input JSON format
 ```json
 [
-  {"id": "US-001", "status": "通过"},
-  {"id": "US-002", "status": "失败"},
-  {"id": "US-003", "status": "阻塞"},
-  {"id": "US-004", "status": "未执行"}
+  {"id": "US-001", "status": "Passed"},
+  {"id": "US-002", "status": "Failed"},
+  {"id": "US-003", "status": "Blocked"},
+  {"id": "US-004", "status": "Not executed"}
 ]
 ```
 
-### 状态取值
-| 状态 | 含义 |
+### Status values
+| Status | Meaning |
 |------|------|
-| 通过 | UAT场景执行通过 |
-| 失败 | UAT场景执行失败（发现缺陷或不符合预期） |
-| 阻塞 | UAT场景因环境/依赖/权限问题无法执行 |
-| 未执行 | UAT场景尚未执行 |
+| Passed | The UAT scenario passed |
+| Failed | The UAT scenario failed (defect found or result not as expected) |
+| Blocked | The UAT scenario cannot run because of environment / dependency / permission problems |
+| Not executed | The UAT scenario has not been run yet |
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
   "total": 4,
   "counts": {
-    "通过": 1,
-    "失败": 1,
-    "阻塞": 1,
-    "未执行": 1
+    "Passed": 1,
+    "Failed": 1,
+    "Blocked": 1,
+    "Not executed": 1
   },
   "executed_rate": 0.75
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本汇总
-python skills/qa-uat-support/scripts/uat_progress_tracker.py 执行结果.json
+# Basic summary
+python skills/qa-uat-support/scripts/uat_progress_tracker.py results.json
 
-# JSON 输出（供 Agent 消费）
-python skills/qa-uat-support/scripts/uat_progress_tracker.py 执行结果.json --json
+# JSON output (for the Agent)
+python skills/qa-uat-support/scripts/uat_progress_tracker.py results.json --json
 
-# CI 门禁（退出码驱动，仅校验采集成功）
-python skills/qa-uat-support/scripts/uat_progress_tracker.py 执行结果.json && echo "UAT进度汇总成功" || echo "UAT进度汇总失败"
+# CI gate (driven by exit code; only checks that collection succeeded)
+python skills/qa-uat-support/scripts/uat_progress_tracker.py results.json && echo "UAT progress summary succeeded" || echo "UAT progress summary failed"
 ```
 
-### 能力边界
-- 仅做数据汇总统计，不判定UAT是否通过（通过/失败门禁由 SKILL.md 质量门禁章节定义）。
-- 不计算通过率（UAT通过率需结合业务验收标准人工判定）。
-- 不区分场景优先级（核心/非核心场景统一统计）。
-- 不生成UAT日报文档（日报生成由模板 + 人工补充缺陷分析/验收意见完成）。
+### Limits
+- Only summarizes data; does not decide whether UAT passed (the pass / fail gate is defined in the quality gates section of SKILL.md).
+- Does not compute the pass rate (the UAT pass rate is decided by people against the business acceptance criteria).
+- Does not distinguish scenario priority (core and non-core scenarios are counted together).
+- Does not generate the UAT daily report document (the report is produced from the template plus human-written defect analysis / acceptance opinion).
 
-### 单测对应
-`tests/test_scripts.py` 中 `qa-uat-support/uat_progress_tracker.py` 条目（3 用例）：
-- `normal_summary`：正常执行结果汇总 → exit=0，输出含 `executed_rate`
-- `empty_results`：空数组输入 → exit=0，执行率为 0
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `qa-uat-support/uat_progress_tracker.py` entry in `tests/test_scripts.py` (3 cases):
+- `normal_summary`: summary of normal execution results → exit=0, output contains `executed_rate`
+- `empty_results`: empty array input → exit=0, execution rate is 0
+- `missing_file`: file does not exist → exit=3, output contains `error`
 
 ---
 
 ## uat_defect_classifier.py
 
-### 用途
-对UAT问题进行自动分类。输入问题 JSON（含标题与描述），基于关键词匹配将问题分为三类：操作问题/需求变更/缺陷，供UAT问题跟踪与分派使用。最终分类须由人工复核确认。
+### Purpose
+Classifies UAT issues automatically. Takes an issue JSON (with title and description) and uses keyword matching to put the issue into one of three categories: Operation issue / Requirement change / Defect, for UAT issue tracking and assignment. The final classification must be confirmed by human review.
 
-### 接口
+### Interface
 ```
 python uat_defect_classifier.py <issue_json> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `issue_json` | 问题 JSON 文件路径，格式为 `{"title":"...", "description":"..."}` |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `issue_json` | Path of the issue JSON file, format `{"title":"...", "description":"..."}` |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 分类成功（关键词匹配或默认分类完成） |
-| 3 | 参数错误（文件不存在 / JSON 解析失败） |
+| 0 | Classification succeeded (keyword match or default classification done) |
+| 3 | Argument error (file not found / JSON parse failure) |
 
-> 注：本脚本只做分类初判，不判定问题严重级别。退出码 0 表示分类完成，不代表分类最终确定（须人工复核）。
+> Note: this script only makes an initial classification and does not decide issue severity. Exit code 0 means classification is done, not that it is final (human review is required).
 
-### 检查项
-1. **JSON 解析**：读取并解析问题 JSON 文件，解析失败返回退出码 3。
-2. **关键词匹配-操作问题**：扫描标题+描述文本，匹配操作问题关键词（不会用/怎么操作/不懂）则判为"操作问题"。
-3. **关键词匹配-需求变更**：未命中操作问题关键词时，匹配需求变更关键词（希望/增加/变更/需求）则判为"需求变更"。
-4. **默认分类**：未命中任何关键词时判为"缺陷"。
+### Checks
+1. **JSON parsing**: read and parse the issue JSON file; a parse failure returns exit code 3.
+2. **Keyword match - operation issue**: scan the title + description text (case-insensitive, whole words); an operation keyword (how to use / how do I / don't know how / don't understand, ...) gives "Operation issue".
+3. **Keyword match - requirement change**: if no operation keyword matched, a change keyword (wish / would like / hope / add / change / requirement / request) gives "Requirement change".
+4. **Default classification**: if no keyword matched, the result is "Defect".
 
-### 关键词规则
-| 分类 | 关键词 | 说明 |
+### Keyword rules
+| Category | Keywords | Description |
 |------|--------|------|
-| 操作问题 | 不会用、怎么操作、不懂 | 业务用户操作不当，需培训/答疑 |
-| 需求变更 | 希望、增加、变更、需求 | 业务用户提出新需求或变更 |
-| 缺陷 | （未命中上述关键词） | 系统功能缺陷，需开发修复 |
+| Operation issue | how to use, how do I, how to operate, don't know how, do not know how, does not know how, not sure how, don't understand, do not understand | The business user operated the system incorrectly; needs training / Q&A |
+| Requirement change | wish, would like, hope, add, change, requirement, request | The business user raised a new requirement or a change |
+| Defect | (none of the keywords above matched) | System functional defect; needs a development fix |
 
-### 输入 JSON 格式
+### Input JSON format
 ```json
 {
-  "title": "转账页面不会用",
-  "description": "业务用户反馈不知道怎么操作转账功能"
+  "title": "Not sure how to use the transfer page",
+  "description": "The business user reports they do not know how to operate the transfer feature"
 }
 ```
 
-### JSON 输出示例
+### JSON output example
 ```json
 {
-  "category": "操作问题"
+  "category": "Operation issue"
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 基本分类
-python skills/qa-uat-support/scripts/uat_defect_classifier.py 问题.json
+# Basic classification
+python skills/qa-uat-support/scripts/uat_defect_classifier.py issue.json
 
-# JSON 输出（供 Agent 消费）
-python skills/qa-uat-support/scripts/uat_defect_classifier.py 问题.json --json
+# JSON output (for the Agent)
+python skills/qa-uat-support/scripts/uat_defect_classifier.py issue.json --json
 
-# CI 门禁（退出码驱动，仅校验分类成功）
-python skills/qa-uat-support/scripts/uat_defect_classifier.py 问题.json && echo "分类成功" || echo "分类失败"
+# CI gate (driven by exit code; only checks that classification succeeded)
+python skills/qa-uat-support/scripts/uat_defect_classifier.py issue.json && echo "Classification succeeded" || echo "Classification failed"
 ```
 
-### 能力边界
-- 仅做关键词匹配初判，不替代人工复核（复杂问题需UAT协调人确认分类）。
-- 关键词列表固定在脚本中，不支持外部配置扩展。
-- 不区分问题严重级别（致命/严重/一般统一按关键词分类）。
-- 不生成问题单文档（问题单生成由模板 + 人工补充复现步骤/证据完成）。
-- 不做问题趋势分析（由 SKILL.md 工作流 Step 6 人工完成）。
+### Limits
+- Only an initial classification by keyword matching; it does not replace human review (the UAT coordinator confirms the classification of complex issues).
+- The keyword lists are fixed in the script and cannot be extended through external configuration.
+- Does not distinguish issue severity (fatal / critical / normal issues are all classified by keyword).
+- Does not generate the issue ticket document (tickets are produced from the template plus human-written reproduction steps / evidence).
+- Does not analyze issue trends (done by people in Step 6 of the SKILL.md workflow).
 
-### 单测对应
-`tests/test_scripts.py` 中 `qa-uat-support/uat_defect_classifier.py` 条目（3 用例）：
-- `operation_issue`：含"不会用/怎么操作"关键词 → exit=0，category 为"操作问题"
-- `defect_issue`：未命中关键词 → exit=0，category 为"缺陷"
-- `missing_file`：文件不存在 → exit=3，输出含 `error`
+### Unit tests
+The `qa-uat-support/uat_defect_classifier.py` entry in `tests/test_scripts.py` (3 cases):
+- `operation_issue`: contains the keywords "how to use / how to operate" → exit=0, category is "Operation issue"
+- `defect_issue`: no keyword matched → exit=0, category is "Defect"
+- `missing_file`: file does not exist → exit=3, output contains `error`

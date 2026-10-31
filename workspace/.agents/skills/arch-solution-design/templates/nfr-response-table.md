@@ -1,23 +1,23 @@
-# NFR与合规应答表
+# NFR and Compliance Response Table
 
-| 类别 | 需求项 | 量化指标 | 设计应答 | 验证方法 | 责任人 |
+| Category | Requirement item | Quantified metric | Design response | Verification method | Owner |
 |------|--------|---------|---------|---------|--------|
-| 性能 | <如：查询P95响应时间> | ≤1s | <设计如何满足> | 压测方案 | <角色> |
-| 安全 | <如：敏感数据加密> | 传输/存储加密 | <设计如何满足> | 安全评审/扫描 | <角色> |
-| 可用性 | <如：服务可用率> | ≥99.9% | <设计如何满足> | 故障演练 | <角色> |
-| 可扩展性 | <如：容量> | 支持N TPS | <设计如何满足> | 容量测试 | <角色> |
-| 可维护性 | <如：日志/监控> | 可观测指标 | <设计如何满足> | 监控验收 | <角色> |
-| 合规 | <监管/行内要求> | <条款> | <设计如何满足> | 合规评审 | <角色> |
+| Performance | <e.g. query P95 response time> | ≤1s | <how the design meets it> | Load test plan | <role> |
+| Security | <e.g. sensitive data encryption> | Encrypted in transit/at rest | <how the design meets it> | Security review/scan | <role> |
+| Availability | <e.g. service availability> | ≥99.9% | <how the design meets it> | Failure drill | <role> |
+| Scalability | <e.g. capacity> | Supports N TPS | <how the design meets it> | Capacity test | <role> |
+| Maintainability | <e.g. logging/monitoring> | Observable metrics | <how the design meets it> | Monitoring acceptance | <role> |
+| Compliance | <regulatory/internal requirement> | <clause> | <how the design meets it> | Compliance review | <role> |
 
-> 禁止"默认满足"式空答：每项必须给出具体设计措施与验证方法。
+> Empty "met by default" answers are forbidden: every item must give a concrete design measure and verification method.
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 接口契约 | 请求/响应schema+字段级+错误码全集 |
-| 数据模型 | 字段级ER与约束 |
-| 安全设计 | 认证/授权/加密/审计四要素 |
-| 容量估算 | QPS/资源/缓存策略 |
+| Interface contracts | Request/response schema + field level + full error code set |
+| Data model | Field-level ER and constraints |
+| Security design | Four elements: authentication / authorization / encryption / audit |
+| Capacity estimate | QPS / resources / caching strategy |

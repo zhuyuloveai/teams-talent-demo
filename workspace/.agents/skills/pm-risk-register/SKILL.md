@@ -1,6 +1,6 @@
 ---
 name: pm-risk-register
-description: 项目全生命周期风险识别、评估（概率×影响）、应对、跟踪与报告。风险识别、风险跟踪、风险报告时使用。
+description: "Risk identification, assessment (probability x impact), response, tracking and reporting across the full project lifecycle. Use for risk identification, risk tracking and risk reporting."
 ---
 
 ## 元数据

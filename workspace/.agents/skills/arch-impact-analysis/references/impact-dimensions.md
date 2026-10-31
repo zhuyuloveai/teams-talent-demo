@@ -1,20 +1,20 @@
-# 影响维度与分级标准
+# Impact Dimensions and Grading Criteria
 
-## 六维影响面
+## Six impact dimensions
 
-| 维度 | 检查要点 |
+| Dimension | Check points |
 |------|---------|
-| 代码 | 模块、类、文件、依赖关系 |
-| 数据 | 表、字段、数据迁移、兼容性 |
-| 接口 | 对内/对外接口、联调方 |
-| 配置 | 参数、配置项、环境差异 |
-| 文档 | 设计、操作手册、测试文档 |
-| 权限 | 角色、权限点、数据访问 |
+| Code | Modules, classes, files, dependencies |
+| Data | Tables, fields, data migration, compatibility |
+| Interfaces | Internal/external interfaces, integration partners |
+| Configuration | Parameters, configuration items, environment differences |
+| Documentation | Design, operations manual, test documents |
+| Permissions | Roles, permission points, data access |
 
-## 影响级别
+## Impact levels
 
-| 级别 | 定义 | 处置 |
+| Level | Definition | Handling |
 |------|------|------|
-| 高 | 影响核心流程/生产数据/跨系统 | 专项评审+回退演练 |
-| 中 | 影响局部功能/次要接口 | 评审+回归 |
-| 低 | 无外部影响 | 记录即可 |
+| High | Affects core flows / production data / multiple systems | Dedicated review + rollback drill |
+| Medium | Affects a local feature / secondary interface | Review + regression |
+| Low | No external impact | Record only |

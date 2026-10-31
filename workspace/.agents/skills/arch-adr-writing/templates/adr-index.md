@@ -1,14 +1,14 @@
-# ADR索引
+# ADR Index
 
-| ADR | 标题 | 状态 | 关联设计 |
+| ADR | Title | Status | Linked design |
 |-----|------|------|---------|
-| ADR-001 | <标题> | 已接受 | ARCH-001 |
+| ADR-001 | <title> | Accepted | ARCH-001 |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 量化权衡 | 成本/性能/运维/审计/风险 |
-| 回退路径 | 决策回退方式 |
+| Quantified trade-off | Cost / performance / operations / audit / risk |
+| Rollback path | How the decision is rolled back |

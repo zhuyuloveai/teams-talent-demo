@@ -1,9 +1,9 @@
-# scripts 能力边界
+# scripts capability boundary
 
 ## impact_scan.py
 
-扫描变更影响面（代码/数据/接口/配置/文档/权限维度）。
+Scans a code directory for files that reference the given change points (module / interface / table names), as input to the code / data / interface / configuration dimensions of the impact analysis.
 
-- 输入：变更清单或影响分析文档
-- 输出：影响面清单 + 风险提示
-- 退出码：0=通过，1=存在未覆盖维度
+- Input: code root directory + `--keywords <change point> ...`
+- Output: JSON with the number of matching files and, per file, the keywords it contains
+- Exit codes: 0 = scan completed, 3 = directory not found

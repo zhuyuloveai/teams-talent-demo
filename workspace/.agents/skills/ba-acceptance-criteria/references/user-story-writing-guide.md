@@ -1,75 +1,75 @@
-# 用户故事编写规范
+# User Story Writing Guide
 
-## 故事格式
+## Story format
 
-标准格式：**作为<角色>，我希望<功能>，以便<价值>**。
+Standard format: **As a <role>, I want <capability>, so that <value>**.
 
-示例：作为个人客户，我希望自助调整手机银行转账限额，以便无需到网点即可管理资金安全。
+Example: As a retail customer, I want to adjust my mobile banking transfer limit myself, so that I can manage the safety of my funds without visiting a branch.
 
-## 拆分原则
+## Splitting principles
 
-1. **一个故事一个价值**：不要在一个故事里塞多个功能点
-2. **可映射需求**：每个故事必须能关联到需求说明书中的REQ编号
-3. **边界清晰**：同一REQ下的多个故事互不重叠
-4. **用户视角**：故事从使用者视角描述，不写实现细节
-5. **大小适中**：一个故事应在一次迭代内可完成（如不满足，继续拆分）
+1. **One story, one value**: do not pack several features into one story
+2. **Maps to requirements**: every story must link to a REQ ID in the requirement specification
+3. **Clear boundaries**: stories under the same REQ do not overlap
+4. **User perspective**: describe the story from the user's point of view; no implementation details
+5. **Right size**: a story should fit in one iteration (if not, split it further)
 
-## 拆分触发信号
+## Signals that a story needs splitting
 
-- 需求包含多个操作入口或分支流程
-- 需求同时涉及多个用户角色
-- 需求包含正常流程之外的异常与边界处理
+- The requirement has several entry points or branching flows
+- The requirement involves several user roles at once
+- The requirement includes exception and boundary handling beyond the happy path
 
-## 优先级标注
+## Priority
 
-| 优先级 | 含义 | 验收标准要求 |
+| Priority | Meaning | Acceptance criteria requirement |
 |--------|------|-------------|
-| 必须 | 核心功能，缺失则无法上线 | 全部验收标准必须通过 |
-| 应该 | 重要功能，可带缺陷上线 | 关键验收标准必须通过 |
-| 可选 | 增强功能，可延后 | 按计划执行 |
+| Must | Core feature; cannot go live without it | All acceptance criteria must pass |
+| Should | Important feature; may go live with known defects | Key acceptance criteria must pass |
+| Could | Enhancement; may be deferred | Executed as planned |
 
-## 常见问题
+## Common problems
 
-| 问题 | 示例 | 修正 |
+| Problem | Example | Fix |
 |------|------|------|
-| 实现化表述 | "调用限额接口" | "用户提交调整后，系统保存新限额" |
-| 多价值混合 | "查询并导出限额" | 拆为"查询限额"与"导出限额"两个故事 |
-| 无验收标准 | 只有故事描述 | 补充Given/When/Then |
+| Implementation wording | "Call the limit interface" | "After the user submits the adjustment, the system saves the new limit" |
+| Mixed values | "Query and export limits" | Split into two stories: "Query limit" and "Export limit" |
+| No acceptance criteria | Only a story description | Add Given/When/Then |
 
 ---
 
-## L3 深度故事编写规范
+## L3 depth story writing rules
 
-### 边界值故事拆分
+### Splitting by boundary values
 
-对于含数值参数的需求（限额/额度/次数/时效），须按边界值拆分独立故事或验收标准：
+For requirements with numeric parameters (limit / credit limit / count / time limit), split boundary values into separate stories or acceptance criteria:
 
-| 边界类型 | 说明 | 示例（限额调整） |
+| Boundary type | Description | Example (limit adjustment) |
 |---------|------|----------------|
-| min | 最小有效值 | 限额=0元时提交调整 |
-| min-1 | 最小值-1（无效） | 限额调低至-1元（应拒绝） |
-| max | 最大有效值 | 限额调高至50000元 |
-| max+1 | 最大值+1（无效） | 限额调高至50001元（应拒绝） |
+| min | Minimum valid value | Submit an adjustment when the limit = CNY 0 |
+| min-1 | Minimum - 1 (invalid) | Lower the limit to CNY -1 (must be rejected) |
+| max | Maximum valid value | Raise the limit to CNY 50000 |
+| max+1 | Maximum + 1 (invalid) | Raise the limit to CNY 50001 (must be rejected) |
 
-### 异常路径故事拆分
+### Splitting by exception paths
 
-每个正常流程故事须配套异常路径验收标准：
+Every happy-path story needs matching exception-path acceptance criteria:
 
-| 异常类型 | 验收要点 |
+| Exception type | Acceptance focus |
 |---------|---------|
-| 接口异常 | 接口返回错误码时的用户提示与状态保持 |
-| 超时 | 接口响应超时的重试策略与用户体验 |
-| 并发 | 多个请求同时到达时的处理顺序与一致性 |
-| 幂等 | 重复请求的处理结果（返回首次结果，不重复执行） |
-| 权限不足 | 无权限操作时的拒绝与提示 |
+| Interface error | User prompt and state preservation when the interface returns an error code |
+| Timeout | Retry strategy and user experience when the interface times out |
+| Concurrency | Processing order and consistency when several requests arrive at once |
+| Idempotency | Result of duplicate requests (return the first result; do not execute again) |
+| Insufficient permission | Rejection and prompt for unauthorized operations |
 
-### 合规边界故事
+### Compliance boundary stories
 
-涉及监管的需求须含合规边界验收标准：
+Requirements that involve regulation must have compliance boundary acceptance criteria:
 
-| 合规场景 | 验收要点 | 法规依据 |
+| Compliance scenario | Acceptance focus | Regulatory basis |
 |---------|---------|---------|
-| 反洗钱 | 累计金额达阈值时触发预警 | 央行令〔2018〕第2号 |
-| 限额管理 | 超出监管限额时拒绝操作 | 银发〔2016〕261号 |
-| 报送时效 | 监管数据在规定时限前完成报送 | 银发〔2016〕261号 |
-| 客户资金 | 资金操作须可追溯、可审计 | 商业银行法 |
+| Anti-money laundering | Raise an alert when the cumulative amount reaches the threshold | PBOC Order [2018] No. 2 |
+| Limit management | Reject the operation when it exceeds the regulatory limit | Yinfa [2016] No. 261 |
+| Reporting deadline | Regulatory data is reported before the required deadline | Yinfa [2016] No. 261 |
+| Customer funds | Fund operations must be traceable and auditable | Commercial Banking Law |

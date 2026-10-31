@@ -1,131 +1,131 @@
-﻿# 核心业务流程图谱
+# Core Business Process Map
 
-## 1. 转账流程（行内/跨行）
+## 1. Transfer process (intra-bank / interbank)
 
 ```
-客户发起
+Customer initiates
   │
-  ├─[1] 身份认证（密码/UKey/生物识别）
-  │     └─ 失败 -> 返回认证错误
+  ├─[1] Authentication (password / USB key / biometrics)
+  │     └─ Failed -> return authentication error
   │
-  ├─[2] 限额校验（单笔->日累计->年累计->渠道->客户分级）
-  │     └─ 超额 -> 返回 PAY-AMT-LIMIT-EXCEEDED + 可用额度
+  ├─[2] Limit check (single transaction -> daily cumulative -> annual cumulative -> channel -> customer tier)
+  │     └─ Exceeded -> return PAY-AMT-LIMIT-EXCEEDED + available amount
   │
-  ├─[3] 风控筛查（黑名单/反洗钱/可疑模式）
-  │     └─ 命中 -> 返回 PAY-RISK-REJECTED
+  ├─[3] Risk screening (blacklist / AML / suspicious patterns)
+  │     └─ Hit -> return PAY-RISK-REJECTED
   │
-  ├─[4] 收款账户校验（有效性/状态/冻结）
-  │     └─ 无效 -> 返回 PAY-ACCT-INVALID
+  ├─[4] Payee account check (validity / status / frozen)
+  │     └─ Invalid -> return PAY-ACCT-INVALID
   │
-  ├─[5] 记账（借付款方/贷收款方）
-  │     └─ 失败 -> 返回 PAY-ACCT-FAILED
+  ├─[5] Posting (debit payer / credit payee)
+  │     └─ Failed -> return PAY-ACCT-FAILED
   │
-  ├─[6] 清算（跨行时提交CNAPS/超级网银）
-  │     └─ 失败 -> 进入冲正流程
+  ├─[6] Clearing (submitted to CNAPS / Super Internet Banking for interbank)
+  │     └─ Failed -> enter the reversal process
   │
-  ├─[7] 交易状态更新（SUCCESS）
+  ├─[7] Transaction status update (SUCCESS)
   │
-  └─[8] 客户通知（短信/APP推送）
+  └─[8] Customer notification (SMS / app push)
 ```
 
-### 关键约束
+### Key constraints
 
-| 约束 | 说明 |
+| Constraint | Description |
 |------|------|
-| 限额校验在记账前 | 先校验后记账，避免超额记账后回滚 |
-| 每笔交易可追溯 | 交易号全链路唯一，参考号辅助对账 |
-| 记账原子性 | 借贷必须同时成功或同时失败 |
-| 敏感字段脱敏 | 卡号/证件号展示时脱敏，日志中禁止明文 |
-| 状态机驱动 | 状态迁移通过引擎，禁止直接UPDATE |
+| Limit check before posting | Check first, then post, to avoid rolling back an over-limit posting |
+| Every transaction traceable | Transaction ID unique across the chain; reference number supports reconciliation |
+| Atomic posting | Debit and credit must succeed or fail together |
+| Masking of sensitive fields | Card numbers / ID numbers masked on display; never in plain text in logs |
+| Driven by the state machine | State transitions go through the engine; direct UPDATE is forbidden |
 
-## 2. 冲正流程
+## 2. Reversal process
 
 ```
-原交易SUCCESS
+Original transaction SUCCESS
   │
-  ├─[1] 冲正发起（须原交易号）
-  │     └─ 原交易非SUCCESS -> 拒绝冲正
+  ├─[1] Start reversal (original transaction ID required)
+  │     └─ Original transaction not SUCCESS -> reversal rejected
   │
-  ├─[2] 冲正金额校验（须等于原交易金额）
-  │     └─ 金额不符 -> 拒绝冲正
+  ├─[2] Reversal amount check (must equal the original transaction amount)
+  │     └─ Amount mismatch -> reversal rejected
   │
-  ├─[3] 冲正时效校验（T日内自动，跨日须审批）
-  │     └─ 超时 -> 转人工审批
+  ├─[3] Reversal time check (automatic on day T; later days need approval)
+  │     └─ Too late -> manual approval
   │
-  ├─[4] 反向记账（借收款方/贷付款方）
-  │     └─ 失败 -> 冲正FAILED，人工介入
+  ├─[4] Reverse posting (debit payee / credit payer)
+  │     └─ Failed -> reversal FAILED, manual intervention
   │
-  ├─[5] 清算冲正（跨行时提交pacs.004）
+  ├─[5] Clearing reversal (pacs.004 submitted for interbank)
   │
-  ├─[6] 状态更新（原交易REVERSED）
+  ├─[6] Status update (original transaction REVERSED)
   │
-  └─[7] 客户通知
+  └─[7] Customer notification
 ```
 
-### 冲正规则
+### Reversal rules
 
-| 规则 | 说明 |
+| Rule | Description |
 |------|------|
-| BR-PAY-010 | 只有SUCCESS状态交易可发起冲正 |
-| BR-PAY-011 | 冲正金额必须等于原交易金额（全额冲正） |
-| BR-PAY-012 | 冲正须在T日内完成，跨日冲正须人工审批 |
-| BR-PAY-013 | 冲正成功后原交易状态变更为REVERSED，不可再次冲正 |
+| BR-PAY-010 | Only transactions in SUCCESS state can be reversed |
+| BR-PAY-011 | The reversal amount must equal the original transaction amount (full reversal) |
+| BR-PAY-012 | A reversal must be completed on day T; a reversal on a later day requires manual approval |
+| BR-PAY-013 | After a successful reversal the original transaction changes to REVERSED and cannot be reversed again |
 
-## 3. 对账流程
+## 3. Reconciliation process
 
 ```
-T+1 日终批处理
+T+1 end-of-day batch
   │
-  ├─[1] 交易数据导出（按渠道/对手行分组）
+  ├─[1] Export transaction data (grouped by channel / counterparty bank)
   │
-  ├─[2] 内部对账（交易系统 vs 账务系统）
-  │     └─ 总分不平 -> 阻断日终，告警
+  ├─[2] Internal reconciliation (transaction system vs accounting system)
+  │     └─ General ledger and sub-ledgers do not balance -> block end of day, alert
   │
-  ├─[3] 外部对账（本行 vs 对手行/银联）
-  │     ├─ 生成差异报表
-  │     └─ 差异分类：长款/短款/金额不符/串户
+  ├─[3] External reconciliation (our bank vs counterparty bank / UnionPay)
+  │     ├─ Generate the difference report
+  │     └─ Difference categories: excess record / short record / amount mismatch / wrong account
   │
-  ├─[4] 差异挂账
-  │     └─ T+2前须有处置结论
+  ├─[4] Put differences in suspense
+  │     └─ Resolution required before T+2
   │
-  └─[5] 差异处置
-        ├─ 长款 -> 联系对方核实
-        ├─ 短款 -> 补录或发起查询
-        ├─ 金额不符 -> 以原始交易为准修正
-        └─ 串户 -> 调账处理，留审计日志
+  └─[5] Resolve differences
+        ├─ Excess record -> contact the other party to verify
+        ├─ Short record -> add the record or raise an inquiry
+        ├─ Amount mismatch -> correct according to the original transaction
+        └─ Wrong account -> adjust the accounts, keep an audit log
 ```
 
-### 对账规则
+### Reconciliation rules
 
-| 规则 | 说明 |
+| Rule | Description |
 |------|------|
-| BR-PAY-020 | T+1日终自动执行内部对账，总分不平则阻断日终批处理 |
-| BR-PAY-021 | 对账差异挂账后T+2日内须有处置结论 |
-| BR-PAY-022 | 差异处置须留审计日志（操作人/时间/原因/调账金额） |
+| BR-PAY-020 | Internal reconciliation runs automatically at the end of T+1; if the general ledger and sub-ledgers do not balance, the end-of-day batch is blocked |
+| BR-PAY-021 | Every reconciliation difference put in suspense must have a resolution within T+2 |
+| BR-PAY-022 | Difference handling must leave an audit log (operator / time / reason / adjustment amount) |
 
-## 4. 清算流程
+## 4. Clearing process
 
 ```
-日终批处理
+End-of-day batch
   │
-  ├─[1] 交易数据汇总（按对手行/渠道/币种分组）
+  ├─[1] Aggregate transaction data (grouped by counterparty bank / channel / currency)
   │
-  ├─[2] 净额计算（应收 - 应付 = 净额）
+  ├─[2] Net calculation (receivable - payable = net)
   │
-  ├─[3] 生成清算报表（含批次头/明细/尾校验）
+  ├─[3] Generate the clearing report (batch header / details / trailer check)
   │
-  ├─[4] 提交结算（央行准备金账户交收）
+  ├─[4] Submit for settlement (exchange through central bank reserve accounts)
   │
-  └─[5] 清算完成通知
+  └─[5] Clearing completion notification
 ```
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 | 示例 |
+| Field | Requirement | Example |
 |------|------|------|
-| 流程图 | 含分支/失败路径/状态迁移 | 见上 |
-| 关键约束 | 每步标注约束与业务规则编号 | BR-PAY-001 |
-| 错误码 | 每个失败路径标注错误码 | PAY-AMT-LIMIT-EXCEEDED |
-| 来源 | 流程/约束来源 | CNAPS规范、行内管理办法 |
+| Process map | Includes branches / failure paths / state transitions | See above |
+| Key constraints | Each step states its constraints and business rule IDs | BR-PAY-001 |
+| Error codes | Each failure path states its error code | PAY-AMT-LIMIT-EXCEEDED |
+| Source | Source of the process/constraint | CNAPS specification, internal management measures |

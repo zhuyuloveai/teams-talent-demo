@@ -1,20 +1,20 @@
-# SIT计划
+# SIT plan
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 参与系统 | <系统清单> |
-| 接口清单 | <接口> |
-| 环境拓扑 | <拓扑> |
-| 数据准备 | <策略> |
-| 联调窗口 | <时间> |
+| Participating systems | <system list> |
+| Interface list | <interfaces> |
+| Environment topology | <topology> |
+| Data preparation | <strategy> |
+| Integration window | <time> |
 
-退出标准：关键接口100%覆盖、P1/P2清零、数据一致。
+Exit criteria: key interfaces 100% covered, P1/P2 cleared, data consistent.
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 接口覆盖 | 接口清单与覆盖 |
-| 数据流 | 端到端一致性校验 |
+| Interface coverage | Interface list and coverage |
+| Data flow | End-to-end consistency check |

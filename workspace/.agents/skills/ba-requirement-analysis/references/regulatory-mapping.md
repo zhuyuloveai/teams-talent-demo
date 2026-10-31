@@ -1,69 +1,69 @@
-# 监管要求映射表（银行支付类常用）
+# Regulatory Requirement Mapping (Common for Bank Payments)
 
-> 本映射表列出银行支付系统常见的监管要求，供需求编写时参考。
-> 具体项目请结合最新监管文件和行内制度，以正式文件为准。
+> This mapping lists regulatory requirements common to bank payment systems, for reference when writing requirements.
+> For a specific project, use the latest regulatory documents and internal bank policies; the official documents prevail.
 
-## 主要监管依据
+## Main regulatory sources
 
-| 类别 | 名称 | 文号/来源 | 核心要求 |
+| Category | Name | Reference / issuer | Core requirement |
 |------|------|---------|---------|
-| 支付业务 | 《非银行支付机构条例》 | 国务院令 | 支付机构准入、业务规则、客户权益保护 |
-| 支付业务 | 《支付结算办法》 | 人民银行 | 支付结算基本规则 |
-| 支付系统 | 《支付系统监督管理办法》 | 人民银行 | 支付系统准入、运营、监督管理 |
-| 反洗钱 | 《中华人民共和国反洗钱法》 | 主席令 | 反洗钱基本制度 |
-| 反洗钱 | 《金融机构反洗钱规定》 | 人民银行 | 金融机构反洗钱义务 |
-| 反洗钱 | 《金融机构大额交易和可疑交易报告管理办法》 | 人民银行 | 大额和可疑交易报告标准 |
-| 个人信息 | 《中华人民共和国个人信息保护法》 | 主席令 | 个人信息处理规则、权益保护 |
-| 数据安全 | 《中华人民共和国数据安全法》 | 主席令 | 数据安全制度、数据保护义务 |
-| 网络安全 | 《中华人民共和国网络安全法》 | 主席令 | 网络安全等级保护、运营者义务 |
-| 关键基础设施 | 《关键信息基础设施安全保护条例》 | 国务院令 | 关键信息基础设施安全保护 |
-| 消费者权益 | 《中国人民银行金融消费者权益保护实施办法》 | 人民银行 | 金融消费者权益保护 |
-| 账户管理 | 《人民币银行结算账户管理办法》 | 人民银行 | 银行结算账户开立、使用、变更、撤销 |
-| 电子银行 | 《电子银行业务管理办法》 | 银保监会 | 电子银行业务准入、风险管理、数据交换 |
+| Payment business | Regulations on Non-Bank Payment Institutions | State Council Order | Payment institution licensing, business rules, customer rights protection |
+| Payment business | Payment and Settlement Measures | PBOC | Basic payment and settlement rules |
+| Payment systems | Measures for the Supervision and Administration of Payment Systems | PBOC | Payment system access, operation, supervision |
+| Anti-money laundering | Anti-Money Laundering Law of the PRC | Presidential Order | Basic AML framework |
+| Anti-money laundering | Anti-Money Laundering Provisions for Financial Institutions | PBOC | AML obligations of financial institutions |
+| Anti-money laundering | Measures for Reporting Large-Value and Suspicious Transactions by Financial Institutions | PBOC | Reporting criteria for large-value and suspicious transactions |
+| Personal information | Personal Information Protection Law of the PRC | Presidential Order | Rules for processing personal information, rights protection |
+| Data security | Data Security Law of the PRC | Presidential Order | Data security framework, data protection obligations |
+| Cybersecurity | Cybersecurity Law of the PRC | Presidential Order | Multi-level protection scheme, operator obligations |
+| Critical infrastructure | Regulations on the Security Protection of Critical Information Infrastructure | State Council Order | Security protection of critical information infrastructure |
+| Consumer rights | PBOC Implementation Measures for the Protection of Financial Consumers' Rights | PBOC | Protection of financial consumers' rights |
+| Account management | Measures for the Administration of RMB Bank Settlement Accounts | PBOC | Opening, use, change and closure of bank settlement accounts |
+| Electronic banking | Measures for the Administration of Electronic Banking Business | CBIRC | E-banking licensing, risk management, data exchange |
 
-## 支付业务核心监管要求摘要
+## Summary of core regulatory requirements for payments
 
-### 客户身份管理（KYC）
-- 开立账户、办理业务必须进行客户身份识别
-- 了解你的客户（KYC）：身份基本信息、职业、交易目的、资金来源
-- 客户身份资料和交易记录保存期限：业务关系结束后至少5年
-- 客户风险等级划分，高风险客户加强尽职调查
+### Customer identification (KYC)
+- Customer identification is mandatory when opening accounts and handling business
+- Know your customer (KYC): basic identity information, occupation, purpose of transactions, source of funds
+- Retention of customer identity data and transaction records: at least 5 years after the business relationship ends
+- Customer risk rating; enhanced due diligence for high-risk customers
 
-### 大额与可疑交易报告
-- 大额交易标准（具体金额见最新规定）：
-  - 当日单笔或累计人民币交易达到规定金额
-  - 外币等值达到规定金额
-  - 跨境资金交易
-- 可疑交易：客户行为、交易目的、资金来源等有异常的
-- 报告时限：大额交易发生之日起5个工作日内；可疑交易及时报送
+### Large-value and suspicious transaction reporting
+- Large-value transaction criteria (see the latest rules for the amounts):
+  - Single or cumulative RMB transactions on one day reaching the defined amount
+  - Foreign currency equivalent reaching the defined amount
+  - Cross-border fund transactions
+- Suspicious transactions: anomalies in customer behavior, transaction purpose, source of funds, etc.
+- Reporting deadline: large-value transactions within 5 business days of the transaction date; suspicious transactions reported promptly
 
-### 交易安全
-- 高风险操作必须双因子认证
-- 交易限额管理（单笔、日累计、月累计）
-- 交易确认机制（重要交易二次确认）
-- 交易不可抵赖（数字签名/操作留痕）
+### Transaction security
+- High-risk operations require two-factor authentication
+- Transaction limit management (per transaction, daily cumulative, monthly cumulative)
+- Transaction confirmation (second confirmation for important transactions)
+- Non-repudiation (digital signature / operation trail)
 
-### 数据安全
-- 个人金融信息分类分级保护
-- 敏感数据加密存储和传输
-- 数据脱敏（展示、导出、开发测试环境）
-- 数据访问权限控制和审计
-- 数据出境必须经过安全评估
+### Data security
+- Classified, graded protection of personal financial information
+- Encrypted storage and transmission of sensitive data
+- Data masking (display, export, development and test environments)
+- Data access control and audit
+- Cross-border data transfer requires a security assessment
 
-### 职责分离（SoD）
-- 业务操作与审核审批分离
-- 交易录入与复核分离
-- 系统管理与业务操作分离
-- 不相容岗位不得由一人兼任
+### Segregation of duties (SoD)
+- Business operations are separated from review and approval
+- Transaction entry is separated from verification
+- System administration is separated from business operations
+- Incompatible roles cannot be held by one person
 
-### 审计与留痕
-- 所有关键操作必须记录审计日志
-- 审计日志包含：操作人、时间、操作类型、操作内容、结果、IP地址
-- 审计日志保留期限不少于5年（部分业务要求更长）
-- 审计日志不可篡改、不可删除
+### Audit and trail
+- Every key operation must be recorded in the audit log
+- The audit log contains: operator, time, operation type, operation content, result, IP address
+- Audit logs are kept for at least 5 years (longer for some businesses)
+- Audit logs cannot be modified or deleted
 
-> **重要提示**：
-> 1. 以上为通用摘要，具体监管要求以最新正式文件为准
-> 2. 行内制度通常比监管要求更严格，需求编写以行内制度为准
-> 3. 新业务/新产品必须经过合规审查
-> 4. 监管要求会更新，需定期校准
+> **Important**:
+> 1. The above is a general summary; the latest official documents prevail for specific requirements
+> 2. Internal bank policies are usually stricter than regulation; requirements follow the internal policies
+> 3. New businesses / new products must pass a compliance review
+> 4. Regulatory requirements change and must be recalibrated regularly

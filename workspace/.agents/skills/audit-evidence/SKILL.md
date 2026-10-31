@@ -1,6 +1,6 @@
 ---
 name: audit-evidence
-description: 保证"需求→故事→MR→测试→变更→发布→PIR"全链路可追溯：收集工件、校验ID链与证据链接、生成审计证据包。任意门禁评审、发布执行、审计抽检时使用。
+description: "Ensures end-to-end traceability across \"requirement -> story -> MR -> test -> change -> release -> PIR\": collects artifacts, validates ID chains and evidence links, and generates an audit evidence package. Use at any gate review, release execution, or audit sampling."
 ---
 
 ## 元数据

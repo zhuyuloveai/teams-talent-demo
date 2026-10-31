@@ -1,68 +1,68 @@
-# 进展与成果字段
+# Progress and result fields
 
-所有写入包含当前完整 scope、runId、真实 sessionId、该节点 adoptionId、expectedRevision。命令为 `progress add` 或 `result submit`，都使用稳定 `--operation-id` 和 UTF-8 `--input-file`。
+Every write includes the current full scope, runId, the real sessionId, this node's adoptionId and expectedRevision. The commands are `progress add` or `result submit`; both use a stable `--operation-id` and a UTF-8 `--input-file`.
 
-`progress add`：phase 为 started / progress / blocked；summary 写实际进展；阻塞时必须有 blocker；evidence 是引用数组，可为空。解除阻塞时回传 progress 并说明依据，不按计时高频刷状态。
+`progress add`: phase is started / progress / blocked; summary describes actual progress; a blocker is required when blocked; evidence is an array of references and may be empty. When a blocker is lifted, report progress and state the basis. Do not refresh status frequently on a timer.
 
-已完成节点不接受普通 started / progress / blocked / result 将其重开或覆盖。明确返工时先读 context.rework.allowed，重新读取并采用本节点输入，再用 phase=started、reopen=true 开始新一轮：需求澄清仅在开发尚未采用输入前；功能开发仅在验证待开始或阻塞时；阻塞的测试验证可以显式重开并提交本轮新检查。上一轮产物与事件保留为历史，不计入新一轮交付物。Owner 页面已退回的开发节点已重开，按普通进度继续即可。reopen 不是节点切换，进入开发用 nodeId=develop、测试用 nodeId=verify。
+A completed node does not accept an ordinary started / progress / blocked / result that would reopen or overwrite it. For explicit rework, first read context.rework.allowed, reread and re-adopt this node's inputs, then start a new round with phase=started, reopen=true: requirement clarification only before development has adopted its inputs; feature development only while verification is pending start or blocked; a blocked test verification can be explicitly reopened to submit this round's new checks. The previous round's artifacts and events are kept as history and do not count toward the new round's deliverables. A development node the Owner has sent back from the page is already reopened; continue with ordinary progress. reopen is not a node switch: use nodeId=develop for development and nodeId=verify for testing.
 
-提交验收后，所有 CLI 写入均禁止，即使 --role owner 也不能验收、退回或重开。需要返工由 Owner 在页面手工退回；再次开发提交后重新获取验证输入、重新采用并提交新检查。模型最终停在待 Owner 验收，不能调用页面 API 绕过 CLI 限制。
+Once submitted for acceptance, all CLI writes are forbidden; even with --role owner you cannot accept, send back or reopen. Rework requires the Owner to send it back manually from the page; after development is submitted again, fetch the verification inputs again, re-adopt and submit new checks. The model's final state is pending Owner acceptance; it must not call the page API to bypass CLI restrictions.
 
-开始回执必须先于实际业务编辑和测试：读当前依据 → `inputs adopt` 成功 → 用返回的新 revision 写 `progress add` / started 成功 → 开始业务工作。CLI 的 scope/context/request/receipt 临时文件不属于业务产物，可先写；PRD、设计、源代码与测试不是临时请求文件。新 run/节点重新取当前身份和采用依据，不能用旧成功回执掩盖本轮未采用；失败或超时按幂等规则核对，不能在工作结束后补一条 started 伪造时序。
+The start receipt must come before actual business edits and tests: read the current basis -> `inputs adopt` succeeds -> write `progress add` / started with the new revision returned, and it succeeds -> start business work. The CLI's scope/context/request/receipt temporary files are not business artifacts and can be written first; the PRD, design, source code and tests are not temporary request files. A new run/node fetches the current identity and adoption basis again; do not use an old successful receipt to hide that this round was not adopted. On failure or timeout, check according to the idempotency rules; do not add a started entry after the work is done to fake the sequence.
 
-`result submit`：summary、evidence（至少一条）、completedCriteria。artifact 与 completedCriteria ID 从当前 `context.nodeContract` 读取，不凭记忆套别的节点合同。
+`result submit`: summary, evidence (at least one item), completedCriteria. Read the artifact and completedCriteria IDs from the current `context.nodeContract`; do not apply another node's contract from memory.
 
-`artifact` 只标本次实际交付物，同一提交中每种 artifact 仅一条（多个文件用一份交付清单引用）。原始需求、试验口径和其它输入依据可作为普通 evidence，但不填 artifact；例如原始需求不能再标为 `prd`，避免覆盖本次编写的 PRD。
+`artifact` marks only the deliverables actually produced this time, with at most one entry per artifact type in a single submission (for multiple files, reference one delivery manifest). The original requirement, test profile and other input bases can be ordinary evidence but do not set artifact; for example, the original requirement must not be marked as `prd`, so it does not overwrite the PRD written this time.
 
 ```json
 {
   "kind": "reference",
-  "value": "实际文件、PR或报告引用",
-  "description": "引用说明",
-  "artifact": "来自nodeContract",
-  "version": "实际产物版本",
-  "codeVersion": "相关代码PR或提交版本",
+  "value": "Actual file, PR or report reference",
+  "description": "Reference description",
+  "artifact": "From nodeContract",
+  "version": "Actual artifact version",
+  "codeVersion": "Related code PR or commit version",
   "source": "actual"
 }
 ```
 
-kind 可为 reference / local-file。本机路径只是一条引用，未自动上传；远端声明也不等于 provider 已核验。PRD、设计、代码等实际交付物不得声明成 preset。设计、代码、单测和验证报告保持同一 codeVersion；上游产物 ID 与版本原样引用，不复制成另一份依据。
+kind can be reference / local-file. A local path is only a reference and is not uploaded automatically; a remote declaration does not mean the provider has verified it. Actual deliverables such as the PRD, design and code must not be declared as preset. Design, code, unit tests and the verification report keep the same codeVersion; reference upstream artifact IDs and versions as-is rather than copying them into another basis.
 
-## 开发完成前的测试判定
+## Test verdict before completing development
 
-先由本次变更和节点标准确定必要测试范围，不机械要求全仓全量。跨前后端的改动分别覆盖必要范围；前端通过不能代替后端测试。测试文件已编写、报告已生成、编译成功、`-DskipTests`、命令退出 0 但运行 0 用例、必要用例被 skipped，都不能声明该范围通过。
+First determine the required test scope from this change and the node criteria; do not mechanically require a full repository run. Changes spanning frontend and backend cover each required scope separately; a frontend pass does not replace backend tests. Test files written, a report generated, a successful compile, `-DskipTests`, a command exiting 0 but running 0 cases, or required cases being skipped: none of these establishes that the scope passed.
 
-必要测试失败或未执行时，保留真实结果引用在 `progress add`，phase=blocked：说明已完成部分、未执行/失败范围、原因与解除条件。不全勾 completedCriteria，不用 `result submit` 把开发标完成，也不把“剩余限制已说明”当豁免。缺 JDK/Maven、依赖、权限等都是阻塞；环境就绪或 compile 成功只是解除条件的一部分，仍须实际运行必要测试。
+When required tests fail or were not run, keep the real result references in `progress add` with phase=blocked: state what is done, which scopes were not run or failed, the reason and the condition for lifting the blocker. Do not tick all completedCriteria, do not use `result submit` to mark development complete, and do not treat "remaining limitations explained" as an exemption. Missing JDK/Maven, dependencies, permissions and so on are all blockers; an environment being ready or compile succeeding is only part of the lifting condition, and the required tests must still actually run.
 
-测试报告列明当前 codeVersion、必要范围、实际命令、通过/失败/跳过/未执行数量或范围、退出码、真实日志/结果路径。保留实际输出；不补造执行、用例数或通过结论。修复后按受影响范围重跑并更新同版本证据，旧失败记录不删除。开发单测只接受实际执行；验证阶段允许的预置质量检查不能借给开发单测充数。
+The test report lists the current codeVersion, required scopes, actual commands, passed/failed/skipped/not-run counts or scopes, exit codes and real log/result paths. Keep the actual output; do not fabricate executions, case counts or pass conclusions. After a fix, rerun the affected scope and update the evidence for the same version; do not delete old failure records. Development unit tests accept only actual execution; preset quality checks allowed in the verification stage cannot be counted as development unit tests.
 
-开发结果的 `artifact="unit-test-result"` evidence 必须为 `source="actual"`，并携带 `execution`：
+The development result's `artifact="unit-test-result"` evidence must have `source="actual"` and carry `execution`:
 
 ```text
 kind: "unit-tests"
-codeVersion: 与本次代码 evidence 相同的版本
-requiredScopes: 本次改动必须测试的范围名称数组
+codeVersion: the same version as this change's code evidence
+requiredScopes: array of names of the scopes this change must test
 runs: [{scope, command, status: "passed" | "failed" | "not-run",
-        exitCode: 整数 | null, passed: 整数, failed: 整数, skipped: 整数,
-        executedAt: 实际执行的 ISO 时间（已执行时必填）,
-        excludedSkips?: {count: 非必要跳过数, reason: 排除理由}}]
-notRunScopes: 尚未运行的必要范围名称数组
+        exitCode: integer | null, passed: integer, failed: integer, skipped: integer,
+        executedAt: actual execution time in ISO format (required when executed),
+        excludedSkips?: {count: number of non-required skips, reason: reason for exclusion}}]
+notRunScopes: array of names of required scopes not yet run
 ```
 
-完成声明要求每个 requiredScope 都有实际通过的 run：exitCode=0、passed>0、failed=0，且没有必要用例跳过；所有 runs 都为 passed，notRunScopes 为空。skipped 默认都算未执行；只有明确不属于本次必要范围的跳过，才可用 excludedSkips 逐 run 声明数量和具体影响范围/理由（count≤skipped），使 skipped−excludedSkips.count=0。不能排除 requiredScopes 内的必要用例或用此字段掩盖未运行。execution、测试报告和代码 evidence 的 codeVersion 一致。新节点合同含 `develop.tests` 标准；提交时仍从当前 nodeContract 取得标准 ID。未完成声明可随 blocked progress 的 evidence 保存，不得把 not-run 改成 passed 或删除未测范围。服务端只核对声明结构和一致性，不会替你运行测试，也不能证明报告真实。
+A completion declaration requires every requiredScope to have an actual passing run: exitCode=0, passed>0, failed=0, and no required cases skipped; all runs are passed and notRunScopes is empty. skipped counts as not executed by default. Only skips clearly outside this change's required scope may be declared per run with excludedSkips, giving the count and the specific affected scope/reason (count<=skipped), so that skipped-excludedSkips.count=0. You cannot exclude required cases within requiredScopes or use this field to hide runs that did not happen. The codeVersion of execution, the test report and the code evidence must match. The new node contract includes a `develop.tests` criterion; when submitting, still take the criterion IDs from the current nodeContract. An incomplete declaration can be saved in the evidence of a blocked progress entry; do not change not-run to passed or remove untested scopes. The server checks only the declaration's structure and consistency; it does not run tests for you and cannot prove the report is real.
 
-## 验证检查
+## Verification checks
 
-验证结果同时提供 checks：每项 `{artifact,status,source,summary}`。artifact 与本次报告对应，status 为 passed / failed，source 为 actual / preset 且与对应 evidence 一致。可预置检查必须标明其范围，不称真实命令或远端扫描。失败可提交为未完成记录，但不能声明“本轮通过”标准；通过必须满足当前 nodeContract 的全部必需报告、标准及同一代码版本。Owner 退回/重新开发后需本轮新检查，不能重用旧通过结论。
+Verification results also provide checks: each item is `{artifact,status,source,summary}`. artifact corresponds to this round's report, status is passed / failed, and source is actual / preset and matches the corresponding evidence. Preset checks must state their scope and must not be presented as real commands or remote scans. A failure can be submitted as an incomplete record, but it cannot declare the "passed this round" criterion; a pass must satisfy all required reports and criteria of the current nodeContract on the same code version. After the Owner sends it back or development is redone, new checks for this round are required; old pass conclusions cannot be reused.
 
-测试用例定义来自企业测试资产插件的节点输入，保留用例 ID、版本和预期；Talents 知识与质量 Skill 不替代用例或执行报告。数据收集不在这里手动触发，CLI 也不能替代 Owner 验收。
+Test case definitions come from the node inputs of the enterprise test asset plugin; keep the case IDs, versions and expected results. Talents knowledge and quality Skills do not replace test cases or execution reports. Data collection is not triggered manually here, and the CLI cannot replace Owner acceptance.
 
-## 提交与 PR 边界
+## Commit and PR boundaries
 
-仅在开发者已明确开始 develop、当前需求实现完成且必要范围单测实际通过时执行。CLI 显式工作指令与 TUI 内开发者指令遵循同一节点门禁；初始化的只读轮结束不等于 PRD 已确认，也不授权跳过 prepare.confirmed。
+Run this only when the developer has explicitly started develop, the current requirement is implemented, and the required unit tests have actually passed. Explicit CLI work instructions and developer instructions inside the TUI follow the same node gate. The end of the read-only initialization round does not mean the PRD is confirmed, and does not authorize skipping prepare.confirmed.
 
-先核对启动材料中的工作树、当前任务分支、origin、允许的业务目录和交付基线分支。必须与本任务绑定一致；分支不能是 main、master 或已配置的交付基线。复用本任务已有分支/PR，PR base 以启动材料核验的 baseBranch 为准，不从目录名或旧会话猜测。独立仓库的业务工作目录就是仓库根目录，不拼接 workspace/carddemo-java-1025；Teams 与业务仓库必须分别提交。没有已核验任务绑定、真实 remote/权限不可用、工作区混合改动无法区分时，以 progress blocked 回报，不创建替代 PR 或假链接。
+First check the worktree, current task branch, origin, allowed business directories and delivery baseline branch in the launch materials. They must match this task's binding; the branch must not be main, master or the configured delivery baseline. Reuse this task's existing branch/PR. The PR base is the baseBranch verified by the launch materials; do not guess it from directory names or old Sessions. For a standalone repository, the business working directory is the repository root; do not append workspace/carddemo-java-1025. Teams and the business repository must be committed separately. If there is no verified task binding, the real remote/permissions are unavailable, or mixed changes in the working tree cannot be separated, report progress blocked; do not create a substitute PR or a fake link.
 
-查看 Git 工作区和暂存区差异，只暂存本需求允许路径/变更块；禁止 git add .，禁止收录暂存区原有无关改动、其他任务、Teams/Talents 工程、历史会话或全局配置。提交前复核完整 staged diff 和必要测试所对应的代码版本；如果无法安全隔离，停下说明阻塞，不替别人还原文件。
+Review the Git working tree and staging area diffs, and stage only the paths/hunks this requirement allows. Never use git add .; never include unrelated changes already in the staging area, other tasks, Teams/Talents projects, historical Sessions or global configuration. Before committing, review the full staged diff and the code version the required tests ran against. If you cannot isolate the changes safely, stop and explain the blocker; do not revert other people's files.
 
-推送本任务分支并创建或更新 PR，回传真实 PR URL、完整 commit SHA/codeVersion 和同版本测试证据。不得直接推 main/master 或已配置的交付基线分支、合并 PR 或部署。PR 创建成功也不等于 Owner 验收通过。仅打开 TUI、初始化/prepare 阶段不自动提交；已有运行会话的旧指令不因 Teams 文件更新而自动改变。
+Push this task's branch and create or update the PR, then report the real PR URL, the full commit SHA/codeVersion and test evidence for the same version. Never push directly to main/master or the configured delivery baseline branch, merge the PR or deploy. A successfully created PR does not mean the Owner has accepted. Merely opening the TUI or the initialization/prepare stage does not commit automatically; old instructions in an already running Session do not change automatically because Teams files were updated.

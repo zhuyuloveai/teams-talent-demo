@@ -1,19 +1,19 @@
-# 豁免申请
+# Waiver request
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 漏洞 | <漏洞ID> |
-| 理由 | <业务/技术理由> |
-| 有效期 | <日期> |
-| 责任人 | <角色> |
-| 审批人 | 安全负责人 |
-| 状态 | 待审批 |
+| Vulnerability | <vulnerability ID> |
+| Reason | <business/technical reason> |
+| Valid until | <date> |
+| Owner | <role> |
+| Approver | Security owner |
+| Status | Pending approval |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 豁免 | 理由+有效期+责任人 |
-| 证据 | 扫描结果引用 |
+| Waiver | Reason + validity period + owner |
+| Evidence | Reference to the scan results |

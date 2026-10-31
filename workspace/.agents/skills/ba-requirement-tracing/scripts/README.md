@@ -1,8 +1,8 @@
-# scripts 能力边界
+# scripts capability boundary
 
-本技能为**纯追踪/复用型**，无独立可执行脚本。
+This Skill is **trace-only / reuse-based** and has no standalone executable script of its own.
 
-RTM 校验复用跨技能脚本：
-- ../ba-acceptance-criteria/scripts/rtm_check.py（需求故事关联校验）
+The RTM check reuses a cross-Skill script:
+- ../ba-acceptance-criteria/scripts/rtm_check.py (requirement-story link check)
 
-能力边界：本技能负责 RTM 维护流程与追溯链设计，校验逻辑由 ba-acceptance-criteria 提供。
+Capability boundary: this Skill owns the RTM maintenance process and trace chain design; the check logic is provided by ba-acceptance-criteria.

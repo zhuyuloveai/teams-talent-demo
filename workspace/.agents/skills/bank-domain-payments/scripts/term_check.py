@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""扫描产出文本中的领域术语，与词汇表比对一致性并输出建议。
+"""Scan output text for domain terms, check consistency against the glossary and print suggestions.
 
-用法:
-  term_check.py <目标文档.md> [--glossary 词汇表.md] [--json]
+Usage:
+  term_check.py <target-document.md> [--glossary glossary.md] [--json]
 
-退出码:
-  0 = 通过（无不一致别名）
-  1 = 有告警（未收录术语）
-  2 = 有不一致（命中禁用别名）
-  3 = 参数错误 / 文件读取失败
+Exit codes:
+  0 = pass (no inconsistent aliases)
+  1 = warning (uncataloged terms)
+  2 = inconsistent (forbidden alias found)
+  3 = argument error / file read failure
+
+Matching is case-insensitive and on whole words.
 """
 import argparse
 import json
@@ -16,38 +18,75 @@ import re
 import sys
 from pathlib import Path
 
-# ── 默认术语与别名（当未提供 --glossary 时使用） ──
+# ── Default terms and aliases (used when --glossary is not given) ──
 DEFAULT_TERMS = [
-    "转账", "日累计限额", "单笔限额", "年累计限额", "清算", "结算",
-    "对账", "冲正", "记账", "交易号", "参考号", "风控",
-    "批量代发", "批量代扣", "协议支付", "跨境汇款",
-    "长款", "短款", "串户", "备付金",
+    "Transfer", "Daily Cumulative Limit", "Single Transaction Limit", "Annual Cumulative Limit",
+    "Clearing", "Settlement", "Reconciliation", "Reversal", "Posting", "Transaction ID",
+    "Reference Number", "Risk Control", "Batch Disbursement", "Batch Deduction",
+    "Agreement Payment", "Cross-border Remittance", "Excess Record", "Short Record",
+    "Wrong Account", "Reserve Fund",
 ]
 
-# 禁用别名 -> 正确术语
+# Forbidden alias -> correct term
 DEFAULT_ALIASES = {
-    "转帐": "转账",
-    "划账": "转账",
-    "日限额": "日累计限额",
-    "笔限额": "单笔限额",
-    "年限额": "年累计限额",
-    "核账": "对账",
-    "流水号": "交易号",
-    "批量转账": "批量代发",
-    "批量扣款": "批量代扣",
-    "国际转账": "跨境汇款",
-    "多记": "长款",
-    "少记": "短款",
-    "错账": "串户",
-    "保证金": "备付金",
+    "transferal": "Transfer",
+    "fund move": "Transfer",
+    "daily limit": "Daily Cumulative Limit",
+    "txn limit": "Single Transaction Limit",
+    "annual limit": "Annual Cumulative Limit",
+    "account check": "Reconciliation",
+    "serial number": "Transaction ID",
+    "batch transfer": "Batch Disbursement",
+    "batch debit": "Batch Deduction",
+    "international transfer": "Cross-border Remittance",
+    "over-recorded": "Excess Record",
+    "under-recorded": "Short Record",
+    "wrong posting": "Wrong Account",
+    "security deposit": "Reserve Fund",
 }
+
+# Glossary annotations that are not aliases
+ALIAS_NOTES = ("mixed use", "colloquial", "generic")
+
+# Words ignored at the start of a suspected compound term
+STOPWORDS = {
+    "a", "an", "the", "this", "that", "these", "those", "of", "per", "each", "every",
+    "any", "no", "its", "their", "his", "her", "our", "your", "my", "to", "for", "in",
+    "on", "and", "or", "is", "are", "be", "by", "with", "new", "current", "same",
+}
+
+# Compound phrases ending in a payments head noun (candidate uncataloged terms)
+SUSPECT_PATTERN = re.compile(
+    r"\b(?:[A-Za-z][A-Za-z-]*\s+){1,2}(?:limit|quota|account|statement)s?\b",
+    re.IGNORECASE,
+)
+
+
+def word_pattern(phrase: str) -> re.Pattern:
+    """Whole-word, case-insensitive pattern for a term or alias."""
+    return re.compile(r"(?<![\w-])" + re.escape(phrase) + r"(?![\w-])", re.IGNORECASE)
+
+
+def is_header(cells: list) -> bool:
+    return any(c.lower().startswith("term") for c in cells)
+
+
+def read_header(cells: list):
+    term_col = alias_col = None
+    for i, c in enumerate(cells):
+        low = c.lower()
+        if low.startswith("term") and term_col is None:
+            term_col = i
+        if "alias" in low:
+            alias_col = i
+    return term_col, alias_col
 
 
 def parse_glossary(path: str):
-    """从词汇表 Markdown 解析术语与别名映射。
+    """Parse terms and the alias mapping from a glossary Markdown file.
 
-    词汇表格式：Markdown 表格，含"术语"和"别名（禁用）"列。
-    通过表头行定位列位置，避免依赖固定列号。
+    Glossary format: Markdown tables with a "Term" column and an "Alias (forbidden)" column.
+    Column positions are located from the header row, so fixed column numbers are not needed.
     """
     terms = set(DEFAULT_TERMS)
     aliases = dict(DEFAULT_ALIASES)
@@ -75,23 +114,9 @@ def parse_glossary(path: str):
         if all(re.match(r"^[-:]+$", c) for c in cells if c):
             continue
 
-        if term_col is None and any("术语" in c for c in cells):
-            for i, c in enumerate(cells):
-                if "术语" in c:
-                    term_col = i
-                if "别名" in c:
-                    alias_col = i
-            in_table = True
-            continue
-
         if not in_table:
-            if any("术语" in c for c in cells):
-                term_col = alias_col = None
-                for i, c in enumerate(cells):
-                    if "术语" in c:
-                        term_col = i
-                    if "别名" in c:
-                        alias_col = i
+            if is_header(cells):
+                term_col, alias_col = read_header(cells)
                 in_table = True
             continue
 
@@ -103,54 +128,55 @@ def parse_glossary(path: str):
         if alias_col is not None and alias_col < len(cells):
             alias_str = cells[alias_col]
             if alias_str and alias_str not in ("-", ""):
-                for alias in re.split(r"[、,，/]", alias_str):
-                    alias = re.sub(r"[（(].*?[）)]", "", alias).strip()
-                    if alias and alias not in ("混用", "口语化", "泛化"):
+                for alias in re.split(r"[,;/]", alias_str):
+                    alias = re.sub(r"\(.*?\)", "", alias).strip()
+                    if alias and alias.lower() not in ALIAS_NOTES:
                         correct = cells[term_col] if term_col is not None and term_col < len(cells) else alias
-                        aliases[alias] = correct
+                        aliases[alias.lower()] = correct
 
     return terms, aliases
 
 
 def find_alias_occurrences(text: str, alias: str, terms: set) -> list:
-    """查找别名出现位置，排除作为合法术语子串的情况。
+    """Find where an alias occurs, excluding places where it is part of a valid term.
 
-    如果别名是某个合法术语的子串，且该位置实际是合法术语的一部分，
-    则不视为违规。
+    If the alias is a substring of a valid term and that position is actually
+    part of the valid term, it is not a violation.
     """
+    term_spans = []
+    for term in terms:
+        if alias.lower() in term.lower() and alias.lower() != term.lower():
+            term_spans.extend(m.span() for m in word_pattern(term).finditer(text))
+
     occurrences = []
-    start = 0
-    while True:
-        idx = text.find(alias, start)
-        if idx == -1:
-            break
-        # 检查此位置是否是某个合法术语的子串
-        is_substring_of_term = False
-        for term in terms:
-            if alias in term and alias != term:
-                # 检查 text[idx:idx+len(term)] 是否等于 term
-                if text[idx:idx + len(term)] == term:
-                    is_substring_of_term = True
-                    break
-                # 检查别名是否在合法术语中间
-                term_idx = term.find(alias)
-                if term_idx > 0:
-                    # 检查别名前面是否有合法术语的前缀
-                    prefix = term[:term_idx]
-                    if text[idx - term_idx:idx - term_idx + len(term)] == term:
-                        is_substring_of_term = True
-                        break
-        if not is_substring_of_term:
-            occurrences.append(idx)
-        start = idx + 1
+    for m in word_pattern(alias).finditer(text):
+        inside_term = any(s <= m.start() and m.end() <= e for s, e in term_spans)
+        if not inside_term:
+            occurrences.append(m.start())
     return occurrences
 
 
+def find_suspected(text: str, terms: set, aliases: dict) -> set:
+    known = {t.lower() for t in terms} | {a.lower() for a in aliases}
+    suspected = set()
+    for m in SUSPECT_PATTERN.finditer(text):
+        words = m.group().split()
+        while words and words[0].lower() in STOPWORDS:
+            words = words[1:]
+        if len(words) < 2:
+            continue
+        phrase = " ".join(words).lower()
+        if any(phrase in k for k in known):
+            continue
+        suspected.add(phrase)
+    return suspected
+
+
 def main():
-    ap = argparse.ArgumentParser(description="领域术语一致性校验")
-    ap.add_argument("target_md", help="目标文档路径")
-    ap.add_argument("--glossary", help="词汇表路径（可选，默认使用内置词表）")
-    ap.add_argument("--json", action="store_true", help="JSON 输出")
+    ap = argparse.ArgumentParser(description="Domain terminology consistency check")
+    ap.add_argument("target_md", help="Path to the target document")
+    ap.add_argument("--glossary", help="Path to the glossary (optional; the built-in glossary is used by default)")
+    ap.add_argument("--json", action="store_true", help="JSON output")
     args = ap.parse_args()
 
     try:
@@ -166,7 +192,7 @@ def main():
         terms = set(DEFAULT_TERMS)
         aliases = dict(DEFAULT_ALIASES)
 
-    terms_found = sorted(t for t in terms if t in text)
+    terms_found = sorted(t for t in terms if word_pattern(t).search(text))
 
     inconsistent = []
     for alias, correct in aliases.items():
@@ -176,14 +202,10 @@ def main():
                 "alias": alias,
                 "should_be": correct,
                 "count": len(occurrences),
-                "suggestion": f"将 '{alias}' 改为 '{correct}'",
+                "suggestion": f"Replace '{alias}' with '{correct}'",
             })
 
-    suspected = set()
-    for m in re.finditer(r"[\u4e00-\u9fff]{2,}(?:限额|额度|账[户单]|款)", text):
-        word = m.group()
-        if word not in terms and word not in aliases:
-            suspected.add(word)
+    suspected = find_suspected(text, terms, aliases)
 
     exit_code = 0
     if inconsistent:

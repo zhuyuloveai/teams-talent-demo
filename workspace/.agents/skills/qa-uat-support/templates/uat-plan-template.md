@@ -1,19 +1,19 @@
-# UAT计划
+# UAT plan
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 范围 | <业务场景> |
-| 业务用户 | <清单> |
-| 环境 | UAT |
-| 数据 | <脱敏数据> |
-| 窗口 | <时间> |
-| 退出标准 | 关键场景100%通过、P1清零 |
+| Scope | <business scenarios> |
+| Business users | <list> |
+| Environment | UAT |
+| Data | <masked data> |
+| Window | <time> |
+| Exit criteria | Key scenarios 100% passed, P1 cleared |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 场景映射 | 业务场景↔UAT用例 |
-| 问题分类 | 缺陷/变更/操作 |
+| Scenario mapping | Business scenario ↔ UAT case |
+| Issue classification | Defect / change / operation |

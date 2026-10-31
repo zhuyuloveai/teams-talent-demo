@@ -1,8 +1,8 @@
-# 集成规范
+# Integration standards
 
-- 契约先行：契约测试自动化
-- Mock先行：前后端并行
-- 异常处理：超时重试、熔断降级、幂等键
-- 安全：鉴权、签名、防重放、敏感字段加密
-- 可观测：traceId透传、脱敏日志
-- 版本兼容：接口版本管理
+- Contract first: automated contract tests
+- Mock first: frontend and backend work in parallel
+- Exception handling: timeout retry, circuit breaking and degradation, idempotency keys
+- Security: authentication, signing, replay protection, encryption of sensitive fields
+- Observability: traceId propagation, masked logs
+- Version compatibility: interface version management

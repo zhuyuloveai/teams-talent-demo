@@ -1,130 +1,130 @@
 ---
 name: ba-acceptance-criteria
-description: 把需求说明书拆分为用户故事，并为每条故事定义可测试的Given/When/Then验收标准，校验故事与需求ID的关联完整性（RTM）。在需求定稿前、验收标准编写与G1评审材料准备时使用。
+description: Split a requirement specification into user stories, define testable Given/When/Then acceptance criteria for each story, and verify that stories are fully linked to requirement IDs (RTM). Use before the requirements are finalized, when writing acceptance criteria, and when preparing G1 review materials.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | BA / 需求条线资深BA |
-| category | 岗位技能 |
+| owner | BA / Senior BA, requirements line |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# ba-acceptance-criteria 技能
+# ba-acceptance-criteria Skill
 
-## 概述
+## Overview
 
-本技能用于把需求说明书转化为**用户故事 + 可测试验收标准**，并用脚本保证**故事↔需求可追溯**。核心目标：需求定稿前，每条需求都有明确的"完成定义"。
+This Skill turns a requirement specification into **user stories + testable acceptance criteria**, and uses a script to guarantee **story↔requirement traceability**. Core goal: before the requirements are finalized, every requirement has a clear "definition of done".
 
-## 工作流
+## Workflow
 
-### Step 1: 读取需求说明书
+### Step 1: Read the requirement specification
 
-读取需求说明书，提取全部功能需求编号（REQ-xxx）与验收相关的业务规则。输出：需求清单（REQ编号、功能描述、优先级）。
+Read the requirement specification and extract every functional requirement ID (REQ-xxx) and the business rules relevant to acceptance. Output: requirement list (REQ ID, functional description, priority).
 
-### Step 2: 按用户角色拆分用户故事
+### Step 2: Split user stories by user role
 
-按用户角色（个人客户/客服/运营等）把每个功能需求拆成用户故事。原则：
+Split each functional requirement into user stories by user role (retail customer / customer service / operations, etc.). Principles:
 
-- 一个故事只表达一个用户可感知的价值
-- 故事必须能映射到至少一个REQ编号
-- 同一REQ下多个故事时，故事间不重叠
+- One story expresses exactly one value the user can perceive
+- Every story must map to at least one REQ ID
+- When one REQ has several stories, the stories must not overlap
 
-模板见 `templates/user-story-template.md`。
+See `templates/user-story-template.md` for the template.
 
-### Step 3: 编写Given/When/Then验收标准
+### Step 3: Write Given/When/Then acceptance criteria
 
-每条故事编写可测试的验收标准，使用可观察动词（展示/返回/允许/拒绝/提示/记录），禁止"大概/等等/尽快/尽可能"等模糊词。
+Write testable acceptance criteria for each story. Use observable verbs (display / return / allow / reject / prompt / record). Vague words such as "roughly / etc. / as soon as possible / as far as possible" are forbidden.
 
-模板见 `templates/acceptance-criteria-template.md`。
+See `templates/acceptance-criteria-template.md` for the template.
 
-### Step 4: 标注优先级
+### Step 4: Assign priority
 
-每条故事标注优先级：必须 / 应该 / 可选，与需求说明书中的优先级保持一致。
+Assign each story a priority: Must / Should / Could, consistent with the priority in the requirement specification.
 
-### Step 5: 运行RTM校验
+### Step 5: Run the RTM check
 
-运行 `scripts/rtm_check.py <需求说明书.md> <用户故事.md>`：
+Run `scripts/rtm_check.py <requirement-spec.md> <user-stories.md>`:
 
-- 校验每条故事是否关联有效REQ编号
-- 校验需求是否全部被故事覆盖（孤儿需求检测）
-- 校验每条故事是否包含Given/When/Then结构
+- Checks that every story is linked to a valid REQ ID
+- Checks that every requirement is covered by a story (orphan requirement detection)
+- Checks that every story contains a Given/When/Then structure
 
-退出码：0=通过；1=有警告（故事缺验收结构）；2=失败（存在未关联或孤儿需求）；3=参数错误。
+Exit codes: 0 = pass; 1 = warning (a story lacks acceptance structure); 2 = fail (unlinked stories or orphan requirements); 3 = argument error.
 
-### Step 6: 输出评审版本
+### Step 6: Produce the review version
 
-生成待G1评审的用户故事与验收标准包：
+Produce the user story and acceptance criteria package for the G1 review:
 
-- 用户故事清单（含优先级与REQ关联）
-- 验收标准（Given/When/Then）
-- RTM校验报告（rtm_check.py输出）
+- User story list (with priority and REQ links)
+- Acceptance criteria (Given/When/Then)
+- RTM check report (rtm_check.py output)
 
 
-## 档位切换规则
+## Depth level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 故事拆分探索、思路对齐、Demo 走查 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，需求定稿前与G1评审材料准备 | 需求评审会 + BA负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Exploring story splits, aligning ideas, demo walkthroughs | No review needed |
+| L2 Standard (default) | Default level for bank production; before requirements are finalized and when preparing G1 review materials | Requirement review meeting + BA lead sign-off |
+| L3 Implementation | Fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB/compliance review + all depth gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、生产数据变更时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces or production data changes, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 每条验收标准标注测试数据准备（Given的数据可构造，含数据来源与构造脚本）
-- 覆盖边界值（min/min-1/max/max+1）与异常路径（接口异常/超时/并发/幂等）
-- 验收标准与RTM、测试用例双向可追溯（AC↔US↔REQ↔TC 四向追溯矩阵）
-- 资金类操作须含幂等性与冲正场景验收标准
-- 监管类需求须含合规边界验收标准（如限额上限、报送时效）
+- Each acceptance criterion states its test data preparation (the Given data can be constructed, with data source and construction script)
+- Cover boundary values (min/min-1/max/max+1) and exception paths (interface error / timeout / concurrency / idempotency)
+- Acceptance criteria are traceable both ways with the RTM and test cases (AC↔US↔REQ↔TC four-way traceability matrix)
+- Fund operations must have acceptance criteria for idempotency and reversal scenarios
+- Regulatory requirements must have compliance boundary acceptance criteria (for example limit caps, reporting deadlines)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 每条Given可构造数据（含边界值与数据来源）
-- [ ] 异常路径有独立验收标准（接口异常/超时/并发/幂等）
-- [ ] 验收标准↔需求↔用例可追溯（四向追溯矩阵完整）
-- [ ] 资金类操作含幂等性与冲正场景验收
-- [ ] 监管类需求含合规边界验收
-- [ ] rtm_check.py 退出码 0（无未关联/无孤儿）
+- [ ] Every Given has constructible data (with boundary values and data source)
+- [ ] Exception paths have their own acceptance criteria (interface error / timeout / concurrency / idempotency)
+- [ ] Acceptance criteria ↔ requirements ↔ test cases are traceable (four-way traceability matrix complete)
+- [ ] Fund operations include idempotency and reversal acceptance
+- [ ] Regulatory requirements include compliance boundary acceptance
+- [ ] rtm_check.py exit code 0 (no unlinked stories, no orphans)
 
-> 主模板含【L3必填】深度字段：`templates/acceptance-criteria-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/acceptance-criteria-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/user-story-template.md` | 用户故事标准模板 |
-| `templates/acceptance-criteria-template.md` | 验收标准（Given/When/Then）模板 |
+| `templates/user-story-template.md` | Standard user story template |
+| `templates/acceptance-criteria-template.md` | Acceptance criteria (Given/When/Then) template |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/rtm_check.py` | 校验故事↔需求关联、孤儿需求、验收结构缺失 | 0/1/2/3 |
+| `scripts/rtm_check.py` | Checks story↔requirement links, orphan requirements and missing acceptance structure | 0/1/2/3 |
 
-### 脚本使用示例
+### Script usage examples
 
 ```bash
-# 基本校验（人类可读）
-python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用户故事.md
+# Basic check (human readable)
+python skills/ba-acceptance-criteria/scripts/rtm_check.py requirement-spec.md user-stories.md
 
-# JSON 输出（供 Agent 消费）
-python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用户故事.md --json
+# JSON output (for the Agent)
+python skills/ba-acceptance-criteria/scripts/rtm_check.py requirement-spec.md user-stories.md --json
 ```
 
-输出 JSON：
+Output JSON:
 ```json
 {
   "total_stories": 5,
@@ -133,7 +133,7 @@ python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用
     {
       "story_id": "US-005",
       "found_reqs": ["REQ-999"],
-      "reason": "未关联到需求文档中的有效REQ编号"
+      "reason": "Not linked to a valid REQ ID in the requirement document"
     }
   ],
   "orphan_stories": ["REQ-003"],
@@ -144,37 +144,37 @@ python skills/ba-acceptance-criteria/scripts/rtm_check.py 需求说明书.md 用
 }
 ```
 
-## 参考资料
+## References
 
-| 资料 | 用途 | 何时读取 |
+| Reference | Purpose | When to read |
 |------|------|---------|
-| `references/user-story-writing-guide.md` | 用户故事编写规范与拆分原则 | 编写故事前 |
-| `references/acceptance-criteria-examples.md` | 验收标准示例库（银行转账场景） | 编写验收标准时 |
+| `references/user-story-writing-guide.md` | User story writing rules and splitting principles | Before writing stories |
+| `references/acceptance-criteria-examples.md` | Acceptance criteria example library (bank transfer scenarios) | When writing acceptance criteria |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 每条故事关联有效REQ编号（rtm_check.py无未关联项）
-- [ ] 需求覆盖率100%（无孤儿需求）
-- [ ] 每条故事含Given/When/Then三要素
-- [ ] 验收标准使用可观察动词，无模糊词
-- [ ] 优先级与需求说明书一致
+- [ ] Every story is linked to a valid REQ ID (rtm_check.py reports no unlinked items)
+- [ ] Requirement coverage is 100% (no orphan requirements)
+- [ ] Every story contains all three elements: Given/When/Then
+- [ ] Acceptance criteria use observable verbs and no vague words
+- [ ] Priorities match the requirement specification
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 验收标准与需求脱节 | 故事引用的REQ不存在或需求未被覆盖 | rtm_check.py拦截 | 修正故事关联后重试 |
-| 标准不可测试 | 使用"大概/尽快"等模糊词 | 可观察动词模板+词表扫描 | 改写为可验证表述后重试 |
-| 故事拆分重叠 | 同一REQ下故事边界不清 | 拆分原则检查（一个故事一个价值） | 重新拆分后重试 |
-| 异常路径遗漏 | 只写正常流程，缺接口异常/超时/并发场景 | L3要求异常路径独立验收标准 | 补充异常路径AC后重试 |
-| 边界值未覆盖 | 限额类需求未写min/max及±1用例 | L3要求边界值全覆盖 | 补充边界值AC后重试 |
-| 幂等性缺失 | 资金类操作未定义重复提交的预期行为 | 资金类操作须含幂等性验收 | 补充幂等性AC后重试 |
+| Acceptance criteria disconnected from requirements | A story references a REQ that does not exist, or a requirement is not covered | Caught by rtm_check.py | Fix the story links and retry |
+| Criteria not testable | Vague words such as "roughly / as soon as possible" | Observable-verb template + word list scan | Rewrite as verifiable statements and retry |
+| Overlapping story splits | Unclear boundaries between stories under the same REQ | Splitting principle check (one story, one value) | Re-split and retry |
+| Missing exception paths | Only the happy path is written; no interface error / timeout / concurrency scenarios | L3 requires separate acceptance criteria for exception paths | Add exception-path ACs and retry |
+| Boundary values not covered | Limit requirements lack min/max and ±1 cases | L3 requires full boundary value coverage | Add boundary-value ACs and retry |
+| Missing idempotency | A fund operation does not define the expected behavior for duplicate submissions | Fund operations must include idempotency acceptance | Add idempotency ACs and retry |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式需求评审 | 全部【L2必填】章节（用户故事/验收标准/优先级/REQ关联/RTM校验） | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级验收数据（含边界值）、异常路径验收标准、验收↔需求↔用例双向追溯矩阵 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Entering formal requirement review | All [L2 required] sections (user stories / acceptance criteria / priority / REQ links / RTM check) | Review rejected; downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level acceptance data (with boundary values), exception-path acceptance criteria, two-way acceptance↔requirement↔test case traceability matrix | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级验收数据与异常路径验收标准须由 BA 与业务负责人共同确认；Agent 起草，业务确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: L3 field-level acceptance data and exception-path acceptance criteria must be confirmed jointly by the BA and the business owner. The Agent drafts; the business confirms before finalization. Any downgrade requires PM + compliance approval, with the reason recorded.

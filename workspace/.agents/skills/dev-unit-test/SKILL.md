@@ -1,114 +1,114 @@
 ---
 name: dev-unit-test
-description: 生成并运行高质量单元测试，覆盖正常/边界/异常/回滚路径，量化覆盖率。编码完成、提交MR前使用。
+description: "Generate and run high-quality unit tests that cover normal / boundary / exception / rollback paths, and quantify coverage. Use after coding is done and before submitting the MR."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 开发条线技术负责人 |
-| category | 岗位技能 |
+| owner | Dev / Development line tech lead |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-unit-test 技能
+# dev-unit-test skill
 
-## 概述
+## Overview
 
-本技能用于生成并运行高质量单元测试，保证关键逻辑与边界/异常路径被覆盖。
+This skill generates and runs high-quality unit tests so that key logic and boundary / exception paths are covered.
 
-## 工作流
+## Workflow
 
-1. 识别关键逻辑与分支
-2. 设计用例（正常/边界/异常/回滚路径）
-3. 生成单测代码
-4. 运行并修复失败
-5. 生成覆盖率报告（coverage_report.py）
+1. Identify key logic and branches
+2. Design cases (normal / boundary / exception / rollback paths)
+3. Generate the unit test code
+4. Run the tests and fix failures
+5. Produce the coverage report (coverage_report.py)
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 用例设计讨论、覆盖率初判、测试策略对齐 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，编码完成提交 MR 前的单测生成与覆盖率校验 | 评审 + 开发负责人签字 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Case design discussion, initial coverage assessment, test strategy alignment | No review needed |
+| L2 Standard (default) | Default level for bank production; unit test generation and coverage check after coding and before MR submission | Review + development owner sign-off |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金划拨逻辑、账户余额变更、限额参数、监管报送字段、跨服务事务、生产数据回写时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the code involves fund transfer logic, account balance changes, limit parameters, regulatory reporting fields, cross-service transactions or write-back of production data, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3单测覆盖关键路径100%并给出分支/行覆盖双指标
-- 用例覆盖正常/边界/异常/回滚四类
-- 字段级用例：金额（min/max/±1/负数/零/溢出）、卡号（格式/校验位/空/超长）、客户号（格式/有效性）逐字段构造边界用例
-- 异常路径覆盖：超时、重试、熔断、降级、连接失败、数据不存在、并发冲突逐路径有用例
-- 事务与回滚用例：事务提交成功、事务回滚、补偿路径、幂等性（重复提交返回首结果）逐场景有用例
-- 并发安全用例：共享资源（余额/限额/库存）并发更新、死锁检测、锁粒度验证
-- Mock 规范：外部依赖（DB/第三方/消息）全部 Mock，单测不依赖真实环境，断言充分（不只 not None）
+- At L3, unit tests cover 100% of key paths and report both branch and line coverage
+- Cases cover four categories: normal / boundary / exception / rollback
+- Field-level cases: build boundary cases field by field for amount (min/max/±1/negative/zero/overflow), card number (format / check digit / empty / too long) and customer ID (format / validity)
+- Exception path coverage: each of timeout, retry, circuit breaking, degradation, connection failure, data not found and concurrency conflict has a case
+- Transaction and rollback cases: each of transaction commit, transaction rollback, compensation path and idempotency (duplicate submission returns the first result) has a case
+- Concurrency safety cases: concurrent updates of shared resources (balance / limit / inventory), deadlock detection, lock granularity verification
+- Mock standards: mock every external dependency (DB / third party / messaging); unit tests never depend on a real environment; assertions are meaningful (not just not None)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 行覆盖≥80%（coverage_report.py 退出码 0）
-- [ ] 关键路径100%（资金/权限/限额/监管字段全覆盖）
-- [ ] 四类用例齐全（正常/边界/异常/回滚）
-- [ ] 分支覆盖≥70%（不仅行覆盖，关键分支有断言）
-- [ ] 字段级边界用例完整（金额/卡号/客户号 min/max/±1）
-- [ ] 异常路径用例完整（超时/重试/熔断/降级/并发冲突）
-- [ ] 无禁用断言绕过（无 @Ignore/skip/注释掉的断言）
+- [ ] Line coverage ≥80% (coverage_report.py exit code 0)
+- [ ] Key paths 100% (funds / permissions / limits / regulatory fields fully covered)
+- [ ] All four case categories present (normal / boundary / exception / rollback)
+- [ ] Branch coverage ≥70% (not only line coverage; key branches have assertions)
+- [ ] Field-level boundary cases complete (amount / card number / customer ID min/max/±1)
+- [ ] Exception path cases complete (timeout / retry / circuit breaking / degradation / concurrency conflict)
+- [ ] No disabled-assertion bypasses (no @Ignore / skip / commented-out assertions)
 
-> 主模板含【L3必填】深度字段：`templates/unit-test-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/unit-test-template.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/unit-test-template.md` | 单测结构与断言模板 |
-| `templates/test-naming-convention.md` | 测试命名规范 |
+| `templates/unit-test-template.md` | Unit test structure and assertion template |
+| `templates/test-naming-convention.md` | Test naming convention |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/coverage_report.py` | 解析覆盖率报告并对比阈值 | 0/2/3 |
+| `scripts/coverage_report.py` | Parse the coverage report and compare with the threshold | 0/2/3 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/coverage-thresholds.md` | 覆盖率阈值与关键路径定义 |
+| `references/coverage-thresholds.md` | Coverage thresholds and key path definition |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 行覆盖≥80%
-- [ ] 关键分支覆盖
-- [ ] 无禁用的断言绕过
+- [ ] Line coverage ≥80%
+- [ ] Key branches covered
+- [ ] No disabled-assertion bypasses
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 覆盖虚高（只测happy path） | 行覆盖高但异常路径未覆盖 | 强制分支覆盖 + L3 四类用例 | 补异常路径用例后重测覆盖 |
-| 测试脆弱 | 改动实现就挂，维护成本高 | 固定断言模板 + 行为驱动测试 | 重写为行为驱动后重跑 |
-| 关键路径漏测 | 资金/权限/限额逻辑无单测 | L3 关键路径 100% + 字段级用例 | 补关键路径用例后重测 |
-| 边界值缺失 | 金额 min/max/±1/负数未测 | L3 字段级边界用例 | 补边界用例后重跑 |
-| 断言过弱 | 只 assert not None，不验证值 | 断言规范 + test_smell_detector | 改强断言后重跑 |
-| Mock 不规范 | 单测依赖真实 DB/第三方 | 全 Mock + Mock 规范 | 改 Mock 后重跑 |
-| 并发路径未测 | 余额/限额并发更新无单测 | L3 并发安全用例 | 补并发用例后重跑 |
+| Inflated coverage (happy path only) | High line coverage but exception paths not covered | Enforce branch coverage + L3 four case categories | Add exception path cases and measure coverage again |
+| Brittle tests | Tests break whenever the implementation changes; high maintenance cost | Fixed assertion templates + behavior-driven tests | Rewrite as behavior-driven tests and rerun |
+| Key paths not tested | Fund / permission / limit logic has no unit tests | L3 key paths 100% + field-level cases | Add key path cases and test again |
+| Missing boundary values | Amount min/max/±1/negative not tested | L3 field-level boundary cases | Add boundary cases and rerun |
+| Weak assertions | Only assert not None, values not verified | Assertion standards + test_smell_detector | Strengthen assertions and rerun |
+| Non-standard mocks | Unit tests depend on a real DB / third party | Mock everything + mock standards | Switch to mocks and rerun |
+| Concurrency paths not tested | No unit tests for concurrent balance / limit updates | L3 concurrency safety cases | Add concurrency cases and rerun |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入 MR 提交前单测生成 | 四类用例、覆盖率报告（≥80%）、关键分支覆盖 | 自检未通过，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级边界用例、异常路径用例、并发安全用例、事务与回滚用例、Mock 规范 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Unit test generation before MR submission starts | Four case categories, coverage report (≥80%), key branch coverage | Self-check failed, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level boundary cases, exception path cases, concurrency safety cases, transaction and rollback cases, mock standards | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的关键路径清单与字段级边界用例须由开发负责人与测试架构师共同确认；Agent 起草，开发负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the key path list and field-level boundary cases must be confirmed jointly by the development owner and the test architect. The Agent drafts; the development owner confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

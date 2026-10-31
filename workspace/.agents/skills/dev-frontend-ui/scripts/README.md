@@ -1,63 +1,63 @@
-# scripts/ — 前端UI技能脚本
+# scripts/ — Frontend UI skill scripts
 
-本目录包含 `dev-frontend-ui` 技能的确定性校验脚本。所有脚本遵循统一接口规范：CLI 调用、JSON 输出、退出码表示结果。
+This directory contains the deterministic check scripts for the `dev-frontend-ui` skill. All scripts follow one interface convention: CLI invocation, JSON output, and the exit code reports the result.
 
-## 脚本清单
+## Script list
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `ui_lint.py` | 设计还原度检查：扫描样式文件中的 raw color 与设计令牌 | 0/1 |
-| `a11y_check.py` | 可访问性扫描：检查 img 无 alt、按钮无 label 等常见 A11y 问题 | 0/1 |
-| `bundle_analyze.py` | 包体积分析：汇总目录下文件体积，标记超大文件 | 0 |
+| `ui_lint.py` | Design fidelity check: scan style files for raw colors and design tokens | 0/1 |
+| `a11y_check.py` | Accessibility scan: check common A11y issues such as img without alt and button without label | 0/1 |
+| `bundle_analyze.py` | Bundle size analysis: total the file sizes in a directory and mark oversized files | 0 |
 
 ---
 
 ## ui_lint.py
 
-### 用途
-设计还原度检查：扫描样式文件（.css/.scss/.ts/.tsx/.vue）中的 raw hex 颜色（如 `#FF0000`），若文件同时未使用设计令牌（`--color-primary`），则标记为违规。确保颜色统一走设计令牌。
+### Purpose
+Design fidelity check: scans style files (.css/.scss/.ts/.tsx/.vue) for raw hex colors (such as `#FF0000`). If the file also does not use the design token (`--color-primary`), it is marked as a violation. Ensures colors always go through design tokens.
 
-### 接口
+### Interface
 ```
 python ui_lint.py <source_dir> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `source_dir` | 源码目录路径，递归扫描 `.css`/`.scss`/`.ts`/`.tsx`/`.vue` 文件 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `source_dir` | Source directory; `.css`/`.scss`/`.ts`/`.tsx`/`.vue` files are scanned recursively |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 无 raw color 违规（含空目录场景） |
-| 1 | 存在 raw color 违规（文件含 hex 颜色但未用设计令牌） |
+| 0 | No raw color violations (including an empty directory) |
+| 1 | Raw color violations found (file contains hex colors but no design token) |
 
-### 检查项
-1. **hex 颜色检测**：正则 `#[0-9a-fA-F]{6}` 匹配 6 位 hex 颜色。
-2. **设计令牌检测**：检查文件是否含 `--color-primary`。
-3. **违规判定**：文件含 hex 颜色且不含 `--color-primary` 时记为违规。
-4. **raw_colors 截断**：每文件最多输出前 5 个 hex 颜色。
-5. **issues 截断**：最多输出 20 条违规。
-6. **空目录兼容**：目录不存在或无样式文件时输出空 issues（exit=0）。
+### Checks
+1. **Hex color detection**: the regex `#[0-9a-fA-F]{6}` matches 6-digit hex colors.
+2. **Design token detection**: check whether the file contains `--color-primary`.
+3. **Violation decision**: a file with hex colors and without `--color-primary` is a violation.
+4. **raw_colors truncation**: at most the first 5 hex colors per file are output.
+5. **issues truncation**: at most 20 violations are output.
+6. **Empty directory handling**: when the directory does not exist or has no style files, output empty issues (exit=0).
 
-### 设计令牌识别
-| 令牌前缀 | 用途 |
+### Design token recognition
+| Token prefix | Purpose |
 |---------|------|
-| `--color-primary` | 主色 |
-| `--spacing-` | 间距 |
-| `--font-` | 字体 |
+| `--color-primary` | Primary color |
+| `--spacing-` | Spacing |
+| `--font-` | Font |
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```css
 /* style.css */
 .a { color: #FF0000; }
 .b { background: #00FF00; }
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "issues": [
@@ -67,131 +67,131 @@ python ui_lint.py <source_dir> [--json]
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 设计还原度检查
+# Design fidelity check
 python skills/dev-frontend-ui/scripts/ui_lint.py src/
 
-# raw color 场景（含 #FF0000 但无 --color-primary）
+# Raw color case (contains #FF0000 but no --color-primary)
 python skills/dev-frontend-ui/scripts/ui_lint.py raw_color_src/
 
-# CI 门禁（raw color 为零才放行）
-python skills/dev-frontend-ui/scripts/ui_lint.py src/ && echo "还原度检查通过" || echo "存在 raw color 违规"
+# CI gate (passes only with zero raw colors)
+python skills/dev-frontend-ui/scripts/ui_lint.py src/ && echo "Design fidelity check passed" || echo "Raw color violations found"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-frontend-ui/ui_lint.py` 条目（3 用例）：
-- `raw_color`：`.a { color: #FF0000; }` → exit=1，输出含 `issues`
-- `clean_styles`：`.a { color: var(--color-primary); }` → exit=0，输出含 `issues`
-- `missing_dir`：目录不存在 → exit=0，输出含 `issues`
+### Unit tests
+The `dev-frontend-ui/ui_lint.py` entry in `tests/test_scripts.py` (3 cases):
+- `raw_color`: `.a { color: #FF0000; }` → exit=1, output contains `issues`
+- `clean_styles`: `.a { color: var(--color-primary); }` → exit=0, output contains `issues`
+- `missing_dir`: directory does not exist → exit=0, output contains `issues`
 
 ---
 
 ## a11y_check.py
 
-### 用途
-可访问性扫描：检查前端模板文件（.tsx/.vue/.html）中的常见 A11y 问题，包括 img 无 alt、可点击元素（button/a）无可访问名称。
+### Purpose
+Accessibility scan: checks frontend template files (.tsx/.vue/.html) for common A11y issues, including img without alt and clickable elements (button/a) without an accessible name.
 
-### 接口
+### Interface
 ```
 python a11y_check.py <source_dir> [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `source_dir` | 源码目录路径，递归扫描 `.tsx`/`.vue`/`.html` 文件 |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `source_dir` | Source directory; `.tsx`/`.vue`/`.html` files are scanned recursively |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 无 A11y 问题（含空目录场景） |
-| 1 | 存在 A11y 问题（img 无 alt 或可点击元素无 label） |
+| 0 | No A11y issues (including an empty directory) |
+| 1 | A11y issues found (img without alt or clickable element without label) |
 
-### 检查项
-1. **img 无 alt 检测**：`<img>` 标签不含 `alt=` 属性。
-2. **可点击元素无 label 检测**：`<button>` 或 `<a>` 标签不含 `aria-label` 且紧跟子元素（无文本内容）。
-3. **issues 截断**：最多输出前 50 条问题。
-4. **空目录兼容**：目录不存在或无模板文件时输出空 issues（exit=0）。
+### Checks
+1. **img without alt**: an `<img>` tag has no `alt=` attribute.
+2. **Clickable element without label**: a `<button>` or `<a>` tag has no `aria-label` and is directly followed by a child element (no text content).
+3. **issues truncation**: at most the first 50 issues are output.
+4. **Empty directory handling**: when the directory does not exist or has no template files, output empty issues (exit=0).
 
-### A11y 规则表
-| 规则 | 严重级别 | 说明 |
+### A11y rule table
+| Rule | Severity | Description |
 |------|---------|------|
-| img 缺少 alt 属性 | 告警 | 图片须有 alt 文本（可空 alt 表示装饰图） |
-| 可点击元素缺少可访问名称 | 告警 | button/a 须有 aria-label 或文本内容 |
+| img is missing the alt attribute | Major | Images need alt text (an empty alt marks a decorative image) |
+| Clickable element has no accessible name | Major | button/a needs an aria-label or text content |
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```html
 <!-- page.html -->
 <img src='avatar.png'>
 <button><icon /></button>
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "issues": [
-    {"file": "src/page.html", "issue": "img缺少alt属性"},
-    {"file": "src/page.html", "issue": "可点击元素缺少可访问名称"}
+    {"file": "src/page.html", "issue": "img is missing the alt attribute"},
+    {"file": "src/page.html", "issue": "Clickable element has no accessible name"}
   ],
   "count": 2
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# A11y 扫描
+# A11y scan
 python skills/dev-frontend-ui/scripts/a11y_check.py src/
 
-# img 无 alt 场景
+# img without alt case
 python skills/dev-frontend-ui/scripts/a11y_check.py bad_a11y_src/
 
-# CI 门禁（A11y 问题为零才放行）
-python skills/dev-frontend-ui/scripts/a11y_check.py src/ && echo "A11y 检查通过" || echo "存在 A11y 问题"
+# CI gate (passes only with zero A11y issues)
+python skills/dev-frontend-ui/scripts/a11y_check.py src/ && echo "A11y check passed" || echo "A11y issues found"
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-frontend-ui/a11y_check.py` 条目（3 用例）：
-- `img_no_alt`：`<img src='a.png'>` → exit=1，输出含 `issues`
-- `clean_page`：`<img src='a.png' alt='ok'>` → exit=0，输出含 `count`
-- `missing_dir`：目录不存在 → exit=0，输出含 `count`
+### Unit tests
+The `dev-frontend-ui/a11y_check.py` entry in `tests/test_scripts.py` (3 cases):
+- `img_no_alt`: `<img src='a.png'>` → exit=1, output contains `issues`
+- `clean_page`: `<img src='a.png' alt='ok'>` → exit=0, output contains `count`
+- `missing_dir`: directory does not exist → exit=0, output contains `count`
 
 ---
 
 ## bundle_analyze.py
 
-### 用途
-包体积分析：汇总目录下所有文件体积，标记超过阈值的超大文件。用于前端构建产物（dist）的体积门禁。
+### Purpose
+Bundle size analysis: totals the size of all files in a directory and marks oversized files above the threshold. Used as the size gate for frontend build output (dist).
 
-### 接口
+### Interface
 ```
 python bundle_analyze.py <dist_dir> [--limit_kb <KB>] [--json]
 ```
 
-### 参数
-| 参数 | 说明 |
+### Arguments
+| Argument | Description |
 |------|------|
-| `dist_dir` | 构建产物目录路径，递归扫描所有文件 |
-| `--limit_kb` | 大文件阈值（KB），默认 300；超过阈值的文件进入 large_files |
-| `--json` | 输出 JSON 格式（默认即为 JSON） |
+| `dist_dir` | Build output directory; all files are scanned recursively |
+| `--limit_kb` | Large file threshold (KB), default 300; files above it go into large_files |
+| `--json` | Output JSON (JSON is already the default) |
 
-### 退出码
-| 码 | 含义 |
+### Exit codes
+| Code | Meaning |
 |----|------|
-| 0 | 分析完成（无论是否检出大文件） |
+| 0 | Analysis complete (whether or not large files were found) |
 
-> 本脚本为**分析工具**，不阻断流程；退出码恒为 0，体积门禁决策由 CI 配置判断 large_files 是否非空。
+> This script is an **analysis tool** and does not block the flow; the exit code is always 0, and the CI configuration decides the size gate by checking whether large_files is empty.
 
-### 检查项
-1. **文件体积汇总**：递归统计 dist_dir 下所有文件大小，累加为 total_kb。
-2. **大文件标记**：单文件体积超过 `--limit_kb`（默认 300KB）时进入 large_files。
-3. **large_files 排序**：按文件路径输出，每条含 file 与 kb（保留 1 位小数）。
-4. **空目录兼容**：目录不存在时输出 total_kb=0 与空 large_files（exit=0）。
+### Checks
+1. **File size total**: recursively sum the size of all files under dist_dir into total_kb.
+2. **Large file marking**: a file larger than `--limit_kb` (default 300KB) goes into large_files.
+3. **large_files order**: output by file path; each entry has file and kb (1 decimal place).
+4. **Empty directory handling**: when the directory does not exist, output total_kb=0 and empty large_files (exit=0).
 
-### 输入 JSON 示例
-无需输入 JSON，直接扫描目录：
+### Input JSON example
+No input JSON; the script scans the directory directly:
 ```
 dist/
 ├── main.js       (50 KB)
@@ -199,7 +199,7 @@ dist/
 └── styles.css    (20 KB)
 ```
 
-### 输出 JSON 示例
+### Output JSON example
 ```json
 {
   "total_kb": 470.0,
@@ -209,30 +209,30 @@ dist/
 }
 ```
 
-### 调用示例
+### Usage examples
 ```bash
-# 默认阈值（300KB）分析
+# Analysis with the default threshold (300KB)
 python skills/dev-frontend-ui/scripts/bundle_analyze.py dist/
 
-# 自定义阈值（200KB）分析
+# Analysis with a custom threshold (200KB)
 python skills/dev-frontend-ui/scripts/bundle_analyze.py dist/ --limit_kb 200
 
-# CI 集成（输出供体积门禁判断）
+# CI integration (output used by the size gate)
 python skills/dev-frontend-ui/scripts/bundle_analyze.py dist/ > bundle_report.json
 ```
 
-### 单测对应
-`tests/test_scripts.py` 中 `dev-frontend-ui/bundle_analyze.py` 条目（3 用例）：
-- `small_bundle`：小文件 `x=1` → exit=0，输出含 `total_kb`
-- `large_bundle`：400000 字符大文件 → exit=0，输出含 `large_files`
-- `missing_dir`：目录不存在 → exit=0，输出含 `total_kb`
+### Unit tests
+The `dev-frontend-ui/bundle_analyze.py` entry in `tests/test_scripts.py` (3 cases):
+- `small_bundle`: small file `x=1` → exit=0, output contains `total_kb`
+- `large_bundle`: large file of 400000 characters → exit=0, output contains `large_files`
+- `missing_dir`: directory does not exist → exit=0, output contains `total_kb`
 
 ---
 
-## 能力边界
+## Limits
 
-- 上述脚本为**轻量静态检查**，不替代专业前端工具链（Lighthouse/axe-core/Webpack Bundle Analyzer）。
-- `ui_lint.py` 仅检测 **raw hex 颜色与设计令牌共存**，不校验尺寸/字体/间距；完整还原度检查须依赖 Figma Inspect 对齐工具。
-- `a11y_check.py` 仅检测 **img alt 与 button/a label** 两类问题；完整 A11y 审查须依赖 axe-core 或 Lighthouse。
-- `bundle_analyze.py` 仅统计**文件体积**，不分析模块依赖树与 tree-shaking 效果；深度分析须依赖 Webpack Bundle Analyzer。
-- 资金类前端页面须在 L3 档位下额外覆盖字段级校验、表单安全、状态机防重复、异常路径 UI。
+- These scripts are **lightweight static checks** and do not replace professional frontend tooling (Lighthouse / axe-core / Webpack Bundle Analyzer).
+- `ui_lint.py` only detects **raw hex colors coexisting with design tokens** and does not check sizes / fonts / spacing; a full design fidelity check needs an alignment tool such as Figma Inspect.
+- `a11y_check.py` only detects two kinds of issues, **img alt and button/a label**; a full A11y audit needs axe-core or Lighthouse.
+- `bundle_analyze.py` only measures **file size** and does not analyze the module dependency tree or tree-shaking; deep analysis needs Webpack Bundle Analyzer.
+- At L3, fund-related frontend pages must additionally cover field-level validation, form security, state machine duplicate prevention and exception path UI.

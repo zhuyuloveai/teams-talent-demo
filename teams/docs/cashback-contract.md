@@ -1,13 +1,13 @@
-# 白金卡消费额外返现
+# Platinum card extra spending cashback
 
-已确认范围：白金卡客户，3 个月消费期间，额外返现 0.5%。
+Confirmed scope: platinum card customers, a 3-month spending period, an extra 0.5% cashback.
 
-本地流程参数用于验证产品交互，不是已批准的正式活动政策：
-- 起止时间：2026-11-01 00:00:00 +08:00（含）至 2027-02-01 00:00:00 +08:00（不含）。
-- 金额以整数分计算；额外返现为消费金额的 1/200，半分向上舍入至整分。
-- 白金卡消费 120.00 元，额外返现 0.60 元；原欠款 2550.75 元，结果欠款 2670.15 元。
-- 普通卡与期间外消费不适用；无效或非正整数分金额拒绝处理。
-- 此范围没有报名步骤；未定义消费类别、门槛、封顶或退款规则，不能据此推断正式政策不设限制。
+The local flow parameters are for verifying product interaction; they are not approved formal campaign policy:
+- Start and end: 2026-11-01 00:00:00 +08:00 (inclusive) to 2027-02-01 00:00:00 +08:00 (exclusive).
+- Amounts are calculated in whole cents; the extra cashback is 1/200 of the purchase amount, rounding half a cent up to a whole cent.
+- A CNY 120.00 platinum card purchase earns an extra CNY 0.60 cashback; the original balance owed of CNY 2550.75 becomes CNY 2670.15.
+- Standard cards and purchases outside the period do not qualify; invalid amounts or amounts that are not a positive whole number of cents are rejected.
+- This scope has no enrollment step; spending categories, thresholds, caps and refund rules are not defined, and you cannot infer from this that the formal policy has no limits.
 
-当前可执行规则位于 teams/src/cashback.ts，流程状态位于 teams/src/domain.ts。
-静态检查记录为 fixture，用于完整交付工作流；不代表真实 iCode 会话、Java 服务测试或模型评估已运行。
+The current executable rule is in teams/src/cashback.ts, and the flow state is in teams/src/domain.ts.
+Static check records are fixtures for the complete delivery workflow; they do not mean a real iCode session, Java service tests or a model evaluation has run.

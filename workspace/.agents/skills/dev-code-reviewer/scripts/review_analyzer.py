@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""评审辅助：按文件统计变更行数并标记热点（大文件/高风险文件）。"""
+"""Review helper: count changed lines per file and mark hotspots (large files / high-risk files)."""
 import argparse, json, sys
 from pathlib import Path
 
@@ -7,7 +7,7 @@ RISK_SUFFIX = {".java": 1, ".py": 1, ".js": 1, ".sql": 2}
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("code_root", help="变更代码目录")
+    ap.add_argument("code_root", help="Directory of changed code")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     root = Path(args.code_root)

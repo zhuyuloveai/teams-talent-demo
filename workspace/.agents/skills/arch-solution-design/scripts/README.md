@@ -1,9 +1,9 @@
-# scripts 能力边界
+# scripts capability boundary
 
 ## design_coverage.py
 
-校验需求设计覆盖矩阵。
+Checks the requirement-to-design coverage matrix.
 
-- 输入：需求说明书 + 方案设计文档
-- 输出：覆盖率统计（未覆盖需求清单）
-- 退出码：0=100%覆盖，1=存在未覆盖需求
+- Input: requirement specification + solution design document
+- Output: coverage statistics (list of uncovered requirements)
+- Exit codes: 0 = 100% covered, 2 = uncovered requirements exist, 3 = argument error

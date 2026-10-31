@@ -1,7 +1,7 @@
-# SIT指南
+# SIT guide
 
-- 范围：接口、数据流、端到端业务场景
-- 必测：正常/边界/异常/容错/幂等
-- 环境：健康检查、数据脚本化
-- 缺陷归属：契约测试+日志定位
-- 退出：关键接口100%、P1/P2清零、数据一致
+- Scope: interfaces, data flows, end-to-end business scenarios
+- Must test: normal / boundary / exception / fault tolerance / idempotency
+- Environment: health checks, scripted data
+- Defect ownership: contract tests + log diagnosis
+- Exit: key interfaces 100%, P1/P2 cleared, data consistent

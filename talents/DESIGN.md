@@ -1,202 +1,202 @@
-# iCode Talents 演示 Demo 设计（v2）
+# iCode Talents demo design (v2)
 
-- **目的**：给客户讲清楚管理员（Teams Owner）的使用旅程：挖掘、审阅知识，以 PR 把知识和改进提交到代码仓，由开发者在代码托管平台审阅合入。
-- **形态**：独立启动的本机服务加 React + TypeScript + Ant Design 页面，外壳（侧栏、顶栏、主题）与 iCode Teams 一致。团队、成员、项目、代码仓、设计文档、项目 Skill 和共享会话实时读取自 iCode Teams（Teams 须在运行，数据变化时页面自动更新）；Talents 自己的数据是 mock，保存在本机状态文件中；远端索引写入共享数据目录供 Teams 读取，文件类知识和改进建议通过 `gh` 提交 PR（见 README）。不改动 iCode 配置，也不修改本机代码仓的工作区。
-- **页面原则**：
-  - 尽量简洁，只呈现用户需要操作或需要知道的内容，不展示系统内部规则。可能有用的细节收进“查看详情”。
-  - 不用“A · B · C”把多个短语拼在一起。需要并列多项信息时，用带标签的字段（如“输入：1 个代码仓”）。
-  - 每张卡片只保留用户做决定要用的两三项信息，其余放进详情。
+- **Purpose**: show the customer the Admin (Teams Owner) journey clearly: mine and review knowledge, submit knowledge and improvements to the repository as PRs, and let developers review and merge them on the code hosting platform.
+- **Form**: a standalone local service plus React + TypeScript + Ant Design pages, with the same shell (sidebar, top bar, theme) as iCode Teams. The team, members, projects, repositories, design documents, project Skills and shared sessions are read live from iCode Teams (Teams must be running; the page updates automatically when the data changes). Talents' own data is mock data stored in a local state file. Remote indexes are written to the shared data directory for Teams to read, and file-type knowledge and improvement suggestions are submitted as PRs through `gh` (see README). It does not change the iCode configuration or the working tree of any local repository.
+- **Page principles**:
+  - Keep it as simple as possible: show only what the user needs to act on or know, not internal system rules. Details that may help go into "View details".
+  - Do not join several short phrases as "A · B · C". When several pieces of information sit side by side, use labeled fields (such as "Input: 1 repository").
+  - Each card keeps only the two or three pieces of information the user needs to decide; the rest goes into the details.
 
-## 1. 产品形态
+## 1. Product form
 
 ```
-成员 ── 共享会话 ──▶ iCode Teams ──▶ 管理员端（Talents，本机）
-                                      │ 本机 iCode 挖掘知识、审阅
-                                      ├── 远端索引 ──▶ 共享目录 ──▶ Teams「项目知识」
-                                      └── gh PR ──▶ 代码仓 ◀── 开发者审阅、合入
+Members ── shared sessions ──▶ iCode Teams ──▶ Admin view (Talents, local)
+                                        │ local iCode mines knowledge, review
+                                        ├── remote index ──▶ shared directory ──▶ Teams "Project knowledge"
+                                        └── gh PR ──▶ repository ◀── developers review and merge
 ```
 
-- **只有管理员端**：运行在 Owner 本机，调用本机的 iCode。Teams 只向 Owner 展示 Talents 入口。
-- **管理员端**：在本机登记来源（本地代码仓、文档集），读取 Teams 中成员共享的会话，用本机 iCode 运行知识能力；审阅后把知识文件提交为 PR；轨迹洞察的优化建议逐条提交改进 PR（修改 Skill 或向 `AGENTS.md` 补充规则）。
-- **开发者**：不使用 Talents。知识和改进以 PR 的形式出现在代码托管平台，开发者审阅、合入后随代码仓生效。
-- **索引类知识**（CodeGraph、文档 RAG 检索）：通过 MCP 在线查询，不提交 PR。CodeGraph 在 Teams 绑定的本机代码仓中真实构建，索引在代码仓的 `.codegraph/`（见 README“构建代码图谱”）。
+- **Admin view only**: runs on the Owner's machine and calls the local iCode. Teams shows the Talents entry only to the Owner.
+- **Admin view**: registers sources locally (local repositories, document sets), reads the sessions members shared in Teams, and runs knowledge capabilities with the local iCode. After review it submits knowledge files as PRs; the improvement suggestions from trajectory insights are submitted one by one as improvement PRs (changing a Skill or adding rules to `AGENTS.md`).
+- **Developers**: do not use Talents. Knowledge and improvements appear as PRs on the code hosting platform; once developers review and merge them, they take effect with the repository.
+- **Index-type knowledge** (CodeGraph, Document RAG search): queried online over MCP, not submitted as PRs. CodeGraph is really built in the local repository bound in Teams, with the index in the repository's `.codegraph/` (see "Build a code graph" in the README).
 
-## 2. 角色与可见范围
+## 2. Roles and visibility
 
-- **团队**：成员和项目都来自 iCode Teams（团队“信用卡研发团队”，项目“Credit Card”和导入的“iCode Teams”）。
-- **管理员**（Teams Owner，林悦）：挖掘、审阅知识，提交 PR；只能看到本团队成员共享的会话。
-- **团队级与项目级**：来源、知识任务和产物都属于团队或某一个项目。项目级的来源是 Teams 项目的代码仓、设计文档，以及在项目中登记的本地文档；团队级的来源是在团队中登记的本地文档，例如行内规范。任务只能使用同一层级的来源，产物也归这一层级。团队知识在每个项目中都可用。
+- **Team**: members and projects all come from iCode Teams (team "Credit Card R&D Team", projects "Credit Card" and the imported "iCode Teams").
+- **Admin** (Teams Owner, Lin Yue): mines and reviews knowledge and submits PRs; sees only sessions shared by members of this team.
+- **Team level and project level**: sources, knowledge tasks and artifacts each belong to the team or to one project. Project-level sources are the Teams project's repositories and design documents, plus local documents registered in the project; team-level sources are local documents registered in the team, such as in-house standards. A task can only use sources of the same level, and its artifacts belong to that level too. Team knowledge is available in every project.
 
-## 3. 演示脚本
+## 3. Demo script
 
-1. **项目**：进入项目，在“来源”页签看代码仓、文档集，以及文档集的版本记录。
-2. **知识能力**：按四类介绍能力，打开一个能力看它的定义（engine.yaml）；演示“导入能力”。
-3. **知识任务**（项目的页签）：“已完成”中有一条“轨迹洞察”任务；当前任务分定时任务和一次性任务，可以暂停、取消和删除。
-4. **产物管理**（项目的页签）：
-   - 打开“信用卡营销返现业务知识”的新版本，与上次版本对比后提交 PR。
-   - 打开轨迹洞察（卡片提示“3 条优化建议待提交”），看诊断报告，再逐条查看建议：Skill 建议和任务指令建议分别提交改进 PR，工具调用建议暂不采纳。
-   - 新建 CodeGraph 任务，在 Teams 绑定的代码仓中真实构建；完成后打开“<代码仓> 代码图谱”看交互图谱，点“应用”为 Code Agent 配上 codegraph MCP。
+1. **Projects**: open a project and, on the "Sources" tab, look at the repository, the document set and the document set's version history.
+2. **Knowledge capabilities**: introduce the capabilities by their four categories, open one to see its definition (engine.yaml), and demo "Import capability".
+3. **Knowledge tasks** (a project tab): "Done" has a "Trajectory insights" task; current tasks are split into scheduled and one-off tasks, and can be paused, cancelled and deleted.
+4. **Artifacts** (a project tab):
+   - Open the new version of "Credit card marketing cashback business knowledge", compare it with the previous version, and submit a PR.
+   - Open the trajectory insights (the card says "3 suggestions to submit"), look at the diagnosis report, then go through the suggestions: submit improvement PRs for the Skill suggestion and the task-instruction suggestion, and decline the tool-call suggestion for now.
+   - Create a CodeGraph task that really builds in the repository bound in Teams; when it finishes, open "<repository> code graph" to see the interactive graph, and click "Apply" to configure the codegraph MCP for the Code Agent.
 
-## 4. 管理员端页面
+## 4. Admin view pages
 
-导航：团队、项目（下面列出各个项目）、知识能力。团队和项目是同级的两个层级，结构与 iCode Teams 的“项目 / 项目名 + 顶部页签”一致。
+Navigation: Team, Projects (each project listed underneath), Knowledge capabilities. Team and project are two peer levels, structured like iCode Teams' "Projects / project name + top tabs".
 
-### 4.1 团队与项目
-- **项目列表**（`#/projects`）：项目卡片，字段是名称、说明，以及“代码仓”“文档集”两个字段列出来源名称；有待审阅的产物时，右上角显示“N 个待审阅”。项目来自 iCode Teams，不在 Talents 中新建。
-- **项目**（`#/projects?project=…&tab=…`）：标题是项目名和说明，右上角“在 iCode Teams 中管理”。下面是页签：产物管理（默认打开，有需要处理的产物时显示产物数）、知识任务、来源。页签右侧是当前页签的操作：新建任务、登记本地文档来源。
-- **团队**（`#/team?tab=…`）：与项目相同的三个页签，标题下说明“团队知识在每个项目中都可用”。
-- 面包屑：项目 / Credit Card；打开产物时为 项目 / Credit Card / 产物名，团队为 团队 / 产物名。
-- iCode Teams 链接到 `#/review?project=…`、`#/tasks?project=…`，打开对应项目的页签。
+### 4.1 Team and projects
+- **Project list** (`#/projects`): project cards with name and description, and "Repository" and "Documents" fields listing the source names; when artifacts are waiting for review, the top right shows "N to review". Projects come from iCode Teams and are not created in Talents.
+- **Project** (`#/projects?project=…&tab=…`): the title is the project name and description, with "Manage in iCode Teams" in the top right. Below are tabs: Artifacts (open by default; shows the artifact count when some need attention), Knowledge tasks, Sources. To the right of the tabs are the current tab's actions: New task, Register a local document source.
+- **Team** (`#/team?tab=…`): the same three tabs as a project, with "Team knowledge is available in every project" under the title.
+- Breadcrumbs: Projects / Credit Card; when an artifact is open, Projects / Credit Card / artifact name; for the team, Team / artifact name.
+- iCode Teams links to `#/review?project=…` and `#/tasks?project=…`, which open the matching tab of that project.
 
-### 4.2 来源
-- **项目的来源**：分“代码仓”“文档集”“会话与 Skill”三组列出卡片。不设“全部来源”视图。
-- **会话与 Skill**（来自 iCode Teams，只读）：两张卡片。“成员共享的会话”显示会话数、成员数、最近更新；“项目 Skill”显示数量和其中几个名称（即 Teams 项目概览中的“项目可用 Skill”）。点卡片打开右侧抽屉：搜索加分页列表（每页 10 条）；点一行，在同一抽屉中切换到详情（会话显示元数据，不显示原文；Skill 显示 SKILL.md），顶部“返回”。
-- **团队的来源**：只有在团队中登记的本地文档目录（团队没有代码仓）。
-- **来源卡片**：图标、名称、路径、说明；代码仓另有“分支”，文档集另有“文件：23 个，来自 Git 仓库”“最近变化”。
-- **登记来源**（右侧抽屉）：类型 → 目录（读取后显示概览，文档集显示来自 Git 仓库还是共享目录）→ 名称、说明（可选）。来源归入当前所在的团队或项目，一个来源只属于一个层级。
-- **文档放在哪里**：Talents 不托管文档，只登记位置（Git 仓库或共享目录）。新增、修改、删除文档都在原位置进行，页面上不提供上传、编辑、删除文档的入口。
-- **来源详情**（右侧抽屉）：
-  - 代码仓：路径、远端、当前分支、最近提交、所属。
-  - 文档集：说明、路径、来自（Git 远端和分支，或共享目录）、文件数、最近检查（附“检查更新”）、所属；版本记录；文件表格（文件名、所在目录、更新时间，最新版本中新增或修改的文件标“新”“改”），默认显示 10 行，其余可以展开。
-  - 顶部“编辑”：修改名称和说明。
-  - 不显示产出状态，产出归产物管理管。
-  - 底部操作：移除来源、新建知识任务（来源已预选）。
-- **文档版本**（与 Talents 的“来源版本”一致）：
-  - 来源检查对比文件清单和内容摘要，发现变化才记录一个版本；没有变化不记录。检查发生在每天定时、任务运行前和手动“检查更新”时。
-  - 版本用发现变化的那次检查的时间标识，例如“10-25 14:20 版本”，不用 vN，避免和知识的版本混淆。一天内可以有多个版本，不合并，每个版本关联当时的原文快照，便于回查出处。
-  - 版本记录按时间倒序列出每个版本的新增、修改、删除。
-- **会话和 Skill 的管理**在 iCode Teams 中进行；Talents 只展示，并在“轨迹洞察”中使用。
-- **下拉框**：全站使用 Ant Design 的下拉，成员等长列表带搜索。
+### 4.2 Sources
+- **Project sources**: cards in three groups, "Repositories", "Document sets" and "Sessions and Skills". There is no "All sources" view.
+- **Sessions and Skills** (from iCode Teams, read-only): two cards. "Sessions shared by members" shows the session count, member count and last update; "Project Skills" shows the count and a few names (the "Project Skills" in the Teams project overview). Clicking a card opens a right-hand drawer with search and a paginated list (10 per page); clicking a row switches the same drawer to the details (sessions show metadata, not the transcript; Skills show SKILL.md), with "Back" at the top.
+- **Team sources**: only local document directories registered in the team (the team has no repositories).
+- **Source cards**: icon, name, path, description; repositories also have "Branch", and document sets have "Files: 23, from a Git repository" and "Last change".
+- **Register a source** (right-hand drawer): type → directory (after reading it shows an overview; for a document set it shows whether it comes from a Git repository or a shared directory) → name, description (optional). The source belongs to the team or project you are in; a source belongs to only one level.
+- **Where documents live**: Talents does not host documents; it only registers their location (a Git repository or a shared directory). Documents are added, changed and deleted in their original location; the page offers no upload, edit or delete for documents.
+- **Source details** (right-hand drawer):
+  - Repository: path, remote, current branch, recent commits, owner.
+  - Document set: description, path, origin (Git remote and branch, or shared directory), file count, last check (with "Check for updates"), owner; version history; a file table (file name, directory, updated time; files added or changed in the latest version are tagged "New" or "Changed"), showing 10 rows by default with the rest expandable.
+  - "Edit" at the top: change the name and description.
+  - No output status is shown; outputs belong to Artifacts.
+  - Actions at the bottom: Remove source, New knowledge task (with the source preselected).
+- **Document versions** (same as "source versions" in Talents):
+  - A source check compares the file list and content digests and records a version only when something changed; nothing is recorded otherwise. Checks happen daily on schedule, before a task runs, and on manual "Check for updates".
+  - A version is identified by the time of the check that found the change, for example "10-25 14:20 version", not vN, to avoid confusion with knowledge versions. A day can have several versions; they are not merged, and each version links to the source snapshot at that time so the origin can be traced.
+  - The version history lists each version's additions, changes and deletions, newest first.
+- **Sessions and Skills are managed** in iCode Teams; Talents only shows them and uses them in "Trajectory insights".
+- **Dropdowns**: Ant Design dropdowns across the site; long lists such as members have search.
 
-### 4.3 知识能力
-按四类分组，每组的说明在标题旁的 ⓘ 中：
+### 4.3 Knowledge capabilities
+Grouped into four categories; each category's description is in the ⓘ next to its title:
 
-| 分类 | 说明 | 能力 |
+| Category | Description | Capabilities |
 |---|---|---|
-| 知识索引 | 快速找到相关的代码和文档 | CodeGraph、文档 RAG 检索 |
-| 文档知识提取 | 从需求、设计文档中提取业务知识 | 业务知识提取 |
-| 代码知识挖掘 | 从 PR 和代码变更中反推开发范式与业务规则 | 开发范式挖掘（PR）、开发范式挖掘（代码片段） |
-| 轨迹分析 | 从 Agent 执行轨迹中发现问题、沉淀经验 | 轨迹洞察 |
+| Knowledge index | Find related code and documents quickly | CodeGraph, Document RAG search |
+| Document knowledge extraction | Extract business knowledge from requirements and design documents | Business knowledge extraction |
+| Code knowledge mining | Reverse-engineer development patterns and business rules from PRs and code changes | Pattern mining (PRs), Pattern mining (code snippets) |
+| Trajectory analysis | Find problems in agent traces and distil reusable experience | Trajectory insights |
 
-- **能力即定义包**：与 Talents 的引擎一致，每种能力是一个定义包，`engine.yaml` 声明输入、产物目录，以及构建、更新和自检的方式（命令型或 iCode Skill 型；定义包里还可以声明安装和卸载，初版不提供）。内置能力的定义在 `content/engines/<能力>/engine.yaml`（CodeGraph、开发范式挖掘取自 Talents 的 `engines/`，其余按同样的格式编写）。演示只读取和校验声明，不执行其中的命令；CodeGraph 例外，服务端运行它的引擎脚本真实构建，并按声明的安装命令和自检在“知识能力”中检测、安装（卡片显示“已安装”或“安装”）。
-- **能力卡片**：名称、一句话说明、“输入”“产出”两个带标签的字段，以及一个操作“新建任务”。支持更新的能力带“增量更新”标签（悬停看更新规则），导入的能力带“已导入”标签。分类说明放在分类标题旁的 ⓘ 中。从这里新建的任务需要在表单中选择属于团队还是哪个项目，创建后进入那个层级的知识任务页签。
-- **能力详情**（点击卡片，右侧抽屉，与知识任务详情一致）：标题上方是分类；正文依次是一句话说明、“输入”（必须提供和可以补充的来源）、“核心能力”（四项，每项一个名称和一句说明）、“输出”，标题旁是“增量更新”“已导入”标签；最后是“能力定义”：ID、版本（内置能力写“内置”）、执行方式、构建、更新、自检的命令或 Skill、产物目录和应用入口，可以展开查看完整的 engine.yaml。底部是“新建任务”。文案在 `server/seed.ts` 各能力的 `detail` 中，服务启动时总是取最新的内置能力，导入的能力保留，不影响已有的演示数据。
-- **导入能力**（页面右上角，右侧抽屉）：
-  1. 选择或拖入定义包文件夹，也可以只选 engine.yaml，或点“使用示例定义包：数据库结构索引”（`content/engines/examples/db-schema/`）。
-  2. 校验（按 Talents 的注册规则，遇错即停）：根目录只包含 engine.yaml、README.md、scripts/、skills/；声明有效（未知字段、重复键、锚点等都报错，附行号或字段）；声明引用的包内文件存在；ID 未被占用。演示还要求输入来源是代码仓、文档集或会话。逐条显示通过的检查，失败时显示原因。
-  3. 预览名称、说明、输入和能力定义；选择分类（按声明预选：有 MCP 入口的归知识索引，输入是文档集的归文档知识提取，会话归轨迹分析，其余归代码知识挖掘）。下方提示“请只导入你信任的能力包”。
-  4. 导入后打开能力详情，可以直接新建任务（初版不提供安装和卸载，假定程序已就绪）。没有任务和产物使用时可以“移除能力”。
-  5. 导入的能力和内置能力一样新建任务：来源按声明选择，其余输入字段显示为“参数”；运行日志按声明的命令或 Skill 生成；声明了 MCP 入口的产出索引（进入产物管理），否则只写产物目录。
-- **构建与更新**（对应 Talents 引擎声明中的 `build` / `update`）：每个能力都能构建；能否更新由能力声明。更新时 Talents 把“和上次比变了什么”交给能力。
+- **A capability is a definition package**: as in the Talents engine, each capability is a definition package whose `engine.yaml` declares the inputs, the artifact directory, and how to build, update and self-check (command-based or iCode Skill-based; a package can also declare install and uninstall, which the first version does not offer). Built-in capability definitions are in `content/engines/<capability>/engine.yaml` (CodeGraph and pattern mining are taken from Talents' `engines/`; the rest are written in the same format). The demo only reads and validates the declarations and does not run their commands. CodeGraph is the exception: the server runs its engine script to really build, and detects and installs it in "Knowledge capabilities" using the declared install command and self-check (the card shows "Installed" or "Install").
+- **Capability card**: name, one-sentence description, two labeled fields "Input" and "Output", and one action, "New task". Capabilities that support updates have an "Incremental update" tag (hover to see the update rule); imported capabilities have an "Imported" tag. The category description sits in the ⓘ next to the category title. A task created from here must choose in the form whether it belongs to the team or to which project, and after creation it opens that level's Knowledge tasks tab.
+- **Capability details** (click a card; right-hand drawer, consistent with knowledge task details): the category above the title; the body has, in order, the one-sentence description, "Input" (required and optional sources), "Core abilities" (four items, each a name and one sentence) and "Output", with the "Incremental update" and "Imported" tags next to the title. Last comes "Capability definition": ID, version ("Built-in" for built-in capabilities), execution mode, the build, update and self-check commands or Skill, artifact directory and application entry, with the full engine.yaml expandable. "New task" is at the bottom. The text is in the `detail` of each capability in `server/seed.ts`; at service start the latest built-in capabilities are always used, imported capabilities are kept, and existing demo data is not affected.
+- **Import capability** (top right of the page, right-hand drawer):
+  1. Choose or drop a definition package folder, or choose just engine.yaml, or click "Use the example" (`content/engines/examples/db-schema/`, the "Database schema index" package).
+  2. Validate (using the Talents registration rules, stopping at the first error): the root contains only engine.yaml, README.md, scripts/ and skills/; the declaration is valid (unknown fields, duplicate keys, anchors and so on are errors, with line number or field); files referenced by the declaration exist in the package; the ID is not taken. The demo also requires the input source to be a repository, a document set or sessions. Each passed check is listed; on failure the reason is shown.
+  3. Preview the name, description, inputs and capability definition; choose a category (preselected from the declaration: an MCP entry goes to Knowledge index, document-set input to Document knowledge extraction, sessions to Trajectory analysis, everything else to Code knowledge mining). Below is the note "Only import capability packages you trust".
+  4. After import the capability details open, and you can create a task directly (the first version offers no install or uninstall and assumes the program is ready). A capability with no tasks or artifacts using it can be removed with "Remove capability".
+  5. Imported capabilities create tasks like built-in ones: sources are chosen per the declaration, and other input fields appear as "Parameters"; the run log is generated from the declared command or Skill; capabilities that declare an MCP entry output an index (shown in Artifacts), others only write the artifact directory.
+- **Build and update** (matching `build` / `update` in the Talents engine declaration): every capability can build; whether it can update is declared by the capability. On update, Talents passes "what changed since last time" to the capability.
 
-| 能力 | 构建 | 更新 |
+| Capability | Build | Update |
 |---|---|---|
-| CodeGraph | `codegraph init` 建立代码图谱 | `codegraph sync`，只同步上次构建以来的代码变化 |
-| 文档 RAG 检索 | 切分文档，建立 BM25 + 向量混合索引 | 只处理新增和修改的文档，移除已删除文档的片段 |
-| 业务知识提取 | 读取全部文档并提取 | 根据文档变化（新增、修改、删除的文件和上一版产物）修订受影响的知识 |
-| 开发范式挖掘（PR / 代码片段） | 每次归档新的范式并重建 `index.md` | 不支持 |
-| 轨迹洞察 | 分析所选会话（所有共享会话都可选；演示中都产出同一份预置报告），生成诊断报告和优化建议 | 不支持，每次运行生成新的诊断 |
+| CodeGraph | `codegraph init` builds the code graph | `codegraph sync` syncs only code changes since the last build |
+| Document RAG search | Split documents and build a BM25 + vector hybrid index | Process only added and modified documents, and remove passages of deleted documents |
+| Business knowledge extraction | Read all documents and extract | Revise the affected knowledge based on document changes (added, modified and deleted files and the previous artifact version) |
+| Pattern mining (PRs / code snippets) | Each run archives new patterns and rebuilds `index.md` | Not supported |
+| Trajectory insights | Analyse the selected sessions (any shared session can be selected; in the demo they all produce the same preset report) and generate a diagnosis report and improvement suggestions | Not supported; each run produces a new diagnosis |
 
-### 4.4 知识任务
-- **列表**：只列出当前层级的任务。两个页签加一排能力筛选（全部 / 知识索引 / 文档知识提取 / 代码知识挖掘 / 轨迹分析），两个页签共用这排筛选。
-  - **当前任务**分两组，空组不显示，组内运行中的排在最前：
-    - **定时任务**（每天定时）：卡片字段：来源、时间（暂停时写“（已暂停）”）、下次运行（暂停时写“已暂停，不会自动运行”）、最近运行及产出。操作：暂停（黄色按钮，醒目）/ 恢复、立即运行一次。
-    - **一次性任务**（立即执行、尚未到点的预约、正在运行的）：操作：立即运行。运行一次后移到“已完成”。
-    - 运行中显示进度条和当前步骤（“第 2/6 步”），操作只有“取消运行”。
-  - **已完成**：运行过的一次性任务（成功、失败或已取消），按运行时间倒序。卡片字段：来源、运行于、产出（带状态：待审阅 / PR 已创建 / 已有版本）。操作：复制为新任务（不直接再次运行，因为常要改来源或参数）。
-  - 状态标签：运行中、成功、失败、已取消、未运行；暂停的定时任务另有“已暂停”，卡片内容变淡。
-- **取消、暂停与删除**（与 Talents 的知识任务规则一致，简化为演示需要的部分）：
-  - 取消运行：确认后停止，已经做完的步骤不保留，产物不变；日志最后一行写明谁在哪一步取消。一次性任务随之结束，移到“已完成”；定时任务之后照常按时运行。
-  - 暂停 / 恢复：只用于定时任务。暂停后到点不自动运行，仍可以“立即运行一次”。
-  - 删除：在任务详情底部，确认后删除任务和它的运行记录，已经产出的知识不受影响；还没运行过的任务删除后不留记录。运行中的任务要先取消。
-- **新建任务**（右侧抽屉，保持简短）：
-  0. **所属**：在团队或项目中新建时就是这个层级，不显示；只有从“知识能力”新建时才需要选择团队或一个项目。来源、会话只能从这一层级中选，产物也归这一层级。
-  1. **能力**：下拉，按分类分组。从能力卡片进入时已选好。
-  2. **来源**：
-     - 代码仓、文档集用下拉选择。
-     - PR 和会话点“选择…”，打开单独的选择弹窗；选完后回到表单，只显示摘要，例如“已选 5 个会话”。
-     - 会话选择弹窗不分页，包含会话名称或 ID 搜索、成员筛选（团队级任务可以选所有项目的会话，另有项目筛选）、AI 筛选（一句话要求，由 iCode 筛选，结果上方有一句说明）、全选和部分勾选。
-  3. **方式**：能力声明了更新、并且这个输入已经有知识时才出现，“更新现有知识”（默认，下面一行写明上次以来的变化）或“重新构建”。来源没有变化时选“更新”，提示“来源没有变化，无需更新”，不能创建。
-  4. **时间**：立即执行、指定时间、每天定时。每天定时显示“来源没有变化时跳过”，默认勾选。轨迹分析的每天定时改为“每天分析新共享的会话”。
-  5. **高级设置**（折叠，标题后用灰字显示“（当前智能体：<名称>）”）：执行任务的智能体、提示词。
-- **复制为新任务**（与 Talents 一致）：打开新建表单，预填能力、来源、PR 或会话、方式、参数、补充材料、提示词和智能体；名称和时间不复制，标题为“复制为新任务”。
-- **新建任务中的轨迹洞察**：会话之外可以补充材料（可选）：相关的项目 Skill、文档集和一段任务说明，帮助深入诊断；任务详情中显示为“补充材料”。
-- **任务详情**：方式（例如“更新，10-18 09:30 版本 → 10-25 14:20 版本”）、参数和补充材料、步骤进度（第几步、百分比，步骤随日志推进）和日志。底部：删除、暂停 / 恢复（定时任务）、立即运行（定时任务为“立即运行一次”，已完成的为“复制为新任务”）、去审阅；运行中只有“取消运行”。完成后列出生成或更新的产物，提供“去审阅”。
-- **日志**参照真实引擎和工具的输出（`src/demo/runs.ts`），开头是 Talents 自己的几行：执行编号和定义版本、准备代码仓（切换分支、快进拉取）或使用的文档快照、写入 input.json、自检。
-  - CodeGraph 是真实日志：服务端在 Teams 绑定的目录中运行引擎脚本 `engines/codegraph/run.py`（自检，首次 `codegraph init`、之后 `codegraph sync`，再用 `codegraph status --json` 校验），再生成图谱数据；不切换分支、不拉取远端。步骤为自检、建立或同步索引、生成图谱数据。CodeGraph 任务只能立即执行，运行中不能取消。
-  - 开发范式挖掘：prepare_input 输出的“本次输入”（范式描述、代码仓和提交、各 PR）、读取 PR 资料和代码、写 analyzer.md 与 summary.md、archive_spec 的“已归档”。
-  - 轨迹洞察：按 icode-traj-logic-analyser（recipe generalization-zh-vis）的流程分六步：读取会话轨迹（preflight、展开压缩历史）、解析与压缩、行为标注（分批认知标注）、轨迹归纳与证据认证（certified）、诊断分析（逻辑节点、细查、问题链、优化建议）、生成报告。预置会话用真实那次分析的数字（1,558 个 span、2,824 个证据节点、628 个逻辑节点等），其他会话按大小折算。
-  - 导入的能力：按声明的自检、构建或更新命令（或 Skill）生成。
-- **产物与版本**：
-  - 同一能力加同一来源重新运行，产生的是原产物的新版本，进入待审阅。同一个产物在待审阅里只保留一份草稿，再次运行时更新这份草稿（系统规则，页面上不展示）。
-  - CodeGraph 的产物不审阅：每次成功构建直接成为下一个版本；“应用”为 Code Agent 配上 codegraph MCP。图谱每次打开时读取代码仓 `.codegraph/` 的当前状态，分目录结构、文件关系（按语言着色）和符号关系（按节点类型着色），不划分服务；大仓库从目录逐级下钻，每个视图最多画 2,000 个节点、6,000 条连线，搜索覆盖整个代码仓。
-  - 文档 RAG 检索只有首次构建需要确认“启用远端索引”。之后的每次更新或重新构建都直接更新远端索引；更新时来源没有变化，就保持当前版本。
-  - 每个产物记录构建基线：文档集记版本，代码仓记提交。下次更新时与当前状态比较得出变化。
-  - 输入不同时生成新产物，名称带上输入，例如“开发范式 · PR #64”。
-  - 产物按内容命名，不用引擎名：CodeGraph 的产物叫“<代码仓> 代码图谱”，文档 RAG 检索的产物叫“<文档集>检索索引”（例如“设计文档检索索引”）；能力名保留引擎名。名称里不带项目名，层级由所在位置（项目或团队）和 Teams 中的“团队知识”标签体现。
-  - Mock 内容跟着输入变：标题、摘要、会话数或 PR 数与所选输入一致；轨迹诊断使用预置的真实报告（`content/trajectory/<主题>/`，由 `tools/import-trajectory.mjs` 导入）。
+### 4.4 Knowledge tasks
+- **List**: only tasks of the current level. Two tabs plus a row of capability filters (All / Knowledge index / Document knowledge extraction / Code knowledge mining / Trajectory analysis) shared by both tabs.
+  - **Current** has two groups; empty groups are hidden, and running tasks come first within a group:
+    - **Scheduled tasks** (daily): card fields: source, time ("(paused)" when paused), next run ("Paused; it will not run automatically" when paused), last run and output. Actions: Pause (a yellow, prominent button) / Resume, Run once now.
+    - **One-off tasks** (run immediately, a scheduled time not reached yet, or running): action: Run now. After one run it moves to "Done".
+    - While running it shows a progress bar and the current step ("Step 2/6"); the only action is "Cancel run".
+  - **Done**: one-off tasks that have run (succeeded, failed or cancelled), newest run first. Card fields: source, ran at, output (with status: waiting for review / PR created / version exists). Action: Copy as new task (it does not run again directly, because the source or parameters often need to change).
+  - Status tags: Running, Succeeded, Failed, Cancelled, Not run; paused scheduled tasks also have "Paused" and the card content is dimmed.
+- **Cancel, pause and delete** (consistent with the Talents knowledge task rules, simplified to what the demo needs):
+  - Cancel run: stops after confirmation; completed steps are discarded and artifacts are unchanged; the last log line states who cancelled at which step. A one-off task ends and moves to "Done"; a scheduled task keeps running on schedule afterwards.
+  - Pause / Resume: scheduled tasks only. When paused it does not run automatically at the scheduled time, but "Run once now" still works.
+  - Delete: at the bottom of the task details; after confirmation it deletes the task and its run history, and knowledge already produced is unaffected. A task that never ran leaves no history after deletion. A running task must be cancelled first.
+- **New task** (right-hand drawer, kept short):
+  0. **Belongs to**: when created in the team or a project, it is that level and is not shown; only when created from "Knowledge capabilities" do you choose the team or a project. Sources and sessions can only be chosen from that level, and the artifacts belong to that level.
+  1. **Capability**: a dropdown grouped by category. Preselected when coming from a capability card.
+  2. **Source**:
+     - Repositories and document sets are chosen from a dropdown.
+     - For PRs and sessions, click "Choose…" to open a separate picker dialog; after choosing you return to the form, which shows only a summary such as "5 sessions selected".
+     - The session picker is not paginated and has search by session name or ID, a member filter (team-level tasks can choose sessions from all projects and also have a project filter), an AI filter (a one-sentence request filtered by iCode, with one line of explanation above the result), select all and partial selection.
+  3. **Mode**: shown only when the capability declares updates and this input already has knowledge: "Update existing knowledge" (default, with a line below stating what changed since last time) or "Rebuild". If the sources have not changed and "Update" is selected, it says "Sources unchanged; nothing to update" and cannot be created.
+  4. **Time**: run now, at a set time, or daily. Daily shows "Skip when the sources are unchanged", checked by default. For trajectory analysis, daily becomes "Analyse newly shared sessions every day".
+  5. **Advanced settings** (collapsed, with "(current agent: <name>)" in gray after the title): the agent that runs the task, and the prompt.
+- **Copy as new task** (consistent with Talents): opens the new task form pre-filled with the capability, source, PRs or sessions, mode, parameters, supporting material, prompt and agent; the name and time are not copied, and the title is "Copy as new task".
+- **Trajectory insights in a new task**: besides sessions you can add supporting material (optional): related project Skills, document sets and a task note, to help a deeper diagnosis; the task details show it as "Supporting material".
+- **Task details**: mode (for example "Update, 10-18 09:30 version → 10-25 14:20 version"), parameters and supporting material, step progress (step number and percentage, advancing with the log) and the log. At the bottom: Delete, Pause / Resume (scheduled tasks), Run now ("Run once now" for scheduled tasks, "Copy as new task" when done), Review it; while running, only "Cancel run". When finished it lists the artifacts generated or updated, with "Review it".
+- **Logs** follow the output of the real engines and tools (`src/demo/runs.ts`) and start with a few Talents lines: run number and definition version, preparing the repository (switching branch, fast-forward pull) or the document snapshot used, writing input.json, self-check.
+  - CodeGraph has a real log: the server runs the engine script `engines/codegraph/run.py` in the directory bound in Teams (self-check, `codegraph init` the first time and `codegraph sync` afterwards, then `codegraph status --json` to verify), then generates the graph data; it does not switch branches or pull. The steps are self-check, build or sync the index, and generate graph data. CodeGraph tasks can only run immediately and cannot be cancelled while running.
+  - Pattern mining: the "input for this run" from prepare_input (pattern description, repository and commits, each PR), reading PR material and code, writing analyzer.md and summary.md, and "archived" from archive_spec.
+  - Trajectory insights: six steps following the icode-traj-logic-analyser flow (recipe generalization-zh-vis): read the session trajectory (preflight, expand compressed history), parse and compress, behavior annotation (batched cognitive annotation), trajectory induction and evidence certification (certified), diagnosis (logic nodes, deep inspection, problem chains, improvement suggestions), generate the report. The preset session uses the numbers from the real analysis (1,558 spans, 2,824 evidence nodes, 628 logic nodes, etc.); other sessions are scaled by size.
+  - Imported capabilities: generated from the declared self-check, build or update command (or Skill).
+- **Artifacts and versions**:
+  - Rerunning the same capability on the same source produces a new version of the existing artifact, which goes to waiting for review. An artifact keeps only one draft waiting for review; another run updates that draft (a system rule, not shown on the page).
+  - CodeGraph artifacts are not reviewed: each successful build becomes the next version directly; "Apply" configures the codegraph MCP for the Code Agent. Each time the graph is opened it reads the current state of the repository's `.codegraph/`, with directory structure, file relations (colored by language) and symbol relations (colored by node type) and no split by service. Large repositories drill down from directories level by level; each view draws at most 2,000 nodes and 6,000 edges, and search covers the whole repository.
+  - Document RAG search only asks to confirm "Enable remote index" on the first build. Every later update or rebuild updates the remote index directly; if the sources have not changed on update, the current version is kept.
+  - Every artifact records its build baseline: the version for a document set, the commit for a repository. The next update compares it with the current state to find the changes.
+  - Different inputs produce a new artifact whose name includes the input, for example "Development pattern · PR #64".
+  - Artifacts are named by content, not by engine: the CodeGraph artifact is "<repository> code graph" and the Document RAG search artifact is "<document set> search index" (for example "Design documents search index"); capability names keep the engine name. Names do not include the project name; the level is shown by where it sits (project or team) and by the "Team knowledge" tag in Teams.
+  - Mock content follows the input: title, summary and session or PR count match the selected input; trajectory diagnosis uses the preset real report (`content/trajectory/<topic>/`, imported by `tools/import-trajectory.mjs`).
 
-### 4.5 产物管理
-- **列表**：只列出当前层级的产物。
-  - **需要处理**（排在最前，没有时不显示）：待审阅的知识产物和有待提交建议的轨迹诊断。标题前是黄色铃铛，不显示数量。卡片带状态标签（待审阅 / 新版本待审阅 / N 条建议待提交）和能力名，操作是“审阅”或“查看建议”。“产物管理”页签上的数字徽标是这一区的产物数，与卡片数一致；项目卡片上分别写“N 个待审阅”“N 条建议待提交”。
-  - 其余产物**按能力分类分组**（知识索引 / 文档知识提取 / 代码知识挖掘 / 轨迹分析，与“知识能力”页一致），空组不显示，组内按时间倒序。超过 6 个的分组先显示 6 个，其余点“展开全部 N 个”。
-  - 卡片只写有区别的信息：名称、一行说明（超出省略，悬停看全文）、底部“v2 · 今天 02:14”。正常状态不挂标签，点整张卡片打开。
-  - 来源在构建后有变化、且能力支持更新时，卡片带“文档有变化”或“代码有变化”标签（悬停看变化，例如“10-12 10:00 版本 → 10-22 16:40 版本，新增 1、修改 1”），操作“重新提取”：打开新建任务，能力、来源、提示词按原任务预填，方式默认“更新现有知识”，不直接运行。
-- **审阅工作台**（整页，知识类产物）：
-  - 初版不提供修订（不做“和 iCode 对话”和手动编辑），产物原样展示，确认后提交 PR。
-  - **顶部**：产物名、状态、“提交 PR”按钮（索引为“启用远端索引”）。
-  - **左侧**：文件列表。开发范式按范式分组，每组下是“范式总结”“代码分析报告”和各个 PR。
-  - **中间**：内容；有上次版本时可以切换到“与上次版本对比”。
-  - **右侧**：生成时间、这一版基于哪个文档版本或提交、上次版本；提交后显示“PR 已创建”和 PR 链接。
-- **诊断工作台**（整页，轨迹洞察）：诊断不走审阅。
-  - **左侧**：诊断报告、优化建议（每条带状态：待提交 / PR 已创建 / 不采纳）。
-  - **中间**：诊断报告（报告自带的单文件 HTML）；或一条建议：类型、优先级、背景 / 现象 / 目标、修改内容（Skill 建议显示各文件修改前后对比；工具调用和任务指令建议显示要补充到 AGENTS.md 的规则，报告中的原始建议和配套代码修改折叠展示）、风险、验证方法。
-  - **右侧**：“提交改进 PR”“暂不采纳”。建议原样提交，不在这里修改：
-    - **Skill 建议**：修改代码仓中这个 Skill 的文件（默认目录 `workspace/.agents/skills/<Skill>`，可修改）。目标文件与诊断依据不一致时拒绝提交。不直接更新 Teams 中的 Skill 版本。
-    - **工具调用、任务指令建议**：在 `workspace/AGENTS.md` 末尾补充一条规则。工具建议中对代码仓脚本的修改只展示，需另行提交。
-    - **暂不采纳**：可以填写原因，之后可以“重新考虑”。
-- **提交 PR**（弹窗）：GitHub 仓库（owner/repo）、目标分支、提交说明，前两项按 Teams 中该项目绑定的工作区预填（origin 和交付基线分支），未绑定时提示去 Teams 配置；Skill 建议另有“仓内 Skill 目录”。提交失败时在弹窗中显示原因，可以直接重试。
-  - 服务端用 `gh api` 在目标分支最新提交上创建新提交，推到专用分支 `talents/<摘要>` 并创建 PR；重试时按分支找到已有 PR，不重复创建。
-  - 文件写在业务仓库的根目录下，知识文件写入 `docs/knowledge/<产物>/`。
-  - 保存 PR 链接和提交的内容，不查询合入状态。
+### 4.5 Artifacts
+- **List**: only artifacts of the current level.
+  - **Needs attention** (first, hidden when empty): knowledge artifacts waiting for review and trajectory diagnoses with suggestions to submit. A yellow bell precedes the title, without a count. Cards have a status tag (waiting for review / new version waiting for review / N suggestions to submit) and the capability name; the action is "Review" or "View suggestions". The number badge on the "Artifacts" tab is the number of artifacts in this section, matching the card count; project cards show "N to review" and "N suggestions to submit" separately.
+  - The other artifacts are **grouped by capability category** (Knowledge index / Document knowledge extraction / Code knowledge mining / Trajectory analysis, matching the "Knowledge capabilities" page). Empty groups are hidden, and each group is newest first. A group with more than 6 shows 6 first; click "Expand all N" for the rest.
+  - Cards show only what differs: name, a one-line description (truncated; hover for the full text), and "v2 · today 02:14" at the bottom. In the normal state there are no tags; click anywhere on the card to open it.
+  - When a source changed after the build and the capability supports updates, the card has a "Documents changed" or "Code changed" tag (hover to see the change, for example "10-12 10:00 version → 10-22 16:40 version, 1 added, 1 changed"), and the action "Re-extract" opens a new task with the capability, source and prompt pre-filled from the original task and mode defaulting to "Update existing knowledge"; it does not run directly.
+- **Review workbench** (full page, knowledge artifacts):
+  - The first version offers no revision (no "talk to iCode" and no manual editing); the artifact is shown as is and submitted as a PR after confirmation.
+  - **Top**: artifact name, status, "Submit PR" button ("Enable remote index" for indexes).
+  - **Left**: file list. Development patterns are grouped by pattern, each group containing "Pattern summary", "Code analysis report" and the individual PRs.
+  - **Center**: content; when there is a previous version you can switch to "Compare with the previous version".
+  - **Right**: generated time, which document version or commit this version is based on, previous version; after submission it shows "PR created" and the PR link.
+- **Diagnosis workbench** (full page, trajectory insights): diagnoses do not go through review.
+  - **Left**: diagnosis report, improvement suggestions (each with a status: to submit / PR created / declined).
+  - **Center**: the diagnosis report (the report's own single-file HTML), or one suggestion: type, priority, background / symptom / goal, the change (Skill suggestions show before/after for each file; tool-call and task-instruction suggestions show the rule to add to AGENTS.md, with the report's original suggestion and the companion code change collapsed), risk, verification method.
+  - **Right**: "Submit improvement PR", "Decline for now". Suggestions are submitted as is and are not edited here:
+    - **Skill suggestion**: changes this Skill's files in the repository (default directory `workspace/.agents/skills/<Skill>`, editable). Submission is refused if the target file differs from the diagnosis basis. Skill versions in Teams are not updated directly.
+    - **Tool-call and task-instruction suggestions**: append one rule to the end of `workspace/AGENTS.md`. Changes to repository scripts in a tool suggestion are only shown and must be submitted separately.
+    - **Decline for now**: a reason can be entered; you can "Reconsider" later.
+- **Submit PR** (dialog): GitHub repository (owner/repo), target branch and commit note. The first two are pre-filled from the workspace bound to the project in Teams (origin and delivery base branch); when unbound, it prompts you to configure it in Teams. Skill suggestions also have "Skill directory in the repository". If submission fails, the dialog shows the reason and you can retry directly.
+  - The server uses `gh api` to create a new commit on the latest commit of the target branch, pushes it to a dedicated branch `talents/<digest>` and creates the PR; on retry it finds the existing PR by branch and does not create a duplicate.
+  - Files are written under the business repository root; knowledge files go to `docs/knowledge/<artifact>/`.
+  - The PR link and submitted content are stored; merge status is not checked.
 
-## 5. Mock 数据
+## 5. Mock data
 
-- **团队、项目、会话**：实时来自 iCode Teams。项目“Credit Card”包含代码仓 carddemo-java-1025（路径为 Teams 中绑定的本机目录）、文档集“设计文档”（Teams 项目的设计文档，名称与 Teams 一致）。团队级来源是在 Talents 登记的本地文档“银行开发规范”，从它提取的“银行编码规范要点”是团队知识。
-- 下面的产物和文档集版本是 Talents 的 mock 数据（`server/seed.ts`），其中“产物”表格和“文档集”说明是改造前的版本，以 `server/seed.ts` 为准。
-- **产物**：
+- **Team, projects, sessions**: live from iCode Teams. Project "Credit Card" has the repository carddemo-java-1025 (its path is the local directory bound in Teams) and the document set "Design documents" (the Teams project's design documents, with the same name as in Teams). The team-level source is the local document "Bank Development Standards" registered in Talents, and the "Bank coding standards essentials" extracted from it are team knowledge.
+- The artifacts and document set versions below are Talents mock data (`server/seed.ts`). The "Artifacts" table and the "Document sets" notes describe the version before the rework; `server/seed.ts` is authoritative.
+- **Artifacts**:
 
-| 能力 | 产物 | 状态 |
+| Capability | Artifact | Status |
 |---|---|---|
-| CodeGraph | 无（在 Talents 中构建后才有“<代码仓> 代码图谱”） | 远端索引 |
-| 文档 RAG 检索 | 信用卡核心业务文档检索索引 | 远端索引 v4，每天同步文档变化 |
-| 业务知识提取 | 信用卡核心业务知识（规则目录、数据字典、术语表、五层模型） | v1，新版本待审阅（用于演示与上次版本对比、提交 PR） |
-| 业务知识提取 | 银行编码规范要点 | v1，基于 10-12 10:00 版本；规范在 10-22 16:40 有变化，显示“重新提取” |
-| 开发范式挖掘（PR） | card-core-java 开发范式（PR 与范式一一对应，按所选 PR 生成）。目录结构与真实产物一致：`index.md`，每个范式下 `summary.md`、`analyzer.md`、`meta.json`、`input/prs/<编号>/metadata.json` | v2 |
-| 轨迹洞察 | “CardDemo 迁移与扩建（19 轮）”会话的真实诊断报告：6 条问题链、3 条优化建议（工具调用、Skill arch-adr-writing、任务指令） | 已完成，3 条建议待提交 |
+| CodeGraph | None ("<repository> code graph" exists only after a build in Talents) | Remote index |
+| Document RAG search | Credit card core business documents search index | Remote index v4, syncs document changes daily |
+| Business knowledge extraction | Credit card core business knowledge (rules catalog, data dictionary, glossary, five-layer model) | v1, new version waiting for review (used to demo comparison with the previous version and PR submission) |
+| Business knowledge extraction | Bank coding standards essentials | v1, based on the 10-12 10:00 version; the standards changed at 10-22 16:40, so it shows "Re-extract" |
+| Pattern mining (PRs) | card-core-java development patterns (one pattern per PR, generated from the selected PRs). The directory structure matches the real artifact: `index.md`, and under each pattern `summary.md`, `analyzer.md`, `meta.json`, `input/prs/<number>/metadata.json` | v2 |
+| Trajectory insights | The real diagnosis report of the "CardDemo migration and expansion (19 turns)" session: 6 problem chains, 3 improvement suggestions (tool call, Skill arch-adr-writing, task instruction) | Done, 3 suggestions to submit |
 
-- **文档集**：
-  - 信用卡核心业务文档：来自 Git 仓库 `card-core-docs.git`。版本 10-09 10:00（首次）、10-18 09:30（修改 2）、10-25 09:05（新增 `08-marketing-capability.md`、`ADR-009-marketing-integration.md`，删除 `ops/00-legacy-runbook.md`）、10-25 14:20（修改 `05-api-catalog.md`）。业务知识 v1 基于 10-18 09:30 版本，v2 草稿基于 10-25 14:20 版本。
-  - 银行开发规范：来自共享目录。版本 10-12 10:00（首次）、10-22 16:40（新增 1、修改 1）。
-- **find-reference-spec**（开发范式的配套 Skill）：开发新需求前读 `index.md` 找相似范式，读 `summary.md` 作为参考，需要时再读 `analyzer.md`、PR 描述，diff 用 `git show` 或 PR 链接查看；没有相似范式时不硬套。
+- **Document sets**:
+  - Credit card core business documents: from the Git repository `card-core-docs.git`. Versions 10-09 10:00 (first), 10-18 09:30 (2 changed), 10-25 09:05 (added `08-marketing-capability.md` and `ADR-009-marketing-integration.md`, deleted `ops/00-legacy-runbook.md`), 10-25 14:20 (changed `05-api-catalog.md`). Business knowledge v1 is based on the 10-18 09:30 version, and the v2 draft on the 10-25 14:20 version.
+  - Bank Development Standards: from a shared directory. Versions 10-12 10:00 (first), 10-22 16:40 (1 added, 1 changed).
+- **find-reference-spec** (the companion Skill for development patterns): before developing a new requirement, read `index.md` to find a similar pattern, read `summary.md` as a reference, and read `analyzer.md` and the PR description when needed; view the diff with `git show` or the PR link. When there is no similar pattern, do not force one.
 
-## 6. 文案要求
+## 6. Copy rules
 
-- 少写字，让布局、层级、间距和主操作说明一切：不写 slogan、教学段落，也不在每个区块下加说明。页面标题下不加描述；区块标题旁只放数量。
-- 确实需要补充说明时，用 ⓘ 图标加悬停提示（`InfoTip`），不用常显的灰色小字。例如能力分类的说明、表单字段的规则、图谱的操作方式。
-- 破坏性操作用颜色区分：不可恢复的（删除、移除、取消运行）用红色；可恢复的（暂停、暂不采纳）用黄色。顶栏的“重置数据”是演示者用的低频操作，保持灰色不显眼，确认框里的“重置”按钮是红色。
-- 平台是通用的，界面文案不举具体行业的例子（例如“行内规范”）；行业内容只出现在演示数据里。
-- 卡片上的信息用带标签的字段，例如“生成于：10-25 14:20”。
-- 不可用的选项灰显，并说明原因。
-- 轨迹报告用客户能懂的说法：
-  - 结论徽标用“诊断可信”，不用“PASS · 采纳”。
-  - 证据写成“轨迹第 38、41 步”。
-  - “对拍”改为“新旧结果比对”。
-  - 去掉 RSI 等内部缩写。
-- 侧栏不出现“演示”字样；重置数据入口放在顶栏右侧。
+- Write little; let layout, hierarchy, spacing and the primary action explain everything. No slogans, no tutorial paragraphs, and no explanation under every block. No description under page titles; block titles carry only a count.
+- When an explanation is really needed, use an ⓘ icon with a hover tip (`InfoTip`), not always-visible small gray text. Examples: capability category descriptions, form field rules, how to operate the graph.
+- Destructive actions are distinguished by color: irreversible ones (delete, remove, cancel run) are red; reversible ones (pause, decline for now) are yellow. "Reset data" in the top bar is a rarely used presenter action and stays gray and unobtrusive; the "Reset" button in its confirmation is red.
+- The platform is generic, so UI copy does not use industry-specific examples (such as "in-house standards"); industry content appears only in the demo data.
+- Information on cards uses labeled fields, for example "Generated at: 10-25 14:20".
+- Unavailable options are grayed out with the reason.
+- Trajectory reports use wording the customer understands:
+  - The verdict badge says "Diagnosis trusted", not "PASS · adopted".
+  - Evidence is written as "trajectory steps 38 and 41".
+  - Testing jargon for side-by-side output checks is rewritten as "old vs. new result comparison".
+  - Internal abbreviations such as RSI are removed.
+- The sidebar never says "demo"; the reset data entry is on the right of the top bar.
 
-## 7. 不做的内容
+## 7. Out of scope
 
-- PR 列表同步、排队规则、引擎安装 / 卸载 / 自检、主分支与同步方式、文档采集规则、快照清理。
-- 与 iCode Teams 的真实联动：团队、成员先在 Talents 内部模拟。会话的浏览、管理和共享设置属于 iCode Teams，不在 Talents 中做。
-- 页面上不出现：配置文件结构、iCode 内部加载规则（“加载项目 Skills”提示除外）、各种“为什么不能”的解释（灰显选项的一句说明除外）。
+- PR list sync, queueing rules, engine install / uninstall / self-check, main branch and sync method, document collection rules, snapshot cleanup.
+- Real integration with iCode Teams: the team and members are first simulated inside Talents. Browsing, managing and sharing settings for sessions belong to iCode Teams and are not built in Talents.
+- Not shown on pages: configuration file structure, iCode internal loading rules (except the "Load project Skills" hint), and "why not" explanations of all kinds (except the one-line reason on grayed-out options).

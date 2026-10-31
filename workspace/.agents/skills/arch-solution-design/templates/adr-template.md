@@ -1,47 +1,47 @@
-# ADR-<seq>: <决策标题>
+# ADR-<seq>: <decision title>
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 编号 | ADR-<seq> |
-| 日期 | <日期> |
-| 关联需求 | REQ-<xxx> |
-| 状态 | 提议 / 已接受 / 已废弃 |
-| 作者 | Arch Agent (A-02) |
+| ID | ADR-<seq> |
+| Date | <date> |
+| Linked requirement | REQ-<xxx> |
+| Status | Proposed / Accepted / Deprecated |
+| Author | Arch Agent (A-02) |
 
-## 背景
+## Context
 
-<需要决策的问题、上下文与约束>
+<the problem to decide, its context and constraints>
 
-## 候选方案
+## Candidate options
 
-| 方案 | 描述 | 优点 | 缺点 |
+| Option | Description | Pros | Cons |
 |------|------|------|------|
-| 方案A | <描述> | <优点> | <缺点> |
-| 方案B | <描述> | <优点> | <缺点> |
+| Option A | <description> | <pros> | <cons> |
+| Option B | <description> | <pros> | <cons> |
 
-## 决策
+## Decision
 
-<选择的方案与关键结论>
+<the chosen option and key conclusions>
 
-## 理由
+## Rationale
 
-<选择该方案的依据，引用需求、标准或证据>
+<why this option was chosen, citing requirements, standards or evidence>
 
-## 影响
+## Consequences
 
-<对系统/接口/数据/运维/合规的影响>
+<impact on systems / interfaces / data / operations / compliance>
 
-## 证据
+## Evidence
 
-- <需求ID / 标准条款 / 存量知识证据>
+- <requirement ID / standard clause / legacy knowledge evidence>
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 接口契约 | 请求/响应schema+字段级+错误码全集 |
-| 数据模型 | 字段级ER与约束 |
-| 安全设计 | 认证/授权/加密/审计四要素 |
-| 容量估算 | QPS/资源/缓存策略 |
+| Interface contracts | Request/response schema + field level + full error code set |
+| Data model | Field-level ER and constraints |
+| Security design | Four elements: authentication / authorization / encryption / audit |
+| Capacity estimate | QPS / resources / caching strategy |

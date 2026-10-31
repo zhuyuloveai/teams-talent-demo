@@ -1,6 +1,6 @@
 ---
 name: sdlc-metrics
-description: SDLC交付效能度量体系，采集Lead Time/门禁拦截率/DORA指标/Agent效能，生成度量看板与趋势报告
+description: "SDLC delivery performance metrics system. Collects Lead Time/gate interception rate/DORA metrics/Agent effectiveness and generates metrics dashboards and trend reports."
 ---
 
 ## 元数据

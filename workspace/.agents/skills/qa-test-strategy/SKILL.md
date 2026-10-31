@@ -1,6 +1,6 @@
 ---
 name: qa-test-strategy
-description: 定义测试范围、层级（单测/集成/SIT/UAT/性能/安全）、环境数据策略与可量化退出标准。设计定稿、测试启动前使用。
+description: "Defines test scope, levels (unit/integration/SIT/UAT/performance/security), environment and data strategy, and quantifiable exit criteria. Use once design is finalized and before testing starts."
 ---
 
 ## 元数据

@@ -1,77 +1,77 @@
-# 需求编写规范
+# Requirement Writing Guide
 
-## 基本原则
+## Basic principles
 
-### 1. 可测试原则
-每条需求都必须是可验证的。不能说"系统应该很快"，要说"95%的交易响应时间小于2秒"。
+### 1. Testable
+Every requirement must be verifiable. Do not say "the system should be fast"; say "95% of transactions respond in under 2 seconds".
 
-### 2. 无二义原则
-同一术语在全文中含义一致。避免使用"大概""可能""尽量"等模糊表述。如确实无法确认，标注[待确认]并跟进。
+### 2. Unambiguous
+A term means the same thing throughout the document. Avoid vague wording such as "roughly", "possibly", "as far as possible". If something truly cannot be confirmed, mark it [To be confirmed] and follow up.
 
-### 3. 可追溯原则
-每条功能需求有唯一编号（REQ-xxx），每条业务规则有唯一编号（BR-xxx），每条都能追溯到来源。
+### 3. Traceable
+Every functional requirement has a unique ID (REQ-xxx), every business rule has a unique ID (BR-xxx), and each one can be traced to its source.
 
-### 4. 完整性原则
-覆盖功能、数据、接口、非功能、合规、运维全维度，不遗漏。不适用的章节要注明N/A和原因。
+### 4. Complete
+Cover every dimension (functions, data, interfaces, non-functional, compliance, operations) without gaps. Sections that do not apply say N/A with the reason.
 
-## 需求编写检查清单
+## Requirement writing checklist
 
-### 文档结构
-- [ ] 文档信息完整（编号、版本、作者、日期、状态）
-- [ ] 修订记录完整
-- [ ] 术语表有定义（如有行业术语/缩写）
-- [ ] 参考文档有链接或编号
+### Document structure
+- [ ] Document information complete (ID, version, author, date, status)
+- [ ] Revision history complete
+- [ ] Glossary defines terms (if there are industry terms / abbreviations)
+- [ ] Referenced documents have links or IDs
 
-### 内容质量
-- [ ] 背景和目标说清楚"为什么做"
-- [ ] 范围边界清晰，明确列出 out of scope
-- [ ] 每条功能需求可独立理解和验证
-- [ ] 输入输出字段完整（类型、长度、规则、必填）
-- [ ] 异常场景全覆盖
-- [ ] 业务规则有条理，无遗漏
-- [ ] 每条业务规则有来源标注
-- [ ] 非功能需求可量化可验证
-- [ ] 接口清单完整，有协议和格式
-- [ ] 数据安全等级和脱敏规则明确
-- [ ] 风险有应对措施
-- [ ] 合规要求有标注
+### Content quality
+- [ ] Background and goals explain "why we do it"
+- [ ] Scope boundaries are clear, with an explicit out-of-scope list
+- [ ] Every functional requirement can be understood and verified on its own
+- [ ] Input and output fields are complete (type, length, rules, required)
+- [ ] All exception scenarios are covered
+- [ ] Business rules are well organized with nothing missing
+- [ ] Every business rule cites its source
+- [ ] Non-functional requirements are quantified and verifiable
+- [ ] The interface list is complete, with protocols and formats
+- [ ] Data security levels and masking rules are explicit
+- [ ] Every risk has a mitigation
+- [ ] Compliance requirements are annotated
 
-### 格式规范
-- [ ] 编号规范：REQ-xxx、BR-xxx
-- [ ] 术语一致：全文使用统一术语
-- [ ] 无二义模糊词（或已标注[待确认]）
-- [ ] 表格格式统一
-- [ ] 列表层级清晰
+### Format rules
+- [ ] ID format: REQ-xxx, BR-xxx
+- [ ] Consistent terms: the same terms are used throughout
+- [ ] No ambiguous vague words (or they are marked [To be confirmed])
+- [ ] Consistent table format
+- [ ] Clear list hierarchy
 
-## 银行需求特殊要点
+## Bank-specific points
 
-### 监管合规
-- 涉及监管的需求必须标注监管文号
-- 监管要求转化为具体的功能/非功能需求
-- 审计要求明确（审计什么、保留多久、谁能看）
+### Regulatory compliance
+- Requirements that involve regulation must cite the regulation reference
+- Regulatory requirements are turned into concrete functional/non-functional requirements
+- Audit requirements are explicit (what is audited, how long it is kept, who can see it)
 
-### 数据安全
-- 客户信息、交易信息等敏感数据必须标注安全等级
-- 明确加密要求（传输加密/存储加密）
-- 明确脱敏规则（展示脱敏、导出脱敏）
+### Data security
+- Sensitive data such as customer and transaction information must have a security level
+- State the encryption requirements explicitly (in transit / at rest)
+- State the masking rules explicitly (display masking, export masking)
 
-### 职责分离（SoD）
-- 涉及多角色操作的必须有SoD矩阵
-- 关键操作（交易、审批、配置变更）必须双人复核
-- 录入和审批不能是同一人
+### Segregation of duties (SoD)
+- Operations involving several roles must have an SoD matrix
+- Key operations (transactions, approvals, configuration changes) must be double-checked by two people
+- Data entry and approval cannot be done by the same person
 
-### 交易与账务
-- 交易必须幂等（重复提交不产生重复交易）
-- 账务处理必须有完整的借贷记录
-- 差错处理必须有明确的流程和审批
+### Transactions and accounting
+- Transactions must be idempotent (a duplicate submission does not create a duplicate transaction)
+- Accounting must have complete debit and credit records
+- Error handling must have a clear process and approval
 
-## 常见问题与解决
+## Common problems and solutions
 
-| 问题 | 表现 | 解决方法 |
+| Problem | Symptom | Solution |
 |------|------|---------|
-| 需求太粗 | 只讲了要做什么，没讲怎么做、做到什么程度 | 拆细，补充输入、输出、规则、异常 |
-| 需求有歧义 | 不同人理解不一样 | 用明确的术语，定义术语表，举例子 |
-| 遗漏异常流 | 只讲了正常流程，没讲失败了怎么办 | 按异常分类检查：输入错误/系统故障/网络异常/数据不一致 |
-| 业务规则缺失 | 只讲了功能，没讲校验规则和计算逻辑 | 逐条梳理业务规则，标注来源 |
-| NFR空洞 | "性能要高""要安全" | 量化，给指标，说验证方法 |
-| 范围蔓延 | 需求写着写着越写越大 | 明确in/out of scope，变更走变更流程 |
+| Requirement too coarse | Says what to do, but not how or to what extent | Break it down; add inputs, outputs, rules and exceptions |
+| Ambiguous requirement | Different people read it differently | Use precise terms, define a glossary, give examples |
+| Missing exception flows | Only the happy path; nothing on what happens when it fails | Check by exception category: input error / system failure / network error / data inconsistency |
+| Missing business rules | Describes the function but not the validation rules or calculation logic | Go through the business rules one by one and cite sources |
+| Hollow NFRs | "Must be high performance", "must be secure" | Quantify, give metrics, state the verification method |
+| Scope creep | The requirement keeps growing while it is being written | State in/out of scope explicitly; changes go through the change process |

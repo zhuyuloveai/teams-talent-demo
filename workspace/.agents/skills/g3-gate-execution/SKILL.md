@@ -1,6 +1,6 @@
 ---
 name: g3-gate-execution
-description: G3开发阶段门禁执行器，统一运行编码规范/分层/循环依赖/覆盖率校验并汇总结果
+description: "G3 development-phase gate runner. Runs the coding standards/layering/circular dependency/coverage checks together and summarizes the results."
 ---
 
 ## 元数据

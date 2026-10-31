@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""端到端数据一致性校验：输入各系统数据导出，比对关键字段。"""
+"""End-to-end data consistency check: take each system's data export as input and compare the key fields."""
 import argparse, json, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("systems_json", help="系统数据JSON: {system:[{key,value}]}")
+    ap.add_argument("systems_json", help="System data JSON: {system:[{key,value}]}")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:

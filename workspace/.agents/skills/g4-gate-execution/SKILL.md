@@ -1,6 +1,6 @@
 ---
 name: g4-gate-execution
-description: G4测试阶段门禁执行器，统一运行需求-用例覆盖率和用例去重校验并汇总结果
+description: "G4 test-phase gate runner. Runs the requirement-test case coverage and test case deduplication checks together and summarizes the results."
 ---
 
 ## 元数据

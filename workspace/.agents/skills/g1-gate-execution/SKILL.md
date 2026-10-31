@@ -1,6 +1,6 @@
 ---
 name: g1-gate-execution
-description: G1需求阶段门禁执行器，统一运行需求完整性/模糊词/RTM校验脚本并汇总结果
+description: "G1 requirements-phase gate runner. Runs the requirement completeness/ambiguous-word/RTM check scripts together and summarizes the results."
 ---
 
 ## 元数据

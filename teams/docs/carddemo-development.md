@@ -1,37 +1,39 @@
-# CardDemo 初始化与交付检查
+# CardDemo setup and delivery checks
 
-本指南适用于 Credit Card 项目的实际代码开发。Teams/Talents 与业务代码使用**独立 Git 仓库**。先核对工具，在项目概览中保存业务工作区，再从需求绑定的独立工作区执行开发与测试。
+This guide applies to actual code development in the Credit Card project. Teams/Talents and the business code live in **separate Git repositories**. Check the tools first, save the business workspace in the project overview, then develop and test from the separate workspace bound to the requirement.
 
-## 独立业务仓库（推荐）
+## Separate business repository (recommended)
+
+For the English demo, clone the `devb-en` branch. The clone directory must be named `carddemo-java-1025`:
 
 ```sh
-git clone https://github.com/JeffyLiu003/carddemo-java-1025.git /absolute/path/carddemo-java-1025
+git clone -b devb-en https://github.com/JeffyLiu003/carddemo-java-1025.git /absolute/path/carddemo-java-1025
 ```
 
-进入 Teams → 项目 → Credit Card → 项目概览 → 工作区设置，填写本机仓库根目录、上述 Git 仓库地址、交付基线分支（该仓库已有 `main`，也可使用自行维护的 `develop`），点击“保存工作区”。Windows 同样填写本机绝对路径，例如 `D:\projects\carddemo-java-1025`。Git、iCode、JDK 21、Maven 必须在运行 Teams 的同一设备上可用。保存会核验目录为 Git 根目录、origin 与填写的仓库相符、基线分支在本地存在；不会自动 checkout、pull、push 或复制未提交代码。
+Go to Teams → Projects → Credit Card → Project overview → Workspace settings, enter the local repository root, the Git repository address above, and the delivery base branch (`devb-en` for the English demo, which the form pre-fills; the repository also has `main`, or you can use a `develop` branch you maintain yourself), then click "Save workspace". On Windows also enter an absolute local path, for example `D:\projects\carddemo-java-1025`. Git, iCode, JDK 21 and Maven must be available on the same machine that runs Teams. Saving verifies that the directory is a Git root, that origin matches the repository you entered, and that the base branch exists locally; it never checks out, pulls, pushes or copies uncommitted code automatically.
 
-Agent 管理中的普通 iCode/OpenCode 启动使用当前默认项目目录。已分配的新需求在知识获取完成、会话初始化前，自动从**业务仓库本地基线分支当前提交**创建独立 worktree：`<业务仓库名>-tasks/<任务标识>/`，分支 `codex/<项目>-<任务标识>`。TUI、CLI、产物预览与清理都使用同一任务绑定。PR 目标为保存的交付基线分支；该分支需已发布到目标远端才能创建 PR。没有远端写权限时如实回报阻塞，不向 Teams 仓库提交业务代码。
+Ordinary iCode/OpenCode starts from Agent management use the current default project directory. For an assigned new requirement, after knowledge retrieval finishes and before the session is initialized, Teams automatically creates a separate worktree from **the current commit of the business repository's local base branch**: `<business repo name>-tasks/<task ID>/`, on branch `codex/<project>-<task ID>`. The TUI, CLI, artifact preview and cleanup all use the same task binding. PRs target the saved delivery base branch, which must already be published to the target remote before a PR can be created. Without write access to the remote, report the block truthfully; do not commit business code to the Teams repository.
 
-设备配置在实际 Teams 状态目录的 `project-workspaces.json`，新任务固定绑定在 `project-worktree-bindings.json`。状态目录以本机 `teams/.local/config.json` 中 `DEMO_STATE_DIR` 或服务 `/api/health` 的 `stateRoot` 为准。绑定记录仓库、分支、基线 SHA 和绝对目录；修改默认配置只影响后续任务，已有会话与旧任务继续使用原绑定，不能静默迁移。每台机器需要分别 clone 并保存本机路径，不将本机配置提交 Git。
+The device configuration is in `project-workspaces.json` in the actual Teams state directory, and new tasks are pinned in `project-worktree-bindings.json`. The state directory is whatever `DEMO_STATE_DIR` in the local `teams/.local/config.json` or `stateRoot` from the service's `/api/health` says. A binding records the repository, branch, base SHA and absolute directory. Changing the default configuration only affects later tasks; existing sessions and old tasks keep their original binding and are never migrated silently. Each machine must clone and save its own local path separately; local configuration is not committed to Git.
 
-内嵌业务工程已移除。fixtures 与已发布 Talent 文件中的旧路径仅记录历史素材来源，不用于解析当前执行目录。保留原来源及 SHA256，不能把外部仓库新版本伪装为旧素材版本。
+The embedded business project has been removed. Old paths in fixtures and published Talent files only record where historical material came from and are not used to resolve the current execution directory. The original source and SHA256 are kept; a newer version of the external repository must not be passed off as the old material version.
 
 
-## 启动前核对
+## Pre-start checks
 
-| 用途 | 要求与检查 |
+| Purpose | Requirement and check |
 |---|---|
-| 平台和工作区工具 | Node.js 24、npm、Git；运行 `node --version`、`npm --version`、`git --version` |
-| CardDemo Java 构建与测试 | **JDK 21**、Maven 3.9+；运行 `java -version` 和 `mvn -version`，两处都应显示 Java 21 |
-| 原生作业 | 本机 iCode 和已配置的 Agent/模型；检查 `icode --version`，再以 Teams「引擎定位」及作业计划解析的实际入口为准 |
-| GitHub 提交／PR | Git 提交身份、目标仓库访问权限、已登录的 GitHub CLI；检查 `git var GIT_AUTHOR_IDENT`、`gh --version`、`gh auth status --hostname github.com`，不要输出或复制 token |
-| 轨迹页 | Python 3.10+ 与 trace-server 依赖；iCode 自身的 trace exporter 另按[快速启动](quick-start.md#icode-tui-与-trace)检查 |
-| 跨服务冒烟 | Docker/Compose、Bash、curl、Python 3；`docker compose version` 和 `docker info` 只核验引擎，业务服务还需启动和健康检查 |
-| 静态检查与依赖／密钥扫描 | Maven PMD 插件 3.26.0、Trivy；`trivy --version`。PMD 由下文的固定 Maven 坐标获取，Trivy 需另行安装；本流程已使用 Trivy 0.76.1 |
+| Platform and workspace tools | Node.js 24, npm, Git; run `node --version`, `npm --version`, `git --version` |
+| CardDemo Java build and tests | **JDK 21**, Maven 3.9+; run `java -version` and `mvn -version`, both should show Java 21 |
+| Native jobs | Local iCode and a configured Agent/model; check `icode --version`, then rely on the actual entry resolved by Teams "Locate engine" and the job plan |
+| GitHub commits/PRs | Git commit identity, access to the target repository, logged-in GitHub CLI; check `git var GIT_AUTHOR_IDENT`, `gh --version`, `gh auth status --hostname github.com`, and do not print or copy tokens |
+| Trace page | Python 3.10+ and the trace-server dependencies; check iCode's own trace exporter separately per [Quick start](quick-start.md#icode-tui-and-task-sessions) |
+| Cross-service smoke | Docker/Compose, Bash, curl, Python 3; `docker compose version` and `docker info` only verify the engine, and the business services still need to be started and health-checked |
+| Static checks and dependency/secret scanning | Maven PMD plugin 3.26.0, Trivy; `trivy --version`. PMD is fetched with the fixed Maven coordinates below, Trivy must be installed separately; this flow has used Trivy 0.76.1 |
 
-父 POM 的 `java.version` 和 `maven.compiler.release` 均为 21。已有测试曾在 JDK 27 下因 Mockito/Byte Buddy 不支持该 Java 版本而失败；使用 JDK 21，不用跳过测试或实验兼容开关掩盖失败。设置环境后再启动 Teams，使原生作业继承同一工具链。
+`java.version` and `maven.compiler.release` in the parent POM are both 21. Existing tests have failed under JDK 27 because Mockito/Byte Buddy does not support that Java version; use JDK 21 rather than skipping tests or using experimental compatibility switches to hide the failure. Set up the environment before starting Teams so native jobs inherit the same toolchain.
 
-macOS 当前终端选择已安装的 JDK 21：
+On macOS, select the installed JDK 21 in the current terminal:
 
 ```sh
 export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
@@ -41,7 +43,7 @@ java -version
 mvn -version
 ```
 
-Windows PowerShell 使用实际安装目录替换下例路径：
+In Windows PowerShell, replace the path in the example with the actual install directory:
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
@@ -51,155 +53,155 @@ java -version
 mvn -version
 ```
 
-`JAVA_HOME` 应指向 JDK 根目录。PATH 上的 iCode 与 Teams 的 `DEMO_ICODE_BINARY` 可以不同；核验实际作业版本，保留现有用户模型配置。网页运行无需 JDK 或 iCode，实际 CardDemo Java 开发和原生作业分别需要这些工具。
+`JAVA_HOME` should point to the JDK root. The iCode on PATH and Teams' `DEMO_ICODE_BINARY` can differ; verify the actual job version and keep the existing user model configuration. Running the web pages needs neither JDK nor iCode; actual CardDemo Java development and native jobs each need these tools.
 
-Teams 新启动的 iCode CLI／TUI 子进程会合并已有 `NO_PROXY` 和 `no_proxy`，补入 `127.0.0.1`、`localhost`、`::1`（以及部分客户端需要的 `[::1]`），避免本机 API、轨迹和独立测试请求走外网代理。其他代理配置保持原值，不改系统环境；已运行会话不会被追改。在 Teams 外手动运行测试时，也应在当前终端为本机地址配置代理排除，并保留原有排除项。
+The iCode CLI/TUI child processes that Teams starts merge the existing `NO_PROXY` and `no_proxy` and add `127.0.0.1`, `localhost`, `::1` (and `[::1]`, which some clients need), so local API, trajectory and isolated test requests do not go through an external proxy. Other proxy settings keep their values and the system environment is not changed; running sessions are not modified after the fact. When running tests manually outside Teams, also configure proxy exclusions for local addresses in the current terminal and keep the existing exclusions.
 
-缺少工具时，先安装 JDK 21、Apache Maven、Docker Desktop（启用 Linux 容器）、Git/GitHub CLI 和 Trivy，再核对实际版本。macOS 可用包管理器或官方安装包，Windows 可用官方安装包或已批准的包管理器；不要把另一台机器的绝对路径复制为配置。Maven 首次需要下载插件与依赖，Trivy 首次需要获取漏洞库；下载失败须保留错误并解决，不能改用空报告。仅在项目 POM 明确需要时增加其他服务，本基线无需 Redis。
+If tools are missing, install JDK 21, Apache Maven, Docker Desktop (with Linux containers), Git/GitHub CLI and Trivy first, then check the actual versions. On macOS use a package manager or the official installers; on Windows use the official installers or an approved package manager. Do not copy another machine's absolute paths into the configuration. Maven downloads plugins and dependencies the first time, and Trivy fetches its vulnerability database the first time; if a download fails, keep the error and resolve it, and do not switch to an empty report. Add other services only when the project POM explicitly needs them; this baseline does not need Redis.
 
-## 项目工作区与需求目录
+## Project workspace and requirement directories
 
-业务仓库必须位于 Teams 仓库之外。由维护者在该仓库获取所需远端提交、更新本地交付基线，再在项目概览保存目录、origin 和基线分支；不自动 fetch、切分支、push 或搬运未提交代码。初始化会话前，Teams 仅从已配置业务仓库的基线提交创建任务 worktree。
+The business repository must be outside the Teams repository. The maintainer fetches the needed remote commits in that repository and updates the local delivery base branch, then saves the directory, origin and base branch in the project overview. Teams never fetches, switches branches, pushes or moves uncommitted code automatically. Before a session is initialized, Teams only creates the task worktree from the base commit of the configured business repository.
 
-旧的 `carddemo-workspace.json` 和旧任务目录记录只作为历史资料保留，不再提供在 Teams 仓库初始化业务分支的命令。已有任务保持原目录、分支和会话，缺失目录时明确报错，不替换成当前项目工作区。重新运行时使用新任务和新绑定。
+The old `carddemo-workspace.json` and old task directory records are kept only as history, and there is no longer a command to initialize a business branch in the Teams repository. Existing tasks keep their original directory, branch and session; when the directory is missing they report an error explicitly and are not replaced with the current project workspace. A rerun uses a new task and a new binding.
 
-## 页面 TUI 与显式 CLI 作业
+## Page TUI and explicit CLI jobs
 
-先在 Teams 分配需求，等待当前节点知识获取完成，并按页面提示确认准备会话。真实会话准备完成后，交付人可以从「iCode 作业」进入同一会话的 TUI，输入本次节点的工作指令；已有活动窗口按计划进入，不重复新建。查看他人任务不会取得执行权限。
+First assign the requirement in Teams, wait for knowledge retrieval for the current node to finish, and confirm the preparation session as the page prompts. Once the real session is prepared, the assignee can enter the TUI of the same session from "iCode job" and type the work instruction for this node; an existing active window is entered as planned instead of creating a new one. Viewing someone else's task does not grant execution rights.
 
-需要通过命令明确下发工作时，在平台仓库的 `teams/` 目录使用以下入口。先把 `<任务ID>`、`<UUID>` 和指令文件路径替换为实际值；`--role` 必须与该需求交付人一致，节点内部 ID 为 `prepare`、`develop`、`verify`。
+To dispatch work explicitly by command, use the following entry points in the `teams/` directory of the platform repository. First replace `<task ID>`, `<UUID>` and the instruction file path with real values; `--role` must match the requirement's assignee, and the internal node IDs are `prepare`, `develop` and `verify`.
 
 ```sh
-npm run work:icode -- plan --endpoint http://127.0.0.1:45970 --role member --project carddemo --task <任务ID> --node prepare --mode cli
-npm run work:icode -- start --endpoint http://127.0.0.1:45970 --role member --project carddemo --task <任务ID> --node prepare --mode cli --request-id <UUID> --instruction-file "/absolute/path/prepare.txt"
-npm run work:icode -- status --endpoint http://127.0.0.1:45970 --role member --project carddemo --task <任务ID> --node prepare --request-id <同一UUID>
+npm run work:icode -- plan --endpoint http://127.0.0.1:46970 --role member --project carddemo --task <task ID> --node prepare --mode cli
+npm run work:icode -- start --endpoint http://127.0.0.1:46970 --role member --project carddemo --task <task ID> --node prepare --mode cli --request-id <UUID> --instruction-file "/absolute/path/prepare.txt"
+npm run work:icode -- status --endpoint http://127.0.0.1:46970 --role member --project carddemo --task <task ID> --node prepare --request-id <same UUID>
 ```
 
-指令文件使用 UTF-8，明确本节点目标、允许修改的业务目录、测试与停止条件，以及是否允许提交／推送／创建 PR；也可用 `--instruction "工作指令"`，两者只能选一个。Windows 使用实际 Windows 路径。`plan` 和 `status` 只读；`start` 仅恢复已准备、未活动的本任务真实会话，未就绪时先回 Teams 完成准备。它实际调用 iCode 执行本次节点指令，不自动跨阶段。
+The instruction file uses UTF-8 and states the node goal, the business directories that may be changed, the tests and stop conditions, and whether committing/pushing/creating a PR is allowed. You can also use `--instruction "work instruction"`; only one of the two may be used. On Windows use the actual Windows path. `plan` and `status` are read-only; `start` only resumes a prepared, inactive real session of this task, and if it is not ready, go back to Teams to finish preparation first. It actually calls iCode to run this node's instruction and does not cross stages automatically.
 
-启动回执给出 request/session、上下文及日志路径；`status` 区分 pending、running、completed、failed、unknown。退出码 0 表示请求成功，不能据此判断节点已完成；1 表示参数或请求失败，2 表示执行失败、状态未知或需要核对。保留默认 runtime 下 `work-cli-receipts` 的请求与回执，或显式指定 `--receipt-dir`。超时先用原 request ID 查询；重试保留原 ID、scope 和同一指令，不删除回执绕过冲突。
+The start receipt gives the request/session, context and log paths; `status` distinguishes pending, running, completed, failed and unknown. Exit code 0 means the request succeeded and does not mean the node is complete; 1 means an argument or request failure; 2 means an execution failure, unknown status, or something that needs checking. Keep the requests and receipts in `work-cli-receipts` under the default runtime, or specify `--receipt-dir` explicitly. On timeout, query with the original request ID first; a retry keeps the original ID, scope and the same instruction, and does not delete receipts to get around a conflict.
 
-原生启动 CLI 与协作 CLI 分工不同：`work:icode` 负责启动／查询，iCode 内通过 [`teams-demo.mjs` 与协作 Skill](../skills/teams-demo-collaboration/SKILL.md) 拉取当前节点上下文、记录实际采用、回传进度和真实产物。每个业务 run 都应先实际读取当前节点所需上下文，再收到 `inputs adopt` 成功回执、`progress add` / started 成功回执，随后编辑业务文档／代码或运行测试，不能事后补开始记录。下一节点输入按阶段获取，未 ready 时等待，不提前使用全量知识；会话就绪与命令退出不代替采用、测试或人工验收。
+The native start CLI and the collaboration CLI have different jobs: `work:icode` starts and queries, while inside iCode [`teams-demo.mjs` and the collaboration Skill](../skills/teams-demo-collaboration/SKILL.md) fetch the current node context, record actual adoption, and report progress and real artifacts. Every business run must first actually read the context the current node needs, then receive a successful `inputs adopt` receipt and a successful `progress add` / started receipt, and only then edit business documents/code or run tests; start records cannot be added afterwards. The next node's input is fetched per stage; if it is not ready, wait, and do not use the full knowledge early. A ready session and a command exit do not replace adoption, tests or manual acceptance.
 
-## 测试与交付证据
+## Tests and delivery evidence
 
-以下命令在工具返回的 CardDemo 业务代码目录执行。首次核验基线建议完整运行：
+Run the following commands in the CardDemo business code directory returned by the tool. For the first baseline verification, a full run is recommended:
 
 ```sh
 mvn -version
 mvn -B -ntp package
 ```
 
-`package` 会执行测试并生成容器构建所需 JAR；仅测试可用 `mvn -B -ntp test`。已登记基线有 8 个 Maven 模块，使用 JUnit 5、Spring Boot Test、MockMvc、Mockito；7 个业务服务的测试数据源是 H2，迁移由 Flyway 执行，跨服务调用使用测试替身。模块和测试总数以所选提交为准，新增业务不能沿用旧基线数量作为覆盖证明。普通 Maven 测试不需要外部 PostgreSQL、Redis 或 Docker，H2 结果不能替代 PostgreSQL 跨服务验证。
+`package` runs the tests and produces the JARs needed for the container build; for tests only, use `mvn -B -ntp test`. The registered baseline has 8 Maven modules using JUnit 5, Spring Boot Test, MockMvc and Mockito; the test data source of the 7 business services is H2, migrations run through Flyway, and cross-service calls use test doubles. The module and test totals depend on the selected commit; new business work cannot reuse the old baseline counts as proof of coverage. Ordinary Maven tests do not need an external PostgreSQL, Redis or Docker, and H2 results cannot replace PostgreSQL cross-service verification.
 
-返现相关改动的定点命令为：
+The targeted command for cashback-related changes is:
 
 ```sh
 mvn -pl services/card-service,services/marketing-service,services/transaction-service,services/web-ui -am test
 ```
 
-根据实际变更补齐其他受影响模块。必要范围必须全部执行通过；测试失败、跳过、未运行时保持开发阻塞，不提交“开发完成”。`scripts/build-and-up.sh` 使用 `-DskipTests package`，启动成功不提供测试通过证据。
+Add other affected modules according to the actual change. The required scope must all run and pass; when tests fail, are skipped or did not run, development stays blocked and "development complete" is not submitted. `scripts/build-and-up.sh` uses `-DskipTests package`, so a successful start provides no evidence that tests passed.
 
-| 检查 | 当前工具与边界 | 证据 |
+| Check | Current tools and boundaries | Evidence |
 |---|---|---|
-| Java 单元／服务内接口 | 上述 Maven 测试；H2/Flyway、MockMvc/Mockito | 各模块 `target/surefire-reports/` 的 XML/text、完整命令和退出码 |
-| 跨服务功能集成 | `docker-compose.yml` 的 PostgreSQL 16 和服务；`scripts/smoke-test.sh` 使用 curl/Python | 健康检查、HTTP 断言与日志；脚本会登录、入账和授权，只在独立测试数据环境执行 |
-| 前端逻辑／功能 | 以当前需求分支实际存在的测试为准；Maven 不自动执行 Node 测试 | 单独的 Node／浏览器结果。旧目录的未提交测试不会自动进入新基线 |
-| 代码静态检查 | Maven PMD 3.26.0；编译和 `git diff --check` 另行核对 | 各模块 PMD XML/HTML、规则、优先级、命令与退出码；与 Agent Review 分开 |
-| Agent Review | iCode 按代码版本和 `dev-code-reviewer` 等实际选用 Skill 进行审阅 | 模型／Agent、代码版本、问题位置与结论；与静态工具报告分开 |
-| 安全扫描 | Trivy 文件系统依赖／密钥扫描；安全 Skill 提供审查规范 | 工具和漏洞库版本、POM/JAR 范围、原始 JSON 与逐项结论；不等于容器 OS 扫描或渗透测试 |
-| 修复与复验 | 针对失败问题修改后重跑原失败检查及必要回归 | 问题 ID、修复版本、前后报告和退出码，保留失败记录 |
+| Java unit / in-service API | The Maven tests above; H2/Flyway, MockMvc/Mockito | XML/text in each module's `target/surefire-reports/`, the full command and exit code |
+| Cross-service functional integration | PostgreSQL 16 and the services in `docker-compose.yml`; `scripts/smoke-test.sh` uses curl/Python | Health checks, HTTP assertions and logs; the script logs in, posts and authorizes, so run it only in an isolated test data environment |
+| Front-end logic / function | Whatever tests actually exist on the current requirement branch; Maven does not run Node tests automatically | Separate Node/browser results. Uncommitted tests in an old directory do not enter the new baseline automatically |
+| Static code checks | Maven PMD 3.26.0; compilation and `git diff --check` checked separately | Each module's PMD XML/HTML, rules, priorities, command and exit code; kept separate from Agent Review |
+| Agent Review | iCode reviews by code version with the Skills actually selected, such as `dev-code-reviewer` | Model/Agent, code version, issue locations and conclusions; kept separate from static tool reports |
+| Security scan | Trivy filesystem dependency/secret scan; the security Skill provides the review standards | Tool and vulnerability DB versions, POM/JAR scope, raw JSON and a conclusion per item; not the same as a container OS scan or a penetration test |
+| Fix and re-verification | After fixing a failure, rerun the originally failed check and the necessary regression | Issue ID, fix version, before/after reports and exit codes, keeping the failure record |
 
-### 独立 PostgreSQL／跨服务环境
+### Isolated PostgreSQL / cross-service environment
 
-默认 `docker-compose.yml` 有固定容器名、端口和数据库卷；**仅增加 `-p` 不足以隔离这些固定值**。每个需求使用自己的 Compose 配置和数据库，先从该任务业务目录生成可审阅配置：
-
-```sh
-docker compose --project-directory "<任务业务目录>" -p "carddemo-e2e-<任务短标识>" -f "<任务业务目录>/docker-compose.yml" config --format json --output "<忽略的任务证据目录>/compose.json"
-```
-
-生成前在本终端设置专用 `IAM_TOKEN_SECRET`，避免沿用默认示例密钥。配置文件包含展开后的环境信息，仅保存在本机忽略目录，不提交或公开。在启动前检查并调整该文件：移除固定 `container_name`；宿主端口绑定 `127.0.0.1` 并使用空闲端口（`published: "0"` 可由 Docker 分配）；卷和网络名称带唯一任务前缀且非 external；构建目录、只读初始化 SQL 绑定都属于当前任务 worktree；不启用 host network 或 privileged。批次已有独立配置时复用它，不另起一套或接入别人数据库。
+The default `docker-compose.yml` has fixed container names, ports and database volumes; **adding `-p` alone is not enough to isolate these fixed values**. Each requirement uses its own Compose configuration and database. First generate a reviewable configuration from that task's business directory:
 
 ```sh
-docker compose -f "<任务证据目录>/compose.json" config --quiet
-docker compose -f "<任务证据目录>/compose.json" up -d --build --wait --wait-timeout 180
-docker compose -f "<任务证据目录>/compose.json" ps
-docker compose -f "<任务证据目录>/compose.json" port iam-service 8081
-docker compose -f "<任务证据目录>/compose.json" port web-ui 8080
+docker compose --project-directory "<task business directory>" -p "carddemo-e2e-<task short ID>" -f "<task business directory>/docker-compose.yml" config --format json --output "<ignored task evidence directory>/compose.json"
 ```
 
-先构建 JAR，再构建容器。`--wait` 不替代 HTTP 验证：逐服务检查 `/actuator/health`，业务服务另检查 `/v3/api-docs`，并验证 Web 入口与本需求接口。动态宿主端口在重启后可能改变，每次重新读取映射；内部服务间地址继续使用 Compose 服务名。
+Before generating it, set a dedicated `IAM_TOKEN_SECRET` in this terminal so the default example secret is not reused. The configuration file contains expanded environment information; keep it only in an ignored local directory, and do not commit or publish it. Check and adjust the file before starting: remove fixed `container_name`; bind host ports to `127.0.0.1` and use free ports (`published: "0"` lets Docker assign one); give volume and network names a unique task prefix and make them non-external; build contexts and read-only init SQL binds must all belong to the current task worktree; do not enable host network or privileged. When a batch already has an isolated configuration, reuse it instead of creating another one or connecting to someone else's database.
 
-现有 `scripts/smoke-test.sh` 接受 `IAM`、`CUSTOMER`、`CARD`、`ACCOUNT`、`TRANSACTION`、`AUTHORIZATION`、`MARKETING` 七个完整 HTTP origin 环境变量。将它们全部设为该独立环境的实际端口后，从任务业务目录运行 `bash scripts/smoke-test.sh`；不要遗漏后回落默认端口。脚本会登录、入账和授权，日志中的 token 应脱敏。它只覆盖基线冒烟；新增需求还需实际权限拒绝、幂等／并发、错误边界、重启持久性，以及需求约定的性能和审计检查。Windows 可在 Git Bash 中运行 Bash 脚本；macOS 实测不代表 Windows GUI 或 Docker 已实测。
+```sh
+docker compose -f "<task evidence directory>/compose.json" config --quiet
+docker compose -f "<task evidence directory>/compose.json" up -d --build --wait --wait-timeout 180
+docker compose -f "<task evidence directory>/compose.json" ps
+docker compose -f "<task evidence directory>/compose.json" port iam-service 8081
+docker compose -f "<task evidence directory>/compose.json" port web-ui 8080
+```
 
-### PMD 与 Trivy
+Build the JARs first, then the containers. `--wait` does not replace HTTP verification: check `/actuator/health` for each service, additionally check `/v3/api-docs` for business services, and verify the web entry and this requirement's APIs. Dynamic host ports may change after a restart, so read the mapping again each time; internal service-to-service addresses keep using Compose service names.
 
-在已固定代码版本的任务业务目录执行，报告输出到该任务的忽略证据目录：
+The existing `scripts/smoke-test.sh` accepts seven full HTTP origin environment variables: `IAM`, `CUSTOMER`, `CARD`, `ACCOUNT`, `TRANSACTION`, `AUTHORIZATION` and `MARKETING`. After setting all of them to the actual ports of this isolated environment, run `bash scripts/smoke-test.sh` from the task business directory; do not leave any out, or it falls back to the default ports. The script logs in, posts and authorizes, and tokens in the log should be masked. It only covers the baseline smoke; new requirements also need actual permission denials, idempotency/concurrency, error boundaries, persistence across restarts, and the performance and audit checks the requirement specifies. On Windows, Bash scripts can run in Git Bash; a macOS test run does not mean the Windows GUI or Docker has been tested.
+
+### PMD and Trivy
+
+Run in the task business directory at a fixed code version, writing reports to that task's ignored evidence directory:
 
 ```sh
 git diff --check
 mvn -B -ntp org.apache.maven.plugins:maven-pmd-plugin:3.26.0:pmd
 trivy --version
-trivy fs --scanners vuln,secret --format json --output "<任务证据目录>/trivy.json" .
+trivy fs --scanners vuln,secret --format json --output "<task evidence directory>/trivy.json" .
 ```
 
-PMD 的 `pmd` 是生成报告的 goal，成功退出不表示零问题；检查各模块 `target/pmd.xml`／`target/site/pmd.html`。Trivy 默认成功退出也不表示无漏洞，检查 JSON 中的漏洞与密钥结果，保留实际版本、扫描时间和数据库信息。先 `package` 再扫，使构建 JAR 及其中运行依赖进入核查范围；同一依赖在多个服务出现时可汇总，但不删除原始结果。
+PMD's `pmd` is the goal that generates the report; a successful exit does not mean zero issues, so check each module's `target/pmd.xml` / `target/site/pmd.html`. A successful Trivy exit by default does not mean there are no vulnerabilities either; check the vulnerability and secret results in the JSON, and keep the actual version, scan time and database information. Run `package` before scanning so the built JARs and the runtime dependencies inside them are in scope; when the same dependency appears in several services the results can be summarized, but the raw results are not deleted.
 
-把当前任务新增风险、基线已有风险和未覆盖范围分开。依赖告警即使当前应用未具备触发条件，也保留其原始严重级别并给出源码／配置依据；新需求可能改变适用性，必须重核。不要凭 Skill、模型总结、无 findings 的退出码或忽略规则宣称“安全通过”。这里的手动工具不等于 GitHub 已配置 Java CI；PR 无 check 时需明确列出实际本地验证。
+Keep new risks from the current task, risks already in the baseline, and uncovered scope separate. Even if the current application does not meet the trigger conditions for a dependency alert, keep its original severity and give the source/configuration basis; a new requirement may change applicability and must be rechecked. Do not claim "security passed" based on a Skill, a model summary, an exit code with no findings, or ignore rules. These manual tools do not mean GitHub has Java CI configured; when a PR has no checks, list the actual local verification explicitly.
 
-已有本地前端功能测试可能依赖仓库外的 jsdom 路径；这类脚本须先在需求分支中登记可复现依赖和执行方式，不能作为新基线已具备的通用测试。不要为消除缺工具错误自动下载或静默跳过。
+Existing local front-end functional tests may depend on a jsdom path outside the repository; such scripts must first register a reproducible dependency and execution method on the requirement branch, and cannot be treated as general tests the new baseline already has. Do not download automatically or silently skip to get rid of a missing-tool error.
 
-每项报告至少保留：任务与节点、代码 commit／未提交 diff 摘要、工具和版本、完整命令、执行时间、退出码、通过／失败／跳过数量、日志和问题引用。原始 Maven 报告保留在各模块 `target/`。PRD、设计、业务代码和测试应提交到任务分支；PR head 固定后生成的运行报告可放在独立忽略证据目录，正文写明被测 SHA，避免为提交含 SHA 的报告本身不断改变版本。Teams 成果回传引用真实文件和同一代码版本。`preset` 只用于明确允许的验证流程检查，不能充当真实开发单测、真实扫描或真实模型执行证据。
+Each report keeps at least: task and node, code commit / summary of the uncommitted diff, tool and version, full command, run time, exit code, pass/fail/skip counts, logs and issue references. Raw Maven reports stay in each module's `target/`. The PRD, design, business code and tests should be committed to the task branch; run reports generated after the PR head is fixed can go in a separate ignored evidence directory, with the tested SHA written in the body, to avoid the version changing endlessly from committing reports that contain the SHA. Teams result reports reference the real files and the same code version. `preset` is only for explicitly allowed verification flow checks and cannot serve as evidence of real development unit tests, real scans or real model execution.
 
-## PR 验收与交付基线更新
+## PR acceptance and delivery base branch update
 
-开发者已明确授权提交时，iCode 可在本任务绑定的 `codex/carddemo-…` 分支提交、推送并创建 base 为项目所配置交付基线分支的 PR；不能直接推平台 `main` 或业务交付基线，不能替 Owner 合并。只暂存本需求的明确文件／变更块，不用 `git add .` 带入已有脏文件。PRD、设计与代码提交、单测报告、验证报告必须对应当前 PR head；后续修复改变 SHA 后重新验证，不借旧报告通过。
+When the developer has explicitly authorized committing, iCode can commit and push on the task's bound `codex/carddemo-…` branch and create a PR whose base is the project's configured delivery base branch. It must not push directly to the platform branch or the business delivery base branch, and must not merge on behalf of the Owner. Stage only this requirement's explicit files/hunks; do not use `git add .`, which would pull in existing dirty files. The PRD, design and code commits, unit test report and verification report must correspond to the current PR head; when a later fix changes the SHA, verify again instead of passing on an old report.
 
-Owner 先检查需求范围、PR diff、真实原生工具／CLI 回执、必要测试和静态／安全报告，再在 Teams 明确验收或退回。通过后核对任务会话归集共享回执。维护者在获得合并授权后执行：
+The Owner first checks the requirement scope, the PR diff, the real native tool/CLI receipts, the required tests and the static/security reports, then explicitly accepts or rejects in Teams. After acceptance, check the sharing receipt for the collected task sessions. After getting merge authorization, the maintainer runs:
 
 ```sh
-gh pr view <PR号或URL> --json baseRefName,headRefName,headRefOid,state
-gh pr diff <PR号或URL>
-gh pr checks <PR号或URL>
-gh pr merge <PR号或URL> --merge
+gh pr view <PR number or URL> --json baseRefName,headRefName,headRefOid,state
+gh pr diff <PR number or URL>
+gh pr checks <PR number or URL>
+gh pr merge <PR number or URL> --merge
 ```
 
-无自动检查不等于检查通过。合并后，在**所配置交付基线分支的独立 checkout/worktree** 中确认工作区干净，再快进；不要在平台 main 或任务工作树里执行这组更新：
+No automatic checks does not mean checks passed. After merging, in **a separate checkout/worktree of the configured delivery base branch**, confirm the working tree is clean, then fast-forward; do not run this update in the platform checkout or in a task worktree:
 
 ```sh
-git -C "<业务基线checkout根>" status --short
-git -C "<业务基线checkout根>" fetch origin <交付基线分支>
-git -C "<业务基线checkout根>" merge --ff-only origin/<交付基线分支>
-git -C "<业务基线checkout根>" rev-parse HEAD
+git -C "<business base checkout root>" status --short
+git -C "<business base checkout root>" fetch origin <delivery base branch>
+git -C "<business base checkout root>" merge --ff-only origin/<delivery base branch>
+git -C "<business base checkout root>" rev-parse HEAD
 ```
 
-若不干净或不能快进，先定位冲突，不 reset、不强推、不复制旧 checkout 的脏业务代码。下一需求新绑定将以更新后的交付基线 HEAD 为基线，已有需求绑定和会话不迁移。
+If it is not clean or cannot fast-forward, locate the conflict first; do not reset, force-push or copy dirty business code from an old checkout. The next requirement's new binding uses the updated delivery base HEAD as its base; existing requirement bindings and sessions are not migrated.
 
-## 回退代码、重跑任务与清理环境
+## Reverting code, rerunning tasks and cleaning up the environment
 
-这三件事分别处理，先保存验收证据并确认相关原生任务已结束：
+Handle these three separately, after saving the acceptance evidence and confirming the related native tasks have ended:
 
-| 目的 | 操作 | 不会改变 |
+| Goal | Action | Does not change |
 |---|---|---|
-| 撤回已合并试验业务代码 | 从最新远端交付基线新建回退 worktree／分支，用 `git revert` 后向同一基线提 PR | 平台 main、原 checkout 脏改动、历史会话和 Teams 验收记录 |
-| 将某需求流程清回开始前 | 精确 `reset:task --project carddemo --task …`，先预览再 `--apply` | 已提交业务代码、Git PR／合并历史、其他需求和全局 iCode 历史 |
-| 释放本次测试资源 | 使用本需求准确 Compose 文件 `down -v` | 其他 Compose 项目和业务 Git 内容 |
+| Revert merged trial business code | Create a revert worktree/branch from the latest remote delivery base, `git revert`, then open a PR against the same base | Platform branch, dirty changes in the original checkout, historical sessions and Teams acceptance records |
+| Return a requirement flow to its pre-start state | Exact `reset:task --project carddemo --task …`, preview first, then `--apply` | Committed business code, Git PR/merge history, other requirements and global iCode history |
+| Release this test's resources | `down -v` with this requirement's exact Compose file | Other Compose projects and business Git content |
 
-用户已批准的试验合并需要还原时，维护者可从已核对的最新交付基线创建专用回退分支。对 merge commit 使用 `-m 1`，按合并的逆序逐一 revert；若原 PR 是 squash／普通提交则不用 `-m`，先核对提交父节点。示例只表示一个已确认 merge commit：
-
-```sh
-git fetch origin <交付基线分支>
-git worktree add -b codex/carddemo-revert-batch "<新的回退worktree绝对路径>" origin/<交付基线分支>
-git -C "<回退worktree根>" show --no-patch --format="%H %P" <待撤回mergeSHA>
-git -C "<回退worktree根>" revert -m 1 <待撤回mergeSHA>
-```
-
-在回退工作树运行受影响测试，核对只撤回本批业务变更，再推该分支、创建以交付基线为 base 的回退 PR，经审查合入并快进该基线。不要用 `reset --hard`、强推或手工覆盖代码抹掉历史；后续任务已依赖这些改动时，先评估逆序回退影响。
-
-任务数据重置的预览、备份恢复和活动会话保护见[根目录按需求重置](../../README.md#按需求重置)。它会归档明确属于该任务的生成资料及 Teams 原生副本；需要长期留存的验收报告先保存。撤回 reset 备份不等于撤回 Git revert。独立运行环境仅在无人使用后清理：
+When a user-approved trial merge needs to be undone, the maintainer can create a dedicated revert branch from the verified latest delivery base. Use `-m 1` for a merge commit and revert merges one by one in reverse order; if the original PR was a squash/regular commit, do not use `-m`, and check the commit's parents first. The example covers only one confirmed merge commit:
 
 ```sh
-docker compose -f "<该任务的准确compose.json>" down -v
+git fetch origin <delivery base branch>
+git worktree add -b codex/carddemo-revert-batch "<absolute path of new revert worktree>" origin/<delivery base branch>
+git -C "<revert worktree root>" show --no-patch --format="%H %P" <merge SHA to revert>
+git -C "<revert worktree root>" revert -m 1 <merge SHA to revert>
 ```
 
-`-v` 会删除该环境数据库卷；先核对 Compose project 与容器标签，不执行全局 prune，也不使用别人的配置文件。任何步骤遇到未知活动会话、身份／版本冲突或损坏材料时停止并报告，不降级成整库清空。
+Run the affected tests in the revert worktree, check that only this batch's business changes are reverted, then push the branch, create a revert PR with the delivery base as its base, merge it after review and fast-forward the base. Do not erase history with `reset --hard`, force pushes or manually overwriting code; when later tasks already depend on these changes, assess the impact of the reverse-order revert first.
+
+For task data reset preview, backup restore and active session protection, see [Reset a requirement in the root README](../../README.md#reset-a-requirement). It archives generated material and Teams native copies that clearly belong to the task; save acceptance reports you need to keep long term first. Undoing a reset backup is not the same as undoing a Git revert. Clean up the isolated runtime environment only once nobody is using it:
+
+```sh
+docker compose -f "<exact compose.json of the task>" down -v
+```
+
+`-v` deletes that environment's database volumes; check the Compose project and container labels first, do not run a global prune, and do not use someone else's configuration file. If any step hits an unknown active session, an identity/version conflict or corrupted material, stop and report it; do not fall back to wiping the whole repository.

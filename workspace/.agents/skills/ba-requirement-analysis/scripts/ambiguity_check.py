@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-模糊词扫描脚本
+Vague word scan script
 
-扫描文档中的模糊表述词汇，标注位置和上下文。
-遵循技能脚本接口规范。
+Scans a document for vague wording and reports the position and context.
+Follows the Skill script interface convention.
 
-用法:
+Usage:
     python ambiguity_check.py <document.md> [--json]
 
-退出码:
-    0 - 无模糊词
-    1 - 有少量模糊词（警告）
-    2 - 大量模糊词（失败）
-    3 - 参数错误
+Exit codes:
+    0 - no vague words
+    1 - a few vague words (warning)
+    2 - many vague words (failure)
+    3 - argument error
 """
 
 import sys
@@ -24,51 +24,52 @@ from pathlib import Path
 
 # Ambiguous word list for requirement documents
 # Format: (word, severity, category, suggestion)
+# Words are matched as whole words, case-insensitively.
 AMBIGUOUS_WORDS = [
-    # 程度模糊
-    ("大概", "high", "程度", "请给出具体数值或范围"),
-    ("大约", "high", "程度", "请给出具体数值或范围"),
-    ("左右", "medium", "程度", "请确认是否为精确值，或给出误差范围"),
-    ("差不多", "high", "程度", "请给出具体标准"),
-    ("尽量", "high", "程度", "请给出明确目标值和最低要求"),
-    ("尽可能", "high", "程度", "请给出明确目标值和最低要求"),
-    ("适当", "high", "程度", "请说明什么是'适当'，标准是什么"),
-    ("相应", "medium", "程度", "请明确对应什么，如何对应"),
+    # Vague degree
+    ("roughly", "high", "degree", "Give a specific value or range"),
+    ("approximately", "high", "degree", "Give a specific value or range"),
+    ("or so", "medium", "degree", "Confirm whether this is an exact value, or give a tolerance"),
+    ("more or less", "high", "degree", "Give a specific standard"),
+    ("as far as possible", "high", "degree", "Give a clear target value and a minimum requirement"),
+    ("as much as possible", "high", "degree", "Give a clear target value and a minimum requirement"),
+    ("appropriate", "high", "degree", "Explain what 'appropriate' means and what the standard is"),
+    ("corresponding", "medium", "degree", "State exactly what it corresponds to and how"),
 
-    # 时间模糊
-    ("尽快", "high", "时间", "请给出明确的时间要求或SLA"),
-    ("及时", "high", "时间", "请给出明确的时间要求或SLA"),
-    ("定期", "high", "时间", "请明确周期：每天/每周/每月？"),
-    ("不定期", "medium", "时间", "请说明触发条件或频率范围"),
-    ("暂时", "medium", "时间", "请说明预计持续时间或切换条件"),
+    # Vague time
+    ("as soon as possible", "high", "time", "Give a clear time requirement or SLA"),
+    ("promptly", "high", "time", "Give a clear time requirement or SLA"),
+    ("regularly", "high", "time", "State the period: daily/weekly/monthly?"),
+    ("from time to time", "medium", "time", "State the trigger condition or frequency range"),
+    ("temporarily", "medium", "time", "State the expected duration or switch-over condition"),
 
-    # 范围模糊
-    ("等", "medium", "范围", "请明确列出全部项"),
-    ("等等", "high", "范围", "请明确列出全部项，不要用'等等'"),
-    ("之类", "medium", "范围", "请明确列出全部类别"),
-    ("相关", "high", "范围", "请明确具体是哪些相关方/相关内容"),
-    ("有关", "medium", "范围", "请明确具体关系和内容"),
-    ("其他", "medium", "范围", "请列出'其他'包含的具体内容"),
+    # Vague scope
+    ("etc.", "medium", "scope", "List every item explicitly"),
+    ("and so on", "high", "scope", "List every item explicitly; do not use 'and so on'"),
+    ("and the like", "medium", "scope", "List every category explicitly"),
+    ("relevant", "high", "scope", "State exactly which parties/content are relevant"),
+    ("related", "medium", "scope", "State the exact relationship and content"),
+    ("other", "medium", "scope", "List what 'other' actually includes"),
 
-    # 可能性模糊
-    ("可能", "high", "可能性", "请说明概率或触发条件"),
-    ("也许", "high", "可能性", "请说明概率或触发条件"),
-    ("或许", "high", "可能性", "请说明概率或触发条件"),
+    # Vague likelihood
+    ("possibly", "high", "likelihood", "State the probability or trigger condition"),
+    ("maybe", "high", "likelihood", "State the probability or trigger condition"),
+    ("perhaps", "high", "likelihood", "State the probability or trigger condition"),
 
-    # 数量模糊
-    ("一些", "high", "数量", "请给出具体数量或范围"),
-    ("若干", "high", "数量", "请给出具体数量或范围"),
-    ("多数", "medium", "数量", "请明确比例（如80%）"),
-    ("少数", "medium", "数量", "请明确比例（如20%）"),
-    ("大量", "medium", "数量", "请给出估算量级（如万级/十万级）"),
-    ("少量", "medium", "数量", "请给出估算量级"),
+    # Vague quantity
+    ("some", "high", "quantity", "Give a specific number or range"),
+    ("several", "high", "quantity", "Give a specific number or range"),
+    ("most", "medium", "quantity", "State the proportion (e.g. 80%)"),
+    ("a few", "medium", "quantity", "State the proportion (e.g. 20%)"),
+    ("a large number of", "medium", "quantity", "Give an estimated order of magnitude (e.g. tens of thousands / hundreds of thousands)"),
+    ("a small number of", "medium", "quantity", "Give an estimated order of magnitude"),
 
-    # 质量模糊
-    ("比较好", "high", "质量", "请给出明确的标准和指标"),
-    ("较好", "high", "质量", "请给出明确的标准和指标"),
-    ("良好", "medium", "质量", "请给出量化指标"),
-    ("正常", "medium", "质量", "请说明什么是'正常'状态"),
-    ("合理", "high", "质量", "请说明判断标准"),
+    # Vague quality
+    ("fairly good", "high", "quality", "Give a clear standard and metric"),
+    ("better", "high", "quality", "Give a clear standard and metric"),
+    ("good", "medium", "quality", "Give a quantified metric"),
+    ("normal", "medium", "quality", "Explain what the 'normal' state is"),
+    ("reasonable", "high", "quality", "State the criteria for judging it"),
 ]
 
 
@@ -83,6 +84,7 @@ def scan_ambiguity(content: str) -> dict:
     findings = []
 
     for word, severity, category, suggestion in AMBIGUOUS_WORDS:
+        word_re = re.compile(r"(?<!\w)" + re.escape(word) + r"(?!\w)", re.IGNORECASE)
         for line_num, line in enumerate(lines, 1):
             # Skip code blocks and frontmatter
             # Simple heuristic: skip lines starting with ``` or inside code blocks
@@ -93,18 +95,19 @@ def scan_ambiguity(content: str) -> dict:
             # Find all occurrences
             start = 0
             while True:
-                idx = line.find(word, start)
-                if idx == -1:
+                match = word_re.search(line, start)
+                if match is None:
                     break
+                idx = match.start()
 
                 # Get context (20 chars before and after)
                 ctx_start = max(0, idx - 20)
                 ctx_end = min(len(line), idx + len(word) + 20)
                 context = line[ctx_start:ctx_end].strip()
 
-                # Check if already marked with [待确认]
+                # Check if already marked with [To be confirmed]
                 rest_of_line = line[idx:]
-                if "[待确认]" in rest_of_line[:50]:
+                if "[To be confirmed]" in rest_of_line[:60]:
                     start = idx + len(word)
                     continue
 
@@ -140,15 +143,15 @@ def scan_ambiguity(content: str) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="模糊词扫描")
-    parser.add_argument("filepath", help="文档路径 (.md)")
-    parser.add_argument("--json", action="store_true", help="输出JSON格式")
+    parser = argparse.ArgumentParser(description="Vague word scan")
+    parser.add_argument("filepath", help="Path to the document (.md)")
+    parser.add_argument("--json", action="store_true", help="Output JSON")
     parser.add_argument("--threshold", type=int, default=10,
-                        help="高严重度模糊词阈值，超过则失败（默认10）")
+                        help="Threshold of high-severity vague words; reaching it fails (default 10)")
     args = parser.parse_args()
 
     if not Path(args.filepath).exists():
-        print(f"错误: 文件不存在: {args.filepath}", file=sys.stderr)
+        print(f"Error: file not found: {args.filepath}", file=sys.stderr)
         sys.exit(3)
 
     content = read_file(args.filepath)
@@ -170,23 +173,23 @@ def main():
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print(f"=== 模糊词扫描结果 ===")
-        print(f"文件: {args.filepath}")
-        print(f"结论: {verdict}")
-        print(f"模糊词总数: {result['total_findings']}")
-        print(f"  高严重度: {result['high_severity']}")
-        print(f"  中严重度: {result['medium_severity']}")
+        print(f"=== Vague word scan result ===")
+        print(f"File: {args.filepath}")
+        print(f"Verdict: {verdict}")
+        print(f"Total vague words: {result['total_findings']}")
+        print(f"  High severity: {result['high_severity']}")
+        print(f"  Medium severity: {result['medium_severity']}")
         print()
-        print("按词汇统计:")
+        print("By word:")
         for word, info in sorted(result["by_word"].items(),
                                   key=lambda x: -x[1]["count"]):
             flag = "!" if info["severity"] == "high" else " "
-            print(f"  {flag} {word}: {info['count']}次 ({info['category']})")
+            print(f"  {flag} {word}: {info['count']} time(s) ({info['category']})")
         print()
         if result["findings"]:
-            print("前20处详情:")
+            print("First 20 findings:")
             for f in result["findings"][:20]:
-                print(f"  第{f['line']}行: '{f['context']}'")
+                print(f"  Line {f['line']}: '{f['context']}'")
                 print(f"         → {f['suggestion']}")
 
     sys.exit(exit_code)

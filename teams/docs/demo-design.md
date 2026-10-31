@@ -1,26 +1,26 @@
-# 当前工作区设计
+# Current workspace design
 
-## 产品呈现
+## Product presentation
 
-沿工作台、项目、资源、团队和连接等产品导航组织，不展示独立演示导航或演示模式文案。复杂配置先显示常用项，细节按需展开。任务资料默认收起，主要操作与结果优先。
+Organized along the product navigation (workspace, projects, resources, team, connections), with no separate demo navigation or demo-mode wording. Complex configuration shows the common items first and expands details on demand. Task material is collapsed by default; primary actions and results come first.
 
-## 业务合同
+## Business contract
 
-已确认：白金卡客户、3 个月、消费额外返现 0.5%。
+Confirmed: platinum card customers, 3 months, an extra 0.5% cashback on spending.
 
-本地验证假设（不是已批准的生产政策）：
-- 时间窗口为 2026-11-01T00:00:00+08:00（含）至 2027-02-01T00:00:00+08:00（不含）。
-- 验收交易发生于 2026-11-15，金额 12000 分。
-- 返现按整数分计算，半分向上舍入。120 元对应 0.60 元。
-- 不沿用旧餐饮报名、消费类别、门槛、次数和封顶约束；缺省不表示正式业务无限制。
-- 活动日期、消费范围、限额、退款及结算规则仍需确认。
+Local verification assumptions (not approved production policy):
+- The time window is 2026-11-01T00:00:00+08:00 (inclusive) to 2027-02-01T00:00:00+08:00 (exclusive).
+- The acceptance transaction is on 2026-11-15, amount 12000 cents.
+- Cashback is calculated in whole cents, rounding half a cent up. CNY 120.00 gives CNY 0.60.
+- The old dining campaign's enrollment, spending category, threshold, count and cap constraints are not carried over; their absence does not mean the formal business has no limits.
+- Campaign dates, spending scope, limits, refunds and settlement rules still need confirmation.
 
-## 状态与证据
+## State and evidence
 
-预置检查记录和能力候选用于交互验证，与真实原生工具回传、模型实验和生产扫描区分。来源信息保留在记录正文和元数据中，不把它们描述为已执行的历史测试。安全状态始终独立于功能验收。
+Preset check records and capability candidates are for interaction verification and are kept distinct from real native tool reports, model experiments and production scans. Source information stays in the record body and metadata, and they are not described as historical tests that were run. Security status is always independent of functional acceptance.
 
-旧活动保存状态不能直接混入新合同；由 Owner 显式重置工作区。重置不删除源码或原生工具会话。
+Old saved campaign state cannot be mixed directly into the new contract; the Owner resets the workspace explicitly. The reset does not delete source code or native tool sessions.
 
-## 验证原则
+## Verification principles
 
-测试包含客户资格、周期边界、整数金额、幂等、角色权限、提交条件、失败表单保留和知识图谱空态。浏览器检查覆盖导航、主交付流程及 Talent 跨服务交接。外部生产接入、原生桌面工具和真实模型实验不是此验收范围。
+Tests cover customer eligibility, period boundaries, whole-cent amounts, idempotency, role permissions, submission conditions, keeping a failed form, and the empty state of the knowledge graph. Browser checks cover navigation, the main delivery flow and the cross-service handoff to Talent. External production integration, native desktop tools and real model experiments are outside this acceptance scope.

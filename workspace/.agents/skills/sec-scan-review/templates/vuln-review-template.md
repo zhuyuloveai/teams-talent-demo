@@ -1,24 +1,24 @@
-# 漏洞评审
+# Vulnerability review
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 关联构建 | <构建ID> |
-| 扫描类型 | SAST/DAST/依赖 |
+| Related build | <build ID> |
+| Scan type | SAST/DAST/dependency |
 
-| # | 漏洞 | CVSS | 级别 | 误报 | 处置 | 责任人 |
+| # | Vulnerability | CVSS | Level | False positive | Handling | Owner |
 |---|------|------|------|------|------|--------|
-| V1 | <漏洞> | 7.5 | 高 | 否 | 修复/豁免 | <角色> |
+| V1 | <vulnerability> | 7.5 | High | No | Fix/Waiver | <role> |
 
-## 结论
+## Conclusion
 
-- 放行 / 打回
-- 中高危：n 项（清零/豁免）
+- Release / Reject
+- Medium and high: n items (cleared / waived)
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 豁免 | 理由+有效期+责任人 |
-| 证据 | 扫描结果引用 |
+| Waiver | Reason + validity period + owner |
+| Evidence | Reference to the scan results |

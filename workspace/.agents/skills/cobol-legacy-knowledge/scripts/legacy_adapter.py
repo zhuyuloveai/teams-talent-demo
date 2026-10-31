@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""五层模型→岗位消费格式适配器（纯格式转换，不做知识推断）。"""
+"""Five-level model → role-specific format adapter (pure format conversion, no knowledge inference)."""
 import argparse, json, sys
 
 PROFILES = {
@@ -9,7 +9,7 @@ PROFILES = {
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("model_json", help="五层模型JSON")
+    ap.add_argument("model_json", help="Five-level model JSON")
     ap.add_argument("--profile", choices=list(PROFILES), default="ba_requirement")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()

@@ -1,7 +1,7 @@
-# 后端架构规范
+# Backend architecture standards
 
-- DDD分层：Application/Domain/Infrastructure/API
-- 依赖方向：API→Application→Domain；Infrastructure实现Domain接口
-- 业务规则在Domain层，可追溯到需求编号
-- 统一错误码、日志规范、敏感信息脱敏
-- 禁止循环依赖、禁止层间越权调用
+- DDD layering: Application / Domain / Infrastructure / API
+- Dependency direction: API → Application → Domain; Infrastructure implements Domain interfaces
+- Business rules live in the Domain layer and are traceable to requirement IDs
+- Unified error codes, logging standards, masking of sensitive data
+- No circular dependencies; no calls that bypass layer boundaries

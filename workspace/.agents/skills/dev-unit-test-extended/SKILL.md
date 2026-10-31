@@ -1,6 +1,6 @@
 ---
 name: dev-unit-test-extended
-description: 超越基本单测：分层单测策略、Mock规范、测试金字塔指导、覆盖率缺口分析与测试坏味道检测。单元测试编写、覆盖率提升、测试质量改进时使用。
+description: "Goes beyond basic unit tests: layered unit test strategy, mocking conventions, test pyramid guidance, coverage gap analysis and test smell detection. Use when writing unit tests, raising coverage or improving test quality."
 ---
 
 ## 元数据

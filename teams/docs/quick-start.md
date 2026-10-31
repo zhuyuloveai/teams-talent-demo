@@ -1,26 +1,26 @@
-# 快速启动
+# Quick start
 
-需要 Node.js 24、npm 和 Git。进入 teams 目录：
+You need Node.js 24, npm and Git. Go to the teams directory:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Teams：http://127.0.0.1:45970/teams。Ctrl+C 停止。状态保存在忽略目录 .runtime，重启保留。Talents 是独立项目（仓库根目录的 talents/，http://127.0.0.1:45980/talents），两者通过共享数据目录 shared/data 交换数据；在仓库根目录执行 `npm run dev` 可同时启动两边。
+Teams: http://127.0.0.1:46970/teams. Press Ctrl+C to stop. State is kept in the ignored `.runtime` directory and survives restarts. Talents is a separate project (`talents/` in the repository root, http://127.0.0.1:46980/talents); the two exchange data through the shared data directory `shared/data`. Run `npm run dev` in the repository root to start both.
 
 
-Windows 可运行仓库 start-demo.cmd；macOS 可运行仓库启动/停止 command 文件。原生工具可选，不是网页运行的前提。未设置 `DEMO_ICODE_BINARY` 时会依次查找官方安装位置（Windows `%LOCALAPPDATA%\chrys\bin\icode.exe`，macOS/Linux `~/.local/bin/icode`）、uv / pipx 安装回执记录的入口、PATH 中的 `icode` / `chrys`，最后是仓库开发包；每个候选都要实际回答 `--version` 才算命中，装坏的一个不会挡住下一个。显式路径仍优先且失败即报错，不会退到其他安装。原生 Python 按选中的安装推导：启动器同目录、uv / pipx 的工具环境，再到 pyapp 运行时缓存，并用同一版本号校验。Agent 管理的「引擎定位」展示原生入口、版本、配置目录与会话根。配置自己的可执行文件时使用 DEMO_ICODE_BINARY 或 DEMO_OPENCODE_BINARY，不在仓库提交密钥。
+On Windows you can run `start-demo.cmd` in the repository; on macOS, `Start Demo.command` / `Stop Demo.command`. Native tools are optional and are not required to run the web pages. When `DEMO_ICODE_BINARY` is not set, Teams looks in this order: the official install location (Windows `%LOCALAPPDATA%\chrys\bin\icode.exe`, macOS/Linux `~/.local/bin/icode`), the entry recorded in a uv / pipx install receipt, `icode` / `chrys` on PATH, and finally the repository development package. A candidate only counts if it actually answers `--version`, so one broken install does not block the next. An explicit path still takes precedence and fails with an error instead of falling back to another install. The native Python is derived from the selected install: the launcher's own directory, the uv / pipx tool environment, then the pyapp runtime cache, verified against the same version number. "Locate engine" in Agent management shows the native entry, version, configuration directory and session root. To configure your own executable, use `DEMO_ICODE_BINARY` or `DEMO_OPENCODE_BINARY`; do not commit secrets to the repository.
 
-## 操作顺序
+## Order of operations
 
-Owner 在项目概览关联资产，在任务管理中分配需求。进入任务交付页后，Teams 按项目、任务和当前节点筛选共享目录中 Talents 写入的知识（没有时为空，不阻止准备）与真实版本 Skill 包；页面与 CLI 读取同一结果，采用前属于建议输入。任务按“我的任务 / 其他任务”分组，项目内可共同浏览，仅当前交付人可执行，Owner 也可承担任务；MKT-001 与新增交付需求共用需求澄清、功能开发、测试验证、需求验收四节点，按输入、结果、执行过程展示；结果列出本节点交付物和完成标准。iCode 通过 Teams CLI 明确采用输入后，提交 PRD 与澄清完成标准，再进入开发。设计、代码 PR／提交、单测和功能／检视／安全报告使用可追踪的产物引用与代码版本；上游引用在下游原样复用。开发、检查结果和进度也只由 CLI 回传；页面切换节点不推进状态。执行过程上部是 CLI 主动回传的业务进展，下部按真实用户轮次只读刷新已保存的用户输入与模型可见回复，不展示隐藏思考、Hook 或工具流水；会话活动不自动变成业务进度。预置检查明确标注来源，同批任一失败都不能提交验收，Owner 退回后必须重新检查。Owner 验收通过后，Teams 自动归集前面节点关联的一个或多个会话，写入共享目录 `shared/data/teams/task-sessions`；页面分别展示验收状态和共享回执。Talents 消费这些会话的分析链路尚未接入；共享成功不表示已分析，不作为本次任务完成条件。Talents 只对 Owner 开放：远端索引等产物写入共享目录，Teams 在项目知识中展示；文件类知识和改进建议由 Talents 以 PR 提交到代码仓。
+The Owner links assets in the project overview and assigns requirements in Task management. On the task delivery page, Teams filters, by project, task and current node, the knowledge Talents wrote to the shared directory (empty if there is none, which does not block preparation) and the real versioned Skill packages. The page and the CLI read the same result, and it counts as suggested input until adopted. Tasks are grouped into "My tasks / Other tasks" and can be browsed by everyone in the project, but only the current assignee can execute them; the Owner can also take on tasks. MKT-001 and newly added delivery requirements share the four nodes Requirement clarification, Feature development, Test verification and Requirement acceptance, each shown as input, result and execution process; the result lists the node's deliverables and completion criteria. After iCode explicitly adopts the input through the Teams CLI, it submits the PRD and clarification completion criteria, then moves on to development. Design, code PR/commit, unit tests and functional/review/security reports use traceable artifact references and code versions; downstream nodes reuse upstream references unchanged. Development, check results and progress are also reported back only through the CLI; switching nodes on the page does not advance state. The upper part of the execution process shows the business progress the CLI reported; the lower part refreshes, read-only and per real user turn, the saved user input and model-visible replies, without hidden thinking, Hooks or tool streams. Session activity does not automatically become business progress. Preset checks clearly mark their source; if any check in a batch fails, acceptance cannot be submitted, and after an Owner rejection the checks must run again. After the Owner accepts, Teams automatically collects the one or more sessions linked to the earlier nodes and writes them to the shared directory `shared/data/teams/task-sessions`; the page shows the acceptance status and the sharing receipt separately. The Talents analysis chain that consumes these sessions is not wired in yet; successful sharing does not mean they were analysed and is not a completion condition for the task. Talents is open only to the Owner: remote indexes and similar artifacts are written to the shared directory and shown in Teams project knowledge, and file-type knowledge and improvement suggestions are submitted by Talents to the repository as PRs.
 
-UI 沿产品页面操作，不会发生真实支付。用户确认独立需求的 iCode 作业后，将使用所选终端打开本机 iCode TUI；输入工作指令时附带当前节点上下文入口，由开发者决定交互和是否继续后续节点。不会自动串行完成整项需求；普通页面访问及仅打开 TUI 不会提交模型任务。检查记录区分实际执行与预置结果，生产安全状态未验证。
+The UI follows the product pages and never makes a real payment. After the user confirms the iCode job for a standalone requirement, the local iCode TUI opens in the chosen terminal; work instructions carry the entry point for the current node context, and the developer decides the interaction and whether to continue to later nodes. The whole requirement is not completed automatically in sequence; ordinary page visits and simply opening the TUI do not submit model tasks. Check records distinguish actual runs from preset results; production security status is unverified.
 
-任务没有可用项目 worktree 时，「配置工作目录」会先使用既有 `.git`；没有 `.git` 则创建本地 Git（空初始提交，不上传），也可明确选择“不使用 Git”按普通目录继续。目录必须位于 Teams 工程之外；local-only 或普通目录不允许声称远程 PR/codeVersion，详见 [任务工作目录与本地 Git 回退](task-workspaces.md)。
+When a task has no usable project worktree, "Configure working directory" first uses an existing `.git`; without `.git` it creates a local Git repository (with an empty initial commit, not uploaded). You can also explicitly choose "Do not use Git" to continue with a plain directory. The directory must be outside the Teams project. Local-only or plain directories may not claim a remote PR/codeVersion; see [Task working directories and local Git fallback](task-workspaces.md).
 
-## 验证命令
+## Verification commands
 
 ```sh
 npm run typecheck
@@ -29,7 +29,7 @@ npm run build
 npm run test:http
 ```
 
-浏览器脚本需要额外 Chrome 运行环境；只有实际执行的检查才可声明通过。工作区旧状态与当前活动冲突时，由 Owner 使用重置工作区重新开始；不会重写源码或原生会话。
+Browser scripts need an additional Chrome runtime; only checks that actually ran may be declared as passed. When old workspace state conflicts with current activity, the Owner uses the workspace reset to start over; it does not rewrite source code or native sessions.
 
 ## CLI
 
@@ -38,24 +38,24 @@ node scripts/teams-demo.mjs --help
 node scripts/teams-demo.mjs context get --project carddemo --task DEMO-MKT-001 --node prepare
 ```
 
-CLI 仅连接明确的本机服务，并要求项目、任务和节点上下文。
+The CLI only connects to an explicit local service and requires the project, task and node context.
 
-## 本机持久配置
+## Persistent local configuration
 
-在同一 Git 仓库的 `teams` 中开发与运行：`npm run dev` 用于前台运行，`npm run launch` / `npm run stop` 用于后台启停，并核对当前目录的服务归属。新作业和 Skill 源文件默认来自该仓库的 `workspace`，不依赖另一份应用副本。
+Develop and run in `teams` of the same Git repository: `npm run dev` runs in the foreground, and `npm run launch` / `npm run stop` start and stop in the background and check that the service belongs to the current directory. New jobs and Skill source files come from that repository's `workspace` by default and do not depend on another copy of the app.
 
-本机配置放在被 Git 忽略的 `teams/.local/config.json`，启动、停止、服务和 Teams CLI 共用；显式 shell 环境变量优先。默认文件缺失使用原默认值；显式指定的文件缺失、损坏 JSON、未知键和错误类型直接报错。路径键 `DEMO_MATERIAL_ROOT`、`DEMO_STATE_DIR`、`DEMO_SHARED_DIR`（共享数据目录，默认 ../shared/data）、`DEMO_ICODE_BINARY`、`DEMO_ICODE_PYTHON`、`DEMO_OPENCODE_BINARY` 均须为绝对路径；端口键 `DEMO_PORT`、`DEMO_TALENT_PORT` 须为 1024–65535 的 JSON 整数。绝对路径环境变量 `DEMO_LOCAL_CONFIG` 可选择独立配置文件，用于隔离运行与测试。
+Local configuration goes in the Git-ignored `teams/.local/config.json`, shared by start, stop, the service and the Teams CLI; explicit shell environment variables take precedence. If the default file is missing, the original defaults are used; if an explicitly specified file is missing, has broken JSON, unknown keys or wrong types, it fails with an error. The path keys `DEMO_MATERIAL_ROOT`, `DEMO_STATE_DIR`, `DEMO_SHARED_DIR` (shared data directory, default ../shared/data), `DEMO_ICODE_BINARY`, `DEMO_ICODE_PYTHON` and `DEMO_OPENCODE_BINARY` must all be absolute paths; the port keys `DEMO_PORT` and `DEMO_TALENT_PORT` must be JSON integers from 1024 to 65535. The absolute-path environment variable `DEMO_LOCAL_CONFIG` can select a separate configuration file for isolated runs and tests.
 
-Teams 状态可放在 `.local/state/teams`。独立 Talents 使用自己的 `.runtime` 或配置目录；旧 Talent 的状态与回执原样保留，不能直接交给新 Talents Store。Teams CLI 默认回执随 Teams 状态目录保存。iCode 与其 Python 可指向仓库外的安装位置。不要把整个材料根目录指向旧运行副本。当前产品仅提供新作业入口；原生历史会话保持原位置，迁移备份仅保存在本机；不会自动迁移或重写。
+Teams state can go in `.local/state/teams`. The standalone Talents uses its own `.runtime` or configuration directory; the state and receipts of the old Talent are kept as they are and cannot be handed directly to the new Talents store. Teams CLI receipts are saved with the Teams state directory by default. iCode and its Python can point to install locations outside the repository. Do not point the whole material root at an old running copy. The product currently offers only the new job entry; native historical sessions stay where they are, migration backups are kept only on the local machine, and nothing is migrated or rewritten automatically.
 
-旧 MKT-001 数据在启动时执行一次明确迁移：先将原状态逐字节备份到同目录的 `state.json.pre-unified-delivery.json`，再建立保留原任务 ID 的统一交付记录。旧顶层状态、上下文、交易和会话证据保持原样，历史预置结果不会被标为新的 iCode 执行。后续启动不重复迁移。
+Old MKT-001 data is migrated once, explicitly, at startup: the original state is first backed up byte for byte to `state.json.pre-unified-delivery.json` in the same directory, and then a unified delivery record that keeps the original task ID is created. The old top-level state, context, transactions and session evidence stay as they are, and historical preset results are not marked as new iCode runs. Later starts do not migrate again.
 
-## iCode TUI 与任务会话
+## iCode TUI and task sessions
 
-Windows 与 macOS 均以可交互 TUI 启动，沿用 Agent 管理中的终端及本机 Agent/模型配置。当前节点上下文通过两条仅在 Teams 作业进程中生效的原生 Hook 带入；安装前备份已有 Hooks，保留其他规则。首次输入后仍须由 iCode 读取并通过 Teams CLI 明确采用，打开终端不等于已读取或已完成。`icode run --task ... --json` 仅保留为显式自动验证工具，不是页面默认启动方式。
+On both Windows and macOS, iCode starts as an interactive TUI, using the terminal from Agent management and the local Agent/model configuration. The current node context is brought in through two native Hooks that only take effect in the Teams job process; existing Hooks are backed up before installation and other rules are kept. After the first input, iCode must still read the context and explicitly adopt it through the Teams CLI; opening the terminal does not mean it has been read or completed. `icode run --task ... --json` is kept only as an explicit automated verification tool and is not the page's default start method.
 
-Teams 启动的 iCode 作业关闭 OTLP Trace，不依赖 Trace 接收器或 exporter。任务状态仍通过 Teams CLI 回传；「任务追溯 → 任务会话」和交付节点的执行过程读取本机原生会话文件，展示用户输入与模型回复。关闭 Trace 不影响会话保存、恢复和验收后会话归集。此设置在新进程中生效，已运行的 iCode 会话需要退出后重新进入；历史 Trace 文件保留。
+iCode jobs started by Teams turn off OTLP Trace and do not depend on a Trace receiver or exporter. Task status is still reported back through the Teams CLI; "Task traceability → Task sessions" and the execution process of delivery nodes read the local native session files and show user input and model replies. Turning off Trace does not affect session saving, resuming or the session collection after acceptance. This setting takes effect in new processes; running iCode sessions need to exit and re-enter. Historical Trace files are kept.
 
-Owner 验收时，无需关闭仍在使用的 TUI：Teams 核验该任务的原生会话归属，固定当时已落盘正文及摘要，重试使用同一快照。会话后续交互不会改变这次验收上报；验收结论、TUI 退出状态与 共享导出状态分别记录。
+At Owner acceptance there is no need to close a TUI that is still in use: Teams verifies the ownership of the task's native sessions, freezes the transcript and summary already written to disk at that moment, and retries use the same snapshot. Later interaction in the session does not change this acceptance report; the acceptance verdict, the TUI exit status and the shared export status are recorded separately.
 
-iCode TUI 若提示“轨迹记录无法启动，已为此会话禁用”，任务不会阻塞；Teams 会显示“详细轨迹不可用，任务可继续”，并在启动入口默认恢复原会话、允许明确选择“新开会话（不保留当前对话）”。本地轨迹与 OTLP trace 是两条链路，详见 [原生轨迹健康与恢复](native-trajectory-health.md)。
+If the iCode TUI says the trajectory recording could not start and was disabled for this session, the task is not blocked. Teams shows "Detailed trajectory unavailable; the task can continue", resumes the original session by default at the start entry, and lets you explicitly choose to open a new session (without keeping the current conversation). The local trajectory and the OTLP trace are two separate channels; see [Native trajectory health and recovery](native-trajectory-health.md).

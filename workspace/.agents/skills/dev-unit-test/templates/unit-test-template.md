@@ -1,29 +1,29 @@
-# 单测结构模板
+# Unit test structure template
 
 ```text
-功能：<被测函数/类>
+Feature: <function/class under test>
 
-用例1-正常路径：
-  Given <前置状态>
-  When  <操作>
-  Then  <断言>
+Case 1 - normal path:
+  Given <precondition>
+  When  <action>
+  Then  <assertion>
 
-用例2-边界路径：
-  Given <边界输入>
-  When  <操作>
-  Then  <边界断言>
+Case 2 - boundary path:
+  Given <boundary input>
+  When  <action>
+  Then  <boundary assertion>
 
-用例3-异常路径：
-  Given <异常输入>
-  When  <操作>
-  Then  <异常断言>
+Case 3 - exception path:
+  Given <exceptional input>
+  When  <action>
+  Then  <exception assertion>
 ```
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 覆盖双指标 | 行/分支覆盖率 |
-| 关键路径 | 关键路径清单与覆盖 |
+| Two coverage metrics | Line / branch coverage |
+| Key paths | Key path list and coverage |

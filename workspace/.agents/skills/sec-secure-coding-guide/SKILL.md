@@ -1,6 +1,6 @@
 ---
 name: sec-secure-coding-guide
-description: 提供银行场景的安全编码规范与正反示例（OWASP Top 10变体），代码编写前/评审中/咨询时使用，并自动检查安全编码合规性。
+description: "Provides secure coding standards with good and bad examples for banking scenarios (OWASP Top 10 variants). Use before writing code, during reviews and for consultation; also checks secure coding compliance automatically."
 ---
 
 ## 元数据

@@ -1,85 +1,85 @@
-﻿# 支付领域词汇表
+# Payments Domain Glossary
 
-> 本词汇表为支付领域统一术语标准。所有 Agent 产出中涉及的支付术语须与本表一致，禁止使用别名。
+> This glossary is the unified terminology standard for the payments domain. Every payment term in Agent outputs must match this table; aliases are forbidden.
 
-## 使用说明
+## How to use
 
-- 术语一致性由 `scripts/term_check.py` 自动校验
-- 新增术语须登记待确认，经业务架构确认后入库
-- 别名栏标注的词汇在产出中**禁止使用**，`term_check.py` 会命中告警
-- L3 字段：别名表（禁用别名与原因）+ 来源（术语/约束来源）
+- Terminology consistency is checked automatically by `scripts/term_check.py` (case-insensitive, whole words)
+- New terms are registered as to be confirmed and added after business architecture confirmation
+- Words in the alias column are **forbidden** in outputs; `term_check.py` raises a hit for them
+- L3 fields: alias table (forbidden aliases and reasons) + source (source of the term/constraint)
 
-## 核心术语
+## Core terms
 
-| 术语 | 英文 | 定义 | 别名（禁用） | 来源 |
-|------|------|------|-------------|------|
-| 转账 | Transfer | 账户间资金划转 | 转帐、划账 | 行内业务术语标准 |
-| 日累计限额 | Daily Cumulative Limit | 单日转账累计上限金额 | 日限额 | 行内限额管理办法 |
-| 单笔限额 | Single Transaction Limit | 单笔交易金额上限 | 笔限额 | 行内限额管理办法 |
-| 年累计限额 | Annual Cumulative Limit | 年度转账累计上限金额 | 年限额 | 行内限额管理办法 |
-| 清算 | Clearing | 交易数据汇总与资金净额计算 | - | CNAPS规范 |
-| 结算 | Settlement | 实际资金交收 | - | CNAPS规范 |
-| 对账 | Reconciliation | 交易记录与账务记录一致性核对 | 核账 | 行内对账管理办法 |
-| 冲正 | Reversal | 对已完成交易发起全额抵消 | - | 央行支付系统运行办法 |
-| 记账 | Accounting Entry | 在账户余额上反映资金变动 | 入账 | 会计基本准则 |
-| 交易号 | Transaction ID | 全局唯一交易标识 | 流水号 | 行内编码规范 |
-| 参考号 | Reference Number | 渠道/批次维度辅助标识 | - | 行内编码规范 |
-| 风控 | Risk Control | 交易风险评估与控制 | - | 行内风险管理办法 |
-| 批量代发 | Batch Disbursement | 批量向多账户发放资金 | 批量转账 | 行内业务术语标准 |
-| 批量代扣 | Batch Deduction | 批量从多账户扣款 | 批量扣款 | 行内业务术语标准 |
-| 协议支付 | Agreement Payment | 签约后按协议自动扣款 | - | 《非银行支付机构条例》 |
-| 跨境汇款 | Cross-border Remittance | 跨境资金转移 | 国际转账 | 外汇管理局规定 |
-| 长款 | Excess Record | 我方有记录对方无 | 多记 | 行内对账管理办法 |
-| 短款 | Short Record | 对方有记录我方无 | 少记 | 行内对账管理办法 |
-| 串户 | Wrong Account | 记录正确但入错账户 | 错账 | 行内对账管理办法 |
-| 备付金 | Reserve Fund | 支付机构缴存央行的准备金 | 保证金 | 《非银行支付机构条例》 |
+| Term | Definition | Alias (forbidden) | Source |
+|------|------|-------------|------|
+| Transfer | Movement of funds between accounts | transferal, fund move | Internal business terminology standard |
+| Daily Cumulative Limit | Maximum cumulative transfer amount per day | daily limit | Internal limit management measures |
+| Single Transaction Limit | Maximum amount of one transaction | txn limit | Internal limit management measures |
+| Annual Cumulative Limit | Maximum cumulative transfer amount per year | annual limit | Internal limit management measures |
+| Clearing | Aggregating transaction data and calculating net fund amounts | - | CNAPS specification |
+| Settlement | Actual exchange of funds | - | CNAPS specification |
+| Reconciliation | Checking that transaction records and accounting records agree | account check | Internal reconciliation management measures |
+| Reversal | Full offset of a completed transaction | - | PBOC payment system operating rules |
+| Posting | Reflecting a fund movement in the account balance | - | Basic accounting standards |
+| Transaction ID | Globally unique transaction identifier | serial number | Internal coding standard |
+| Reference Number | Auxiliary identifier at channel/batch level | - | Internal coding standard |
+| Risk Control | Assessing and controlling transaction risk | - | Internal risk management measures |
+| Batch Disbursement | Paying funds to many accounts in a batch | batch transfer | Internal business terminology standard |
+| Batch Deduction | Debiting many accounts in a batch | batch debit | Internal business terminology standard |
+| Agreement Payment | Automatic debit under a signed agreement | - | Regulations on Non-Bank Payment Institutions |
+| Cross-border Remittance | Cross-border fund movement | international transfer | SAFE regulations |
+| Excess Record | We have a record, the other party does not | over-recorded | Internal reconciliation management measures |
+| Short Record | The other party has a record, we do not | under-recorded | Internal reconciliation management measures |
+| Wrong Account | The record is correct but booked to the wrong account | wrong posting | Internal reconciliation management measures |
+| Reserve Fund | Reserve that a payment institution deposits with the central bank | security deposit | Regulations on Non-Bank Payment Institutions |
 
-## 易混淆术语对比
+## Easily confused terms
 
-> 以下术语含义不同，使用时须根据上下文选择正确术语。`term_check.py` 不会拦截这些词（它们都是合法术语），但评审时须确认用法正确。
+> These terms have different meanings; choose the right one from the context. `term_check.py` does not block them (they are all valid terms), but reviews must confirm they are used correctly.
 
-| 术语A | 术语B | 区别 | 常见错误 |
+| Term A | Term B | Difference | Common mistake |
 |------|------|------|---------|
-| 清算 | 结算 | 清算=算账（净额计算）；结算=交钱（资金转移） | 将"清算"写成"结算"或反向 |
-| 冲正 | 撤销 | 冲正=交易后抵消（SUCCESS->REVERSED）；撤销=交易前取消（INIT->CANCELLED） | 对已完成交易用"撤销"而非"冲正" |
-| 退回 | 退款 | 退回=资金原路返回（系统自动）；退款=主动发起资金返还 | 将自动退回写成退款 |
-| 扣款 | 扣帐 | 扣款=业务动作；扣帐=会计术语 | 业务文档中用扣帐 |
-| 长款 | 多记 | 长款=对账差异类型；多记=非标准口语 | 用"多记"替代"长款" |
+| Clearing | Settlement | Clearing = doing the sums (net calculation); settlement = paying the money (fund movement) | Writing "clearing" for "settlement" or the other way round |
+| Reversal | Cancellation | Reversal = offset after the transaction (SUCCESS->REVERSED); cancellation = cancel before the transaction (INIT->CANCELLED) | Using "cancellation" instead of "reversal" for a completed transaction |
+| Return | Refund | Return = funds go back along the original route (automatic); refund = an actively initiated repayment | Calling an automatic return a refund |
+| Deduction | Debit entry | Deduction = business action; debit entry = accounting term | Using "debit entry" in business documents |
+| Excess Record | over-recorded | Excess record = reconciliation difference type; over-recorded = non-standard colloquial | Using "over-recorded" instead of "excess record" |
 
-## 状态术语
+## State terms
 
-| 术语 | 定义 | 允许后续状态 |
+| Term | Definition | Allowed next states |
 |------|------|-------------|
-| INIT | 已创建未提交 | PENDING, CANCELLED |
-| PENDING | 已提交待风控 | PROCESSING, REJECTED |
-| PROCESSING | 风控通过处理中 | SUCCESS, FAILED, TIMEOUT |
-| SUCCESS | 交易成功 | REVERSING |
-| FAILED | 交易失败（可重试） | PENDING |
-| REJECTED | 风控拒绝（不可重试） | 终态 |
-| TIMEOUT | 超时未确认 | SUCCESS, FAILED |
-| REVERSING | 冲正中 | REVERSED, FAILED |
-| REVERSED | 已冲正 | 终态 |
-| CANCELLED | 已撤销 | 终态 |
+| INIT | Created, not submitted | PENDING, CANCELLED |
+| PENDING | Submitted, awaiting risk control | PROCESSING, REJECTED |
+| PROCESSING | Risk passed, processing | SUCCESS, FAILED, TIMEOUT |
+| SUCCESS | Transaction succeeded | REVERSING |
+| FAILED | Transaction failed (retryable) | PENDING |
+| REJECTED | Rejected by risk control (not retryable) | Final state |
+| TIMEOUT | Timed out, unconfirmed | SUCCESS, FAILED |
+| REVERSING | Reversal in progress | REVERSED, FAILED |
+| REVERSED | Reversed | Final state |
+| CANCELLED | Cancelled | Final state |
 
-## 限额术语
+## Limit terms
 
-| 术语 | 校验时机 | 层级 |
+| Term | When checked | Level |
 |------|---------|------|
-| 单笔限额 | 交易发起时 | L1 |
-| 日累计限额 | 交易发起时 | L2 |
-| 年累计限额 | 交易发起时 | L3 |
-| 渠道限额 | 交易发起时 | L4 |
-| 客户分级限额 | 交易发起时 | L5 |
+| Single Transaction Limit | When the transaction is initiated | L1 |
+| Daily Cumulative Limit | When the transaction is initiated | L2 |
+| Annual Cumulative Limit | When the transaction is initiated | L3 |
+| Channel Limit | When the transaction is initiated | L4 |
+| Customer Tier Limit | When the transaction is initiated | L5 |
 
-> 限额校验顺序：L1 -> L2 -> L3 -> L4 -> L5（短路评估，任一不满足即拒绝）
+> Limit check order: L1 -> L2 -> L3 -> L4 -> L5 (short-circuit evaluation; reject as soon as one fails)
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 | 示例 |
+| Field | Requirement | Example |
 |------|------|------|
-| 别名表 | 禁用别名与原因 | 转帐（异体字）、划账（口语化） |
-| 来源 | 术语/约束来源 | CNAPS规范、行内管理办法 |
-| 英文 | 国际对照 | Transfer、Clearing |
-| 层级 | 限额术语的校验层级 | L1/L2/L3/L4/L5 |
+| Alias table | Forbidden aliases and reasons | transferal (non-standard variant), fund move (colloquial) |
+| Source | Source of the term/constraint | CNAPS specification, internal management measures |
+| Definition | One-sentence business definition | Transfer: movement of funds between accounts |
+| Level | Check level of limit terms | L1/L2/L3/L4/L5 |

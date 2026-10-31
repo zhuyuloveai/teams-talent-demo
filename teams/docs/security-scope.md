@@ -1,5 +1,5 @@
-# 权限与安全范围
+# Permissions and security scope
 
-Owner 管理项目、分配、验收及发布；成员准备上下文、提交工作与交付成果。两种本地角色共用状态，但所有写接口检查角色、Origin、访问令牌与 revision。
+The Owner manages projects, assignment, acceptance and publishing; members prepare context, submit work and deliver results. The two local roles share state, but every write API checks the role, Origin, access token and revision.
 
-浏览器角色选择不等于企业身份认证。本地 HTTP 服务只监听127.0.0.1；真实企业登录、生产鉴权、安全扫描及支付能力尚未接入。功能验收不改变 security=unverified。
+Choosing a role in the browser is not enterprise authentication. The local HTTP service listens only on 127.0.0.1; real enterprise login, production authentication, security scanning and payment capabilities are not connected yet. Functional acceptance does not change security=unverified.

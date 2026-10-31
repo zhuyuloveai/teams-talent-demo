@@ -1,181 +1,181 @@
 ---
 name: bank-domain-payments
-description: 统一支付领域语言，提供领域词汇表、核心业务流程（支付/冲正/清算/对账）与监管约束，校验产出中的术语一致性。任何涉及支付业务的Agent任务时使用。
+description: Unify the payments domain language. Provides the domain glossary, core business processes (payment / reversal / clearing / reconciliation) and regulatory constraints, and checks terminology consistency in outputs. Use for any Agent task that involves payment business.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 2.0.0 |
-| owner | 全员 / 业务架构负责人 |
-| category | 领域技能 |
+| owner | Everyone / Business architecture lead |
+| category | Domain skill |
 | priority | P0 |
 | depth | L2 |
 
-# bank-domain-payments 技能
+# bank-domain-payments Skill
 
-## 概述
+## Overview
 
-本技能用于统一支付领域语言，避免术语漂移与业务理解偏差。支付业务涉及资金安全与监管合规，术语不一致会导致开发误解、对账差错甚至资金风险。
+This Skill unifies the payments domain language to prevent terminology drift and misunderstandings of the business. Payment business involves fund safety and regulatory compliance; inconsistent terms lead to development misunderstandings, reconciliation errors and even financial risk.
 
-**核心价值：**
-- 统一术语，消除"转账/转帐/划账"混用
-- 明确清算≠结算、冲正≠撤销等易混淆概念
-- 提供限额体系、状态机、对账规则等可直接引用的业务约束
-- 校验产出文档中的术语一致性
+**Core value:**
+- Unify terms and stop mixing "transfer / transferal / fund move"
+- Make easily confused concepts explicit, such as clearing ≠ settlement and reversal ≠ cancellation
+- Provide business constraints that can be cited directly: limit hierarchy, state machine, reconciliation rules
+- Check terminology consistency in output documents
 
-## 工作流
+## Workflow
 
-### Step 1: 加载领域知识
+### Step 1: Load domain knowledge
 
-根据任务需要加载参考资料：
+Load references as the task requires:
 
-| 资料 | 内容 | 何时加载 |
+| Reference | Content | When to load |
 |------|------|---------|
-| `references/payments-basics.md` | 支付业务全景、类型、概念、限额体系、状态机、清算对账、监管约束、典型业务规则 | 任何支付相关任务 |
-| `references/iso20022-reference.md` | ISO 20022 报文标准、结构、开发约束 | 涉及报文开发/解析 |
-| `references/regulatory-requirements.md` | 限额/反洗钱/数据安全/支付清算监管速查 | 涉及合规需求/设计 |
-| `templates/glossary.md` | 领域词汇表（术语/英文/定义/别名/来源） | 校验术语一致性 |
-| `templates/process-map.md` | 核心业务流程图谱（转账/冲正/对账/清算） | 理解业务流程时 |
+| `references/payments-basics.md` | Payment business overview, types, concepts, limit hierarchy, state machine, clearing and reconciliation, regulatory constraints, typical business rules | Any payment-related task |
+| `references/iso20022-reference.md` | ISO 20022 message standard, structure, development constraints | Message development/parsing |
+| `references/regulatory-requirements.md` | Quick reference for limit / AML / data security / payment clearing regulation | Compliance requirements/design |
+| `templates/glossary.md` | Domain glossary (term / definition / alias / source) | Checking terminology consistency |
+| `templates/process-map.md` | Core business process map (transfer / reversal / reconciliation / clearing) | Understanding business processes |
 
-### Step 2: 任务中引用术语
+### Step 2: Use the terms during the task
 
-编写需求/设计/测试文档时：
-- 使用词汇表中的标准术语，禁止使用别名
-- 引用业务规则时标注编号（如 BR-PAY-001）
-- 引用监管要求时标注文号（如 `[央行令〔2018〕第2号]`）
-- 描述状态迁移时使用标准状态名（INIT/PENDING/SUCCESS 等）
+When writing requirement / design / test documents:
+- Use the standard terms from the glossary; aliases are forbidden
+- Cite the rule ID when referring to a business rule (for example BR-PAY-001)
+- Cite the regulation reference when referring to a regulatory requirement (for example `[PBOC Order [2018] No. 2]`)
+- Use the standard state names when describing state transitions (INIT/PENDING/SUCCESS, etc.)
 
-### Step 3: 术语一致性校验
+### Step 3: Terminology consistency check
 
-运行 `scripts/term_check.py <目标文档.md> [--glossary 词汇表.md]`：
+Run `scripts/term_check.py <target-document.md> [--glossary glossary.md]`:
 
-- 检测已用术语（与词汇表比对）
-- 检测禁用别名（命中即告警，须修正）
-- 检测疑似未收录术语（含"限额/账/款"的复合词不在词表中）
-- 退出码：0=通过，1=有未收录告警，2=有禁用别名，3=参数错误
+- Detects the terms used (compared with the glossary)
+- Detects forbidden aliases (every hit is a warning and must be fixed)
+- Detects suspected uncataloged terms (compound phrases ending in "limit / quota / account / statement" that are not in the glossary)
+- Exit codes: 0 = pass, 1 = uncataloged-term warning, 2 = forbidden alias found, 3 = argument error
 
-### Step 4: 未收录术语处理
+### Step 4: Handle uncataloged terms
 
-发现疑似未收录术语时：
-1. 判断是否为有效支付术语
-2. 若有效：登记待确认，提交业务架构审核
-3. 若无效（口语化/泛化）：修改为标准术语
-4. 审核通过后新增至词汇表
+When a suspected uncataloged term is found:
+1. Decide whether it is a valid payment term
+2. If valid: register it as to be confirmed and submit it for business architecture review
+3. If not valid (colloquial/generic): replace it with the standard term
+4. After approval, add it to the glossary
 
-### Step 5: 输出领域约束说明
+### Step 5: Write the domain constraints section
 
-在产出文档中附"领域约束"章节：
-- 本任务涉及的支付类型与业务规则编号
-- 引用的监管要求（文号+条款）
-- 限额校验要求（层级与校验顺序）
-- 状态机约束（允许的状态迁移路径）
+Append a "Domain constraints" section to the output document:
+- Payment types and business rule IDs involved in this task
+- Regulatory requirements cited (reference + article)
+- Limit check requirements (levels and check order)
+- State machine constraints (allowed state transition paths)
 
-## 档位切换规则
+## Depth level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 概念对齐、术语初探、非正式讨论 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，常规支付需求/设计/测试 | 术语评审会 + 业务架构确认 |
-| L3 实施级 | 涉及资金安全/监管报送/跨行接口/新支付类型上线/限额参数变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Aligning concepts, first look at terms, informal discussion | No review needed |
+| L2 Standard (default) | Default level for bank production; routine payment requirements / design / testing | Terminology review + business architecture confirmation |
+| L3 Implementation | Fund safety / regulatory reporting / interbank interfaces / launch of a new payment type / limit parameter changes | ARB/compliance review + all depth gates passed |
 
-**自动升 L3 场景**：涉及反洗钱、限额参数、客户资金、监管报送、跨行接口、新支付类型、生产数据变更时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves anti-money laundering, limit parameters, customer funds, regulatory reporting, interbank interfaces, a new payment type or production data changes, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- 术语表覆盖试点业务线核心术语 + 别名禁用表 + 季度校订机制
-- 产出文档附"领域约束"章节（业务规则编号 + 监管文号 + 限额层级 + 状态机路径）
-- 支付状态机含完整状态迁移矩阵与允许后续状态
-- 限额参数标注配置来源与变更审计要求
+- The glossary covers the core terms of the pilot business line + a forbidden-alias table + a quarterly review process
+- Output documents include a "Domain constraints" section (business rule IDs + regulation references + limit levels + state machine paths)
+- The payment state machine includes the full state transition matrix and the allowed next states
+- Limit parameters state their configuration source and change audit requirements
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 术语一致（term_check.py 退出码 0 或 1）
-- [ ] 业务规则编号可追溯（BR-PAY-xxx）
-- [ ] 监管引用含文号与条款
-- [ ] 状态迁移符合状态机定义
-- [ ] 限额校验顺序正确（L1->L2->L3->L4->L5）
-- [ ] 季度校订机制已建立
+- [ ] Terms are consistent (term_check.py exit code 0 or 1)
+- [ ] Business rule IDs are traceable (BR-PAY-xxx)
+- [ ] Regulatory citations include reference and article
+- [ ] State transitions follow the state machine definition
+- [ ] Limit check order is correct (L1->L2->L3->L4->L5)
+- [ ] The quarterly review process is in place
 
-> 主模板含【L3必填】深度字段：`templates/glossary.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/glossary.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/glossary.md` | 领域词汇表（含术语/英文/定义/别名/来源/状态/限额层级） |
-| `templates/process-map.md` | 核心业务流程图谱（转账/冲正/对账/清算，含分支与错误码） |
+| `templates/glossary.md` | Domain glossary (term / definition / alias / source / states / limit levels) |
+| `templates/process-map.md` | Core business process map (transfer / reversal / reconciliation / clearing, with branches and error codes) |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/term_check.py` | 术语一致性校验（禁用别名/未收录检测） | 0/1/2/3 |
+| `scripts/term_check.py` | Terminology consistency check (forbidden alias / uncataloged term detection) | 0/1/2/3 |
 
-### 脚本使用示例
+### Script usage examples
 
 ```bash
-# 基本校验（使用内置词表）
-python term_check.py 需求说明书.md
+# Basic check (built-in glossary)
+python term_check.py requirement-spec.md
 
-# 使用自定义词汇表
-python term_check.py 需求说明书.md --glossary glossary.md --json
+# Use a custom glossary
+python term_check.py requirement-spec.md --glossary glossary.md --json
 ```
 
-输出 JSON：
+Output JSON:
 ```json
 {
-  "terms_found": ["转账", "单笔限额", "清算"],
+  "terms_found": ["Clearing", "Single Transaction Limit", "Transfer"],
   "terms_count": 3,
-  "inconsistent": [{"alias": "转帐", "should_be": "转账", "suggestion": "将 '转帐' 改为 '转账'"}],
+  "inconsistent": [{"alias": "transferal", "should_be": "Transfer", "suggestion": "Replace 'transferal' with 'Transfer'"}],
   "inconsistent_count": 1,
-  "suspected_uncataloged": ["日转账额度"],
+  "suspected_uncataloged": ["daily transfer quota"],
   "passed": false,
   "exit_code": 2
 }
 ```
 
-## 参考资料
+## References
 
-| 资料 | 用途 | 何时读取 |
+| Reference | Purpose | When to read |
 |------|------|---------|
-| `references/payments-basics.md` | 支付业务全景、类型、概念、限额体系、状态机、清算对账、监管约束、业务规则 | 任何支付相关任务 |
-| `references/iso20022-reference.md` | ISO 20022 报文标准与开发约束 | 涉及报文开发/解析 |
-| `references/regulatory-requirements.md` | 限额/反洗钱/数据安全/支付清算监管速查 | 涉及合规需求/设计 |
+| `references/payments-basics.md` | Payment business overview, types, concepts, limit hierarchy, state machine, clearing and reconciliation, regulatory constraints, business rules | Any payment-related task |
+| `references/iso20022-reference.md` | ISO 20022 message standard and development constraints | Message development/parsing |
+| `references/regulatory-requirements.md` | Quick reference for limit / AML / data security / payment clearing regulation | Compliance requirements/design |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 术语与词汇表一致（无禁用别名）
-- [ ] 业务约束引用来源（监管文号/行内制度/业务规则编号）
-- [ ] 未收录术语已登记待确认
-- [ ] 限额校验顺序正确（L1->L2->L3->L4->L5）
-- [ ] 状态迁移符合状态机定义
+- [ ] Terms match the glossary (no forbidden aliases)
+- [ ] Business constraints cite a source (regulation reference / internal policy / business rule ID)
+- [ ] Uncataloged terms are registered as to be confirmed
+- [ ] Limit check order is correct (L1->L2->L3->L4->L5)
+- [ ] State transitions follow the state machine definition
 
-## 常见失败模式与规避
+## Common failure modes and mitigation
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 术语漂移 | 使用"转帐""划账"等别名 | term_check.py 自动检测禁用别名 | 修正后重跑校验 |
-| 清算结算混用 | "清算"和"结算"互换使用 | 词汇表明确区分；references/payments-basics.md 定义对比 | 修正术语后重试 |
-| 限额硬编码 | 限额值写死在代码/需求中 | 限额须参数化，标注配置来源 | 重构为参数化后重试 |
-| 状态迁移绕过引擎 | 直接UPDATE状态字段 | 状态机约束写入设计评审检查项 | 改为状态机引擎驱动后重试 |
-| 监管引用模糊 | "根据监管要求"无具体文号 | 引用规范要求文号+条款 | 补充文号后重试 |
-| 知识过期 | 词汇表/流程图与实际业务不符 | 季度校订机制，版本化管理 | 校订后更新 |
+| Terminology drift | Aliases such as "transferal" or "fund move" are used | term_check.py detects forbidden aliases automatically | Fix and rerun the check |
+| Clearing and settlement mixed up | "Clearing" and "settlement" used interchangeably | The glossary separates them explicitly; references/payments-basics.md compares the definitions | Fix the terms and retry |
+| Hard-coded limits | Limit values hard-coded in code/requirements | Limits must be parameterized, with the configuration source stated | Refactor to parameters and retry |
+| State transitions bypass the engine | Status field changed with a direct UPDATE | State machine constraint added to the design review checklist | Switch to the state machine engine and retry |
+| Vague regulatory citations | "According to regulatory requirements" with no reference | Citation rules require reference + article | Add the reference and retry |
+| Outdated knowledge | Glossary/process map no longer matches the actual business | Quarterly review process, versioned | Update after review |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入正式需求/设计评审 | 全部【L2必填】章节（词汇表标准术语/业务规则编号/监管文号/状态机/限额层级） | 评审退回，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨行接口/新支付类型/限额参数变更 | 字段级限额参数表、完整状态迁移矩阵、季度校订记录、别名禁用表全量覆盖 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Entering formal requirement/design review | All [L2 required] sections (standard glossary terms / business rule IDs / regulation references / state machine / limit levels) | Review rejected; downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / interbank interfaces / new payment type / limit parameter changes | Field-level limit parameter table, full state transition matrix, quarterly review records, complete forbidden-alias table | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的限额参数表与状态迁移矩阵须由 BA 与业务架构负责人共同确认；Agent 起草，业务确认后定稿。降级须经 PM + 合规审批并记录原因。术语表的季度校订须由业务架构团队签字归档。
+**Human fallback point**: the L3 limit parameter table and state transition matrix must be confirmed jointly by the BA and the business architecture lead. The Agent drafts; the business confirms before finalization. Any downgrade requires PM + compliance approval, with the reason recorded. The quarterly glossary review must be signed off and archived by the business architecture team.

@@ -1,9 +1,9 @@
-# scripts 能力边界
+# scripts capability boundary
 
 ## adr_lint.py
 
-校验 ADR（架构决策记录）格式完整性。
+Checks that an ADR (architecture decision record) has a complete format.
 
-- 输入：ADR Markdown 文件
-- 输出：格式校验结果（缺失字段/候选方案数量）
-- 退出码：0=通过，1=格式不完整
+- Input: ADR Markdown file
+- Output: format check result (missing fields: Context / Decision / Consequences / Status / Alternatives or Candidate options)
+- Exit codes: 0 = pass, 2 = format incomplete, 3 = file cannot be read

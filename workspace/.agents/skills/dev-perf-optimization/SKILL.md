@@ -1,6 +1,6 @@
 ---
 name: dev-perf-optimization
-description: 系统性分析和优化代码性能：瓶颈定位、根因分析、优化方案设计、基准对比与性能回归。性能问题修复、性能优化专项、代码性能review时使用。
+description: "Systematically analyzes and optimizes code performance: bottleneck location, root cause analysis, optimization design, benchmark comparison and performance regression. Use for performance fixes, dedicated performance optimization and code performance reviews."
 ---
 
 ## 元数据

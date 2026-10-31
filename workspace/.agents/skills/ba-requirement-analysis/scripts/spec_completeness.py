@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """
-需求说明书完整性检查脚本
+Requirement specification completeness check script
 
-检查需求说明书是否包含所有必需章节，字段是否为空。
-遵循技能脚本接口规范：CLI调用，JSON输出，退出码表示结果。
+Checks that the requirement specification contains every required section and
+that fields are not empty.
+Follows the Skill script interface convention: CLI invocation, JSON output,
+exit code indicates the result.
 
-用法:
+Usage:
     python spec_completeness.py <requirement_doc.md> [--json] [--strict]
 
-退出码:
-    0 - 全部通过
-    1 - 有警告（可选字段缺失）
-    2 - 失败（必填字段缺失）
-    3 - 参数错误
+Exit codes:
+    0 - all checks passed
+    1 - warning (optional fields missing)
+    2 - failure (required fields missing)
+    3 - argument error
 """
 
 import sys
@@ -23,31 +25,33 @@ from pathlib import Path
 
 
 # Required sections and their header patterns
+# (matched case-insensitively; numbering follows templates/requirement-spec-template.md)
 REQUIRED_SECTIONS = [
-    ("文档信息", r"##.*文档信息"),
-    ("修订记录", r"##.*修订记录"),
-    ("背景与目标", r"## 1\..*背景"),
-    ("用户角色", r"## 2\..*用户角色"),
-    ("范围定义", r"## 3\..*范围"),
-    ("功能需求", r"## 4\..*功能需求"),
-    ("业务规则", r"## 5\..*业务规则"),
-    ("非功能需求", r"## 6\..*非功能"),
-    ("安全需求", r"### 6\.2.*安全"),
-    ("数据需求", r"## 8\..*数据"),
-    ("数据安全", r"### 8\.2.*数据安全"),
-    ("风险与应对", r"## 10\..*风险"),
-    ("合规标注", r"## 11\..*合规"),
+    ("Document information", r"^##.*Document information"),
+    ("Revision history", r"^##.*Revision history"),
+    ("Background and goals", r"^## 1\..*Background"),
+    ("User roles", r"^## 2\..*User roles"),
+    ("Scope definition", r"^## 3\..*Scope"),
+    ("Functional requirements", r"^## 4\..*Functional requirements"),
+    ("Business rules", r"^## 5\..*Business rules"),
+    ("Non-functional requirements", r"^## 6\..*Non-functional"),
+    ("Security requirements", r"^### 6\.\d+.*Security|^\|\s*Security\s*\|"),
+    ("Data requirements", r"^## 8\..*Data"),
+    ("Data security", r"^### 8\.2.*Data security"),
+    ("Risks and mitigation", r"^## \d+\..*Risk"),
+    ("Compliance notes", r"^## \d+\..*Compliance"),
 ]
 
 # Ambiguous words that should be flagged
+# (matched as whole words, case-insensitively)
 AMBIGUOUS_WORDS = [
-    "大概", "可能", "尽量", "尽快", "等等", "之类",
-    "适当", "相应", "相关", "有关", "等",
+    "roughly", "possibly", "as far as possible", "as soon as possible", "etc.", "and so on",
+    "appropriate", "corresponding", "relevant", "related", "and the like",
 ]
 
 # Evidence markers
-EVIDENCE_PATTERN = r"\[需证据\]"
-EVIDENCE_FILLED = r"证据链接|链接|文号|编号"
+EVIDENCE_PATTERN = r"\[Evidence required\]"
+EVIDENCE_FILLED = r"Evidence link|Link|Reference|ID"
 
 
 def read_file(filepath: str) -> str:
@@ -63,7 +67,7 @@ def check_sections(content: str) -> dict:
     missing_optional = []
 
     for name, pattern in REQUIRED_SECTIONS:
-        if re.search(pattern, content, re.MULTILINE):
+        if re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
             results.append({"section": name, "status": "present"})
         else:
             results.append({"section": name, "status": "missing"})
@@ -79,10 +83,10 @@ def check_sections(content: str) -> dict:
 def check_empty_fields(content: str) -> dict:
     """Check for empty placeholder patterns."""
     empty_patterns = [
-        (r"\{\{[^}]+\}\}", "占位符未替换"),
-        (r"_待回复_", "待回复内容"),
-        (r"\[待确认\]", "待确认内容"),
-        (r"TODO|FIXME", "待办事项"),
+        (r"\{\{[^}]+\}\}", "Unreplaced placeholder"),
+        (r"_Awaiting reply_", "Awaiting reply"),
+        (r"\[To be confirmed\]", "To be confirmed"),
+        (r"TODO|FIXME", "To-do item"),
     ]
 
     findings = []
@@ -103,9 +107,9 @@ def check_ambiguity(content: str) -> dict:
     """Check for ambiguous words."""
     findings = []
     for word in AMBIGUOUS_WORDS:
-        # Skip if marked with [待确认] nearby
-        pattern = re.escape(word)
-        matches = re.findall(pattern, content)
+        # Whole-word, case-insensitive match
+        pattern = r"(?<!\w)" + re.escape(word) + r"(?!\w)"
+        matches = re.findall(pattern, content, re.IGNORECASE)
         if matches:
             findings.append({"word": word, "count": len(matches)})
 
@@ -121,7 +125,7 @@ def check_business_rules(content: str) -> dict:
     rules_without_source = []
     for rule_id, desc, source in rules:
         source = source.strip()
-        if not source or source in ["", "待补充", "待定", "未知"]:
+        if not source or source.lower() in ["", "to be added", "tbd", "unknown"]:
             rules_without_source.append(rule_id)
 
     return {
@@ -150,14 +154,14 @@ def check_requirement_ids(content: str) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="需求说明书完整性检查")
-    parser.add_argument("filepath", help="需求文档路径 (.md)")
-    parser.add_argument("--json", action="store_true", help="输出JSON格式")
-    parser.add_argument("--strict", action="store_true", help="严格模式（模糊词也算失败）")
+    parser = argparse.ArgumentParser(description="Requirement specification completeness check")
+    parser.add_argument("filepath", help="Path to the requirement document (.md)")
+    parser.add_argument("--json", action="store_true", help="Output JSON")
+    parser.add_argument("--strict", action="store_true", help="Strict mode (vague words also count as failure)")
     args = parser.parse_args()
 
     if not Path(args.filepath).exists():
-        print(f"错误: 文件不存在: {args.filepath}", file=sys.stderr)
+        print(f"Error: file not found: {args.filepath}", file=sys.stderr)
         sys.exit(3)
 
     content = read_file(args.filepath)
@@ -214,23 +218,23 @@ def main():
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print(f"=== 需求说明书完整性检查 ===")
-        print(f"文件: {args.filepath}")
-        print(f"质量得分: {score}/100")
-        print(f"结论: {result['verdict']}")
+        print(f"=== Requirement specification completeness check ===")
+        print(f"File: {args.filepath}")
+        print(f"Quality score: {score}/100")
+        print(f"Verdict: {result['verdict']}")
         print()
-        print(f"章节完整性: "
-              f"缺失 {section_result['missing_count']} 个必选章节")
+        print(f"Section completeness: "
+              f"{section_result['missing_count']} required section(s) missing")
         if section_result["missing_count"] > 0:
             for s in section_result["missing_required"]:
-                print(f"  - 缺失: {s}")
+                print(f"  - Missing: {s}")
         print()
-        print(f"业务规则: 共 {br_result['total_rules']} 条, "
-              f"{br_result['missing_source_count']} 条缺少来源")
-        print(f"需求条目: 共 {req_result['total_requirements']} 条, "
-              f"{len(req_result['duplicates'])} 条重复编号")
-        print(f"空字段/占位符: {empty_result['total_empty']} 处")
-        print(f"模糊词: {ambiguity_result['total_ambiguous']} 处")
+        print(f"Business rules: {br_result['total_rules']} total, "
+              f"{br_result['missing_source_count']} without a source")
+        print(f"Requirements: {req_result['total_requirements']} total, "
+              f"{len(req_result['duplicates'])} duplicate ID(s)")
+        print(f"Empty fields/placeholders: {empty_result['total_empty']}")
+        print(f"Vague words: {ambiguity_result['total_ambiguous']}")
 
     # Exit code
     if has_critical:

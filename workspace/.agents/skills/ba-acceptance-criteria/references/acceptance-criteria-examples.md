@@ -1,67 +1,67 @@
-# 验收标准示例库（银行转账限额场景）
+# Acceptance Criteria Example Library (Bank Transfer Limit Scenarios)
 
-## 示例1：限额查询展示（REQ-001）
+## Example 1: Display the limit (REQ-001)
 
-**故事**：作为个人客户，我希望查看当前转账限额，以便了解可用额度。
+**Story**: As a retail customer, I want to see my current transfer limit, so that I know how much I can still use.
 
-| 编号 | Given | When | Then |
+| ID | Given | When | Then |
 |------|-------|------|------|
-| AC-001-01 | 用户已登录手机银行且存在已设置的日累计限额 | 用户进入"安全设置→转账限额" | 系统展示当前日累计限额、单笔限额、今日已用额度与剩余额度 |
-| AC-001-02 | 限额查询接口异常 | 用户进入限额页面 | 系统提示"查询失败，请稍后重试"，不展示错误明细 |
+| AC-001-01 | The user is logged in to mobile banking and has a daily cumulative limit set | The user opens "Security settings → Transfer limit" | The system displays the current daily cumulative limit, per-transaction limit, amount used today and remaining amount |
+| AC-001-02 | The limit query interface fails | The user opens the limit page | The system shows "Query failed, please try again later" and does not display error details |
 
-## 示例2：限额调整（REQ-002）
+## Example 2: Adjust the limit (REQ-002)
 
-**故事**：作为个人客户，我希望自助调高转账限额，以便完成大额转账。
+**Story**: As a retail customer, I want to raise my transfer limit myself, so that I can make a large transfer.
 
-| 编号 | Given | When | Then |
+| ID | Given | When | Then |
 |------|-------|------|------|
-| AC-002-01 | 用户已登录且当前日累计限额为5000元 | 用户提交调高日累计限额至20000元并通过身份验证 | 系统提示"限额调整成功"，新限额立即生效 |
-| AC-002-02 | 用户提交的限额超过系统允许上限（如50000元） | 用户提交调整 | 系统提示"调整金额超出系统允许范围"，限额保持不变 |
-| AC-002-03 | 用户身份验证失败 | 用户提交调整 | 系统拒绝调整并提示"验证失败，请重新验证" |
+| AC-002-01 | The user is logged in and the current daily cumulative limit is CNY 5000 | The user submits a raise of the daily cumulative limit to CNY 20000 and passes identity verification | The system shows "Limit adjusted successfully" and the new limit takes effect immediately |
+| AC-002-02 | The limit submitted by the user exceeds the system maximum (for example CNY 50000) | The user submits the adjustment | The system shows "The adjustment amount exceeds the allowed range" and the limit stays unchanged |
+| AC-002-03 | The user fails identity verification | The user submits the adjustment | The system rejects the adjustment and shows "Verification failed, please verify again" |
 
-## 可测试性检查清单
+## Testability checklist
 
-- [ ] Given 状态可构造（登录态、参数、数据）
-- [ ] When 操作有明确入口（菜单路径/按钮/接口）
-- [ ] Then 结果可验证（界面提示/数据变化/接口返回码）
-- [ ] 数字可量化（"20000元"而非"大额"）
-- [ ] 异常路径有独立标准（接口异常、超限、验证失败）
+- [ ] The Given state can be constructed (login state, parameters, data)
+- [ ] The When action has a clear entry point (menu path / button / interface)
+- [ ] The Then result can be verified (UI prompt / data change / interface return code)
+- [ ] Numbers are quantified ("CNY 20000", not "a large amount")
+- [ ] Exception paths have their own criteria (interface error, over limit, verification failure)
 
 ---
 
-## L3 深度示例：边界值与异常路径全覆盖
+## L3 depth examples: full coverage of boundary values and exception paths
 
-### 示例3：限额调整边界值（REQ-002 L3）
+### Example 3: Limit adjustment boundary values (REQ-002 L3)
 
-| 编号 | Given | When | Then | 边界类型 |
+| ID | Given | When | Then | Boundary type |
 |------|-------|------|------|---------|
-| AC-002-B01 | 日累计限额=0元（下限） | 提交调高至1元 | 调整成功，限额=1元 | min |
-| AC-002-B02 | 日累计限额=49999元 | 提交调高至50000元 | 调整成功，限额=50000元 | max |
-| AC-002-B03 | 日累计限额=49999元 | 提交调高至50001元 | 提示"超出系统允许范围"，限额不变 | max+1 |
-| AC-002-B04 | 日累计限额=50000元（上限） | 提交调低至0元 | 提示"限额不可为0"，限额不变 | min-1 |
+| AC-002-B01 | Daily cumulative limit = CNY 0 (lower bound) | Submit a raise to CNY 1 | Adjustment succeeds; limit = CNY 1 | min |
+| AC-002-B02 | Daily cumulative limit = CNY 49999 | Submit a raise to CNY 50000 | Adjustment succeeds; limit = CNY 50000 | max |
+| AC-002-B03 | Daily cumulative limit = CNY 49999 | Submit a raise to CNY 50001 | Shows "Exceeds the allowed range"; limit unchanged | max+1 |
+| AC-002-B04 | Daily cumulative limit = CNY 50000 (upper bound) | Submit a decrease to CNY 0 | Shows "The limit cannot be 0"; limit unchanged | min-1 |
 
-### 示例4：幂等性与并发场景（REQ-002 L3）
+### Example 4: Idempotency and concurrency (REQ-002 L3)
 
-| 编号 | Given | When | Then | 场景类型 |
+| ID | Given | When | Then | Scenario type |
 |------|-------|------|------|---------|
-| AC-002-I01 | 同一调整请求已提交并处理成功 | 重复提交同一请求（相同请求ID） | 返回首次处理结果，限额不重复变更 | 幂等性 |
-| AC-002-C01 | 用户同时发起两个调整请求 | 两个请求并发到达 | 仅第一个请求生效，第二个返回"操作进行中" | 并发 |
-| AC-002-T01 | 限额调整接口响应超过3秒 | 用户等待并重试 | 系统返回处理中状态，不重复执行 | 超时重试 |
+| AC-002-I01 | The same adjustment request was already submitted and processed successfully | The same request is submitted again (same request ID) | The first result is returned; the limit is not changed again | Idempotency |
+| AC-002-C01 | The user sends two adjustment requests at the same time | Both requests arrive concurrently | Only the first request takes effect; the second returns "Operation in progress" | Concurrency |
+| AC-002-T01 | The limit adjustment interface takes more than 3 seconds to respond | The user waits and retries | The system returns a processing status and does not execute again | Timeout retry |
 
-### 示例5：合规边界验收（REQ-003 L3）
+### Example 5: Compliance boundary acceptance (REQ-003 L3)
 
-| 编号 | Given | When | Then | 合规依据 |
+| ID | Given | When | Then | Compliance basis |
 |------|-------|------|------|---------|
-| AC-003-01 | 用户累计转账金额接近反洗钱阈值（5万元） | 继续转账使累计达5万元 | 系统触发反洗钱预警，记录交易并通知合规岗 | 央行令〔2018〕第2号 |
-| AC-003-02 | 监管报送数据生成 | 报送时效检查 | 报送在T+1日10:00前完成，超时告警 | 银发〔2016〕261号 |
+| AC-003-01 | The user's cumulative transfer amount is close to the AML threshold (CNY 50,000) | Another transfer brings the cumulative amount to CNY 50,000 | The system raises an AML alert, records the transaction and notifies the compliance officer | PBOC Order [2018] No. 2 |
+| AC-003-02 | Regulatory report data is generated | Reporting deadline check | The report is submitted before 10:00 on T+1; an alert is raised if late | Yinfa [2016] No. 261 |
 
-### L3 追溯矩阵示例
+### L3 traceability matrix example
 
-| AC编号 | US编号 | REQ编号 | TC编号 | 场景类型 | 边界类型 |
+| AC ID | US ID | REQ ID | TC ID | Scenario type | Boundary type |
 |--------|--------|---------|--------|---------|---------|
-| AC-002-01 | US-002 | REQ-002 | TC-002-01 | 正常流程 | - |
-| AC-002-B01 | US-002 | REQ-002 | TC-002-B01 | 边界值 | min |
-| AC-002-B03 | US-002 | REQ-002 | TC-002-B03 | 边界值 | max+1 |
-| AC-002-I01 | US-002 | REQ-002 | TC-002-I01 | 幂等性 | - |
-| AC-002-C01 | US-002 | REQ-002 | TC-002-C01 | 并发 | - |
-| AC-003-01 | US-003 | REQ-003 | TC-003-01 | 合规边界 | 反洗钱 |
+| AC-002-01 | US-002 | REQ-002 | TC-002-01 | Happy path | - |
+| AC-002-B01 | US-002 | REQ-002 | TC-002-B01 | Boundary value | min |
+| AC-002-B03 | US-002 | REQ-002 | TC-002-B03 | Boundary value | max+1 |
+| AC-002-I01 | US-002 | REQ-002 | TC-002-I01 | Idempotency | - |
+| AC-002-C01 | US-002 | REQ-002 | TC-002-C01 | Concurrency | - |
+| AC-003-01 | US-003 | REQ-003 | TC-003-01 | Compliance boundary | AML |

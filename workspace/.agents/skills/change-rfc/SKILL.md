@@ -1,6 +1,6 @@
 ---
 name: change-rfc
-description: 生成合规、完整、可评审的变更申请单（RFC），含类型/原因/范围/影响/窗口/回滚/证据链接。发布包就绪、申请生产变更前使用。
+description: "Generates a compliant, complete, reviewable request for change (RFC), including type/reason/scope/impact/window/rollback/evidence links. Use once the release package is ready and before requesting a production change."
 ---
 
 ## 元数据

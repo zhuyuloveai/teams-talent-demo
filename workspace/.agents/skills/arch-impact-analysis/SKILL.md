@@ -1,84 +1,84 @@
 ---
 name: arch-impact-analysis
-description: 完整识别变更影响面（代码/数据/接口/配置/文档/权限），输出风险清单与回退建议。任何变更进入设计阶段或需求范围变更时使用。
+description: Identify the full impact of a change (code / data / interfaces / configuration / documentation / permissions) and produce a risk list and rollback recommendations. Use whenever a change enters the design phase or the requirement scope changes.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Arch / 架构条线负责人 |
-| category | 岗位技能 |
+| owner | Arch / Architecture line lead |
+| category | Role skill |
 | priority | P0 |
 
-# arch-impact-analysis 技能
+# arch-impact-analysis Skill
 
-## 概述
+## Overview
 
-本技能用于完整识别变更影响面，避免遗漏联调方与数据影响，为发布与风险评估提供依据。
+This Skill identifies the full impact of a change, so that no integration partner or data impact is missed, and provides the basis for release and risk assessment.
 
-## 工作流
+## Workflow
 
-1. 读取变更方案与存量系统信息
-2. 枚举变更点（代码/数据/接口/配置/文档/权限）
-3. 分析数据影响（表、迁移、兼容）
-4. 分析接口与联调方影响
-5. 输出风险清单与回退建议（每项标注影响级别）
-6. 输出影响分析报告
+1. Read the change proposal and the existing system information
+2. Enumerate the change points (code / data / interfaces / configuration / documentation / permissions)
+3. Analyze the data impact (tables, migration, compatibility)
+4. Analyze the impact on interfaces and integration partners
+5. Produce the risk list and rollback recommendations (each item with an impact level)
+6. Produce the impact analysis report
 
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3影响分析按代码/数据/接口/配置/文档/权限六维+回退建议
-- 高风险项给出影响面量化（调用方数量/数据量/窗口影响）
+- L3 impact analysis covers six dimensions (code / data / interfaces / configuration / documentation / permissions) + rollback recommendations
+- High-risk items quantify the impact (number of callers / data volume / effect on the change window)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 六维全覆盖
-- [ ] 高风险项量化+责任方
-- [ ] 每项含回退建议
+- [ ] All six dimensions covered
+- [ ] High-risk items quantified + responsible party
+- [ ] Every item has a rollback recommendation
 
-> 主模板含【L3必填】深度字段：`templates/impact-analysis-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/impact-analysis-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/impact-analysis-template.md` | 影响分析报告模板 |
-| `templates/impact-item-checklist.md` | 影响项检查清单（六维枚举） |
+| `templates/impact-analysis-template.md` | Impact analysis report template |
+| `templates/impact-item-checklist.md` | Impact item checklist (six-dimension enumeration) |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/impact_scan.py` | 扫描代码库中变更引用点（可选辅助） |
+| `scripts/impact_scan.py` | Scans the codebase for references to the change points (optional helper) |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/impact-dimensions.md` | 影响维度定义与分级标准 |
+| `references/impact-dimensions.md` | Impact dimension definitions and grading criteria |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 数据/接口/联调/配置/文档/权限六维全覆盖
-- [ ] 每项影响标注级别（高/中/低）
-- [ ] 高风险项有明确责任人与处置
-- [ ] 含回退建议
+- [ ] All six dimensions covered: data / interfaces / integration / configuration / documentation / permissions
+- [ ] Every impact has a level (high/medium/low)
+- [ ] High-risk items have a clear owner and handling
+- [ ] Rollback recommendations included
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 规避措施 |
+| Failure mode | Mitigation |
 |---------|---------|
-| 影响面遗漏 | 清单式枚举强制检查 |
-| 影响低估 | 分级标准校准 |
-| 无回退建议 | 模板必填项 |
+| Missed impact | Mandatory checklist enumeration |
+| Underestimated impact | Calibrated grading criteria |
+| No rollback recommendation | Required template field |

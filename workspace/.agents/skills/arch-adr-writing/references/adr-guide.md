@@ -1,9 +1,9 @@
-# ADR编写指南
+# ADR Writing Guide
 
-1. 一个ADR只记录一个决策
-2. 备选方案≥2个
-3. 决策必须有理由
-4. 后果包含正面与负面
-5. 编号递增归档，关联设计文档
+1. One ADR records exactly one decision
+2. At least 2 alternatives
+3. Every decision must have a rationale
+4. Consequences cover both positive and negative effects
+5. Number sequentially, archive, and link to the design document
 
-模板字段：状态/背景/决策/备选方案/后果/关联。
+Template fields: Status / Context / Decision / Alternatives / Consequences / Links.

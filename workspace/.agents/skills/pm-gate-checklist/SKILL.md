@@ -1,6 +1,6 @@
 ---
 name: pm-gate-checklist
-description: 确保阶段产出与审批状态完整，生成门禁检查清单与评审材料，支持银行交付流水线 G1–G8 八大阶段门禁决策。每个阶段末、里程碑评审前使用。
+description: "Ensures phase deliverables and approval status are complete, and generates gate checklists and review materials to support gate decisions across the eight G1-G8 phases of the bank delivery pipeline. Use at the end of each phase and before milestone reviews."
 ---
 
 ## 元数据

@@ -1,6 +1,6 @@
 ---
 name: qa-system-test-design
-description: 系统化设计系统测试用例：等价类/边界值/决策表/状态迁移/场景法，覆盖功能/边界/异常/UI/数据验证，关联需求确保100%覆盖。系统测试（ST）阶段用例设计时使用。
+description: "Systematic system test case design: equivalence classes/boundary values/decision tables/state transitions/scenarios, covering functional/boundary/exception/UI/data validation, linked to requirements for 100% coverage. Use when designing test cases in the system test (ST) phase."
 ---
 
 ## 元数据

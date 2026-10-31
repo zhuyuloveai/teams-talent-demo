@@ -1,6 +1,6 @@
 ---
 name: g7-gate-execution
-description: G7变更阶段门禁执行器，统一运行RFC校验/风险分级/窗口排期校验并汇总结果
+description: "G7 change-phase gate runner. Runs the RFC validation/risk grading/window scheduling checks together and summarizes the results."
 ---
 
 ## 元数据

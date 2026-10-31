@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UI还原度检查（简化）：扫描样式文件中的颜色与设计令牌。"""
+"""Design fidelity check (simplified): scan style files for colors and design tokens."""
 import argparse, json, sys
 from pathlib import Path
 

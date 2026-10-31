@@ -1,6 +1,6 @@
 ---
 name: rollback-runbook
-description: 定义发布失败时的快速、安全回滚路径：回退点识别、命令级步骤、数据一致性处理、验证方法与责任人。发布计划编制时必配。
+description: "Defines a fast, safe rollback path for a failed release: rollback point identification, command-level steps, data consistency handling, verification methods and owners. Required when drafting a release plan."
 ---
 
 ## 元数据

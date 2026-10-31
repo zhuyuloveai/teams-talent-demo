@@ -1,6 +1,6 @@
 ---
 name: ba-change-impact
-description: 评估需求变更对功能/数据/接口/进度/成本/干系人的影响，输出变更评估意见。收到变更请求或需求调整时使用。
+description: "Assesses the impact of a requirement change on functionality/data/interfaces/schedule/cost/stakeholders and produces a change assessment opinion. Use when a change request or requirement adjustment is received."
 ---
 
 ## 元数据

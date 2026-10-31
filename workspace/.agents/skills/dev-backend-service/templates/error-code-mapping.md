@@ -1,18 +1,18 @@
-# 统一错误码映射
+# Unified error code mapping
 
-| 场景 | 错误码 | 说明 |
+| Scenario | Error code | Description |
 |------|--------|------|
-| 参数错误 | 40000 | 请求参数校验失败 |
-| 未授权 | 40100 | 未登录/凭证失效 |
-| 越权 | 40300 | 无权限操作 |
-| 业务失败 | 500xx | 业务规则不满足 |
-| 系统异常 | 99999 | 未知异常 |
+| Invalid parameter | 40000 | Request parameter validation failed |
+| Unauthorized | 40100 | Not logged in / credentials expired |
+| Forbidden | 40300 | No permission for the operation |
+| Business failure | 500xx | Business rule not satisfied |
+| System error | 99999 | Unknown error |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 规则追溯 | 业务规则↔需求编号↔单测 |
-| 错误码 | 统一错误码映射表 |
+| Rule traceability | Business rule ↔ requirement ID ↔ unit test |
+| Error codes | Unified error code mapping table |

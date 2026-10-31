@@ -1,6 +1,6 @@
-# CLI 请求与读取
+# CLI requests and reads
 
-CLI 是启动材料给出的 `scripts/teams-demo.mjs`，不是另一个 `teams` 命令。使用真实绝对路径和本机 endpoint，不照抄下面的占位符。
+The CLI is the `scripts/teams-demo.mjs` given in the launch materials, not a separate `teams` command. Use the real absolute paths and the local endpoint; do not copy the placeholders below verbatim.
 
 ```sh
 node CLI --endpoint ORIGIN --role member context get --input-file SCOPE.json --output CONTEXT.json
@@ -8,11 +8,11 @@ node CLI --endpoint ORIGIN --role member inputs adopt --operation-id OP --input-
 node CLI --endpoint ORIGIN --role member operation get --operation-id OP
 ```
 
-保留入口给出的 `--role owner` 或 `--role member`。读取 scope 包含 projectId、taskId、nodeId，以及入口提供的 tab；也可用 `--project / --task / --node / --tab` 分字段读取，不能与 input 中的同字段重复。项目级无 task/node 的上下文只能读取，不能写任务进度。
+Keep the `--role owner` or `--role member` given by the entry point. The read scope contains projectId, taskId, nodeId, and the tab if the entry point provides one. You can also read by field with `--project / --task / --node / --tab`, but these must not duplicate the same fields in the input. Project-level context without a task/node is read-only and cannot be used to write task progress.
 
-`context get` 默认 `--view model`：业务正文与约定完整，重复正文变为引用。`--view full` 仅在排查完整服务响应时使用。`--output` 原子保存所选投影，stdout 返回 outputPath、scope、revision、basisDigest、资源数量；读取该文件才能查看正文。没有 `--output` 时 stdout 返回所选上下文。
+`context get` defaults to `--view model`: business content and agreements are complete, and repeated content becomes references. Use `--view full` only when troubleshooting the full service response. `--output` atomically saves the selected projection, and stdout returns outputPath, scope, revision, basisDigest and resource counts; read that file to see the content. Without `--output`, stdout returns the selected context.
 
-采用请求字段：
+Adoption request fields:
 
 ```json
 {
@@ -22,10 +22,10 @@ node CLI --endpoint ORIGIN --role member operation get --operation-id OP
 }
 ```
 
-expectedRevision 取当前读取/上次成功回执，不照抄 0。readReferences 只列实际阅读的合法引用 ID，可如实为空。返回 adoptionId 供同节点后续写入使用；改变 run/session 身份时重新采用，旧记录仍保留。
+Take expectedRevision from the current read or the last successful receipt; do not copy 0. readReferences lists only valid reference IDs you actually read, and may honestly be empty. The returned adoptionId is used for later writes on the same node. When the run/session identity changes, adopt again; the old record is kept.
 
-CLI 在发送写请求前落盘完整 request，成功后保存 receipt；默认位置由当前服务配置决定，`--receipt-dir DIR` 可指定。失败退出非零并明确错误，不自动重发。操作未知时先核对原 operationId；同一 ID 不同载荷会被拒绝。`--output` 不改变写命令的回执语义。
+Before sending a write request, the CLI saves the full request to disk, and after success it saves the receipt. The default location is determined by the current service configuration; `--receipt-dir DIR` overrides it. On failure it exits non-zero with an explicit error and does not resend automatically. When an operation's outcome is unknown, check the original operationId first; the same ID with a different payload is rejected. `--output` does not change the receipt semantics of write commands.
 
 ## Windows PowerShell
 
-复制启动材料中的 `& 'Node路径' 'CLI路径' ... --input-file '文件路径'` 形式。JSON 文件用 UTF-8；不要在 PowerShell 5.1 用 `--input` 内联 JSON，原生参数绑定可能剥掉双引号。输出可写 `--output "$env:TEMP/teams-context.json"`。scope 改节点时创建新的请求文件，不改已存的启动材料或历史采用文件。
+Copy the `& 'NodePath' 'CLIPath' ... --input-file 'FilePath'` form from the launch materials. Use UTF-8 for JSON files. In PowerShell 5.1, do not pass inline JSON with `--input`; native argument binding may strip the double quotes. Output can be written with `--output "$env:TEMP/teams-context.json"`. When the scope changes node, create a new request file; do not modify the saved launch materials or historical adoption files.

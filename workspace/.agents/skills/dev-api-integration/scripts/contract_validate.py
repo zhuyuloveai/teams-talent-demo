@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""契约校验：比对请求/响应样例与契约schema（简化：字段集合比对）。"""
+"""Contract validation: compare request/response samples against the contract schema (simplified: field-set comparison)."""
 import argparse, json, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("contract_json", help="契约JSON: {request:[fields], response:[fields]}")
-    ap.add_argument("sample_json", help="样例JSON: {request:{...}, response:{...}}")
+    ap.add_argument("contract_json", help="Contract JSON: {request:[fields], response:[fields]}")
+    ap.add_argument("sample_json", help="Sample JSON: {request:{...}, response:{...}}")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:

@@ -1,81 +1,81 @@
 ---
 name: arch-adr-writing
-description: 按标准格式（MADR）记录架构决策的背景、决策、备选方案与后果，编号归档并关联设计文档。做出重要技术决策时使用。
+description: Record the context, decision, alternatives and consequences of an architecture decision in the standard format (MADR), number and archive it, and link it to the design document. Use when making an important technical decision.
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Arch / 架构委员会 |
-| category | 岗位技能 |
+| owner | Arch / Architecture board |
+| category | Role skill |
 | priority | P0 |
 
-# arch-adr-writing 技能
+# arch-adr-writing Skill
 
-## 概述
+## Overview
 
-本技能用于按标准格式记录架构决策，确保决策可追溯。
+This Skill records architecture decisions in a standard format so that decisions are traceable.
 
-## 工作流
+## Workflow
 
-1. 识别需要ADR的决策点
-2. 按模板编写ADR：背景/问题/决策/备选方案/后果
-3. 引用相关设计文档与评审记录
-4. 编号归档（ADR-NNN）
-5. 关联到设计文档
+1. Identify the decision points that need an ADR
+2. Write the ADR from the template: context / problem / decision / alternatives / consequences
+3. Cite the related design documents and review records
+4. Number and archive it (ADR-NNN)
+5. Link it to the design document
 
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton points for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | L2 plus the depth content below (mandatory for high risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3 ADR增加量化权衡表：成本/性能/运维/审计/风险五维对比
-- 记录决策影响与回退路径
+- L3 ADRs add a quantified trade-off table: five-dimension comparison of cost / performance / operations / audit / risk
+- Record the impact of the decision and the rollback path
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 备选≥2
-- [ ] 量化权衡表完整
-- [ ] ADR关联设计文档与证据
+- [ ] ≥2 alternatives
+- [ ] Quantified trade-off table complete
+- [ ] ADR linked to the design document and evidence
 
-> 主模板含【L3必填】深度字段：`templates/adr-template.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/adr-template.md`. For detailed level definitions see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/adr-template.md` | ADR模板（MADR格式） |
-| `templates/adr-index.md` | ADR索引 |
+| `templates/adr-template.md` | ADR template (MADR format) |
+| `templates/adr-index.md` | ADR index |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 |
+| Script | Purpose |
 |------|------|
-| `scripts/adr_lint.py` | ADR格式与完整性检查 |
+| `scripts/adr_lint.py` | ADR format and completeness check |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/adr-guide.md` | ADR编写指南 |
+| `references/adr-guide.md` | ADR writing guide |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 背景-决策-备选-后果四要素齐备
-- [ ] 每个决策有理由
-- [ ] 关联设计文档
+- [ ] All four elements present: context / decision / alternatives / consequences
+- [ ] Every decision has a rationale
+- [ ] Linked to the design document
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 规避措施 |
+| Failure mode | Mitigation |
 |---------|---------|
-| ADR遗漏 | 决策点自动识别提醒 |
-| 内容空洞 | 模板强制字段校验 |
+| Missing ADR | Automatic reminders for identified decision points |
+| Hollow content | Template enforces required fields |

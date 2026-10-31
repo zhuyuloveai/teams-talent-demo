@@ -1,6 +1,6 @@
 ---
 name: change-risk-assessment
-description: 对变更进行分级（低/中/高）并给出风险与应急结论，引用影响分析与测试证据。RFC起草时使用。
+description: "Grades a change (low/medium/high) and gives risk and contingency conclusions, citing impact analysis and test evidence. Use when drafting an RFC."
 ---
 
 ## 元数据

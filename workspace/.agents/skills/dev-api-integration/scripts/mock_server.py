@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""基于契约生成Mock服务配置（JSON Server风格输出）。"""
+"""Generate a mock service configuration from the contract (JSON Server style output)."""
 import argparse, json, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("contract_json", help="契约JSON: {routes:[{path,method,response}]}")
+    ap.add_argument("contract_json", help="Contract JSON: {routes:[{path,method,response}]}")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     try:

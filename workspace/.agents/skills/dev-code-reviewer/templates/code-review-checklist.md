@@ -1,17 +1,17 @@
-# 代码评审检查清单
+# Code review checklist
 
-- [ ] 编码规范（命名/异常/日志）
-- [ ] 安全（注入/密钥/越权）
-- [ ] 单测覆盖关键路径
-- [ ] 架构一致性（分层/依赖方向）
-- [ ] 越界修改
-- [ ] 资源释放
+- [ ] Coding standards (naming / exceptions / logging)
+- [ ] Security (injection / keys / privilege escalation)
+- [ ] Unit tests cover key paths
+- [ ] Architecture consistency (layering / dependency direction)
+- [ ] Out-of-scope changes
+- [ ] Resource release
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 行级意见 | 文件:行+严重级别+建议 |
-| 人工重点 | 高风险区域标注 |
+| Line-level comments | file:line + severity + suggestion |
+| Human focus | High-risk areas marked |

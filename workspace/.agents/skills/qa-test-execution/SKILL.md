@@ -1,6 +1,6 @@
 ---
 name: qa-test-execution
-description: 管理测试执行进度、跟踪用例执行状态、生成测试日报与总结报告。测试执行阶段、每日测试跟踪时使用。
+description: "Manages test execution progress, tracks test case execution status, and generates daily test reports and summary reports. Use during test execution and for daily test tracking."
 ---
 
 ## 元数据

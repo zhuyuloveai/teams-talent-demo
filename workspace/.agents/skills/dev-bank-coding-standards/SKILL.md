@@ -1,114 +1,114 @@
 ---
 name: dev-bank-coding-standards
-description: 按银行编码规范与安全基线对变更代码做静态检查，按致命/严重/告警分级并输出检查报告。编码过程中或完成后自检时使用。
+description: "Run static checks on changed code against the bank coding standards and security baseline, classify findings as fatal / critical / major, and output a check report. Use during coding or for self-checks after coding is done."
 ---
 
-## 元数据
+## Metadata
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
 | version | 1.0.0 |
-| owner | Dev / 开发条线技术负责人 |
-| category | 岗位技能 |
+| owner | Dev / Development line tech lead |
+| category | Role skill |
 | priority | P0 |
 | depth | L2 |
 
-# dev-bank-coding-standards 技能
+# dev-bank-coding-standards skill
 
-## 概述
+## Overview
 
-本技能用于保证代码符合银行编码规范与安全基线，在MR提交前完成规范扫描与修复。
+This skill makes sure code complies with the bank coding standards and security baseline, with the standards scan and fixes done before the MR is submitted.
 
-## 工作流
+## Workflow
 
-1. 加载规范清单（命名/异常处理/日志/安全/资源释放五类）
-2. 对变更代码运行静态检查（check_standards.py）
-3. 生成问题清单（致命/严重/告警分级）
-4. 修复致命与严重项
-5. 复检通过后输出检查报告
+1. Load the standards checklist (five categories: naming / exception handling / logging / security / resource release)
+2. Run static checks on the changed code (check_standards.py)
+3. Produce the issue list (classified as fatal / critical / major)
+4. Fix the fatal and critical items
+5. After the recheck passes, output the check report
 
-## 档位切换规则
+## Level switching rules
 
-| 档位 | 触发条件 | 审批要求 |
+| Level | Trigger | Approval |
 |------|---------|---------|
-| L1 草稿 | 规范草案讨论、规则试运行、误报标注 | 无需评审 |
-| L2 标准（默认） | 银行生产默认档，编码自检与 MR 提交前规范扫描 | 技术负责人签字 + 规范扫描通过 |
-| L3 实施级 | 涉及资金安全/监管报送/跨系统集成/首次上线/高风险变更 | ARB/合规评审 + 深度门禁全通过 |
+| L1 Draft | Standards draft discussion, rule trial run, false-positive labeling | No review needed |
+| L2 Standard (default) | Default level for bank production; coding self-check and standards scan before MR submission | Tech lead sign-off + standards scan passed |
+| L3 Implementation | Involves fund safety / regulatory reporting / cross-system integration / first go-live / high-risk change | ARB / compliance review + all deep gates passed |
 
-**自动升 L3 场景**：涉及资金划拨代码、密钥/凭证处理、监管报送字段、生产数据访问、第三方支付集成时，自动从 L2 升 L3；L3 须通过下方「深度档位（L3 实施级）」章节的全部可计算门禁。
+**Automatic upgrade to L3**: when the work involves fund transfer code, key / credential handling, regulatory reporting fields, production data access or third-party payment integration, upgrade automatically from L2 to L3. L3 must pass every computable gate in the "Depth level (L3 Implementation)" section below.
 
-## 深度档位（L3 实施级）
+## Depth level (L3 Implementation)
 
-| 档位 | 要求 |
+| Level | Requirement |
 |------|------|
-| L1 | 骨架要点，用于讨论 |
-| L2 | 标准评审级（银行生产默认） |
-| L3 | 在L2基础上增加以下深度内容（高风险/监管/复杂集成时必用） |
+| L1 | Skeleton key points, for discussion |
+| L2 | Standard review level (bank production default) |
+| L3 | Adds the following depth on top of L2 (mandatory for high-risk / regulatory / complex integration) |
 
-### L3 工作流补充
+### L3 workflow additions
 
-- L3规范检查输出文件/行级问题清单并接入SonarQube规则映射
-- 致命/严重零容忍，告警附解释或跟踪单
-- 字段级安全校验：密钥/凭证/敏感字段（卡号/身份证/手机号）逐字段检查是否硬编码、是否脱敏、是否加密存储
-- 异常路径覆盖：空 catch、吞异常、catch 后未释放资源、catch 后继续执行敏感操作逐项检查
-- 资源释放：文件句柄/数据库连接/网络连接/锁的获取与释放配对检查，try-finally/try-with-resources 强制
-- 日志规范：日志级别（DEBUG/INFO/WARN/ERROR）使用正确、敏感信息不打印、关键操作有 traceId 关联
-- 命名规范：类名/方法名/变量名/常量名按银行规范（驼峰/下划线/全大写）逐规则检查
+- At L3, the standards check outputs a file / line-level issue list mapped to SonarQube rules
+- Zero tolerance for fatal / critical; major items carry an explanation or a tracking ticket
+- Field-level security checks: for keys / credentials / sensitive fields (card number / ID card number / mobile number), check field by field whether they are hardcoded, masked and stored encrypted
+- Exception path coverage: check each of empty catch, swallowed exceptions, resources not released after catch, and sensitive operations continuing after catch
+- Resource release: check that acquire and release of file handles / database connections / network connections / locks are paired; try-finally / try-with-resources is mandatory
+- Logging standards: log levels (DEBUG / INFO / WARN / ERROR) used correctly, no sensitive data printed, key operations correlated with a traceId
+- Naming standards: check class / method / variable / constant names rule by rule against the bank standards (camelCase / snake_case / UPPER_CASE)
 
-### L3 质量门禁
+### L3 quality gates
 
-- [ ] 致命/严重为零（check_standards.py by_severity.fatal=0 且 critical=0）
-- [ ] 问题清单文件/行级（每条 violation 含 file+line+severity+rule+text）
-- [ ] 规则覆盖五类（命名/异常/日志/安全/资源）
-- [ ] 告警项有解释或跟踪单（major 项附注释或工单号）
-- [ ] 敏感字段处理合规（无硬编码密钥、日志脱敏、加密存储）
-- [ ] 资源释放配对完整（获取与释放 1:1）
-- [ ] SonarQube 规则映射完整（每条规则可映射到 SonarQube rule key）
+- [ ] Zero fatal / critical (check_standards.py by_severity.fatal=0 and critical=0)
+- [ ] File / line-level issue list (each violation has file+line+severity+rule+text)
+- [ ] Rules cover all five categories (naming / exception / logging / security / resource)
+- [ ] Major items have an explanation or tracking ticket (major items carry a comment or ticket number)
+- [ ] Sensitive field handling compliant (no hardcoded keys, masked logs, encrypted storage)
+- [ ] Resource release fully paired (acquire and release 1:1)
+- [ ] SonarQube rule mapping complete (every rule maps to a SonarQube rule key)
 
-> 主模板含【L3必填】深度字段：`templates/coding-standards.md`；详细档位定义见《Skill深度分级规范》。
+> The main template contains the [L3 required] depth fields: `templates/coding-standards.md`. For detailed level definitions, see the "Skill Depth Level Specification".
 
-## 模板
+## Templates
 
-| 模板 | 用途 |
+| Template | Purpose |
 |------|------|
-| `templates/coding-standards.md` | 编码规范清单 |
-| `templates/review-checklist.md` | 规范评审检查清单 |
+| `templates/coding-standards.md` | Coding standards checklist |
+| `templates/review-checklist.md` | Standards review checklist |
 
-## 脚本
+## Scripts
 
-| 脚本 | 用途 | 退出码 |
+| Script | Purpose | Exit codes |
 |------|------|--------|
-| `scripts/check_standards.py` | 五类规则静态检查（命名/异常/日志/安全/资源） | 0/2 |
+| `scripts/check_standards.py` | Static check of five rule categories (naming / exception / logging / security / resource) | 0/2 |
 
-## 参考资料
+## References
 
-| 资料 | 用途 |
+| Reference | Purpose |
 |------|------|
-| `references/rule-mapping.md` | 规则→SonarQube映射与分级 |
+| `references/rule-mapping.md` | Rule → SonarQube mapping and severity levels |
 
-## 质量门禁
+## Quality gates
 
-- [ ] 致命/严重为零
-- [ ] 告警项有解释或跟踪单
-- [ ] 五类规则全部启用
+- [ ] Zero fatal / critical
+- [ ] Major items have an explanation or tracking ticket
+- [ ] All five rule categories enabled
 
-## 常见失败模式
+## Common failure modes
 
-| 失败模式 | 表现 | 规避措施 | 重试策略 |
+| Failure mode | Symptom | Mitigation | Retry strategy |
 |---------|------|---------|---------|
-| 规则过严误报 | 短变量名/正常日志被标记为违规 | 规则分级与误报标注 + 季度校准 | 标注误报后复检 |
-| 规范遗漏 | 新增场景未覆盖规则（如新加密算法） | 每季度校准规则 + 规范缺口扫描 | 补规则后重跑扫描 |
-| 硬编码密钥 | 密码/Token 写死在代码里 | fatal 规则 + 密钥管理服务 | 改为从密钥服务读取后复检 |
-| 吞异常 | except: pass 或空 catch | critical 规则 + 异常处理规范 | 补日志或重抛后复检 |
-| 日志泄露敏感信息 | 打印卡号/身份证/密码明文 | major 规则 + 脱敏工具 | 改为脱敏输出后复检 |
-| 资源未释放 | 文件/连接/锁未在 finally 释放 | 资源释放配对检查 + try-with-resources | 补 finally 释放后复检 |
-| 规则未接入CI | 规范检查仅本地手动跑 | MR 门禁强制接入 check_standards.py | 接入 CI 后所有 MR 强制扫描 |
+| Over-strict rules, false positives | Short variable names / normal logs flagged as violations | Rule severity levels and false-positive labeling + quarterly calibration | Label the false positives and recheck |
+| Gaps in the standards | New scenarios not covered by rules (for example a new encryption algorithm) | Quarterly rule calibration + standards gap scan | Add rules and rerun the scan |
+| Hardcoded keys | Passwords / tokens written into the code | Fatal rule + key management service | Read from the key service instead, then recheck |
+| Swallowed exceptions | except: pass or empty catch | Critical rule + exception handling standards | Add logging or rethrow, then recheck |
+| Sensitive data in logs | Card numbers / ID card numbers / passwords printed in plain text | Major rule + masking tool | Output masked values instead, then recheck |
+| Resources not released | Files / connections / locks not released in finally | Resource release pairing check + try-with-resources | Add release in finally, then recheck |
+| Rules not in CI | Standards check only run manually on local machines | MR gate enforces check_standards.py | After CI integration, every MR is scanned |
 
-## 升级路径
+## Upgrade path
 
-| 升级方向 | 触发条件 | 增量字段 | 回退条件 |
+| Direction | Trigger | Added fields | Rollback condition |
 |---------|---------|---------|---------|
-| L1 → L2 | 进入 MR 提交前自检 | 五类规则启用、文件/行级问题清单、分级报告 | 自检未通过，降为草稿 |
-| L2 → L3 | 资金安全/监管报送/跨系统集成/首次上线 | 字段级安全校验、异常路径清单、资源释放配对、SonarQube 规则映射 | 风险降级或场景简化，经合规确认可回 L2 |
+| L1 → L2 | Self-check before MR submission starts | Five rule categories enabled, file / line-level issue list, severity report | Self-check failed, downgrade to draft |
+| L2 → L3 | Fund safety / regulatory reporting / cross-system integration / first go-live | Field-level security checks, exception path list, resource release pairing, SonarQube rule mapping | Risk downgraded or scenario simplified; may return to L2 after compliance confirmation |
 
-**人工兜底点**：L3 的字段级安全校验与 SonarQube 规则映射须由技术负责人与安全负责人共同确认；Agent 起草，技术负责人确认后定稿。降级须经 PM + 合规审批并记录原因。
+**Human fallback point**: at L3, the field-level security checks and SonarQube rule mapping must be confirmed jointly by the tech lead and the security owner. The Agent drafts; the tech lead confirms and finalizes. A downgrade requires PM + compliance approval, with the reason recorded.

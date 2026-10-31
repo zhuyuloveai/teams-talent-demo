@@ -1,6 +1,6 @@
 ---
 name: dev-refactoring
-description: 识别重构机会与技术债，制定小步可验证的重构计划，重构后验证功能等价。技术债清理、功能重构、代码质量提升时使用。
+description: "Identifies refactoring opportunities and technical debt, plans small verifiable refactoring steps, and verifies functional equivalence afterwards. Use for technical debt cleanup, feature refactoring and code quality improvement."
 ---
 
 ## 元数据

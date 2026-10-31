@@ -1,53 +1,53 @@
-# ADR-NNN: <决策标题>
+# ADR-NNN: <decision title>
 
-> 深度标记：【L2必填】评审级；【L3必填】实施级（量化权衡）。
+> Depth markers: [L2 required] review level; [L3 required] implementation level (quantified trade-off).
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 编号 | ADR-NNN |
-| 日期 | <日期> |
-| 状态 | 提议/已接受/已废弃 |
-| 关联需求 | REQ-<xxx> |
+| ID | ADR-NNN |
+| Date | <date> |
+| Status | Proposed/Accepted/Deprecated |
+| Linked requirement | REQ-<xxx> |
 
-## 背景 【L2必填】
+## Context [L2 required]
 
-<问题与上下文>
+<problem and context>
 
-## 候选方案 【L2必填】
+## Candidate options [L2 required]
 
-| 方案 | 描述 | 优点 | 缺点 |
+| Option | Description | Pros | Cons |
 |------|------|------|------|
-| 方案A | <描述> | <优点> | <缺点> |
-| 方案B | <描述> | <优点> | <缺点> |
+| Option A | <description> | <pros> | <cons> |
+| Option B | <description> | <pros> | <cons> |
 
-## 量化权衡表 【L3必填】
+## Quantified trade-off table [L3 required]
 
-| 方案 | 实现成本 | 性能开销 | 运维时效 | 审计性 | 风险 |
+| Option | Implementation cost | Performance overhead | Operational turnaround | Auditability | Risk |
 |------|---------|---------|---------|--------|------|
-| A | 中 | 低 | 分钟级 | 高 | 低 |
-| B | 低 | 无 | 需发版 | 中 | 中 |
+| A | Medium | Low | Minutes | High | Low |
+| B | Low | None | Requires a release | Medium | Medium |
 
-## 决策 【L2必填】
+## Decision [L2 required]
 
-<选定方案与结论>
+<chosen option and conclusion>
 
-## 理由 【L2必填】
+## Rationale [L2 required]
 
-<依据，引用需求/标准/证据>
+<basis, citing requirements / standards / evidence>
 
-## 影响与回退路径 【L3必填】
+## Consequences and rollback path [L3 required]
 
-<影响面>；回退：<回退方式>
+<impact>; rollback: <rollback approach>
 
-## 证据 【L2必填】
+## Evidence [L2 required]
 
-- <需求ID / 标准条款 / 证据>
+- <requirement ID / standard clause / evidence>
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 量化权衡 | 成本/性能/运维/审计/风险 |
-| 回退路径 | 决策回退方式 |
+| Quantified trade-off | Cost / performance / operations / audit / risk |
+| Rollback path | How the decision is rolled back |

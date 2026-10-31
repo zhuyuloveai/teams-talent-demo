@@ -1,91 +1,91 @@
-# 银行业务术语表（支付领域）
+# Banking Business Glossary (Payments)
 
-> 本术语表供需求编写参考，确保术语统一。如与行内标准术语表不一致，以行内标准为准。
+> This glossary is a reference for writing requirements and keeps terms consistent. Where it differs from the bank's internal standard glossary, the internal standard prevails.
 
-## 核心概念
+## Core concepts
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 支付 | Payment | 为清偿债权债务关系，将资金从付款方转移到收款方的过程 |
-| 清算 | Clearing | 对交易指令进行清分、计算应收应付金额的过程（不发生资金实际转移） |
-| 结算 | Settlement | 按照清算结果完成资金转移、了结债权债务的过程 |
-| 轧差 | Netting | 对收付款进行差额计算，以净额进行结算 |
-| 全额结算 | Gross Settlement | 每笔交易逐笔全额进行资金结算 |
-| 净额结算 | Net Settlement | 对一段时间内的交易轧差后，按净额结算 |
+| Payment | - | The process of moving funds from the payer to the payee to discharge a debt |
+| Clearing | - | Sorting transaction instructions and calculating the amounts receivable and payable (no actual movement of funds) |
+| Settlement | - | Moving funds according to the clearing result to discharge the obligations |
+| Netting | - | Offsetting receipts and payments and settling the net amount |
+| Gross Settlement | - | Each transaction is settled individually in full |
+| Net Settlement | - | Transactions over a period are netted and the net amount is settled |
 
-## 支付方式
+## Payment methods
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 转账汇款 | Transfer / Remittance | 付款人主动发起的资金划转 |
-| 代收 | Collection / Direct Debit | 收款人根据授权主动扣款 |
-| 托收 | Collection | 收款人委托银行向付款人收取款项 |
-| 票据 | Bill / Note | 汇票、本票、支票等支付工具 |
-| 银行卡支付 | Card Payment | 借记卡、信用卡等银行卡支付 |
-| 第三方支付 | Third-party Payment | 非银行支付机构提供的支付服务 |
-| 跨境支付 | Cross-border Payment | 资金在不同国家/地区之间的转移 |
+| Transfer / Remittance | - | Movement of funds initiated by the payer |
+| Direct Debit | - | The payee debits the payer's account under an authorization |
+| Collection | - | The payee instructs a bank to collect funds from the payer |
+| Bill / Note | - | Payment instruments such as bills of exchange, promissory notes and cheques |
+| Card Payment | - | Payment by bank card such as debit or credit card |
+| Third-party Payment | - | Payment services provided by non-bank payment institutions |
+| Cross-border Payment | - | Movement of funds between countries/regions |
 
-## 交易状态
+## Transaction statuses
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 待确认 | Pending | 交易已接收，待进一步确认 |
-| 处理中 | Processing | 交易正在处理中 |
-| 成功 | Success | 交易处理完成，资金已划转 |
-| 失败 | Failed | 交易处理失败，资金未划转 |
-| 已撤销 | Cancelled | 交易被撤销（成功前） |
-| 已冲正 | Reversed | 对已成功的交易进行冲正 |
-| 已退款 | Refunded | 全额或部分退还款项 |
-| 超时 | Timeout | 在规定时间内未收到最终结果 |
-| 可疑 | Suspicious | 交易状态不明确，需要人工介入确认 |
+| Pending | - | The transaction is received and awaits further confirmation |
+| Processing | - | The transaction is being processed |
+| Success | - | Processing is complete and the funds have moved |
+| Failed | - | Processing failed and the funds did not move |
+| Cancelled | - | The transaction was cancelled (before success) |
+| Reversed | - | A successful transaction was reversed |
+| Refunded | - | The amount was refunded in full or in part |
+| Timeout | - | No final result was received within the defined time |
+| Suspicious | - | The transaction status is unclear and needs manual confirmation |
 
-## 账户相关
+## Accounts
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 内部账户 | Internal Account | 银行内部核算使用的账户 |
-| 客户账户 | Customer Account | 客户在银行开立的账户 |
-| 往来账户 | Inter-bank Account | 银行之间资金往来使用的账户 |
-| 清算账户 | Clearing Account | 用于清算的专用账户 |
-| 备付金账户 | Reserve Account | 支付机构存放在银行的客户备付金账户 |
+| Internal Account | - | Account used for the bank's internal bookkeeping |
+| Customer Account | - | Account a customer opens at the bank |
+| Inter-bank Account | - | Account used for fund movements between banks |
+| Clearing Account | - | Dedicated account used for clearing |
+| Reserve Account | - | Customer reserve account that a payment institution holds at a bank |
 
-## 安全与风控
+## Security and risk control
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 反洗钱 | AML (Anti-Money Laundering) | 预防洗钱活动的措施 |
-| 大额交易 | Large Transaction | 达到规定金额以上的交易，需报告 |
-| 可疑交易 | Suspicious Transaction | 有洗钱嫌疑的交易，需报告 |
-| 客户身份识别 | KYC (Know Your Customer) | 对客户身份进行核实的程序 |
-| 实名制 | Real-name System | 账户开立和交易必须使用真实身份 |
-| 双因子认证 | 2FA / MFA | 使用两种及以上方式进行身份验证 |
-| 交易限额 | Transaction Limit | 单笔/每日/每月交易金额/笔数的限制 |
-| 风险评级 | Risk Rating | 对客户/交易进行风险等级评定 |
+| Anti-Money Laundering | AML | Measures to prevent money laundering |
+| Large Transaction | - | A transaction at or above the defined amount; must be reported |
+| Suspicious Transaction | - | A transaction suspected of money laundering; must be reported |
+| Know Your Customer | KYC | The procedure for verifying a customer's identity |
+| Real-name System | - | Accounts and transactions must use a real identity |
+| Two-factor / Multi-factor Authentication | 2FA / MFA | Identity verification using two or more methods |
+| Transaction Limit | - | Limit on the amount/count of transactions per transaction, day or month |
+| Risk Rating | - | Assigning a risk level to a customer/transaction |
 
-## 监管与合规
+## Regulation and compliance
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 支付系统监管 | Payment System Supervision | 央行对支付系统的监督管理 |
-| 网联 | NUCC | 非银行支付机构网络支付清算平台 |
-| 银联 | CUP (China UnionPay) | 中国银行卡联合组织 |
-| 人民银行 | PBOC | 中国人民银行（央行） |
-| 银保监会 | CBIRC | 中国银行保险监督管理委员会 |
-| 二号令 | Order No.2 | 非金融机构支付服务管理办法 |
-| 个人信息保护法 | PIPL | 中华人民共和国个人信息保护法 |
-| 数据安全法 | DSL | 中华人民共和国数据安全法 |
+| Payment System Supervision | - | Supervision of payment systems by the central bank |
+| NetsUnion Clearing Corporation | NUCC | Online payment clearing platform for non-bank payment institutions |
+| China UnionPay | CUP | China's bank card association |
+| People's Bank of China | PBOC | The central bank of China |
+| China Banking and Insurance Regulatory Commission | CBIRC | China's banking and insurance regulator |
+| Order No.2 | - | Measures for the Administration of Payment Services Provided by Non-Financial Institutions |
+| Personal Information Protection Law | PIPL | Personal Information Protection Law of the PRC |
+| Data Security Law | DSL | Data Security Law of the PRC |
 
-## 系统相关
+## Systems
 
-| 术语 | 英文/缩写 | 释义 |
+| Term | Abbreviation | Definition |
 |------|----------|------|
-| 核心系统 | Core Banking System | 处理存贷、结算等核心银行业务的系统 |
-| 支付系统 | Payment System | 处理支付业务的系统 |
-| 清算系统 | Clearing System | 处理清算业务的系统 |
-| 总账系统 | GL (General Ledger) | 总分类账系统，财务核算核心 |
-| 中间业务平台 | Middleware Platform | 处理代收代付等中间业务的平台 |
-| 渠道系统 | Channel System | 网银、手机银行、柜面等前端渠道 |
-| ESB | ESB (Enterprise Service Bus) | 企业服务总线，系统间集成 |
-| ODS | ODS (Operational Data Store) | 操作型数据存储，近实时数据汇总 |
+| Core Banking System | - | System that handles core banking business such as deposits, loans and settlement |
+| Payment System | - | System that handles payment business |
+| Clearing System | - | System that handles clearing |
+| General Ledger | GL | General ledger system; the core of financial accounting |
+| Middleware Platform | - | Platform for intermediary business such as collection and payment agency |
+| Channel System | - | Front-end channels such as internet banking, mobile banking and branch counters |
+| Enterprise Service Bus | ESB | Integration bus between systems |
+| Operational Data Store | ODS | Near-real-time aggregated operational data |
 
-> 注：以上为通用术语，具体项目需根据行内标准术语表进行校准和扩充。
+> Note: these are general terms. A specific project must calibrate and extend them against the bank's internal standard glossary.

@@ -1,11 +1,11 @@
-# 五层模型 → SDLC产出物映射
+# Five-level model → SDLC artifact mapping
 
-| 层级 | BA消费 | Arch消费 |
+| Level | BA consumption | Arch consumption |
 |------|--------|---------|
-| L1 | 业务规则清单 | 业务上下文 |
-| L2 | 用户故事参考 | 限界上下文/聚合根 |
-| L3 | 验收场景 | 服务编排/接口 |
-| L4 | NFR输入 | 系统接口/数据模型 |
-| L5 | 字段级规则 | 迁移/重构/技术债 |
+| L1 | Business rules list | Business context |
+| L2 | User story reference | Bounded contexts / aggregate roots |
+| L3 | Acceptance scenarios | Service orchestration / interfaces |
+| L4 | NFR input | System interfaces / data model |
+| L5 | Field-level rules | Migration / refactoring / technical debt |
 
-适配层为纯格式转换，保留证据链。
+The adapter layer is a pure format conversion and keeps the evidence chain.

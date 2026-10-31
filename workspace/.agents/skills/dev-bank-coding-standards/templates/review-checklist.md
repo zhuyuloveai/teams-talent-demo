@@ -1,17 +1,17 @@
-# 规范评审检查清单
+# Standards review checklist
 
-- [ ] 命名符合规范
-- [ ] 无吞异常
-- [ ] 日志埋点完整且不含敏感信息
-- [ ] 无SQL注入/硬编码密钥
-- [ ] 资源正确释放
-- [ ] 致命/严重问题为零
+- [ ] Naming follows the standards
+- [ ] No swallowed exceptions
+- [ ] Logging instrumentation complete, with no sensitive data
+- [ ] No SQL injection / hardcoded keys
+- [ ] Resources released correctly
+- [ ] Zero fatal / critical issues
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 行级问题 | 文件:行+规则+建议 |
-| 工具映射 | SonarQube规则编号 |
+| Line-level issues | file:line + rule + suggestion |
+| Tool mapping | SonarQube rule ID |

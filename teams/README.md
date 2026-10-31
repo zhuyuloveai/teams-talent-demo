@@ -1,35 +1,35 @@
-# iCode Teams 演示
+# iCode Teams demo
 
-## 七类业务场景
+## Seven business scenarios
 
-1. 项目知识准备：关联资产，构建知识，查看图谱和文档。
-2. 开发准备：确认需求、分配成员、选用能力并冻结上下文。
-3. 开发协作：开始工作、同步进度、保留材料与处理记录。
-4. 质量与验收：检查、修复、提交、消费计算、规则验证与确认。
-5. 交付追溯：关联需求、上下文、检查结果及协作时间线。
-6. 会话共享：成员上报交付会话，供 Talents 轨迹诊断。
-7. 运营观察：工作台按成员、工具和时间查看活动及用量。
+1. Project knowledge preparation: link assets, build knowledge, view the graph and documents.
+2. Development preparation: confirm requirements, assign members, choose capabilities and freeze the context.
+3. Development collaboration: start work, sync progress, keep material and handling records.
+4. Quality and acceptance: check, fix, submit, cashback calculation, rule verification and confirmation.
+5. Delivery traceability: link requirements, context, check results and the collaboration timeline.
+6. Session sharing: members report delivery sessions for Talents trajectory diagnosis.
+7. Operations view: the workspace shows activity and usage by member, tool and time.
 
-这些是业务场景说明，不在产品界面增加独立演示导航。
+These describe business scenarios; the product UI has no separate demo navigation for them.
 
-## 服务与数据
+## Service and data
 
-React/antd 前端加 Node 服务。Teams 持有交付状态，并把成员、项目、代码仓、文档和共享会话导出到共享目录；项目知识读取独立 Talents 写入同一目录的产物（远端索引等；文件类知识改为由 Talents 以 PR 提交到代码仓）。Talents 入口只对 Owner 展示。用户确认 iCode 作业后，在所选终端打开可交互的 TUI。开发者输入指令时，原生 Hook 带入当前任务与节点上下文入口；后续操作由开发者交互控制。检查记录区分实际执行与预置结果。
+A React/antd front end plus a Node service. Teams owns the delivery state and exports members, projects, repositories, documents and shared sessions to the shared directory. Project knowledge reads the artifacts that the standalone Talents writes to the same directory (remote indexes and similar; file-type knowledge is now submitted by Talents to the repository as a PR). The Talents entry is shown only to the Owner. After the user confirms an iCode job, an interactive TUI opens in the chosen terminal. When the developer enters an instruction, a native Hook brings in the entry point for the current task and node context; the developer controls the rest of the interaction. Check records distinguish actual runs from preset results.
 
-白金卡返现使用整数分计算；消费 120 元额外返现 0.60 元，欠款由 2550.75 元变为 2670.15 元。重复处理不会新增记录。未导入旧餐饮的报名、类别、门槛或封顶规则。生产细则仍需业务确认。
+Platinum card cashback is calculated in whole cents: a CNY 120.00 purchase earns an extra CNY 0.60 cashback, and the balance owed goes from CNY 2550.75 to CNY 2670.15. Processing the same purchase again adds no record. The old dining campaign's enrollment, category, threshold and cap rules are not carried over. Production details still need business confirmation.
 
-## 启动与检查
+## Start and checks
 
-见 [快速启动](docs/quick-start.md)、[页面地图](docs/page-map.md) 和 [设计说明](docs/demo-design.md)。
+See [Quick start](docs/quick-start.md), [Page map](docs/page-map.md) and [Design notes](docs/demo-design.md).
 
-实际 CardDemo 开发先按 [初始化与交付检查](docs/carddemo-development.md) 核对 JDK 21/Maven 和 iCode，配置独立业务仓库的交付基线与任务 worktree。指南包含 CLI/TUI 入口、真实测试工具及报告要求；平台 `main`、业务任务目录和原有运行会话各自保留，未提交旧代码不会自动带入新需求。
+For actual CardDemo development, first follow [Setup and delivery checks](docs/carddemo-development.md) to check JDK 21/Maven and iCode, and configure the delivery base branch and task worktrees of the separate business repository. The guide covers the CLI/TUI entry points, the real test tools and report requirements. The platform branch, business task directories and existing run sessions are each kept separately; old uncommitted code is not carried into a new requirement.
 
-按需求清回开始前并重新运行，使用 `npm run reset:task -- --project carddemo --task REQ-…`；默认仅预览，追加 `--apply` 执行并自动备份。先结束目标需求的 iCode 会话；需求内容、交付人和排期保留，业务代码及原生全局历史不清理。删除新建需求与备份撤回的完整用法见 [根目录按需求重置说明](../README.md#按需求重置)。
+To return a requirement to its pre-start state and run it again, use `npm run reset:task -- --project carddemo --task REQ-…`. It only previews by default; append `--apply` to run it with an automatic backup. First end the target requirement's iCode session. The requirement content, assignee and schedule are kept; business code and native global history are not cleaned. For deleting new requirements and restoring from a backup, see [Reset a requirement in the root README](../README.md#reset-a-requirement).
 
-Credit Card 项目（内部标识 `carddemo`）的 MKT-001 与新增交付需求共用同一四节点记录和 CLI 状态机制。节点下按输入、结果、执行过程展示，结果包含交付物与完成标准；上游产物引用和代码版本由页面及 CLI 共用，任务资料常驻；旧开发/检查演练按钮已停用。Teams CLI/Skill 保留项目、任务、节点和 run/session 关联；回传成果不代替 Owner 验收。详细契约见 [协作 Skill](skills/teams-demo-collaboration/SKILL.md)。
+In the Credit Card project (internal ID `carddemo`), MKT-001 and newly added delivery requirements share the same four-node records and CLI state mechanism. Each node shows input, result and execution process; the result contains the deliverables and completion criteria. Upstream artifact references and code versions are shared by the page and the CLI, and task material is always shown; the old development/check rehearsal buttons are disabled. The Teams CLI/Skill keeps the project, task, node and run/session links; reporting results back does not replace Owner acceptance. For the detailed contract, see the [collaboration Skill](skills/teams-demo-collaboration/SKILL.md).
 
-Teams 按项目、任务和节点筛选 Talents 已发布知识与登记 Skill，页面与 CLI 读取同一结果；Skill 正文、版本和散列来自真实登记包。筛选目前使用场景预置，不调用模型。未配置范围显示空项，已采用节点保留固定版本，旧任务只提取相关历史输入，不补写采用记录。项目内任务分为“我的任务”和“其他任务”，双方均可浏览；仅交付人可启动 iCode、采用输入和回传进度，Owner 可承担自己的任务并保留人工验收权限。
+Teams filters the knowledge published by Talents and the registered Skills by project, task and node; the page and the CLI read the same result. Skill content, versions and hashes come from the real registered packages. Filtering currently uses preset scenarios and does not call a model. An unconfigured scope shows empty items, adopted nodes keep their fixed versions, and old tasks only extract relevant historical input without backfilling adoption records. Tasks in a project are split into "My tasks" and "Other tasks", and both can be browsed. Only the assignee can start iCode, adopt input and report progress; the Owner can take on their own tasks and keeps manual acceptance rights.
 
-### 独立业务项目
+### Separate business project
 
-在「项目概览 → 工作区设置」配置业务仓库本机绝对路径、origin 与交付基线分支。新需求自动使用该业务仓库的独立任务 worktree，已有会话保留原目录；Teams 与业务代码分别提交。初始化、目录规则和测试工具见 [CardDemo 开发指南](docs/carddemo-development.md#独立业务仓库推荐)。
+In "Project overview → Workspace settings", configure the business repository's absolute local path, origin and delivery base branch. New requirements automatically use a separate task worktree of that business repository, and existing sessions keep their original directory; Teams and the business code are committed separately. For setup, directory rules and test tools, see the [CardDemo development guide](docs/carddemo-development.md#separate-business-repository-recommended).

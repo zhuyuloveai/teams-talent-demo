@@ -1,31 +1,31 @@
-# 架构标准与设计输入边界
+# Architecture Standards and Design Input Boundaries
 
-## 设计输入
+## Design inputs
 
-设计只能基于以下输入，超出范围的属于"过度设计"：
+A design may only be based on the following inputs; anything beyond them is "over-engineering":
 
-1. 需求说明书（功能/非功能/业务规则）
-2. 架构标准与既有平台约束
-3. 存量系统知识（cobol-legacy-knowledge产出）
-4. 明确的监管与合规要求
+1. The requirement specification (functional / non-functional / business rules)
+2. Architecture standards and existing platform constraints
+3. Legacy system knowledge (cobol-legacy-knowledge output)
+4. Explicit regulatory and compliance requirements
 
-## 模板对齐
+## Template alignment
 
-- 设计文档结构与EPS目标架构需求说明书（DDD）保持一致：总体架构 → 模块/服务 → 接口 → 数据 → 部署 → 演进
-- ADR使用统一模板：背景/候选/选择/理由/影响/证据
-- NFR逐项量化，禁止"默认满足"空答
+- The design document structure follows the EPS target architecture requirement specification (DDD): overall architecture → modules/services → interfaces → data → deployment → evolution
+- ADRs use the common template: context / candidates / choice / rationale / consequences / evidence
+- Every NFR is quantified; empty "met by default" answers are forbidden
 
-## 关键约束
+## Key constraints
 
-- 需求覆盖：每条REQ必须在设计文档中有对应章节
-- 证据引用：设计结论引用需求ID、标准条款或存量证据
-- 合规前置：安全、监管、SoD在设计阶段应答，不留欠账
-- 最小设计：只解决需求范围内的问题，不引入额外复杂度
+- Requirement coverage: every REQ must have a matching section in the design document
+- Evidence: design conclusions cite requirement IDs, standard clauses or legacy evidence
+- Compliance first: security, regulation and SoD are answered in the design phase, with nothing left outstanding
+- Minimal design: solve only the problems within the requirement scope; add no extra complexity
 
-## 评审前自检
+## Pre-review self-check
 
-- [ ] 需求覆盖矩阵完整
-- [ ] 每个ADR含备选与理由
-- [ ] NFR逐项量化
-- [ ] 影响分析独立成文（由arch-impact-analysis负责）
-- [ ] 引用证据完整
+- [ ] The requirement coverage matrix is complete
+- [ ] Every ADR has alternatives and a rationale
+- [ ] Every NFR is quantified
+- [ ] The impact analysis is a separate document (owned by arch-impact-analysis)
+- [ ] Cited evidence is complete

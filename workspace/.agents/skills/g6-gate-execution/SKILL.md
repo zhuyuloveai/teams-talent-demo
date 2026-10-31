@@ -1,6 +1,6 @@
 ---
 name: g6-gate-execution
-description: G6发布阶段门禁执行器，统一运行构建制品校验和回滚手册完整性检查并汇总结果
+description: "G6 release-phase gate runner. Runs the build artifact checksum and rollback runbook completeness checks together and summarizes the results."
 ---
 
 ## 元数据

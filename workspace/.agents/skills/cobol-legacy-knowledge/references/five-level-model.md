@@ -12,19 +12,19 @@
 
 The full-stack five-level model is the analysis method used in Chinese banking core-system rebuild projects to decompose a system from business intent down to technical implementation. Applied to COBOL extraction, it turns source code into a layered, traceable knowledge model of the **As-Is** system:
 
-| Level | Chinese term | Name |
-|---|---|---|
-| L1 | 业务模型 | Business Model |
-| L2 | 领域模型 | Domain Model |
-| L3 | 流程模型 | Process Model |
-| L4 | 系统模型 | System Model |
-| L5 | 实施模型 | Implementation Model |
+| Level | Name |
+|---|---|
+| L1 | Business Model |
+| L2 | Domain Model |
+| L3 | Process Model |
+| L4 | System Model |
+| L5 | Implementation Model |
 
 The model is built **bottom-up (L5 to L1)** so every statement at a higher level is supported by evidence from a lower level. It is As-Is: it describes what the legacy code actually does today, not what a target architecture should do.
 
 ## Level definitions
 
-### L1 - Business Model (业务模型)
+### L1 - Business Model
 
 Answers "what business does this subsystem support, and where are its boundaries?"
 
@@ -32,7 +32,7 @@ Answers "what business does this subsystem support, and where are its boundaries
 - Macro processes the subsystem participates in (e.g., customer payment lifecycle, end-of-day processing)
 - Domain boundaries: what belongs to this subsystem and what belongs elsewhere
 
-### L2 - Domain Model (领域模型)
+### L2 - Domain Model
 
 Answers "what are the core business objects and how do they relate?"
 
@@ -41,7 +41,7 @@ Answers "what are the core business objects and how do they relate?"
 - Relationships (e.g., Customer has Transactions; Transaction references an Account)
 - Ubiquitous language: the business terms the code uses, including 88-level values and status codes
 
-### L3 - Process Model (流程模型)
+### L3 - Process Model
 
 Answers "how is the business actually done, step by step?"
 
@@ -49,7 +49,7 @@ Answers "how is the business actually done, step by step?"
 - Activities and steps with their order and decision points
 - Business rules that govern the flow (e.g., only active customers may pay; amounts above a limit are rejected)
 
-### L4 - System Model (系统模型)
+### L4 - System Model
 
 Answers "which programs and data stores implement the business?"
 
@@ -58,7 +58,7 @@ Answers "which programs and data stores implement the business?"
 - Data stores: DDS physical/logical files and SQL tables with their usage
 - Interfaces: parameters passed between programs, files consumed/produced
 
-### L5 - Implementation Model (实施模型)
+### L5 - Implementation Model
 
 Answers "how is it packaged, scheduled, and run on IBM i?"
 

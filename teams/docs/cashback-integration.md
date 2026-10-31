@@ -1,7 +1,7 @@
-# 交易与返现处理边界
+# Transaction and cashback processing boundaries
 
-本地工作流以单笔 TX-PLATINUM-120 作为验收输入。先计算整数分奖励，再写入一条交易并更新欠款。重复 purchase 被拒绝，不得再次改动交易或余额。
+The local workflow uses the single transaction TX-PLATINUM-120 as acceptance input. It first calculates the whole-cent reward, then writes one transaction and updates the balance owed. A repeated purchase is rejected and must not change the transaction or balance again.
 
-并发写入使用服务端队列及 revision 乐观锁。Talent 在独立状态目录保存知识与候选；回传失败保留 pending，重试沿用同一操作与 generation，避免重复采用。
+Concurrent writes use a server-side queue and revision optimistic locking. Talent stores knowledge and candidates in a separate state directory; a failed report-back stays pending, and a retry reuses the same operation and generation to avoid adopting twice.
 
-真实支付、账户系统与外部模型不在当前实现范围。退款、重试账务、清算和生产事务一致性尚未验证。
+Real payments, the account system and external models are outside the current implementation. Refunds, accounting retries, clearing and production transaction consistency are not verified yet.

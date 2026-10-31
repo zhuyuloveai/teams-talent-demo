@@ -1,32 +1,32 @@
-# <变更> 影响分析报告
+# <Change> Impact Analysis Report
 
-| 项 | 内容 |
+| Item | Value |
 |----|------|
-| 关联需求/变更 | REQ-<xxx> / CHG-<xxx> |
-| 版本 | v<版本> |
+| Linked requirement/change | REQ-<xxx> / CHG-<xxx> |
+| Version | v<version> |
 
-## 影响项清单
+## Impact items
 
-| 维度 | 影响项 | 影响级别 | 责任方 | 回退建议 |
+| Dimension | Impact item | Impact level | Responsible party | Rollback recommendation |
 |------|--------|---------|--------|---------|
-| 代码 | <模块/文件> | 高/中/低 | <团队> | <回退> |
-| 数据 | <表/字段/迁移> | | | |
-| 接口 | <接口/联调方> | | | |
-| 配置 | <参数/配置项> | | | |
-| 文档 | <文档> | | | |
-| 权限 | <角色/权限> | | | |
+| Code | <module/file> | High/Medium/Low | <team> | <rollback> |
+| Data | <table/field/migration> | | | |
+| Interfaces | <interface/integration partner> | | | |
+| Configuration | <parameter/configuration item> | | | |
+| Documentation | <document> | | | |
+| Permissions | <role/permission> | | | |
 
-## 风险清单
+## Risk list
 
-| 风险 | 影响 | 级别 | 处置 |
+| Risk | Impact | Level | Handling |
 |------|------|------|------|
-| <风险> | <影响> | 高/中/低 | <处置> |
+| <risk> | <impact> | High/Medium/Low | <handling> |
 
 ---
 
-## L3 必填深度字段
+## L3 required depth fields
 
-| 字段 | 要求 |
+| Field | Requirement |
 |------|------|
-| 量化影响 | 调用方/数据量/窗口影响 |
-| 回退 | 每项回退建议 |
+| Quantified impact | Callers / data volume / effect on the change window |
+| Rollback | Rollback recommendation for every item |
