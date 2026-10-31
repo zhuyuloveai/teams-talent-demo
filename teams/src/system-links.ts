@@ -1,4 +1,5 @@
 import type { Role } from './domain.js';
+import { currentLocale } from '../../shared/i18n/index.js';
 
 export interface SystemRuntime { app: 'teams'; teamsOrigin: string; talentOrigin: string; defaultLocale?: 'zh' | 'en' }
 export interface SystemLinkContext { projectId?: string; requirementId?: string; taskId?: string; role?: Role }
@@ -21,7 +22,8 @@ export function currentSystemContext(): Required<Pick<SystemLinkContext, 'projec
   return { projectId, taskId, role: requestedRole === 'member' || requestedRole === 'owner' ? requestedRole : localStorage.getItem('carddemo-role') === 'member' ? 'member' : 'owner', requirementId: hash.get('requirement') ?? search.get('requirement') ?? (projectId === 'carddemo' ? 'DEMO-MKT-001' : projectId === 'teams' && taskId ? 'REQ-' + taskId : undefined) };
 }
 /** The two apps run on different origins, so the choice travels in the link, not localStorage. */
-const linkLocale = () => (typeof localStorage !== 'undefined' && localStorage.getItem('demo-locale') === 'en' ? 'en' : 'zh');
+// The other app is a different origin and cannot read this one's stored choice, so links carry the language shown now.
+const linkLocale = () => currentLocale();
 function teamsSystemLink(page: string, supplied: SystemLinkContext = {}) {
   const current = currentSystemContext();
   const context = { ...current, ...supplied };

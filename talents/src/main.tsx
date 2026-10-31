@@ -6,6 +6,7 @@ import { Alert, App as AntApp, Button, ConfigProvider, Select, Spin, Tooltip } f
 import zhCN from 'antd/locale/zh_CN.js';
 import enUS from 'antd/locale/en_US.js';
 import { LocaleProvider, useLocale, useT } from './i18n.tsx';
+import { currentLocale } from '../../shared/i18n/index.ts';
 import { MenuFoldOutlined, MenuUnfoldOutlined, ReadOutlined } from '@ant-design/icons';
 import { FrameworkSidebar } from './vendor/teams/components/framework-sidebar.tsx';
 import { teamsTheme, type UiThemeMode } from './vendor/teams/theme.ts';
@@ -56,7 +57,7 @@ function Shell({ mode, onToggleTheme }: { mode: UiThemeMode; onToggleTheme(): vo
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} onClick={() => setCollapsed(value => !value)} /></Tooltip>
           <nav className={'breadcrumb' + (crumbs.length > 1 ? ' project-breadcrumb' : '')} aria-label={t('topbar.location')}>
             <Select className="compact-system-switch" aria-label={t('topbar.switchSystem')} size="small" variant="borderless" value="talent" popupMatchSelectWidth={180}
-              onChange={value => { const lang = localStorage.getItem('demo-locale') === 'en' ? '&lang=en' : ''; location.href = value === 'tools' ? new URL('/teams?demo-role=' + (role === 'admin' ? 'owner' : 'member') + lang + '#/agent', teams.origin).toString() : teamsLink(); }}
+              onChange={value => { const lang = '&lang=' + currentLocale(); location.href = value === 'tools' ? new URL('/teams?demo-role=' + (role === 'admin' ? 'owner' : 'member') + lang + '#/agent', teams.origin).toString() : teamsLink(); }}
               options={[{ value: 'teams', label: 'iCode Teams' }, { value: 'talent', label: 'iCode Talents' }, { value: 'tools', label: 'iCode / OpenCode' }]} />
             {crumbs.map(c => <Fragment key={c.label}><span className="breadcrumb-separator">/</span>
               {c.href ? <a className="breadcrumb-parent" href={c.href}>{c.label}</a> : <strong aria-current="page" title={c.label}>{c.label}</strong>}</Fragment>)}

@@ -4,7 +4,7 @@ import { App } from 'antd';
 import { ApiError, codegraphRuns, resetState, saveState, startCodegraphRun, submitPullRequest, teamsUpdate, type Boot, type CodegraphUpdate, type SubmitRequest } from './api.ts';
 import { home, parseHash, type Route } from './navigation.ts';
 import { useLocale } from './i18n.tsx';
-import { currentT } from '../../shared/i18n/index.ts';
+import { currentLocale, currentT } from '../../shared/i18n/index.ts';
 import { project, task, taskName } from './demo/model.ts';
 import { localizeCapabilities, localizeCategories } from './demo/catalog-en.ts';
 import { finishRun, runProgress } from './demo/runs.ts';
@@ -213,7 +213,7 @@ export function TalentsProvider({ boot, children }: { boot: Boot; children: Reac
     const pid = projectId ?? focusProject ?? stateRef.current.projects[0]?.id ?? 'carddemo';
     const url = new URL('/teams', teams.origin);
     url.searchParams.set('demo-role', role === 'admin' ? 'owner' : 'member');
-    url.searchParams.set('lang', localStorage.getItem('demo-locale') === 'en' ? 'en' : 'zh');
+    url.searchParams.set('lang', currentLocale());
     url.hash = '/projects?project=' + encodeURIComponent(pid) + '&tab=content';
     return url.toString();
   }, [focusProject, role, teams.origin]);
