@@ -42,6 +42,8 @@ function refreshManifest(path) {
 // 3. Four requirement scenarios: v1 manifests first, v2 manifests point at the v1 manifest digest.
 const scenarioFile = join(root, 'shared/four-requirement-scenarios.ts');
 let scenarios = readFileSync(scenarioFile, 'utf8');
+const readmeFile = join(root, 'README.md'); // its copy-paste requirement blocks quote the same digests
+let readme = readFileSync(readmeFile, 'utf8');
 let profileV2;
 for (const id of readdirSync(join(content, 'four-requirements')).filter(name => /^REQ-\d{4}-\d{3}$/.test(name)).sort()) {
   const dir = join(content, 'four-requirements', id);
@@ -57,11 +59,13 @@ for (const id of readdirSync(join(content, 'four-requirements')).filter(name => 
     }
     if (manifest.previousVersion) manifest.previousVersion.manifestSha256 = fileSha(join(content, manifest.previousVersion.manifestPath));
     writeJson(path, manifest, indentOf(path));
-    if (old && old !== source) scenarios = scenarios.replaceAll(old, source);
+    if (old && old !== source) { scenarios = scenarios.replaceAll(old, source); readme = readme.replaceAll(old, source); }
   }
 }
-if (profileV2) scenarios = scenarios.replace(/(fourRequirementProfileV2Sha256 = ')[0-9a-f]{64}(')/, `$1${profileV2}$2`);
+const oldProfile = /fourRequirementProfileV2Sha256 = '([0-9a-f]{64})'/.exec(scenarios)?.[1];
+if (profileV2 && oldProfile && oldProfile !== profileV2) { scenarios = scenarios.replaceAll(oldProfile, profileV2); readme = readme.replaceAll(oldProfile, profileV2); }
 writeFileSync(scenarioFile, scenarios);
+writeFileSync(readmeFile, readme);
 
 // 4. Platinum benefit page manifest (knowledge files only; sourceFiles record the carddemo commit they were read from).
 const platinum = join(content, 'platinum-cashback-page/provenance.json');

@@ -33,7 +33,7 @@ Members ── shared sessions ──▶ iCode Teams ──▶ Admin view (Talen
 2. **Knowledge capabilities**: introduce the capabilities by their four categories, open one to see its definition (engine.yaml), and demo "Import capability".
 3. **Knowledge tasks** (a project tab): "Done" has a "Trajectory insights" task; current tasks are split into scheduled and one-off tasks, and can be paused, cancelled and deleted.
 4. **Artifacts** (a project tab):
-   - Open the new version of "Credit card marketing cashback business knowledge", compare it with the previous version, and submit a PR.
+   - Open the new version of "Credit Card Marketing Cashback Business Knowledge", compare it with the previous version, and submit a PR.
    - Open the trajectory insights (the card says "3 suggestions to submit"), look at the diagnosis report, then go through the suggestions: submit improvement PRs for the Skill suggestion and the task-instruction suggestion, and decline the tool-call suggestion for now.
    - Create a CodeGraph task that really builds in the repository bound in Teams; when it finishes, open "<repository> code graph" to see the interactive graph, and click "Apply" to configure the codegraph MCP for the Code Agent.
 

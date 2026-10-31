@@ -13,8 +13,8 @@ const teamTopics:Record<string,{title:string;focus:string}>={
  T104:{title:'Get project configuration after joining a team',focus:'visibility of materials and configuration after joining a team, the impact scope of applying configuration, and behavior boundaries for first and repeated joins'},
  T105:{title:'Team project entry and project switching',focus:'the team project entry, the selected project scope, context updates after switching, and back navigation'},
  T106:{title:'Project standards and Skill visibility',focus:'the source, version, member visibility and adoption boundaries of project standards and Skills'},
- T107:{title:'Linking repositories and local work directories',focus:'repository identity, local directory verification, link confirmation and isolation between project directories'},
- T108:{title:'Research the integration scope of an external requirements system',focus:'external requirement source fields, integration scope, identity and permission boundaries, interfaces to be confirmed, and research conclusions'},
+ T107:{title:'Linking repositories to local work directories',focus:'repository identity, local directory verification, link confirmation and isolation between project directories'},
+ T108:{title:'Research the integration scope for external requirements systems',focus:'external requirement source fields, integration scope, identity and permission boundaries, interfaces to be confirmed, and research conclusions'},
 };
 /** Explicit new-task preparation: source facts are exactly the saved requirement, never another task's scenario. */
 export function registeredTaskNodePreset(task:{title:string;description:string},node:RequirementNode):NodePreset{

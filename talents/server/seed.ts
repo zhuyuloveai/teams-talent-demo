@@ -179,13 +179,13 @@ export function seedState(): TalentsState {
         published: { version: 2, at: '2026-10-27 18:50', note: 'Added 5 development patterns mined from code snippets; kept "Unified Error Codes and Exception Handling"', delivery: 'local', specs: MINER_SPECS, files: minerFiles(MINER_SPECS) },
         history: [{ version: 1, specs: ['Unified Error Codes and Exception Handling'] }], draft: null },
       // A diagnosis is not published: its suggestions are submitted as PRs one by one (server/pull-requests.ts).
-      { id: 'a-traj', projectId: PROJECT_ID, cap: 'traj', name: 'Trajectory insights: CardDemo migration and extension (19 rounds)', desc: '6 problem chains, 3 improvement suggestions.', sources: ['s-sessions'], kind: 'diagnosis',
+      { id: 'a-traj', projectId: PROJECT_ID, cap: 'traj', name: 'Trajectory insights: CardDemo migration and expansion (19 turns)', desc: '6 problem chains, 3 improvement suggestions.', sources: ['s-sessions'], kind: 'diagnosis',
         sessions: [TRAJ_SESSION], topic: 'carddemo-19', files: ['trajectory/carddemo-19/Trajectory Diagnosis Report.html'],
         suggestions: ['change-01', 'change-02', 'change-03'].map(id => ({ id, status: 'pending' })),
         published: null, draft: { created: '2026-10-27 01:21', task: 't-traj', revisions: [], basis: null } },
     ],
     // Diagnosis reports in content/trajectory/<topic>/, each for the session it analysed.
-    trajTopics: { 'carddemo-19': { title: 'CardDemo migration and extension (19 rounds)', session: TRAJ_SESSION } },
+    trajTopics: { 'carddemo-19': { title: 'CardDemo migration and expansion (19 turns)', session: TRAJ_SESSION } },
     // Project skill versions written directly by earlier demo builds; suggestions now go through PRs.
     skillVersions: [],
   };

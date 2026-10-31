@@ -11,7 +11,7 @@ Step 4 of the Skill workflow only asks for "Business rule implementation (label 
 ### Workflow
 
 ```diff
- 4. Business rule implementation (label each with its requirement/rule ID)
+ 4. Implement business rules (annotate each with its requirement / rule ID)
 +   - Write a positive and a negative check for every rule: at least one case each for who qualifies and who does not (e.g. platinum card gets cashback, standard card does not)
 +   - Period rules cover the start instant, the instant before the end and the end instant, and confirm from the requirement whether each endpoint is included
 +   - Amount rules check the result and rounding in integer cents (e.g. half a cent rounds up); non-positive amounts must be rejected
@@ -22,9 +22,9 @@ Step 4 of the Skill workflow only asks for "Business rule implementation (label 
 ### Common failure modes
 
 ```diff
- | Concurrency safety issue | Concurrent balance/limit updates cause over-deduction/overselling | Lock strategy + concurrency unit tests | Add the lock strategy and rerun the concurrency unit tests |
+ | Concurrency safety issues | Concurrent balance / limit updates cause over-debit / overselling | Locking strategy + concurrency unit test coverage | Add the locking strategy and rerun the concurrency unit tests |
 +| Rules tested only with positive input | Non-qualifying subjects (e.g. standard cards, spending outside the period) are included in the calculation and only surface at acceptance | Generate a list of positive, negative and boundary cases from the acceptance items and run each before submission | Add the missing checks and negative cases, then rerun all rule checks |
- | Missing idempotency | Duplicate requests cause duplicate charges/duplicate status changes | Idempotency key + duplicate submission test | Add the idempotency key and rerun the idempotency test |
+ | Missing idempotency | Duplicate requests cause duplicate debits / duplicate state changes | Idempotency key + duplicate submission test | Add the idempotency key and rerun the idempotency test |
 ```
 
 ### Quality gates
@@ -32,7 +32,7 @@ Step 4 of the Skill workflow only asks for "Business rule implementation (label 
 ```diff
  - [ ] Business rules traceable
 +- [ ] Every business rule has positive and negative cases (eligibility, period start/end boundaries, integer-cent rounding, repeated evaluation)
- - [ ] Error codes unified
+ - [ ] Unified error codes
 ```
 
 ## Expected effect

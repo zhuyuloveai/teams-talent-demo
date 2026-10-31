@@ -114,7 +114,7 @@ Present as the Owner (Lin Yue). Use the system switcher on the left of the top b
    You can demo importing a custom capability: "Import capability" in the top right, click "Use the example" (the "Database schema index" package), review the validation result and capability definition, import it, then use "New task" in its details.
 3. **Knowledge tasks** (the project's "Knowledge tasks" tab): "Current" is split into scheduled tasks and one-off tasks; scheduled tasks can be paused. "Done" has a trajectory insights task; open it to see the output and log. Running tasks can be cancelled, and tasks can be deleted from their details.
 4. **Artifacts** (the tab the project opens by default; the tab shows the number of artifacts to review and suggestions to submit):
-   - Open "Credit card marketing cashback business knowledge" (new version waiting for review) and switch to the comparison with the previous version v1 to see the differences.
+   - Open "Credit Card Marketing Cashback Business Knowledge" (new version waiting for review) and switch to the comparison with the previous version v1 to see the differences.
    - Click "Submit PR". The GitHub repository and target branch are pre-filled from the workspace bound in Teams. After submission the right side shows "PR created" and the PR link; developers review and merge it on the code hosting platform.
    - Open "Trajectory insights: CardDemo migration and expansion (19 turns)" (the card says "3 suggestions to submit"). Look at the diagnosis report first, then the suggestions one by one:
      - "Unify the section contract of the ADR Skill, template and validation script": click "Submit improvement PR"; it changes the files of the in-repo Skill arch-adr-writing.

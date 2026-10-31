@@ -21,14 +21,14 @@ export const capabilityTextEn: Record<string, CapabilityText> = {
     inputLabel: '1 repository', output: 'Code graph index (queried over MCP)',
     update: 'Syncs only code changes since the last build',
     detail: {
-      input: 'Requires one repository (a local path, or a Git remote and branch); only the code itself is analysed, no extra documents.',
+      input: 'Requires one repository bound to a local directory in iCode Teams; the graph is built from the current code in that directory. Only the code itself is analysed, no extra documents.',
       abilities: [
         ['Symbol index', 'Parses classes, methods and fields with their definition sites, searchable by exact name.'],
         ['Calls and dependencies', 'Builds call chains, inheritance and module dependencies, answering “who calls this” and “what breaks if I change it”.'],
         ['Structure overview', 'Clusters by package and service to show the overall structure and how services relate.'],
         ['Incremental sync', 'After the source changes, syncs only what changed since the last build, keeping the graph aligned with the code.'],
       ],
-      output: 'A code graph index kept remotely and queried by agents over MCP; Talents can browse the graph and preview source interactively.',
+      output: 'A code graph index written to the repository’s .codegraph/ directory; after "Apply", the Code Agent queries it through the codegraph MCP. Talents can browse the graph and preview source interactively.',
     },
   },
   'doc-index': {

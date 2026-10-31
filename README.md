@@ -70,12 +70,12 @@ In the Teams Credit Card project, go to "Task management → Requirements → Ne
 Business background: Cardholders need to spread a single posted purchase, or the installment-eligible amount of a statement, over the following months to reduce the current repayment burden. Provide 3-, 6- and 12-installment trial calculation and application, installment and repayment schedule queries, early payoff, and customer service lookup and assistance; integrate with transactions, accounts, statements, general ledger, notifications and audit, keeping credit limit usage, fees and accounting consistent.
 
 Business requirement ID: REQ-2026-001
-Original requirement SHA256: 6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13
-Full requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (original v1.0).
-Scope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Original requirement SHA256: ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8
+Full requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (source v1.0).
+Scope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.
 Test profile version: test-profile-v2
-Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
+Test profile SHA256: 31d037f280a38855b4744b14c0ba95b48b9651becf32d604986230de4de0d2ff
+This task explicitly pins the v2 local test profile; all 13 chapters of the source and the original US-001..008 must be kept. Apart from the test parameters stated explicitly, report any other pending policy to the coordinator; do not mark it as Must/Confirmed on your own.
 ```
 
 ### REQ-2026-002
@@ -88,12 +88,12 @@ This task explicitly locks the v2 local test profile; all 13 chapters of the ori
 Business background: After losing a credit card, cardholders need to report the loss and freeze the card immediately, then apply online for a replacement and track card production and mailing. Provide customer self-service and agent-assisted entry points, replacement fee handling, an operations replacement queue, new card generation and old card deactivation, plus notifications and audit; the logistics scope is operations entering the courier tracking number and mailing status.
 
 Business requirement ID: REQ-2026-002
-Original requirement SHA256: 3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9
-Full requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (original v1.0).
-Scope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Original requirement SHA256: 0ee5e11722f512cde04fe2aefc044ff357dcf131345709dbf06ba0f8817a841f
+Full requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (source v1.0).
+Scope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.
 Test profile version: test-profile-v2
-Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
+Test profile SHA256: 31d037f280a38855b4744b14c0ba95b48b9651becf32d604986230de4de0d2ff
+This task explicitly pins the v2 local test profile; all 13 chapters of the source and the original US-001..008 must be kept. Apart from the test parameters stated explicitly, report any other pending policy to the coordinator; do not mark it as Must/Confirmed on your own.
 ```
 
 ### REQ-2026-003
@@ -106,12 +106,12 @@ This task explicitly locks the v2 local test profile; all 13 chapters of the ori
 Business background: Cardholders need to apply for a permanent credit limit adjustment based on their spending and card usage, submit supporting documents online and track approval progress. Provide system eligibility pre-screening, document supplements, and first-review and final-review workbenches; update the account credit limit on approval, state the reason clearly on rejection, and keep permission isolation, notifications and a complete audit trail.
 
 Business requirement ID: REQ-2026-003
-Original requirement SHA256: a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01
-Full requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (original v1.0).
-Scope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Original requirement SHA256: 19fd80d4079973ee03836edd82041d429ff840baf93a540eb09d1a36377e766c
+Full requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (source v1.0).
+Scope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.
 Test profile version: test-profile-v2
-Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
+Test profile SHA256: 31d037f280a38855b4744b14c0ba95b48b9651becf32d604986230de4de0d2ff
+This task explicitly pins the v2 local test profile; all 13 chapters of the source and the original US-001..008 must be kept. Apart from the test parameters stated explicitly, report any other pending policy to the coordinator; do not mark it as Must/Confirmed on your own.
 ```
 
 ### REQ-2026-004
@@ -124,12 +124,12 @@ This task explicitly locks the v2 local test profile; all 13 chapters of the ori
 Business background: When cardholders dispute a posted transaction, they need to submit the dispute reason, amount and evidence online from the transaction details, then track progress, add documents or withdraw the case. Provide back-office case intake, review, provisional credit, chargeback and case closure, integrating with transaction snapshots, evidence files, accounts, notifications and audit, and keep processing deadlines and the evidence chain.
 
 Business requirement ID: REQ-2026-004
-Original requirement SHA256: 341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484
-Full requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (original v1.0).
-Scope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full original before starting; this task summary does not reduce the functional, interface, data, security or acceptance scope. Chapter 5 explicitly states the simulated values used for this test; items in 12.3 remain to be confirmed before production; resolve internal contradictions using the material's differences list, and do not fabricate Owner confirmation.
+Original requirement SHA256: 5a50a0d85149db6df99f7273ef67251ca4729945aa33245d127f6dba937bd92e
+Full requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (source v1.0).
+Scope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.
 Test profile version: test-profile-v2
-Test profile SHA256: b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd
-This task explicitly locks the v2 local test profile; all 13 chapters of the original and the original US-001..008 must be kept. Apart from the test parameters already stated, report any other undecided policy to the coordinator; do not mark it as required/confirmed on your own.
+Test profile SHA256: 31d037f280a38855b4744b14c0ba95b48b9651becf32d604986230de4de0d2ff
+This task explicitly pins the v2 local test profile; all 13 chapters of the source and the original US-001..008 must be kept. Apart from the test parameters stated explicitly, report any other pending policy to the coordinator; do not mark it as Must/Confirmed on your own.
 ```
 
 ### Command-line preview and adding to an existing environment

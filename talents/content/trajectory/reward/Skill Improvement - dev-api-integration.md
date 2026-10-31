@@ -11,25 +11,25 @@ Step 2 of the Skill workflow only says "Mock service setup (contract-driven, fro
 ### Workflow
 
 ```diff
- 1. API contract confirmation (format/fields/error codes/timeouts)
- 2. Mock service setup (contract-driven, frontend and backend in parallel)
+ 1. Confirm the interface contract (format / fields / error codes / timeouts)
+ 2. Set up a mock service (contract-driven, frontend and backend work in parallel)
 +   - The mock must implement the contract's idempotency keys, error codes and timeout semantics, not just return success
 +   - Before using the mock to reproduce a problem, check that its behavior matches the contract; if it does not, the reproduction cannot be taken as the root cause
- 3. API code implementation (client SDK/HTTP client, including serialization and error handling)
+ 3. Implement the interface code (client SDK / HTTP client, including serialization and error handling)
 ```
 
 ### Common failure modes
 
 ```diff
- | Missing idempotency | Duplicate requests cause duplicate charges/duplicate orders | Idempotency key + idempotency_test.py verification | Add the idempotency key and rerun the idempotency test |
+ | Missing idempotency | Duplicate requests cause duplicate debits / duplicate orders | Idempotency key + verification with idempotency_test.py | Add the idempotency key and rerun the idempotency test |
 +| Mock does not match the contract | The mock does not implement idempotency/error semantics, reproducing problems that do not exist or missing real ones | Validate the mock with contract_validate.py and idempotency_test.py as well | Fix the mock and reproduce again |
- | Unhandled exception path | No fallback or unlimited retries on timeout/5xx | Implement each item of the exception path list + circuit breaking and rate limiting | Add the fallback logic and rerun the exception path cases |
+ | Unhandled exception paths | No degradation or unbounded retries on timeout / 5xx | Implement the exception path list item by item + circuit breaking and rate limiting | Add degradation logic and rerun the exception path cases |
 ```
 
 ### Quality gates
 
 ```diff
- - [ ] Idempotency tests pass
+ - [ ] Idempotency test passed
 +- [ ] The mock passes the same contract and idempotency tests as the real API
  - [ ] Security hardening in place
 ```
