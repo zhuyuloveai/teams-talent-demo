@@ -1,4 +1,4 @@
-"""数据库行 → Pydantic 模型转换 + 调用树组装。"""
+"""Database row -> Pydantic model conversion + call tree assembly."""
 from __future__ import annotations
 
 import json
@@ -16,9 +16,9 @@ from .schemas import (
 
 
 def _decode_jsonb(value: Any) -> Any:
-    """把 ORM 拿到的 jsonb 字段（可能是 str/None）反序列化为 dict/list。
+    """Deserialize a jsonb field from the ORM (possibly str/None) into dict/list.
 
-    asyncpg/SQLAlchemy 默认把 jsonb 列以 str 形式返回；前端需要原生对象。
+    asyncpg/SQLAlchemy return jsonb columns as str by default; the frontend needs native objects.
     """
     if value is None or isinstance(value, (dict, list)):
         return value
@@ -33,7 +33,7 @@ def _decode_jsonb(value: Any) -> Any:
 def _error_info(raw: Any) -> ErrorInfoOut | None:
     if not raw:
         return None
-    # DB error_info 可能是 JSONB（dict）或字符串
+    # DB error_info may be JSONB (dict) or a string
     if isinstance(raw, dict):
         return ErrorInfoOut(
             errorType=raw.get("error_type") or raw.get("errorType"),
@@ -98,7 +98,7 @@ def span_out(row: dict) -> SpanOut:
 
 
 def span_brief_out(row: dict) -> SpanBriefOut:
-    """树的轻量节点转换：刻意不取 input/output/errorInfo（点击后单查）。"""
+    """Lightweight tree node conversion: deliberately skips input/output/errorInfo (fetched individually on click)."""
     return SpanBriefOut(
         id=str(row["id"]),
         eventId=str(row["event_id"]) if row.get("event_id") else None,
@@ -139,10 +139,10 @@ def observation_out(row: dict) -> ObservationOut:
 
 
 def build_tree(spans: list[SpanBriefOut | SpanOut]) -> list[TraceNodeOut]:
-    """按 parent_span_id 组装调用树；同层兄弟按 started_at 升序。
+    """Assemble the call tree by parent_span_id; siblings are sorted by started_at ascending.
 
-    spans 既可以是轻量 SpanBriefOut（DB 模式 /tree），也可以是完整 SpanOut
-    （file 模式），二者都有 id / parentSpanId / startedAt。
+    spans may be lightweight SpanBriefOut (DB mode /tree) or full SpanOut
+    (file mode); both have id / parentSpanId / startedAt.
     """
     nodes: dict[str, TraceNodeOut] = {}
     for s in spans:

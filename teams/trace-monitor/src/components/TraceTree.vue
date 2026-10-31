@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 调用树容器：工具栏（全部展开/折叠）+ 可滚动节点列表
+// Call tree container: toolbar (expand/collapse all) + scrollable node list
 import { ref } from "vue";
 import type { TraceNode } from "@/types";
 import TraceTreeNode from "@/components/TraceTreeNode.vue";
@@ -11,8 +11,8 @@ defineProps<{
 }>();
 
 const allOpen = ref(false);
-/** 重挂计数：每次「全部展开/折叠」自增并重挂整棵树，所有节点 open 状态被重置。
- *  不能用固定 key（open/closed），否则从默认状态切换回去时 key 不变、树不重挂。 */
+/** Remount counter: each "Expand all/Collapse all" increments it and remounts the whole tree, resetting every node's open state.
+ *  A fixed key (open/closed) does not work: switching back from the default state keeps the key and the tree does not remount. */
 const remountCounter = ref(0);
 
 function toggleAll(open: boolean) {
@@ -24,11 +24,11 @@ function toggleAll(open: boolean) {
 <template>
   <div class="tm-scope tm-tree-wrap">
     <div class="tm-tree-toolbar">
-      <el-button size="small" @click="toggleAll(true)">全部展开</el-button>
-      <el-button size="small" @click="toggleAll(false)">全部折叠</el-button>
+      <el-button size="small" @click="toggleAll(true)">Expand all</el-button>
+      <el-button size="small" @click="toggleAll(false)">Collapse all</el-button>
     </div>
     <div class="tm-tree-scroll">
-      <el-empty v-if="tree.length === 0" description="无节点" :image-size="60" />
+      <el-empty v-if="tree.length === 0" description="No nodes" :image-size="60" />
       <div v-else :key="remountCounter">
         <TraceTreeNode
           v-for="(n, idx) in tree"

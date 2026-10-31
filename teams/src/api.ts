@@ -44,9 +44,9 @@ async function tracedJson<T>(service: 'teams', path: string, init?: RequestInit)
   }
   let result: Response;
   try { result = await fetch(origin + path, { ...init, signal: AbortSignal.timeout(10000), headers: { 'Content-Type': 'application/json', 'X-Demo-Token': tokens.get(origin) ?? '', 'X-Demo-Request': crypto.randomUUID(), ...init?.headers } }); }
-  catch (error) { throw new Error(`无法连接 Teams 项目服务（${origin}）：${(error as Error).message}`); }
+  catch (error) { throw new Error(`Cannot connect to the Teams project service (${origin}): ${(error as Error).message}`); }
   const data = await result.json();
-  if (!result.ok) { if (result.status === 403) tokens.delete(origin); throw new Error(data.error ?? '请求失败'); }
+  if (!result.ok) { if (result.status === 403) tokens.delete(origin); throw new Error(data.error ?? 'Request failed'); }
   return data;
 }
 const projectQuery = () => '?project=' + encodeURIComponent(currentSystemContext().projectId);

@@ -3,8 +3,8 @@ import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 
 // https://vitejs.dev/config/
-// 该副本作为 Teams 演示的内嵌页构建：产物输出到 teams/dist/trace-monitor，
-// 由 Teams 服务端按 /trace-monitor/ 提供，API 走 Teams 服务端代理 /trace-api。
+// This copy is built as an embedded page of the Teams demo: output goes to teams/dist/trace-monitor,
+// is served by the Teams server under /trace-monitor/, and the API goes through the Teams server proxy /trace-api.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, "..", "VITE_");
 

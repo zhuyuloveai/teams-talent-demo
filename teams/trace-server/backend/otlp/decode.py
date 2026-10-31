@@ -1,11 +1,11 @@
-"""OTLP/HTTP 请求体解码（protobuf / JSON 双支持）。
+"""OTLP/HTTP request body decoding (supports both protobuf and JSON).
 
-两条路径最终都归一成 **OTLP/JSON 形状的 dict**（lowerCamelCase），
-这样 mapper 只需处理一种结构。
+Both paths end up as an **OTLP/JSON-shaped dict** (lowerCamelCase),
+so the mapper only handles one structure.
 
-关键差异：protobuf 解码后 `traceId` / `spanId` 是 bytes，经 MessageToDict
-转成 base64 字符串；而 OTLP/JSON 规范里是 hex 字符串。`parse_otel_id`
-对两种形态都做兼容，否则 ID 解析必然错位。
+Key difference: after protobuf decoding `traceId` / `spanId` are bytes, which MessageToDict
+turns into base64 strings, while the OTLP/JSON spec uses hex strings. `parse_otel_id`
+handles both forms; otherwise ID parsing would be wrong.
 """
 from __future__ import annotations
 
@@ -19,16 +19,16 @@ _HEX16 = re.compile(r"^[0-9a-fA-F]{16}$")
 
 
 class OtlpDecodeError(ValueError):
-    """请求体无法按 OTLP 解析（路由层据此返回 400）。"""
+    """The request body cannot be parsed as OTLP (the route returns 400)."""
 
 
 def parse_otel_id(raw: Any) -> str:
-    """把 OTLP 的 ID 字段归一成小写 hex 字符串（trace 32 位 / span 16 位）。
+    """Normalize an OTLP ID field to a lowercase hex string (32 chars for trace / 16 for span).
 
-    支持三种形态：
-    - bytes / bytearray：protobuf 原始字节
-    - hex 字符串：OTLP/JSON 规范形态
-    - base64 字符串：MessageToDict 对 bytes 的默认输出
+    Supports three forms:
+    - bytes / bytearray: raw protobuf bytes
+    - hex string: the OTLP/JSON spec form
+    - base64 string: MessageToDict's default output for bytes
     """
     if raw is None:
         return ""
@@ -46,26 +46,26 @@ def parse_otel_id(raw: Any) -> str:
 
 
 def _decode_protobuf(body: bytes) -> list[dict[str, Any]]:
-    """protobuf → OTLP/JSON 形状的 resourceSpans 列表。
+    """protobuf -> list of OTLP/JSON-shaped resourceSpans.
 
-    依赖懒加载：未安装 protobuf 时不影响服务器其它功能启动，
-    只在使用该 content-type 时报错。
+    Lazy dependency loading: a missing protobuf does not stop the rest of the server from starting;
+    it only errors when this content-type is used.
     """
     try:
         from google.protobuf.json_format import MessageToDict
         from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import (
             ExportTraceServiceRequest,
         )
-    except ImportError as exc:  # pragma: no cover - 依赖缺失时的兜底
-        raise OtlpDecodeError(f"未安装 OTLP protobuf 依赖: {exc}") from exc
+    except ImportError as exc:  # pragma: no cover - fallback when the dependency is missing
+        raise OtlpDecodeError(f"OTLP protobuf dependency is not installed: {exc}") from exc
 
     msg = ExportTraceServiceRequest()
     try:
         msg.ParseFromString(body)
     except Exception as exc:
-        raise OtlpDecodeError(f"protobuf 解析失败: {exc}") from exc
+        raise OtlpDecodeError(f"protobuf parsing failed: {exc}") from exc
 
-    # preserving_proto_field_name=False → lowerCamelCase，与 OTLP/JSON 一致
+    # preserving_proto_field_name=False -> lowerCamelCase, same as OTLP/JSON
     data = MessageToDict(msg, preserving_proto_field_name=False)
     return data.get("resourceSpans") or []
 
@@ -74,35 +74,35 @@ def _decode_json(body: bytes) -> list[dict[str, Any]]:
     try:
         data = json.loads(body)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-        raise OtlpDecodeError(f"JSON 解析失败: {exc}") from exc
+        raise OtlpDecodeError(f"JSON parsing failed: {exc}") from exc
     if not isinstance(data, dict):
-        raise OtlpDecodeError("OTLP JSON 根节点必须是对象")
+        raise OtlpDecodeError("OTLP JSON root must be an object")
     spans = data.get("resourceSpans")
     if spans is None:
         return []
     if not isinstance(spans, list):
-        raise OtlpDecodeError("resourceSpans 必须是数组")
+        raise OtlpDecodeError("resourceSpans must be an array")
     return spans
 
 
 def decode_body(body: bytes, content_type: str) -> list[dict[str, Any]]:
-    """按 content-type 解码请求体，返回 resourceSpans 列表。
+    """Decode the request body by content-type and return the resourceSpans list.
 
     Raises:
-        OtlpDecodeError: 解析失败或 content-type 不支持。
+        OtlpDecodeError: parsing failed or the content-type is not supported.
     """
     ct = (content_type or "").lower()
     if "application/x-protobuf" in ct:
         return _decode_protobuf(body)
     if "application/json" in ct:
         return _decode_json(body)
-    raise OtlpDecodeError(f"不支持的 Content-Type: {content_type!r}")
+    raise OtlpDecodeError(f"Unsupported Content-Type: {content_type!r}")
 
 
 def build_protobuf_response(rejected: int, error_message: str | None) -> bytes | None:
-    """构造 ExportTraceServiceResponse（protobuf）。
+    """Build an ExportTraceServiceResponse (protobuf).
 
-    依赖缺失或构造失败时返回 None，调用方回退成空 body（OTel 客户端接受）。
+    Returns None when the dependency is missing or building fails; the caller falls back to an empty body (accepted by OTel clients).
     """
     try:
         from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import (
@@ -120,7 +120,7 @@ def build_protobuf_response(rejected: int, error_message: str | None) -> bytes |
 
 
 def build_json_response(rejected: int, error_message: str | None) -> dict[str, Any]:
-    """构造 OTLP/JSON 形状的响应体（无失败时为空对象）。"""
+    """Build an OTLP/JSON-shaped response body (an empty object when nothing failed)."""
     if not rejected:
         return {}
     partial: dict[str, Any] = {"rejectedSpans": rejected}

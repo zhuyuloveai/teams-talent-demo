@@ -1,28 +1,28 @@
 // ============================================================
-// Trace Monitor 组件库统一入口（lib 构建）
-// 供第三方应用以组件方式集成 —— 只组件化「Trace 详情展示」：
+// Single entry point of the Trace Monitor component library (lib build)
+// Lets third-party apps integrate it as components. Only the "Trace detail view" is componentized:
 //   <TraceDetail :trace-id="'xxx'" />
-// 列表、菜单、外壳等业务页面由集成方自行实现。
+// List, menu, shell and other business pages are implemented by the integrator.
 // ============================================================
 import type { App } from "vue";
 import ElementPlus from "element-plus";
-import zhCn from "element-plus/es/locale/lang/zh-cn";
-// 样式说明：
-//   · 这里只引入「组件级」样式（全部挂 .tm-scope，不污染宿主全局）
-//   · Element Plus 基础样式由宿主自行引入（import "element-plus/dist/index.css"），
-//     本组件库不再全局注入，避免覆盖宿主的 EP 主题配置
+import en from "element-plus/es/locale/lang/en";
+// Styles:
+//   · Only component-level styles are imported here (all scoped under .tm-scope; the host's globals stay untouched)
+//   · The host imports the Element Plus base styles itself (import "element-plus/dist/index.css");
+//     this library no longer injects them globally, so the host's EP theme is not overridden
 import "./styles/index.scss";
 
 import { extractError, getTraceApiBase, setTraceApiBase, api } from "@/utils/request";
 import { fetchTraceDetail, fetchTraceTree, fetchLlmRequests, fetchSpanDetail, downloadTraceJsonl } from "@/api/traces";
 
-// 核心导出：Trace 详情展示组件（不依赖路由，projectId + traceId 驱动）
-// ★ TraceDetail 不内置取数：需由集成方以 fetchDetail / fetchTree / fetchLlmRequests
-//   三个 prop 注入数据源回调，可直接复用下方导出的取数函数；
-//   可选注入 fetchSpanDetail 开启节点详情懒加载（file 模式后端不实现该接口，请勿注入）
+// Core export: the Trace detail component (no router dependency; driven by projectId + traceId)
+// ★ TraceDetail does not fetch data itself: the integrator injects data-source callbacks through the
+//   fetchDetail / fetchTree / fetchLlmRequests props and can reuse the fetch functions exported below;
+//   optionally inject fetchSpanDetail to lazy-load node details (the file-mode backend does not implement it; do not inject it there)
 import TraceDetail from "@/views/TraceDetail.vue";
 
-// 基础组件：可被集成方按需组合
+// Base components: integrators can combine them as needed
 import TraceTree from "@/components/TraceTree.vue";
 import TraceTreeNode from "@/components/TraceTreeNode.vue";
 import DetailPanel from "@/components/DetailPanel.vue";
@@ -30,7 +30,7 @@ import JsonView from "@/components/JsonView.vue";
 import MetaChips from "@/components/MetaChips.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 
-// 具名导出：详情组件 + 基础组件 + 数据源取数函数 + API 工具
+// Named exports: detail component + base components + data-source fetch functions + API utilities
 export {
   TraceDetail,
   TraceTree,
@@ -39,7 +39,7 @@ export {
   JsonView,
   MetaChips,
   StatusBadge,
-  // 数据源取数函数：与 TraceDetail 的 fetch 回调签名一致，可直接复用构造回调
+  // Data-source fetch functions: same signatures as TraceDetail's fetch callbacks, reusable to build them
   fetchTraceDetail,
   fetchTraceTree,
   fetchLlmRequests,
@@ -51,7 +51,7 @@ export {
   api,
 };
 
-// 全组件注册表（供 app.component 按名注册）
+// Registry of all components (for registering by name with app.component)
 export const components = {
   TraceDetail,
   TraceTree,
@@ -64,12 +64,12 @@ export const components = {
 
 export type * from "@/types/index";
 
-// 插件对象：可整包 use，也可按需 import 具名组件
+// Plugin object: use the whole package, or import named components as needed
 const TraceMonitor = {
   install(app: App, options?: { baseURL?: string }) {
     if (options?.baseURL) setTraceApiBase(options.baseURL);
-    // 全局注册 Element Plus（zh-cn），页面组件按需 import
-    app.use(ElementPlus, { locale: zhCn });
+    // Register Element Plus globally (en locale); page components are imported on demand
+    app.use(ElementPlus, { locale: en });
   },
 };
 

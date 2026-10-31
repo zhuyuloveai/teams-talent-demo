@@ -17,7 +17,7 @@ export async function ensureTaskWorkspace(runtime:string,scope:{projectId:string
   if(!await configuredProjectWorkspace(runtime,scope.projectId))return null;
   const state=JSON.parse(await readFile(join(runtime,'state.json'),'utf8'));
   const task=state.workspace?.deliveryRequirements?.find((item:TaskDirectory)=>item.id===scope.taskId&&item.projectId===scope.projectId);
-  if(!task)throw new Error('任务不存在');
+  if(!task)throw new Error('Task does not exist');
   const existing=await taskWorktreeBinding(runtime,task,repo);if(existing)return existing;
   if(task.workDirectory)return null;
   return ensureProjectTaskWorkspace(runtime,task,preparationId);
@@ -32,25 +32,25 @@ export async function taskWorkDirectory(runtime:string,task:TaskDirectory,repo=p
     const prepared=saved?.workspace?.taskAutomation?.find((item:any)=>item.projectId===task.projectId&&item.taskId===task.id)?.preparation?.session?.directory;
     if(prepared)return prepared as string;
     const recorded=saved?.workspace?.deliveryRequirements?.find((item:any)=>item.projectId===task.projectId&&item.id===task.id);
-    if(recorded?.preparedAt||recorded&&Object.values(recorded.nodes??{}).some((node:any)=>node.status!=='pending'))throw new Error('此任务已执行但没有独立仓库绑定，请保留原任务目录，不能按新配置迁移');
+    if(recorded?.preparedAt||recorded&&Object.values(recorded.nodes??{}).some((node:any)=>node.status!=='pending'))throw new Error('This task has run but has no standalone repository binding; keep the original task directory. It cannot be migrated to the new configuration');
     return configured.directory;
   }
   const path=join(runtime,'project-task-directory-bindings.json');let value:any;
   try{value=JSON.parse(await readFile(path,'utf8'));}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT'){return task.workDirectory;}throw error;}
-  if(value?.version!==1||!Array.isArray(value.bindings))throw new Error('本机任务目录绑定记录无效');
+  if(value?.version!==1||!Array.isArray(value.bindings))throw new Error('Invalid local task directory binding record');
   const identities=new Set<string>();
   for(const item of value.bindings){
-    if(!item||typeof item.projectId!=='string'||typeof item.taskId!=='string')throw new Error('本机任务目录绑定身份无效');
-    const key=JSON.stringify([item.projectId,item.taskId]);if(identities.has(key))throw new Error('本机任务目录绑定重复');identities.add(key);
+    if(!item||typeof item.projectId!=='string'||typeof item.taskId!=='string')throw new Error('Invalid local task directory binding identity');
+    const key=JSON.stringify([item.projectId,item.taskId]);if(identities.has(key))throw new Error('Duplicate local task directory binding');identities.add(key);
     if(item.kind==='carddemo-worktree')continue;
-    if(item.kind!==undefined||!isAbsolute(item.recordedDirectory??'')||!isAbsolute(item.directory??'')||typeof item.gitConfigSha256!=='string'||!/^[a-f0-9]{64}$/.test(item.gitConfigSha256))throw new Error('本机任务目录绑定字段无效');
+    if(item.kind!==undefined||!isAbsolute(item.recordedDirectory??'')||!isAbsolute(item.directory??'')||typeof item.gitConfigSha256!=='string'||!/^[a-f0-9]{64}$/.test(item.gitConfigSha256))throw new Error('Invalid local task directory binding fields');
   }
   const binding=value.bindings.find((item:any)=>item.projectId===task.projectId&&item.taskId===task.id);
   if(!binding){return task.workDirectory;}
-  if(binding.recordedDirectory!==task.workDirectory)throw new Error('本机任务目录绑定与需求登记来源不一致');
+  if(binding.recordedDirectory!==task.workDirectory)throw new Error('The local task directory binding does not match the requirement registration source');
   // Git resolves either a normal .git directory or a linked-worktree .git file.
   const {stdout}=await exec('git',['-C',binding.directory,'rev-parse','--git-path','config'],{encoding:'utf8',windowsHide:true});
   const config=await readFile(resolve(binding.directory,stdout.trim()));
-  if(createHash('sha256').update(config).digest('hex')!==binding.gitConfigSha256)throw new Error('已迁移的本机Git目录配置发生变化，请重新核验绑定');
+  if(createHash('sha256').update(config).digest('hex')!==binding.gitConfigSha256)throw new Error('The migrated local Git directory configuration changed; verify the binding again');
   return binding.directory as string;
 }

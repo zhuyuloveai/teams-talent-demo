@@ -24,7 +24,7 @@ async function optionalRecord(path: string) {
  * explicitly linked native continuation ending in a completed run. The earliest
  * collected run may refer to an uncollected prepare ancestor. No directory search. */
 function completedContinuation(runs: NativeRun[], scope: TaskScope, sessionId: string, capture?: Capture): string {
-  const invalid = () => new Error('原生失败尝试缺少同范围、同会话且已完成的完整续作链，未上报会话正文');
+  const invalid = () => new Error('The failed native attempt has no complete, finished continuation chain in the same scope and session; the session body was not reported');
   if (!capture || runs.length > 100 || new Set(runs.map(run => run.runId)).size !== runs.length) throw invalid();
   const byId = new Map(runs.map(run => [run.runId, run])), children = new Map<string, string>();
   for (const run of runs) {
@@ -59,9 +59,9 @@ function completedContinuation(runs: NativeRun[], scope: TaskScope, sessionId: s
   return current.runId;
 }
 function verifyDocuments(documents: Documents) {
-  if (!Array.isArray(documents)) throw new Error('验收会话快照格式无效');
+  if (!Array.isArray(documents)) throw new Error('Invalid acceptance session snapshot format');
   validateSessionDocumentCapacity(documents);
-  for (const document of documents) if (digest(document.content) !== document.sha256 || JSON.parse(document.content)?.meta?.session_id !== document.sessionId) throw new Error('验收会话快照身份或摘要无效');
+  for (const document of documents) if (digest(document.content) !== document.sha256 || JSON.parse(document.content)?.meta?.session_id !== document.sessionId) throw new Error('Invalid acceptance session snapshot identity or digest');
 }
 /** iCode 0.31 stores in-flight checkpoints in session.recovery.json and settled turns in session.json.
  * Match the native effective-envelope timestamp rule without healing, deleting, or hiding errors. */
@@ -72,60 +72,60 @@ export async function readNativeTuiEnvelope(runRoot: string, sessionId: string) 
     const file = join(runRoot, 'session-root', 'sessions', sessionId.replaceAll('-', '').slice(0, 12), sourceFile);
     let path: string;
     try { path = await realpath(file); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue; throw error; }
-    if (!path.startsWith(join(runRoot, 'session-root') + sep)) throw new Error('会话文件超出当前运行目录');
+    if (!path.startsWith(join(runRoot, 'session-root') + sep)) throw new Error('The session file is outside the current run directory');
     const value = await readStableEnvelope(path, sessionId);
     const updatedAt = Date.parse(JSON.parse(value.content).meta.updated_at);
-    if (!Number.isFinite(updatedAt)) throw new Error('TUI 会话持久化时间无效，未猜测主文件或恢复记录');
+    if (!Number.isFinite(updatedAt)) throw new Error('Invalid TUI session persistence time; the main file or recovery record was not guessed');
     candidates.push({...value, sourceFile, updatedAt});
   }
-  if (!candidates.length) throw new Error('TUI 尚未保存会话正文或运行中检查点，请稍后重试上报');
+  if (!candidates.length) throw new Error('The TUI has not saved a session body or in-progress checkpoint yet; retry the report later');
   return candidates.sort((a,b)=>b.updatedAt-a.updatedAt)[0];
 }
 async function readStableEnvelope(path: string, sessionId: string) {
   const handle = await open(path, 'r'); let content: string, mtime: number;
   try {
-    const info = await handle.stat(); if (!info.isFile() || info.size > MAX_NATIVE_SESSION_BYTES) throw new Error('原生会话文件无效或超过 32 MiB');
+    const info = await handle.stat(); if (!info.isFile() || info.size > MAX_NATIVE_SESSION_BYTES) throw new Error('The native session file is invalid or larger than 32 MiB');
     // Bound allocation even if an in-place writer grows the file after stat.
     const buffer = Buffer.alloc(info.size); let read = 0;
     while (read < buffer.length) { const value = await handle.read(buffer, read, buffer.length - read, read); if (!value.bytesRead) break; read += value.bytesRead; }
     const after = await handle.stat();
-    if (read !== info.size || after.size !== info.size || after.mtimeMs !== info.mtimeMs) throw new Error('会话正文正在更新，本次未生成快照，请重试上报');
+    if (read !== info.size || after.size !== info.size || after.mtimeMs !== info.mtimeMs) throw new Error('The session body is being updated, so no snapshot was taken; retry the report');
     content = buffer.toString('utf8');
     mtime = info.mtimeMs;
   } finally { await handle.close(); }
-  if (JSON.parse(content)?.meta?.session_id !== sessionId) throw new Error('原生会话正文身份不匹配');
+  if (JSON.parse(content)?.meta?.session_id !== sessionId) throw new Error('The native session body identity does not match');
   return {content,mtime};
 }
 /** Freeze the persisted session bytes at the first accepted collection attempt. TUI lifetime is independent of task acceptance. */
 export async function nativeTaskSessionDocuments(runtime: string, scope: TaskScope, sessions: CollectedSession[], capture?: Capture): Promise<Documents> {
   const runtimeRoot = await realpath(runtime), identity = digest(JSON.stringify({ scope, sessions, acceptedAt: capture?.acceptedAt }));
-  if (capture && (!uuid.test(capture.id) || !Number.isFinite(Date.parse(capture.acceptedAt)))) throw new Error('验收快照标识或时间无效');
+  if (capture && (!uuid.test(capture.id) || !Number.isFinite(Date.parse(capture.acceptedAt)))) throw new Error('Invalid acceptance snapshot ID or time');
   const snapshotPath = capture ? join(runtimeRoot, 'task-session-snapshots', capture.id + '.json') : undefined;
   const saved = snapshotPath ? await optionalJson(snapshotPath) : null;
-  if (saved) { if (saved.identity !== identity) throw new Error('同一验收快照不能用于不同任务、会话或验收时间'); verifyDocuments(saved.documents); return saved.documents; }
+  if (saved) { if (saved.identity !== identity) throw new Error('The same acceptance snapshot cannot be used for a different task, session or acceptance time'); verifyDocuments(saved.documents); return saved.documents; }
   const documents = new Map<string, { sessionId: string; sha256: string; content: string; mtime: number; kind: string; sourceFile:string; runId:string; runs?:unknown[] }>();
   let documentBytes = 0;
   for (const session of sessions) {
-    if (session.tool !== 'icode' || !session.runIds.length || !uuid.test(session.sessionId)) throw new Error('缺少可核验的原生 iCode 会话身份，未上报会话正文');
+    if (session.tool !== 'icode' || !session.runIds.length || !uuid.test(session.sessionId)) throw new Error('No verifiable native iCode session identity; the session body was not reported');
     const runs: NativeRun[] = [];
     for (const runId of session.runIds) {
-      if (!uuid.test(runId)) throw new Error('原生运行标识无效');
+      if (!uuid.test(runId)) throw new Error('Invalid native run ID');
       const runRoot = await realpath(join(runtime, 'work-contexts', runId + '.native'));
-      if (runRoot !== resolve(runtimeRoot, 'work-contexts', runId + '.native')) throw new Error('原生运行目录不允许符号链接替换');
+      if (runRoot !== resolve(runtimeRoot, 'work-contexts', runId + '.native')) throw new Error('The native run directory must not be replaced by a symbolic link');
       const ownerBytes = await readFile(join(runRoot, 'native-session.json'), 'utf8');
       const owner = JSON.parse(ownerBytes), resultRecord = await optionalRecord(join(runRoot, 'result.json')), manifestRecord = await optionalRecord(join(runRoot, 'manifest.json'));
       const result = resultRecord?.value ?? null, manifest = manifestRecord?.value ?? null;
-      if (owner.source !== 'icode-active-session-owner' || owner.projectId !== scope.projectId || owner.taskId !== scope.taskId || owner.runId !== runId || owner.sessionId !== session.sessionId || !await nativeSessionRootMatches(runtimeRoot, runRoot, owner, runtime)) throw new Error('原生会话范围不匹配，未上报会话正文');
+      if (owner.source !== 'icode-active-session-owner' || owner.projectId !== scope.projectId || owner.taskId !== scope.taskId || owner.runId !== runId || owner.sessionId !== session.sessionId || !await nativeSessionRootMatches(runtimeRoot, runRoot, owner, runtime)) throw new Error('The native session scope does not match; the session body was not reported');
       let kind = 'completed-session';
       if (owner.executionMode === 'interactive') {
-        if (!capture || !manifest || manifest.executionMode !== 'interactive' || manifest.runId !== runId || manifest.scope?.projectId !== scope.projectId || manifest.scope?.taskId !== scope.taskId || manifest.scope?.nodeId !== owner.nodeId) throw new Error('TUI 会话需要明确验收范围与固定快照标识');
+        if (!capture || !manifest || manifest.executionMode !== 'interactive' || manifest.runId !== runId || manifest.scope?.projectId !== scope.projectId || manifest.scope?.taskId !== scope.taskId || manifest.scope?.nodeId !== owner.nodeId) throw new Error('A TUI session needs an explicit acceptance scope and a fixed snapshot ID');
         if (!result) {
           const active = await optionalJson(join(runRoot, 'session-root', 'sessions', '.locks', session.sessionId.replaceAll('-', '').slice(0, 12) + '.active.json'));
-          if (!active || active.session_id !== session.sessionId || active.pid !== owner.pid || active.started_at !== owner.startedAt || !Number.isSafeInteger(owner.pid) || owner.pid < 2) throw new Error('TUI 当前会话归属无法核验，未读取快照');
+          if (!active || active.session_id !== session.sessionId || active.pid !== owner.pid || active.started_at !== owner.startedAt || !Number.isSafeInteger(owner.pid) || owner.pid < 2) throw new Error('The owner of the current TUI session cannot be verified; the snapshot was not read');
           process.kill(owner.pid, 0); kind = 'live-tui-persisted-snapshot';
-        } else if (result.executionMode !== 'interactive' || result.runId !== runId || result.sessionId !== session.sessionId || !['completed', 'failed'].includes(result.status)) throw new Error('TUI 退出回执身份不匹配');
+        } else if (result.executionMode !== 'interactive' || result.runId !== runId || result.sessionId !== session.sessionId || !['completed', 'failed'].includes(result.status)) throw new Error('The TUI exit receipt identity does not match');
         else kind = 'closed-tui-persisted-snapshot';
-      } else if (!result || result.runId !== runId || result.sessionId !== session.sessionId || !['completed','failed'].includes(result.status)) throw new Error('原生会话范围或完成回执不匹配，未上报会话正文');
+      } else if (!result || result.runId !== runId || result.sessionId !== session.sessionId || !['completed','failed'].includes(result.status)) throw new Error('The native session scope or completion receipt does not match; the session body was not reported');
       runs.push({runId,runRoot,owner,result,manifest,kind,ownerSha256:digest(ownerBytes),
         ...(resultRecord ? {resultSha256:resultRecord.sha256} : {}), ...(manifestRecord ? {manifestSha256:manifestRecord.sha256} : {})});
     }
@@ -137,7 +137,7 @@ export async function nativeTaskSessionDocuments(runtime: string, scope: TaskSco
       if (owner.executionMode === 'interactive') ({content,mtime,sourceFile}=await readNativeTuiEnvelope(runRoot,session.sessionId));
       else {
         const path = await realpath(join(runRoot, 'session-root', 'sessions', session.sessionId.replaceAll('-', '').slice(0, 12), sourceFile));
-        if (!path.startsWith(join(runRoot, 'session-root') + sep)) throw new Error('会话文件超出当前运行目录');
+        if (!path.startsWith(join(runRoot, 'session-root') + sep)) throw new Error('The session file is outside the current run directory');
         ({content,mtime}=await readStableEnvelope(path,session.sessionId));
       }
       run.sessionSha256 = digest(content);
@@ -152,7 +152,7 @@ export async function nativeTaskSessionDocuments(runtime: string, scope: TaskSco
       const byId = new Map(runs.map(run => [run.runId,run]));
       for (const run of runs) {
         const parent=byId.get(run.manifest!.preparedSession?.sourceRunId);
-        if (parent && run.manifest!.preparedSession.sessionSha256 !== parent.sessionSha256) throw new Error('原生续作引用的历史会话正文摘要不匹配，未上报会话正文');
+        if (parent && run.manifest!.preparedSession.sessionSha256 !== parent.sessionSha256) throw new Error('The digest of the earlier session body referenced by the native continuation does not match; the session body was not reported');
       }
       // Retain terminal identities in the immutable collection evidence. No failed
       // receipt is rewritten, dropped, or represented as a successful completion.
@@ -167,7 +167,7 @@ export async function nativeTaskSessionDocuments(runtime: string, scope: TaskSco
     try { await handle.writeFile(JSON.stringify({ identity, ...scope, captureId: capture!.id, acceptedAt: capture!.acceptedAt, capturedAt: new Date().toISOString(), sources: [...documents.values()].map(({ content, mtime, ...source }) => source), documents: result }, null, 2)); await handle.sync(); } finally { await handle.close(); }
     // Publish without replacement: concurrent retry must reuse the first fixed bytes.
     try { await link(temp, snapshotPath); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; } finally { await unlink(temp); }
-    const pinned = await optionalJson(snapshotPath); if (pinned.identity !== identity) throw new Error('验收会话快照范围冲突'); verifyDocuments(pinned.documents); return pinned.documents;
+    const pinned = await optionalJson(snapshotPath); if (pinned.identity !== identity) throw new Error('Acceptance session snapshot scope conflict'); verifyDocuments(pinned.documents); return pinned.documents;
   }
   return result;
 }

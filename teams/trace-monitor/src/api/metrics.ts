@@ -1,8 +1,8 @@
-// 系统接口封装
+// System API wrappers
 import { api } from "@/utils/request";
 import type { AppConfig } from "@/types";
 
-// 运行时配置：存储后端模式（file/database）
+// Runtime configuration: storage backend mode (file/database)
 export async function fetchConfig(): Promise<AppConfig> {
   const { data } = await api.get<AppConfig>("/config");
   return data;

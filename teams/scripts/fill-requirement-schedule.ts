@@ -8,27 +8,27 @@ import type { DemoState } from '../src/domain.js';
 const args = new Map<string, string>();
 for (let index = 2; index < process.argv.length; index += 2) {
   const key = process.argv[index], value = process.argv[index + 1];
-  if (!['--state', '--apply', '--expect-revision', '--expect-sha256', '--service-stopped'].includes(key) || !value || args.has(key)) throw new Error('用法：--state ABS [--apply yes --expect-revision N --expect-sha256 SHA256 --service-stopped yes]；默认仅预检');
+  if (!['--state', '--apply', '--expect-revision', '--expect-sha256', '--service-stopped'].includes(key) || !value || args.has(key)) throw new Error('Usage: --state ABS [--apply yes --expect-revision N --expect-sha256 SHA256 --service-stopped yes]; dry run by default');
   args.set(key, value);
 }
 const requested = args.get('--state');
-if (!requested || !isAbsolute(requested) || (args.has('--apply') && args.get('--apply') !== 'yes')) throw new Error('请明确状态文件绝对路径；--apply 只能为 yes');
+if (!requested || !isAbsolute(requested) || (args.has('--apply') && args.get('--apply') !== 'yes')) throw new Error('Give the absolute path of the state file; --apply can only be yes');
 const path = await realpath(requested);
-if (path !== resolve(requested)) throw new Error('状态文件路径不能经过符号链接');
+if (path !== resolve(requested)) throw new Error('The state file path must not go through a symlink');
 const original = await readFile(path), sha = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
 const state = JSON.parse(original.toString('utf8')) as DemoState;
-if (state.schemaVersion !== 2 || !Number.isSafeInteger(state.revision) || !Array.isArray(state.workspace?.deliveryRequirements)) throw new Error('状态文件格式无效');
+if (state.schemaVersion !== 2 || !Number.isSafeInteger(state.revision) || !Array.isArray(state.workspace?.deliveryRequirements)) throw new Error('Invalid state file format');
 const plan = planRequirementSchedule(state), apply = args.get('--apply') === 'yes';
 let backup: string | undefined;
 if (apply) {
-  if (args.get('--service-stopped') !== 'yes' || args.get('--expect-revision') !== String(state.revision) || args.get('--expect-sha256') !== sha(original)) throw new Error('应用必须确认服务已停止，并匹配最新预检的 revision 和 SHA256');
+  if (args.get('--service-stopped') !== 'yes' || args.get('--expect-revision') !== String(state.revision) || args.get('--expect-sha256') !== sha(original)) throw new Error('Applying requires confirming the service is stopped and matching the revision and SHA256 from the latest dry run');
   let pid: number | undefined;
-  try { const text = (await readFile(join(dirname(path), 'server.pid'), 'utf8')).trim(); if (!/^\d+$/.test(text) || Number(text) < 2) throw new Error('服务 PID 文件无效'); pid = Number(text); }
+  try { const text = (await readFile(join(dirname(path), 'server.pid'), 'utf8')).trim(); if (!/^\d+$/.test(text) || Number(text) < 2) throw new Error('Invalid service PID file'); pid = Number(text); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   if (pid !== undefined) {
     let running = true;
     try { process.kill(pid, 0); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error; running = false; }
-    if (running) throw new Error('Teams 进程仍在运行，未修改状态');
+    if (running) throw new Error('The Teams process is still running; state was not changed');
   }
   if (plan.changes.length) {
     backup = path + '.pre-schedule-' + randomUUID() + '.json';
@@ -38,7 +38,7 @@ if (apply) {
     try {
       const file = await open(temporary, 'wx', 0o600);
       try { await file.writeFile(JSON.stringify(plan.state, null, 2) + '\n'); await file.sync(); } finally { await file.close(); }
-      if (sha(await readFile(path)) !== sha(original)) throw new Error('状态已在预检后改变；未覆盖');
+      if (sha(await readFile(path)) !== sha(original)) throw new Error('State changed after the dry run; not overwritten');
       await rename(temporary, path);
     } finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
   }

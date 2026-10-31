@@ -1,16 +1,16 @@
 <script setup lang="ts">
-// 结构化 JSON 树展示：递归渲染对象/数组，支持折叠（深度 >=3 默认折叠）
-// 超长字符串默认折叠为前 120 字符，点击「展开」查看全文
+// Structured JSON tree view: renders objects/arrays recursively, collapsible (collapsed by default at depth >= 3)
+// Very long strings are collapsed to the first 120 characters by default; click "Expand" to see the full text
 import { computed, ref, watch } from "vue";
 
-// 允许组件在自身模板中递归引用自身
+// Lets the component reference itself recursively in its own template
 defineOptions({ name: "JsonView" });
 
 const props = defineProps<{ data?: unknown; depth?: number; name?: string }>();
 
 const collapsed = ref((props.depth ?? 0) >= 3);
 
-// 长字符串折叠阈值（仅影响默认展示长度，不丢失内容）
+// Long string collapse threshold (only affects the default display length; no content is lost)
 const PREVIEW_LEN = 120;
 const expanded = ref(false);
 
@@ -18,7 +18,7 @@ const isLongStr = computed(
   () => typeof props.data === "string" && props.data.length > PREVIEW_LEN,
 );
 
-// 切换节点/值后回到默认折叠态
+// Return to the default collapsed state after switching node/value
 watch(
   () => props.data,
   () => {
@@ -96,9 +96,9 @@ function childValue(v: unknown, k: string | number): unknown {
     <span
       v-if="isLongStr"
       class="tm-json-toggle"
-      :title="expanded ? '收起' : '展开全文'"
+      :title="expanded ? 'Collapse' : 'Show full text'"
       @click.stop="expanded = !expanded"
-    >{{ expanded ? "收起" : "展开" }}</span>
+    >{{ expanded ? "Collapse" : "Expand" }}</span>
   </div>
 </template>
 

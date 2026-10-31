@@ -44,8 +44,8 @@ function eventHealth(text: string, sessionId: string, bytes: number, checkedAt: 
       invalid++;
     }
   }
-  if (invalid) return { state: 'degraded', reason: 'corrupt_tail', sessionId, eventCount: valid, lastEventAt, bytes, checkedAt, source: 'events-file', diagnostic: '原生轨迹存在损坏或无法识别的行；原始文件未修改，会话过程已降级为对话视图。' };
-  if (!valid) return { state: 'unknown', reason: terminated ? 'empty' : 'not_started', sessionId, eventCount: 0, lastEventAt: null, bytes, checkedAt, source: 'events-file', diagnostic: '原生轨迹尚未写入事件。' };
+  if (invalid) return { state: 'degraded', reason: 'corrupt_tail', sessionId, eventCount: valid, lastEventAt, bytes, checkedAt, source: 'events-file', diagnostic: 'The native trajectory has corrupt or unrecognized lines. The original file was not modified; the session process view fell back to the conversation view.' };
+  if (!valid) return { state: 'unknown', reason: terminated ? 'empty' : 'not_started', sessionId, eventCount: 0, lastEventAt: null, bytes, checkedAt, source: 'events-file', diagnostic: 'The native trajectory has no events yet.' };
   return { state: 'healthy', sessionId, eventCount: valid, lastEventAt, bytes, checkedAt, source: 'events-file' };
 }
 
@@ -55,7 +55,7 @@ function eventHealth(text: string, sessionId: string, bytes: number, checkedAt: 
  */
 export async function readTrajectoryHealth(sessionDir: string | null, sessionId: string): Promise<TrajectoryHealth> {
   const checkedAt = now();
-  if (!sessionDir) return unknown(sessionId, '尚未定位到原生会话目录。');
+  if (!sessionDir) return unknown(sessionId, 'The native session directory has not been located yet.');
   const healthPath = join(sessionDir, 'trajectory', 'health.json');
   try {
     const info = await stat(healthPath);
@@ -76,22 +76,22 @@ export async function readTrajectoryHealth(sessionDir: string | null, sessionId:
       }
     }
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') return { state: 'degraded', reason: 'unreadable', sessionId, eventCount: null, lastEventAt: null, bytes: null, checkedAt, source: 'icode-health', diagnostic: '无法读取原生轨迹健康记录：' + (error as Error).message };
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') return { state: 'degraded', reason: 'unreadable', sessionId, eventCount: null, lastEventAt: null, bytes: null, checkedAt, source: 'icode-health', diagnostic: 'Cannot read the native trajectory health record: ' + (error as Error).message };
   }
   const eventsPath = join(sessionDir, 'trajectory', 'events.jsonl');
   try {
     const info = await stat(eventsPath);
-    if (!info.isFile()) return unknown(sessionId, '原生轨迹路径不是文件。');
-    if (!info.size) return { state: 'unknown', reason: 'empty', sessionId, eventCount: 0, lastEventAt: null, bytes: 0, checkedAt, source: 'events-file', diagnostic: '原生轨迹尚未写入事件。' };
-    if (info.size > 64 * 1024 * 1024) return { state: 'degraded', reason: 'too_large', sessionId, eventCount: null, lastEventAt: null, bytes: info.size, checkedAt, source: 'events-file', diagnostic: '原生轨迹超过可读取范围（64 MiB），会话过程已降级。' };
+    if (!info.isFile()) return unknown(sessionId, 'The native trajectory path is not a file.');
+    if (!info.size) return { state: 'unknown', reason: 'empty', sessionId, eventCount: 0, lastEventAt: null, bytes: 0, checkedAt, source: 'events-file', diagnostic: 'The native trajectory has no events yet.' };
+    if (info.size > 64 * 1024 * 1024) return { state: 'degraded', reason: 'too_large', sessionId, eventCount: null, lastEventAt: null, bytes: info.size, checkedAt, source: 'events-file', diagnostic: 'The native trajectory exceeds the readable size (64 MiB); the session process view is degraded.' };
     const result = eventHealth(await tail(eventsPath, TAIL_BYTES), sessionId, info.size, checkedAt, info.size > TAIL_BYTES);
     try {
       const sessionInfo = await stat(join(sessionDir, 'session.json'));
-      if (result.state !== 'degraded' && sessionInfo.isFile() && sessionInfo.mtimeMs - info.mtimeMs > STALE_MS) return { ...result, state: 'degraded', reason: 'stale', diagnostic: '会话正文已更新，但本地轨迹超过 10 分钟未写入；可能已降级。原始文件未修改。' };
+      if (result.state !== 'degraded' && sessionInfo.isFile() && sessionInfo.mtimeMs - info.mtimeMs > STALE_MS) return { ...result, state: 'degraded', reason: 'stale', diagnostic: 'The session body was updated, but the local trajectory has not been written for over 10 minutes and may be degraded. The original file was not modified.' };
     } catch {}
     return result;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return unknown(sessionId, '原生轨迹尚未创建。');
-    return { state: 'degraded', reason: 'permission', sessionId, eventCount: null, lastEventAt: null, bytes: null, checkedAt, source: 'events-file', diagnostic: '无法读取原生轨迹：' + (error as Error).message };
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return unknown(sessionId, 'The native trajectory has not been created yet.');
+    return { state: 'degraded', reason: 'permission', sessionId, eventCount: null, lastEventAt: null, bytes: null, checkedAt, source: 'events-file', diagnostic: 'Cannot read the native trajectory: ' + (error as Error).message };
   }
 }

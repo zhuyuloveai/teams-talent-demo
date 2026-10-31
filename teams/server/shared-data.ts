@@ -32,7 +32,7 @@ function repository(workspaces: ProjectWorkspaces, projectId: string, value: Sha
   const bound = workspaces.projects.find(item => item.projectId === projectId);
   return bound ? { ...value, path: bound.directory, remote: bound.remoteUrl, branch: bound.baseBranch } : value;
 }
-/** The card project's skills: those of the demo blueprint, as its "项目可用 Skill" panel lists them. */
+/** The card project's skills: those of the demo blueprint, as its "Project Skills" panel lists them. */
 function cardSkills(fixtures: Presentation): SharedSkill[] {
   const ids = new Set(fixtures.blueprint.skill_groups.flatMap(group => group.skills));
   return fixtures.skillCatalog.filter(skill => ids.has(skill.id)).map(skill => ({ id: skill.id, name: skill.name, version: skill.version,
@@ -40,7 +40,7 @@ function cardSkills(fixtures: Presentation): SharedSkill[] {
 }
 function cardProject(state: DemoState, fixtures: Presentation, catalog: SourcePluginCatalog, workspaces: ProjectWorkspaces): SharedProject {
   const project = state.workspace.project;
-  // The documents among the rows of the project's "项目资料与资产" (src/components/project-assets.tsx), named as listed there.
+  // The documents among the rows of the project's "Project materials and assets" (src/components/project-assets.tsx), named as listed there.
   const documents = project.assets.flatMap(asset => {
     const ids = legacyAssetSourceIds(asset);
     if (!ids.length) return asset.kind === 'document' ? [{ id: asset.id, title: asset.title, path: asset.location, summary: '' }] : [];
@@ -51,7 +51,7 @@ function cardProject(state: DemoState, fixtures: Presentation, catalog: SourcePl
     });
   });
   return { id: 'carddemo', name: project.name, description: project.description, readonly: false,
-    repositories: [repository(workspaces, 'carddemo', { id: 'repository:carddemo:' + project.repository, name: project.repository, remote: 'https://github.com/JeffyLiu003/carddemo-java-1025.git', branch: 'main', description: 'Java 21 微服务：7 个服务和 Web UI' })],
+    repositories: [repository(workspaces, 'carddemo', { id: 'repository:carddemo:' + project.repository, name: project.repository, remote: 'https://github.com/JeffyLiu003/carddemo-java-1025.git', branch: 'main', description: 'Java 21 microservices: 7 services and a Web UI' })],
     documents, skills: cardSkills(fixtures) };
 }
 /** The imported iCode Teams project, as its project page shows it: the AGENTS.md rules first among the documents, and the
@@ -61,11 +61,11 @@ function importedProject(fixtures: Presentation, workspaces: ProjectWorkspaces):
   const text = (path: string) => imported.documents.find(document => document.path === path)?.content;
   return { id: 'teams', name: project.name, description: project.description, readonly: true,
     repositories: project.repos.map(repo => repository(workspaces, 'teams', { id: 'repository:teams:' + repo.name, name: repo.name, remote: repo.name, branch: repo.branch, description: repo.note })),
-    documents: [{ name: '项目规范 AGENTS.md', path: 'AGENTS.md', description: project.agentsNote }, ...project.docs]
+    documents: [{ name: 'Project standards AGENTS.md', path: 'AGENTS.md', description: project.agentsNote }, ...project.docs]
       .map(doc => ({ id: 'design-library:teams:' + doc.path, title: doc.name, path: doc.path, summary: doc.description })),
     skills: project.skills.flatMap(skill => {
       const path = '.agents/skills/' + skill.name + '/SKILL.md', content = text(path);
-      return content === undefined ? [] : [{ id: skill.name, name: skill.name, version: '源码快照 ' + imported.sourceCommit.slice(0, 7), description: skill.description, path, sha256: sha256(content), content }];
+      return content === undefined ? [] : [{ id: skill.name, name: skill.name, version: 'Source snapshot ' + imported.sourceCommit.slice(0, 7), description: skill.description, path, sha256: sha256(content), content }];
     }) };
 }
 function sessions(state: DemoState): SharedSession[] {
@@ -78,10 +78,10 @@ function sessions(state: DemoState): SharedSession[] {
     const task = state.workspace.deliveryRequirements?.find(task => task.projectId === record.projectId && task.id === record.taskId);
     for (const session of record.collection.sessions) {
       shared.unshift({ id: session.tool + ':' + session.sessionId + ':' + record.taskId,
-        projectId: record.projectId, requirementId: record.taskId, title: task?.title ?? '白金卡消费返现需求',
-        memberId: task?.assigneeId ?? state.assigneeId ?? 'member', memberName: members.get(task?.assigneeId ?? state.assigneeId ?? 'member') ?? '项目成员',
-        updatedAt: localMinute(session.lastAt), turns: 0, agent: session.tool, model: '未提供',
-        cwd: record.preparation?.session?.directory ?? task?.workDirectory ?? '', summary: session.nodeIds.join('、'),
+        projectId: record.projectId, requirementId: record.taskId, title: task?.title ?? 'Platinum card spending cashback requirement',
+        memberId: task?.assigneeId ?? state.assigneeId ?? 'member', memberName: members.get(task?.assigneeId ?? state.assigneeId ?? 'member') ?? 'Project member',
+        updatedAt: localMinute(session.lastAt), turns: 0, agent: session.tool, model: 'Not provided',
+        cwd: record.preparation?.session?.directory ?? task?.workDirectory ?? '', summary: session.nodeIds.join(', '),
         transcript: !!record.collection.reporting.receipt?.documentHashes?.some(document => document.sessionId === session.sessionId) });
     }
   }
@@ -108,7 +108,7 @@ export async function readTalentsKnowledge(): Promise<TalentsKnowledge> {
   const content = await readShared(sharedPaths.talentsKnowledge);
   if (!content) return { schemaVersion: 1, exportedAt: '', artifacts: [] };
   const value = JSON.parse(content.toString('utf8')) as TalentsKnowledge;
-  if (value.schemaVersion !== 1 || !Array.isArray(value.artifacts)) throw new DomainError('Talents 知识数据格式无效', 502);
+  if (value.schemaVersion !== 1 || !Array.isArray(value.artifacts)) throw new DomainError('Invalid Talents knowledge data format', 502);
   return value;
 }
 /** Knowledge published to the project, and team-level knowledge, which every project uses. */
@@ -131,8 +131,8 @@ export async function projectSkillVersions(projectId: string) {
 export async function readTalentsFile(artifactId: string, version: number, path: string) {
   const artifact = (await readTalentsKnowledge()).artifacts.find(item => item.id === artifactId && item.version === version);
   const file = artifact?.files.find(item => item.path === path);
-  if (!artifact || !file || isAbsolute(path) || normalize(path).startsWith('..')) throw new DomainError('Talents 产物文件不存在', 404);
+  if (!artifact || !file || isAbsolute(path) || normalize(path).startsWith('..')) throw new DomainError('Talents artifact file does not exist', 404);
   const source = await readSharedLocated(sharedPaths.talentsFile(artifactId, version, path));
-  if (!source) throw new DomainError('Talents 产物文件尚未同步', 404);
+  if (!source) throw new DomainError('Talents artifact file has not been synced yet', 404);
   return { ...file, content: source.content.toString('utf8'), absolutePath: source.absolutePath };
 }

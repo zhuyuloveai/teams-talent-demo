@@ -7,38 +7,38 @@ import { nativeSessionMigrationFile, nativeSessionRootMatches, type NativeSessio
 const args = new Map<string, string>();
 for (let index = 2; index < process.argv.length; index += 2) {
   const key = process.argv[index], value = process.argv[index + 1];
-  if (!['--runtime', '--previous-runtime', '--runs', '--apply'].includes(key) || !value || args.has(key)) throw new Error('参数：--runtime ABS --previous-runtime ABS --runs UUID,UUID [--apply yes]；默认只预检');
+  if (!['--runtime', '--previous-runtime', '--runs', '--apply'].includes(key) || !value || args.has(key)) throw new Error('Arguments: --runtime ABS --previous-runtime ABS --runs UUID,UUID [--apply yes]; dry run by default');
   args.set(key, value);
 }
 const runtime = args.get('--runtime'), previous = args.get('--previous-runtime'), runs = args.get('--runs')?.split(',');
-if (!runtime || !previous || !isAbsolute(runtime) || !isAbsolute(previous) || resolve(previous) !== previous || !runs?.length || new Set(runs).size !== runs.length || runs.some(id => !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) || (args.has('--apply') && args.get('--apply') !== 'yes')) throw new Error('必须显式给出当前/原 runtime 绝对路径和唯一 run UUID 清单');
+if (!runtime || !previous || !isAbsolute(runtime) || !isAbsolute(previous) || resolve(previous) !== previous || !runs?.length || new Set(runs).size !== runs.length || runs.some(id => !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) || (args.has('--apply') && args.get('--apply') !== 'yes')) throw new Error('Give the absolute paths of the current and previous runtime and a list of unique run UUIDs explicitly');
 const root = await realpath(runtime), file = join(root, nativeSessionMigrationFile);
-if (root !== resolve(runtime) || root === previous) throw new Error('当前 runtime 必须是未经过符号链接的新目录');
+if (root !== resolve(runtime) || root === previous) throw new Error('The current runtime must be a new directory not reached through a symlink');
 const sha = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 let existing: { version: number; entries: NativeSessionLocationMigration[] } = { version: 1, entries: [] }, original: Buffer | null = null;
-try { if (await realpath(file) !== file) throw new Error('迁移文件不能是符号链接'); original = await readFile(file); existing = JSON.parse(original.toString('utf8')); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
-if (existing.version !== 1 || !Array.isArray(existing.entries)) throw new Error('已有迁移文件格式无效');
+try { if (await realpath(file) !== file) throw new Error('The migration file must not be a symlink'); original = await readFile(file); existing = JSON.parse(original.toString('utf8')); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+if (existing.version !== 1 || !Array.isArray(existing.entries)) throw new Error('Invalid format of the existing migration file');
 const entries = [...existing.entries], noPersistedDocumentRuns: string[] = [];
 for (const runId of runs) {
   const runRoot = join(root, 'work-contexts', runId + '.native');
   const ownerPath = join(runRoot, 'native-session.json'), manifestPath = join(runRoot, 'manifest.json');
-  for (const path of [runRoot, ownerPath, manifestPath, join(runRoot, 'session-root')]) if (await realpath(path) !== path) throw new Error('迁移来源目录或文件不允许符号链接');
+  for (const path of [runRoot, ownerPath, manifestPath, join(runRoot, 'session-root')]) if (await realpath(path) !== path) throw new Error('Migration source directories and files must not be symlinks');
   const ownerBytes = await readFile(ownerPath), manifestBytes = await readFile(manifestPath), owner = JSON.parse(ownerBytes.toString('utf8')), manifest = JSON.parse(manifestBytes.toString('utf8'));
   const oldRoot = join(previous, 'work-contexts', runId + '.native', 'session-root');
-  if (owner.runId !== runId || owner.source !== 'icode-active-session-owner' || owner.sessionRoot !== oldRoot || manifest.runId !== runId || ['projectId', 'taskId', 'nodeId'].some(key => manifest.scope?.[key] !== owner[key]) || manifest.taskFile !== join(previous, 'work-contexts', runId + '.md')) throw new Error('run/scope 或原路径不匹配：' + runId);
+  if (owner.runId !== runId || owner.source !== 'icode-active-session-owner' || owner.sessionRoot !== oldRoot || manifest.runId !== runId || ['projectId', 'taskId', 'nodeId'].some(key => manifest.scope?.[key] !== owner[key]) || manifest.taskFile !== join(previous, 'work-contexts', runId + '.md')) throw new Error('run/scope or original path does not match: ' + runId);
   const taskFile = join(root, 'work-contexts', runId + '.md');
-  if (await realpath(taskFile) !== taskFile || sha(await readFile(taskFile)) !== manifest.taskSha256) throw new Error('原任务文件 hash 不匹配：' + runId);
+  if (await realpath(taskFile) !== taskFile || sha(await readFile(taskFile)) !== manifest.taskSha256) throw new Error('Original task file hash does not match: ' + runId);
   const sessionDir = join(runRoot, 'session-root', 'sessions', String(owner.sessionId).replaceAll('-', '').slice(0, 12));
   let documents = 0;
   for (const name of ['session.json', 'session.recovery.json']) {
     const path = join(sessionDir, name);
-    try { if (await realpath(path) !== path || !(await stat(path)).isFile() || JSON.parse(await readFile(path, 'utf8')).meta?.session_id !== owner.sessionId) throw new Error('原会话身份不匹配：' + runId); documents++; }
+    try { if (await realpath(path) !== path || !(await stat(path)).isFile() || JSON.parse(await readFile(path, 'utf8')).meta?.session_id !== owner.sessionId) throw new Error('Original session identity does not match: ' + runId); documents++; }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   }
   if (!documents) noPersistedDocumentRuns.push(runId);
   const entry: NativeSessionLocationMigration = { runId, projectId: owner.projectId, taskId: owner.taskId, nodeId: owner.nodeId, sessionId: owner.sessionId, previousSessionRoot: oldRoot, sessionRoot: join(runRoot, 'session-root'), ownerSha256: sha(ownerBytes), manifestSha256: sha(manifestBytes) };
   const old = entries.find(value => value.runId === runId);
-  if (old && JSON.stringify(old) !== JSON.stringify(entry)) throw new Error('已有迁移范围不一致：' + runId);
+  if (old && JSON.stringify(old) !== JSON.stringify(entry)) throw new Error('Existing migration scope differs: ' + runId);
   if (!old) entries.push(entry);
 }
 if (args.get('--apply') === 'yes') {
@@ -49,6 +49,6 @@ if (args.get('--apply') === 'yes') {
     try { await handle.writeFile(content); await handle.sync(); } finally { await handle.close(); }
     try { await rename(temp, file); } finally { await unlink(temp).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
   }
-  for (const runId of runs) { const runRoot = join(root, 'work-contexts', runId + '.native'); if (!await nativeSessionRootMatches(root, runRoot, JSON.parse(await readFile(join(runRoot, 'native-session.json'), 'utf8')))) throw new Error('迁移核验失败'); }
+  for (const runId of runs) { const runRoot = join(root, 'work-contexts', runId + '.native'); if (!await nativeSessionRootMatches(root, runRoot, JSON.parse(await readFile(join(runRoot, 'native-session.json'), 'utf8')))) throw new Error('Migration verification failed'); }
 }
 console.log(JSON.stringify({ applied: args.get('--apply') === 'yes', file, runs, entries: entries.length, noPersistedDocumentRuns, originalEvidenceRewritten: false }));

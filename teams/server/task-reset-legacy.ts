@@ -4,7 +4,7 @@ import { mainRequirementId } from '../src/delivery-requirements.js';
 // These labels are emitted by the former single-main-task transition, not by
 // project knowledge, resource publication or capability evolution operations.
 const mainActions: readonly Action[] = ['assign', 'prepare', 'replay', 'check-fail', 'fix', 'submit', 'enroll', 'purchase', 'deduplicate', 'uat', 'accept', 'return'];
-const mainAuditLabels = new Set<string>([...mainActions.map(action => actionLabels[action]), 'iCode 进度同步']);
+const mainAuditLabels = new Set<string>([...mainActions.map(action => actionLabels[action]), 'iCode 进度同步', 'iCode progress sync']);
 function isMainLegacyAudit(entry: Audit): boolean {
   if (entry.system !== 'Teams' || !mainAuditLabels.has(entry.action)) return false;
   // Explicit scoped records belong to their own task even when a label matches.
@@ -15,7 +15,7 @@ function isMainLegacyAudit(entry: Audit): boolean {
 /** Called only for resetting carddemo/DEMO-MKT-001, after its unified record is reset. */
 export function resetLegacyMainTaskFields(state: DemoState): void {
   const tasks = (state.workspace.deliveryRequirements ?? []).filter(task => task.projectId === 'carddemo' && task.id === mainRequirementId);
-  if (tasks.length !== 1) throw new Error('重置旧主任务字段需要唯一保留的 DEMO-MKT-001 交付记录');
+  if (tasks.length !== 1) throw new Error('Resetting the old main-task fields requires exactly one remaining DEMO-MKT-001 delivery record');
   const assigneeId = tasks[0].assigneeId;
   state.context = null;
   state.assigned = !!assigneeId;

@@ -1,4 +1,4 @@
-"""Pydantic 响应模型：把数据库 snake_case 字段转成前端 camelCase。"""
+"""Pydantic response models: convert database snake_case fields to frontend camelCase."""
 from __future__ import annotations
 
 from typing import Any
@@ -57,10 +57,10 @@ class SpanOut(BaseModel):
 
 
 class SpanBriefOut(BaseModel):
-    """树的轻量节点：不含 input/output/errorInfo（点击后按需单查）。
+    """Lightweight tree node: no input/output/errorInfo (fetched individually on click).
 
-    eventId / parentSpanId 必须保留：前者驱动 Real LLM Request 懒加载，
-    后者供 build_tree 组树。
+    eventId / parentSpanId must be kept: the former drives Real LLM Request lazy loading,
+    the latter lets build_tree assemble the tree.
     """
 
     id: str
@@ -88,7 +88,7 @@ class LlmRequestOut(BaseModel):
 
 
 class ObservationOut(BaseModel):
-    """observation 的精简视图：input/output 无任何前端消费者，故不下发。"""
+    """Compact observation view: input/output have no frontend consumers, so they are not sent."""
 
     id: str
     spanId: str | None = None
@@ -99,16 +99,16 @@ class ObservationOut(BaseModel):
 
 
 class SpanDetailOut(BaseModel):
-    """点击节点后按需返回的完整详情：span 全字段 + 其 observations。"""
+    """Full detail returned on demand when a node is clicked: all span fields + its observations."""
 
     span: SpanOut
     observations: list[ObservationOut] = Field(default_factory=list)
 
 
 class TraceNodeOut(BaseModel):
-    # 联合类型（不是 SpanBriefOut）：DB 模式的 /tree 传 SpanBriefOut，file 模式
-    # 仍传完整 SpanOut。Pydantic v2 不会把父类实例当子类接受，若这里只声明
-    # SpanBriefOut，file 模式 /tree 会直接 ValidationError（500）。
+    # Union type (not SpanBriefOut): /tree in DB mode passes SpanBriefOut, file mode
+    # still passes full SpanOut. Pydantic v2 does not accept a parent-class instance as a subclass, so declaring only
+    # SpanBriefOut here would make file-mode /tree fail with a ValidationError (500).
     span: SpanBriefOut | SpanOut | None = None
     children: list[TraceNodeOut] = Field(default_factory=list)
 

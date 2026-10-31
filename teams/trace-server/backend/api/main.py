@@ -1,4 +1,4 @@
-"""FastAPI 应用入口：路由注册 + CORS + 生命周期。"""
+"""FastAPI application entry point: route registration + CORS + lifespan."""
 from __future__ import annotations
 
 import logging
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     if STORAGE_BACKEND == "database":
         init_engine()
 
-    # OTLP 接收通道（与 STORAGE_BACKEND 解耦，由 OTLP_SINK 独立决定）
+    # OTLP ingestion sink (decoupled from STORAGE_BACKEND; chosen independently by OTLP_SINK)
     if OTLP_ENABLED:
         from otlp import build_sink
 
@@ -47,11 +47,11 @@ async def lifespan(app: FastAPI):
             reconnect_interval=OTLP_RECONNECT_INTERVAL,
         )
         await app.state.otlp_sink.start()
-        logger.info("OTLP 接收已启用：path=%s sink=%s", OTLP_PATH, OTLP_SINK)
+        logger.info("OTLP ingestion enabled: path=%s sink=%s", OTLP_PATH, OTLP_SINK)
         if OTLP_SINK in ("kafka", "redis") and STORAGE_BACKEND == "file":
             logger.warning(
-                "OTLP_SINK=%s 但 STORAGE_BACKEND=file："
-                "数据会写入数据库而查询读取文件，前端将看不到这些 trace",
+                "OTLP_SINK=%s but STORAGE_BACKEND=file: "
+                "data is written to the database while queries read files, so the frontend will not see these traces",
                 OTLP_SINK,
             )
 
@@ -81,7 +81,7 @@ api_prefix = "/api/v1"
 
 @app.get("/api/v1/config", response_model=ConfigOut)
 async def get_config():
-    """返回当前存储后端模式（file/database），供前端据此显示/隐藏功能。"""
+    """Return the current storage backend mode (file/database) so the frontend can show/hide features."""
     return ConfigOut(storageBackend=STORAGE_BACKEND)
 
 

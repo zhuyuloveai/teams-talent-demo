@@ -16,8 +16,8 @@ export function headers(request: IncomingMessage, response: ServerResponse) {
 }
 export async function bodyJson(request: IncomingMessage, maxBytes = 65536) {
   const chunks: Buffer[] = []; let size = 0;
-  for await (const chunk of request) { size += chunk.length; if (size > maxBytes) throw new DomainError('请求过大', 413); chunks.push(chunk); }
-  try { return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, any>; } catch { throw new DomainError('JSON 请求无效', 400); }
+  for await (const chunk of request) { size += chunk.length; if (size > maxBytes) throw new DomainError('Request too large', 413); chunks.push(chunk); }
+  try { return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, any>; } catch { throw new DomainError('Invalid JSON request', 400); }
 }
 export async function staticFile(path: string, app: 'teams', response: ServerResponse) {
   if (!['/', '/' + app, '/main.js', '/main.css', '/main.js.map', '/main.css.map'].includes(path)) return false;

@@ -8,6 +8,6 @@ const execute=promisify(execFile);
 export async function nativeTraceRuntime(){
  const native=await nativeSkillEnvironment(),script=join(root,'scripts/native/check-trace-runtime.py');
  const check=JSON.parse((await execute(native.python,['-I',script],{timeout:15000,maxBuffer:65536,windowsHide:true})).stdout);
- if(check.ready!==true)throw new Error(`当前 iCode 缺少匹配的 OTLP HTTP 依赖（SDK ${check.sdkVersion??'未安装'}）。请按快速启动说明为此 iCode Python 安装相同版本 exporter；未关闭 trace 或改用其他运行时。`);
+ if(check.ready!==true)throw new Error(`The current iCode is missing a matching OTLP HTTP dependency (SDK ${check.sdkVersion??'not installed'}). Follow the quick start guide to install the same exporter version for this iCode Python; tracing was not turned off and no other runtime was used.`);
  return {python:native.python,configDirectory:native.configDirectory,script,nativeVersion:native.version,sdkVersion:String(check.sdkVersion),exporterVersion:String(check.exporterVersion)};
 }

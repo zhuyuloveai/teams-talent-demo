@@ -4,7 +4,7 @@ import { withoutNativeTrace, loopbackProxyEnvironment } from './native-environme
 import { interactiveEnvironment } from './interactive-environment.mjs';
 
 const [executable, ...args] = process.argv.slice(2);
-if (!executable) throw new Error('缺少 iCode 可执行文件');
+if (!executable) throw new Error('Missing iCode executable');
 const child = spawn(executable, args, {
   cwd: process.cwd(),
   env: loopbackProxyEnvironment(interactiveEnvironment(withoutNativeTrace(process.env))),
@@ -14,7 +14,7 @@ const stop = () => child.kill('SIGTERM');
 const hangup = () => child.kill('SIGHUP');
 process.on('SIGTERM', stop);
 process.on('SIGHUP', hangup);
-child.once('error', error => { console.error('iCode 启动失败：' + error.message); process.exitCode = 1; });
+child.once('error', error => { console.error('iCode failed to start: ' + error.message); process.exitCode = 1; });
 child.once('close', code => {
   process.off('SIGTERM', stop);
   process.off('SIGHUP', hangup);

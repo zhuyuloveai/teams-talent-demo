@@ -26,7 +26,7 @@ export { deliveryNodeLabels } from './task-delivery-layout.js';
 
 const statusKeys = { pending: 'phase.pending', running: 'gt.active', blocked: 'ter.blocked', complete: 'gt.completed', 'waiting-owner': 'qr.awaitingOwner' } as const;
 const stamp = (at?: string | null) => at ? new Date(at).toLocaleString('zh-CN') : currentT('lt.noExecutionTime');
-const firstSentence = (text: string) => text.split(/(?<=。)|\n/).find(part => part.trim())?.trim() ?? '';
+const firstSentence = (text: string) => text.split(/(?<=\u3002)|(?<=[.!?])\s+|\n/).find(part => part.trim())?.trim() ?? '';
 
 export function LiveTaskDelivery({ task, node, sidebarItems }: { task: DeliveryRequirement; node: RequirementNode; sidebarItems?: readonly DeliveryTaskListItem[] }) {
   const { state, data, role, navigate, receiveState, run, showText } = useDemo();
@@ -114,7 +114,7 @@ export function LiveTaskDelivery({ task, node, sidebarItems }: { task: DeliveryR
           </>}
         </> } }}
     materials={<>      <h4>{t('lt.materialDescription')}</h4>
-      <div className="task-material-description">{task.description.split(/(?<=。)|\n/).filter(part => part.trim()).map((part, index) => <p key={index}>{part.trim()}</p>)}</div>
+      <div className="task-material-description">{task.description.split(/(?<=\u3002)|(?<=[.!?])\s+|\n/).filter(part => part.trim()).map((part, index) => <p key={index}>{part.trim()}</p>)}</div>
       <h4>{t('lt.acceptanceCriteria')}</h4>
       <p className="muted">{task.confirmations?.length ? t('lt.criteriaRegistered', { count: task.confirmations.length }) : t('lt.criteriaMissing')}</p>
       {task.legacyBasis && <><p className="muted">{t('lt.legacyBasisNote')}</p><Button type="link" size="small" onClick={() => detail(t('lt.legacyBasis'), JSON.stringify(task.legacyBasis, null, 2))}>{t('lt.viewLegacyBasis')}</Button></>}

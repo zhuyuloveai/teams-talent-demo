@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// 内嵌版外壳：去掉原顶栏/侧栏，也不再重复一条标题条。
-// 项目选择 / 存储模式 / 刷新 已并入列表页工具条，详情页保留「返回列表」。
+// Embedded shell: drops the original top bar/sidebar and does not repeat a title bar.
+// Project select / storage mode / refresh are merged into the list page toolbar; the detail page keeps "Back to list".
 import { onMounted } from "vue";
 import { useProjectStore } from "@/stores/project";
 import { useAppConfigStore } from "@/stores/appConfig";
@@ -11,7 +11,7 @@ const appConfigStore = useAppConfigStore();
 onMounted(() => {
   projectStore.load();
   appConfigStore.load();
-  // 无历史项目时回落到 iCode 实时采集项目
+  // Fall back to the iCode live collection project when there is no project history
   if (!projectStore.selected) projectStore.applySelection("icode");
 });
 </script>

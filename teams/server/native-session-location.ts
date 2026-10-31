@@ -16,7 +16,7 @@ export interface NativeSessionLocationMigration {
 }
 export const nativeSessionMigrationFile = 'native-session-location-migrations.json';
 const sha = (value: Buffer) => createHash('sha256').update(value).digest('hex');
-const invalid = () => new DomainError('原生会话目录迁移凭据无效或与原记录不匹配', 409);
+const invalid = () => new DomainError('The native session directory migration credential is invalid or does not match the original record', 409);
 
 /** An explicit operator-approved relocation receipt, never a search of former runtime paths.
  * Original manifest, owner and session bytes remain unchanged. Only the current fixed run directory is read. */

@@ -14,9 +14,9 @@ export async function ensureNativeTuiHooks(script: string, backupDirectory: stri
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   }
   const document = parseDocument(original ?? 'version: 1\nhooks: []\n');
-  if (document.errors.length) throw new Error('iCode Hooks 配置无法解析，未修改原配置');
+  if (document.errors.length) throw new Error('Cannot parse the iCode Hooks configuration; the original was not modified');
   const value = document.toJS();
-  if (value?.version !== 1 || !Array.isArray(value.hooks)) throw new Error('iCode Hooks 配置结构无效，未修改原配置');
+  if (value?.version !== 1 || !Array.isArray(value.hooks)) throw new Error('Invalid iCode Hooks configuration structure; the original was not modified');
   const definitions = ['session_start', 'user_prompt_submit'].map(event => ({
     id: 'teams-scoped-tui-' + event.replaceAll('_', '-'), event, enabled: true,
     description: 'Teams scoped interactive work context; inactive without TEAMS_TUI_MANIFEST',
@@ -29,7 +29,7 @@ export async function ensureNativeTuiHooks(script: string, backupDirectory: stri
     const prior = existing[0];
     const migrated = existing.length === 1 && prior && previousScript && prior.run?.argv?.length === 2 && prior.run.argv[0] === process.execPath && prior.run?.argv?.[1] === previousScript && JSON.stringify({...prior, run: {...prior.run, argv: [process.execPath, script]}}) === JSON.stringify(definition);
     if (migrated) { document.setIn(['hooks', value.hooks.indexOf(prior)], definition); changed = true; }
-    if (!migrated && (existing.length > 1 || existing.length === 1 && JSON.stringify(existing[0]) !== JSON.stringify(definition))) throw new Error('Teams TUI Hook 与已有同名配置不同，请核对后再启动；未覆盖配置');
+    if (!migrated && (existing.length > 1 || existing.length === 1 && JSON.stringify(existing[0]) !== JSON.stringify(definition))) throw new Error('The Teams TUI Hook differs from an existing hook with the same name; review it before launching. The configuration was not overwritten');
     if (!existing.length) { document.addIn(['hooks'], definition); changed = true; }
   }
   if (!changed) return { path, changed: false };
@@ -38,7 +38,7 @@ export async function ensureNativeTuiHooks(script: string, backupDirectory: stri
     await mkdir(backupDirectory, { recursive: true });
     const backup = join(backupDirectory, createHash('sha256').update(original).digest('hex') + '.yaml');
     try { await writeFile(backup, original, { flag: 'wx', mode: 0o600 }); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
-    if (await readFile(path, 'utf8') !== original) throw new Error('iCode Hooks 配置已被其他进程修改，未覆盖');
+    if (await readFile(path, 'utf8') !== original) throw new Error('Another process modified the iCode Hooks configuration; not overwritten');
   }
   const content = path.endsWith('.json') ? JSON.stringify(document.toJS(), null, 2) + '\n' : document.toString();
   await atomicText(path, content);

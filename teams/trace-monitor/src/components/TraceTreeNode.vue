@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 单行调用树节点（递归组件）：缩进 + 连接线 + 类型图标 + 时长 + 展开箭头 + 状态点
+// Single-row call tree node (recursive component): indent + connector lines + type icon + duration + expand arrow + status dot
 import { ref } from "vue";
 import type { TraceNode } from "@/types";
 
@@ -64,12 +64,12 @@ function isStrong(type?: string): boolean {
       >
         {{ props.node.span?.name }}
       </span>
-      <!-- 操作区（有子节点）：耗时 + 分割线 + 箭头，整块可点击展开/折叠 -->
+      <!-- Action area (has children): duration + divider + arrow; the whole block toggles expand/collapse -->
       <span
         v-if="props.node.children.length > 0"
         class="tm-node-toggle"
         :class="{ open }"
-        :title="open ? '折叠' : '展开'"
+        :title="open ? 'Collapse' : 'Expand'"
         @click.stop="open = !open"
       >
         <span v-if="props.node.span?.durationMs != null" class="tm-node-duration">
@@ -209,7 +209,7 @@ function isStrong(type?: string): boolean {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* 操作区：耗时 + 分割线 + 箭头，整块热区绑定展开/折叠 */
+/* Action area: duration + divider + arrow; the whole hit area toggles expand/collapse */
 .tm-node-toggle {
   display: inline-flex;
   align-items: center;
@@ -251,7 +251,7 @@ function isStrong(type?: string): boolean {
     transition: transform 0.15s ease;
   }
 
-  /* 收起 = 向下箭头，展开 = 向上箭头（180° 翻转） */
+  /* Collapsed = down arrow, expanded = up arrow (rotated 180°) */
   .tm-node-toggle.open & svg {
     transform: rotate(180deg);
   }

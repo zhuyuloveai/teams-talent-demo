@@ -1,6 +1,6 @@
-"""Trace/Span/Observation 仓储：封装列表、详情、调用树查询。
+"""Trace/Span/Observation repository: wraps the list, detail and call tree queries.
 
-项目管理（projects CRUD / agents）已废弃：项目 ID 由集成方/上报方自带。
+Project management (projects CRUD / agents) is retired: project IDs come from the integrator/reporter.
 """
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ class TraceRepository:
         session_id: str | None = None,
         trace_id: str | None = None,
     ) -> tuple[list[Trace], int]:
-        """分页查询 traces，返回 (行列表, 总数)。
+        """Query traces with pagination; returns (rows, total).
 
-        project_id 支持逗号分隔的多个项目 ID。
+        project_id accepts several comma-separated project IDs.
         """
         conds: list = []
         if project_id:
@@ -37,9 +37,9 @@ class TraceRepository:
             conds.append(Trace.agent_name == agent_name)
         if status:
             conds.append(Trace.status == status)
-        # session_id / trace_id 支持子串模糊匹配（同一输入框可查任意 ID）。
-        # 二者为 OR 关系：输入一个关键词，命中 trace_id 或 session_id 任一即返回。
-        # UUID 列需 cast 为文本后 ILIKE（PostgreSQL 不支持 uuid ~~* uuid）
+        # session_id / trace_id support fuzzy substring matching (one input box can search any ID).
+        # They are ORed: a keyword returns rows matching either trace_id or session_id.
+        # UUID columns must be cast to text before ILIKE (PostgreSQL does not support uuid ~~* uuid)
         if session_id or trace_id:
             keyword = session_id or trace_id
             conds.append(
@@ -62,7 +62,7 @@ class TraceRepository:
         return list(rows), total
 
     async def get_trace(self, project_id: str, trace_id: str) -> Trace | None:
-        """按 id 查 trace；project_id 为空时不按项目过滤。"""
+        """Look up a trace by id; no project filter when project_id is empty."""
         stmt = select(Trace).where(Trace.id == trace_id)
         if project_id:
             stmt = stmt.where(Trace.project_id.in_(project_id.split(",")))
@@ -81,11 +81,11 @@ class TraceRepository:
         return list((await self._session.scalars(stmt)).all())
 
     async def get_span(self, span_id: str) -> Span | None:
-        """按 spans.id 主键读单条（PK 命中，数行级开销）。"""
+        """Read one row by the spans.id primary key (PK hit, a few rows of cost)."""
         return await self._session.scalar(select(Span).where(Span.id == span_id))
 
     async def get_observations_by_span(self, span_id: str) -> list[Observation]:
-        """走 idx_observations_span(span_id) 索引。"""
+        """Uses the idx_observations_span(span_id) index."""
         stmt = (
             select(Observation)
             .where(Observation.span_id == span_id)
@@ -96,13 +96,13 @@ class TraceRepository:
     async def get_token_totals(
         self, trace_ids: list[str]
     ) -> dict[str, dict[str, int]]:
-        """按 trace_id 实时聚合 observations 的 token 用量。
+        """Aggregate observation token usage per trace_id on the fly.
 
-        返回 {trace_id: {"prompt_tokens": n, "completion_tokens": n,
-        "total_tokens": n}}。跨进程/子 agent 上报的 observation 都会计入，
-        避免 SDK 单进程 total_tokens 汇总漏计（见多数据源方案）。
-        total_tokens 取列原值之和（模型可能把缓存/系统开销计入 total 而不计入
-        prompt/completion，故 total != prompt + completion 属正常）。
+        Returns {trace_id: {"prompt_tokens": n, "completion_tokens": n,
+        "total_tokens": n}}. Observations reported across processes/sub-agents are all counted,
+        so the SDK's single-process total_tokens sum does not miss any (see the multi-source design).
+        total_tokens is the sum of the raw column values (a model may count cache/system overhead in total but not in
+        prompt/completion, so total != prompt + completion is normal).
         """
         if not trace_ids:
             return {}
@@ -126,10 +126,10 @@ class TraceRepository:
         }
 
     async def get_llm_request(self, project_id: str, event_id: str) -> LlmRequest | None:
-        """按 project_id + event_id 主键读单条真实 LLM 请求。
+        """Read one real LLM request by the project_id + event_id primary key.
 
-        llm_requests 表直接冗余存储 project_id（非 join 派生），SQL 层加
-        WHERE project_id = ? 过滤，与 file 模式按项目目录缩小扫描范围对齐。
+        The llm_requests table stores project_id redundantly (not derived via join); the SQL adds
+        a WHERE project_id = ? filter, matching how file mode narrows the scan to the project directory.
         """
         row = await self._session.execute(
             select(LlmRequest).where(
@@ -140,5 +140,5 @@ class TraceRepository:
         return row.scalar_one_or_none()
 
     async def get_session(self, session_id: str) -> Session | None:
-        """按 sessions.id 主键读单条 session（导出时重拼 session 事件行用）。"""
+        """Read one session by the sessions.id primary key (used to rebuild session event rows on export)."""
         return await self._session.scalar(select(Session).where(Session.id == session_id))

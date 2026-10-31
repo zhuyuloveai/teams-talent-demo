@@ -22,19 +22,19 @@ function prepare(project) {
 const server = (project, stdio, detached = false) => spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { cwd: project.dir, env: project.env, stdio, detached, windowsHide: true });
 async function waitReady(project) {
   for (let n = 0; n < 80; n++) { if (await health(project)) return; await new Promise(done => setTimeout(done, 250)); }
-  throw new Error(`${project.id} 启动未完成，请查看 ${join(project.dir, '.runtime', 'server.log')}`);
+  throw new Error(`${project.id} did not finish starting; see ${join(project.dir, '.runtime', 'server.log')}`);
 }
 function open() { if (process.argv.includes('--open') && process.platform === 'darwin') spawn('open', [url(projects[0])], { stdio: 'ignore' }).unref(); }
 
 if (mode === 'stop') {
   for (const project of projects) {
     const data = await health(project);
-    if (!data) { console.log(`${project.id} 未运行`); continue; }
-    process.kill(data.pid, 'SIGTERM'); console.log(`${project.id} 已停止`);
+    if (!data) { console.log(`${project.id} is not running`); continue; }
+    process.kill(data.pid, 'SIGTERM'); console.log(`${project.id} stopped`);
   }
 } else if (mode === 'start') {
   for (const project of projects) {
-    if (await health(project)) { console.log(`${project.id} 已在运行：${url(project)}`); continue; }
+    if (await health(project)) { console.log(`${project.id} is already running: ${url(project)}`); continue; }
     prepare(project);
     mkdirSync(join(project.dir, '.runtime'), { recursive: true });
     const log = openSync(join(project.dir, '.runtime', 'server.log'), 'a');
@@ -43,7 +43,7 @@ if (mode === 'stop') {
   }
   open();
 } else if (mode === 'dev') {
-  for (const project of projects) if (await health(project)) throw new Error(`${project.id} 已在运行，请先执行 node scripts/demo.mjs stop`);
+  for (const project of projects) if (await health(project)) throw new Error(`${project.id} is already running; run node scripts/demo.mjs stop first`);
   projects.forEach(prepare);
   const children = projects.map(project => server(project, 'inherit'));
   let stopping = false;
@@ -54,5 +54,5 @@ if (mode === 'stop') {
   for (const project of projects) console.log(`${project.id}: ${url(project)}`);
   open();
 } else {
-  console.error('用法：node scripts/demo.mjs [dev|start|stop] [--open]'); process.exit(2);
+  console.error('Usage: node scripts/demo.mjs [dev|start|stop] [--open]'); process.exit(2);
 }

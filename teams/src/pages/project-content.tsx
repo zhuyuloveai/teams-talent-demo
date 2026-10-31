@@ -45,7 +45,7 @@ export function RequirementMaterials() {
   const t = useT();
   const [adding, setAdding] = useState(false);
   const [form] = Form.useForm();
-  return <><div className="project-material-list"><div className="project-material"><FileTextOutlined /><div><strong>白金卡消费返现需求</strong><small>{t('pc.materialSource')}</small></div><Button size="small" onClick={() => showEvidence('E1')}>{t('pc.view')}</Button></div>
+  return <><div className="project-material-list"><div className="project-material"><FileTextOutlined /><div><strong>Platinum card spending cashback requirement</strong><small>{t('pc.materialSource')}</small></div><Button size="small" onClick={() => showEvidence('E1')}>{t('pc.view')}</Button></div>
     {state.workspace.materials.map(material => <div className="project-material" key={material.id}><FileTextOutlined /><div><strong>{material.title}</strong><small>{t('pc.memberSupplement')}</small></div><Button size="small" onClick={() => showText(material.title, material.body)}>{t('pc.view')}</Button></div>)}</div>
     {role === 'member' && <Button className="project-material-add" icon={<PlusOutlined />} disabled={!!state.context} onClick={() => setAdding(true)}>{t('pc.addMaterial')}</Button>}
     {state.context && <p className="muted">{t('pc.contextFrozen')}</p>}
@@ -63,7 +63,7 @@ export function ProjectManagement() { return <ProjectTaskManagement projectId="c
 export function ProjectRelease() {
   const { state, navigate } = useDemo();
   const t = useT();
-  return <div className="page-stack"><FrameworkCard title="信用卡营销 · v0.1" action={<Tag color={state.stage === 'accepted' ? 'green' : 'gold'}>{state.stage === 'accepted' ? t('pc.release.confirmed') : t('pc.release.preparing')}</Tag>}><Descriptions column={1} items={[{ key: 'scope', label: t('pc.release.scope'), children: '信用卡消费返现 · MKT-001' }, { key: 'result', label: t('pc.release.status'), children: t(stageKeys[state.stage]) }, { key: 'safety', label: t('pc.release.safety'), children: <Tag color="gold">{t('pc.release.toVerify')}</Tag> }, { key: 'release', label: t('pc.release.facts'), children: t('pc.release.noDeploy') }]} /><p>{t('pc.release.note')}</p><Space wrap><Button type="primary" onClick={() => navigate('projects?tab=delivery&node=accept')}>{t('pc.release.viewDelivery')}</Button><Button onClick={() => navigate('trace')}>{t('pc.release.viewTrace')}</Button></Space></FrameworkCard></div>;
+  return <div className="page-stack"><FrameworkCard title="Credit Card Marketing · v0.1" action={<Tag color={state.stage === 'accepted' ? 'green' : 'gold'}>{state.stage === 'accepted' ? t('pc.release.confirmed') : t('pc.release.preparing')}</Tag>}><Descriptions column={1} items={[{ key: 'scope', label: t('pc.release.scope'), children: 'Credit Card Spending Cashback · MKT-001' }, { key: 'result', label: t('pc.release.status'), children: t(stageKeys[state.stage]) }, { key: 'safety', label: t('pc.release.safety'), children: <Tag color="gold">{t('pc.release.toVerify')}</Tag> }, { key: 'release', label: t('pc.release.facts'), children: t('pc.release.noDeploy') }]} /><p>{t('pc.release.note')}</p><Space wrap><Button type="primary" onClick={() => navigate('projects?tab=delivery&node=accept')}>{t('pc.release.viewDelivery')}</Button><Button onClick={() => navigate('trace')}>{t('pc.release.viewTrace')}</Button></Space></FrameworkCard></div>;
 }
 
 export function ProjectSettings() {

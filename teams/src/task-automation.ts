@@ -53,7 +53,7 @@ export function mutableTaskAutomation(state: DemoState, scope: TaskScope) {
 }
 /** Current preparation identity; execution status and adopted evidence are deliberately excluded. */
 export function taskPreparationBasis(state:DemoState,scope:TaskScope){
- const task=deliveryRequirement(state,scope.projectId,scope.taskId);if(!task)throw new DomainError('交付需求不存在',404);
+ const task=deliveryRequirement(state,scope.projectId,scope.taskId);if(!task)throw new DomainError('Delivery requirement not found',404);
  return JSON.stringify({projectId:task.projectId,taskId:task.id,title:task.title,description:task.description,assigneeId:task.assigneeId,skillIds:task.skillIds,createdAt:task.createdAt});
 }
 /** Called only by an explicit create/assign transaction; never infers work for historical tasks. */
@@ -68,7 +68,7 @@ export function queueTaskPreparation(state:DemoState,scope:TaskScope,at:string){
 }
 function waitingNodeKnowledge(node:'develop'|'verify',at:string):KnowledgeImport{return{id:crypto.randomUUID(),nodeId:node,delayMs:20000,status:'waiting-upstream',attempts:0,startedAt:at,finishedAt:null};}
 export function nodeKnowledgeUpstream(state:DemoState,scope:TaskScope,node:'develop'|'verify'){
- const task=deliveryRequirement(state,scope.projectId,scope.taskId);if(!task)throw new DomainError('需求不存在',404);
+ const task=deliveryRequirement(state,scope.projectId,scope.taskId);if(!task)throw new DomainError('Requirement not found',404);
  const kinds=node==='develop'?['prd']:['prd','software-design','code-change','unit-test-result'];
  return latestTaskArtifacts(state,task).filter(item=>kinds.includes(item.artifact??''));
 }
@@ -97,14 +97,14 @@ export function queueNextNodeKnowledge(state:DemoState,scope:TaskScope,completed
    resultEventIds:(state.workspace.collaboration?.events??[]).filter(item=>matches(item)&&item.phase==='result').map(item=>item.id),
    adoptionIds:(state.workspace.collaboration?.adoptions??[]).filter(matches).map(item=>item.id)});
   if(task.nodeInputSnapshots)delete task.nodeInputSnapshots.verify;
-  task.nodes.verify={status:'pending',updatedAt:at,summary:'新的开发成果已提交，等待获取本轮验证输入并重新采用'};
+  task.nodes.verify={status:'pending',updatedAt:at,summary:'A new development result was submitted; waiting to get and re-adopt the verification inputs for this round'};
   task.verificationCheckIds=[];
  }
  // A new identity fences off every in-flight import of the previous upstream.
  record.nodeKnowledge??={};record.nodeKnowledge[node]={id,nodeId:node,delayMs:20000,queuedAt:at,basisKey,upstream:structuredClone(upstream),status:'queued',attempts:0,startedAt:at,finishedAt:null};
 }
 export function requireWritableTask(scope: TaskScope,state?:DemoState) {
-  if (!sameTask(scope, mainTask) && !(state&&deliveryRequirement(state,scope.projectId,scope.taskId))) throw new DomainError('所选任务不支持写入自动步骤；导入项目记录保持只读', 403);
+  if (!sameTask(scope, mainTask) && !(state&&deliveryRequirement(state,scope.projectId,scope.taskId))) throw new DomainError('The selected task does not support writing automatic steps; imported project records stay read-only', 403);
 }
 export function canLinkTaskSession(state: DemoState, role: Role, scope: TaskScope, nodeId: string) {
   if (!['develop', 'verify'].includes(nodeId)) return false;
@@ -116,10 +116,10 @@ export function linkTaskSession(state: DemoState, role: Role, input: Record<stri
   const scope = { projectId: String(input.projectId ?? ''), taskId: String(input.taskId ?? '') }; requireWritableTask(scope,state);
   const live=deliveryRequirement(state,scope.projectId,scope.taskId);
   if(live)requireDeliveryMember(state,live,role);else requireCurrentTaskMember(state);
-  if (!live && role !== 'member') throw new DomainError('仅当前交付人可以关联工作会话', 403);
-  if (live ? !live.preparedAt || ['awaiting-acceptance','accepted'].includes(live.stage) : !state.assigned || !state.context || ['submitted', 'accepted'].includes(state.stage)) throw new DomainError('请在需求上下文冻结后、交付提交前关联开发或验证会话');
-  if (!['develop', 'verify'].includes(String(input.nodeId))) throw new DomainError('会话应关联到开发或验证节点');
-  if (!['icode', 'opencode'].includes(String(input.tool)) || typeof input.sessionId !== 'string' || !input.sessionId.trim() || input.sessionId.length > 200 || /[\x00-\x1f]/.test(input.sessionId)) throw new DomainError('工具或会话标识无效');
+  if (!live && role !== 'member') throw new DomainError('Only the current assignee can link a work session', 403);
+  if (live ? !live.preparedAt || ['awaiting-acceptance','accepted'].includes(live.stage) : !state.assigned || !state.context || ['submitted', 'accepted'].includes(state.stage)) throw new DomainError('Link development or verification sessions after the requirement context is frozen and before the delivery is submitted');
+  if (!['develop', 'verify'].includes(String(input.nodeId))) throw new DomainError('Sessions must be linked to the development or verification node');
+  if (!['icode', 'opencode'].includes(String(input.tool)) || typeof input.sessionId !== 'string' || !input.sessionId.trim() || input.sessionId.length > 200 || /[\x00-\x1f]/.test(input.sessionId)) throw new DomainError('Invalid tool or session ID');
   const record = mutableTaskAutomation(state, scope), sessionId = input.sessionId.trim();
   if (!record.sessions.some(item => item.tool === input.tool && item.sessionId === sessionId && item.nodeId === input.nodeId)) record.sessions.push({ ...scope, tool: input.tool as TaskSessionLink['tool'], sessionId, nodeId: String(input.nodeId), source: 'manual', at });
 }
@@ -136,8 +136,8 @@ export function collectTaskSessions(state: DemoState, scope: TaskScope): Collect
     if (!entry.sources.includes(source)) entry.sources.push(source);
     if (at < entry.firstAt) entry.firstAt = at; if (at > entry.lastAt) entry.lastAt = at;
   };
-  for (const link of taskAutomation(state, scope)?.sessions ?? []) if (sameTask(link, scope)) add(link.tool, link.sessionId, link.nodeId, link.at, '成员关联');
-  for (const event of state.workspace.collaboration?.events ?? []) if (event.taskId && sameTask({ projectId: event.projectId, taskId: event.taskId }, scope)) add('icode', event.sessionId, event.nodeId, event.at, 'Teams CLI 回传', event.runId);
+  for (const link of taskAutomation(state, scope)?.sessions ?? []) if (sameTask(link, scope)) add(link.tool, link.sessionId, link.nodeId, link.at, 'Linked by member');
+  for (const event of state.workspace.collaboration?.events ?? []) if (event.taskId && sameTask({ projectId: event.projectId, taskId: event.taskId }, scope)) add('icode', event.sessionId, event.nodeId, event.at, 'Teams CLI submission', event.runId);
   return [...entries.values()].sort((a,b) => a.tool.localeCompare(b.tool) || a.sessionId.localeCompare(b.sessionId));
 }
 export function queueTaskCollection(state: DemoState, scope = mainTask, at = new Date().toISOString()) {
@@ -146,9 +146,9 @@ export function queueTaskCollection(state: DemoState, scope = mainTask, at = new
 }
 export function finishTaskCollection(state: DemoState, scope: TaskScope, sessions: CollectedSession[], at: string) {
   const record = taskAutomation(state, scope)?.collection;
-  if ((deliveryRequirement(state,scope.projectId,scope.taskId)?.stage ?? state.stage) !== 'accepted' || !record) throw new DomainError('验收尚未通过或没有归集任务');
+  if ((deliveryRequirement(state,scope.projectId,scope.taskId)?.stage ?? state.stage) !== 'accepted' || !record) throw new DomainError('Acceptance has not passed or there is no collection task');
   record.sessions = sessions; record.status = sessions.length ? 'collected' : 'empty'; record.finishedAt = at;
-  record.reporting = { status: 'pending', reason: sessions.length ? '会话已归集，尚未写入共享目录。' : '尚无关联会话，未共享至 Talents。' };
+  record.reporting = { status: 'pending', reason: sessions.length ? 'Sessions collected; not yet written to the shared directory.' : 'No linked sessions; nothing shared to Talents.' };
   // Local collection is not an upload receipt; historical reporting fields are left unchanged.
 }
 export function validateTaskAutomation(state: DemoState) {
@@ -167,11 +167,11 @@ export function validateTaskAutomation(state: DemoState) {
       ||round.adoptedInputs&&(round.adoptedInputs.projectId!==record.projectId||round.adoptedInputs.taskId!==record.taskId||round.adoptedInputs.nodeId!=='verify'||!Array.isArray(round.adoptedInputs.skills)||!Array.isArray(round.adoptedInputs.knowledge?.assets))))
     || record.preparation && (!record.preparation.id || !record.preparation.basisKey || typeof record.preparation.assigneeId!=='string' || !['queued','importing','preparing-session','ready','waiting-directory','failed'].includes(record.preparation.status) || !Number.isSafeInteger(record.preparation.attempts) || !Array.isArray(record.preparation.progress) || record.preparation.status==='ready'&&!record.preparation.session)
     || record.collection && (!record.collection.id || !Number.isSafeInteger(record.collection.attempts) || !['queued','running','collected','empty','failed'].includes(record.collection.status) || !Array.isArray(record.collection.sessions))
-  )) throw new Error('任务自动步骤记录无效；未自动覆盖');
+  )) throw new Error('Invalid task automatic step records; not overwritten automatically');
 }
 
 /** Node work status is projected from the persisted, task-scoped CLI receipts, independently of acceptance. */
 export function taskNodeWorkStatus(state: DemoState, scope: TaskScope, nodeId: string) {
  const latest=(state.workspace.collaboration?.events ?? []).filter(event=>event.projectId===scope.projectId && event.taskId===scope.taskId && event.nodeId===nodeId).sort((a,b)=>b.revision-a.revision)[0];
- return latest ? ({started:'进行中',progress:'进行中',blocked:'阻塞',result:'成果待确认'}[latest.phase]) : null;
+ return latest ? ({started:'In progress',progress:'In progress',blocked:'Blocked',result:'Result awaiting confirmation'}[latest.phase]) : null;
 }

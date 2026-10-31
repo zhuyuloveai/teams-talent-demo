@@ -72,5 +72,5 @@ export async function runProjectTask(manifestPath) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try { const result = await runProjectTask(process.argv[2]); process.exitCode = result.status === 'completed' ? 0 : result.nativeExitCode || 1; }
-  catch (error) { console.error(JSON.stringify({ ok: false, error: error.message })); try{const manifest=JSON.parse(await readFile(process.argv[2],'utf8')),output=dirname(await realpath(process.argv[2]));await atomicJson(join(output,'launch-error.json'),{runId:manifest.runId,...manifest.scope,error:error.message,nativeLaunchState:error.nativeLaunchState,at:new Date().toISOString()});}catch(recordError){console.error('无法保存启动失败记录：'+recordError.message);} process.exitCode = 1; }
+  catch (error) { console.error(JSON.stringify({ ok: false, error: error.message })); try{const manifest=JSON.parse(await readFile(process.argv[2],'utf8')),output=dirname(await realpath(process.argv[2]));await atomicJson(join(output,'launch-error.json'),{runId:manifest.runId,...manifest.scope,error:error.message,nativeLaunchState:error.nativeLaunchState,at:new Date().toISOString()});}catch(recordError){console.error('Could not save the launch failure record: '+recordError.message);} process.exitCode = 1; }
 }

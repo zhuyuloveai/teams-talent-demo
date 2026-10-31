@@ -98,17 +98,17 @@ function usable(path: string, platform: NodeJS.Platform, notes: string[]) {
   let info: ReturnType<typeof inspect>;
   try { info = inspect(path); }
   catch (error) {
-    notes.push(`无法检查候选路径 ${path}：${(error as Error).message}`);
+    notes.push(`Cannot check candidate path ${path}: ${(error as Error).message}`);
     return false;
   }
   if (!info.exists) return false;
   if (!info.file) {
-    notes.push(`候选路径不是文件：${path}`);
+    notes.push(`Candidate path is not a file: ${path}`);
     return false;
   }
   const uid = platform === 'win32' ? undefined : process.getuid?.();
   if (uid !== undefined && info.uid !== undefined && info.uid !== uid) {
-    notes.push(`候选文件属于另一个系统用户：${path}`);
+    notes.push(`Candidate file belongs to another system user: ${path}`);
     return false;
   }
   return true;
@@ -141,7 +141,7 @@ function uvEntrypoints(options: PlatformPathOptions, notes: string[] = []): Pack
     try { tools = readdirSync(root); }
     catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
-      if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`无法读取 uv tool 目录 ${root}：${(error as Error).message}`);
+      if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`Cannot read uv tool directory ${root}: ${(error as Error).message}`);
       continue;
     }
     for (const tool of tools.sort()) {
@@ -150,7 +150,7 @@ function uvEntrypoints(options: PlatformPathOptions, notes: string[] = []): Pack
       try { text = readFileSync(join(toolDir, 'uv-receipt.toml'), 'utf8'); }
       catch (error) {
         const code = (error as NodeJS.ErrnoException).code;
-        if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`无法读取 uv 安装回执 ${join(toolDir, 'uv-receipt.toml')}：${(error as Error).message}`);
+        if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`Cannot read uv install receipt ${join(toolDir, 'uv-receipt.toml')}: ${(error as Error).message}`);
         continue;
       }
       for (const object of text.matchAll(/\{[^}]*\}/g)) {
@@ -174,7 +174,7 @@ function pipxVenvs(options: PlatformPathOptions, notes: string[] = []): string[]
   try { return readdirSync(venvs).sort().map(name => join(venvs, name)); }
   catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
-    if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`无法读取 pipx 虚拟环境目录 ${venvs}：${(error as Error).message}`);
+    if (code !== 'ENOENT' && code !== 'ENOTDIR') notes.push(`Cannot read pipx virtual environment directory ${venvs}: ${(error as Error).message}`);
     return [];
   }
 }
@@ -249,21 +249,21 @@ function collectCandidates(options: PlatformPathOptions & { materialRoot?: strin
 
   const override = env.DEMO_ICODE_BINARY?.trim();
   if (override) {
-    if (!isAbsolute(override)) notes.push('DEMO_ICODE_BINARY 不是绝对路径，已按当前工作目录解析');
+    if (!isAbsolute(override)) notes.push('DEMO_ICODE_BINARY is not an absolute path; resolved against the current working directory');
     const path = resolve(override);
     if (usable(path, platform, notes)) candidates.push({ path, source: 'override' });
-    else notes.push(`显式配置的 iCode 不存在或不可用：${path}`);
+    else notes.push(`The explicitly configured iCode does not exist or is unusable: ${path}`);
     return { candidates, notes, override: { path } };
   }
 
   const official = officialICodePaths({ platform, env, home });
   for (const candidate of official) add(candidate, 'official');
-  if (!candidates.length) notes.push(`官方安装位置未找到可用的 iCode：${official.join(' 与 ')}`);
+  if (!candidates.length) notes.push(`No usable iCode found in the official install locations: ${official.join(' and ')}`);
   for (const entry of uvEntrypoints({ platform, env, home }, notes)) {
     if (!add(entry.install, 'uv')) {
       let present = false;
       try { present = inspect(entry.install).exists; } catch { present = false; }
-      if (!present) notes.push(`uv 安装回执指向的 iCode 不存在：${entry.install}`);
+      if (!present) notes.push(`The iCode referenced by the uv install receipt does not exist: ${entry.install}`);
     }
   }
   for (const candidate of pipxLaunchers({ platform, env, home }, notes)) add(candidate, 'pipx');
@@ -271,7 +271,7 @@ function collectCandidates(options: PlatformPathOptions & { materialRoot?: strin
   if (options.materialRoot) {
     const bundled = join(options.materialRoot, 'runtime', 'icode-0.31.0', platform === 'win32' ? 'icode.exe' : 'icode');
     if (usable(bundled, platform, notes)) {
-      notes.push('使用仓库内开发包路径；该路径不是普通用户的安装位置');
+      notes.push('Using the in-repository development package path; this is not a normal user install location');
       add(bundled, 'bundled');
     }
   }
@@ -325,10 +325,10 @@ export async function selectICodeBinary(options: SelectICodeOptions = {}): Promi
   }
 
   if (collected.override && !collected.candidates.length) {
-    return { path: collected.override.path, source: 'override', status: 'override-missing', reason: `显式配置的 iCode 不存在或不是文件：${collected.override.path}`, notes: collected.notes };
+    return { path: collected.override.path, source: 'override', status: 'override-missing', reason: `The explicitly configured iCode does not exist or is not a file: ${collected.override.path}`, notes: collected.notes };
   }
   if (!collected.candidates.length) {
-    return { source: 'missing', status: 'none', reason: `未找到可用的 iCode：${officialICodePaths(options)[0]}`, notes: collected.notes };
+    return { source: 'missing', status: 'none', reason: `No usable iCode found: ${officialICodePaths(options)[0]}`, notes: collected.notes };
   }
 
   const failures: string[] = [];
@@ -336,7 +336,7 @@ export async function selectICodeBinary(options: SelectICodeOptions = {}): Promi
     try {
       const raw = (await probe(candidate.path)).trim();
       const version = raw.match(/\b(\d+\.\d+\.\d+)\b/)?.[1];
-      if (!version) throw new Error(raw ? `版本输出无法识别：${raw.slice(0, 80)}` : '版本输出为空');
+      if (!version) throw new Error(raw ? `Unrecognized version output: ${raw.slice(0, 80)}` : 'Empty version output');
       const value: ICodeBinarySelection = { path: candidate.path, source: candidate.source, version, status: 'ready', notes: [...collected.notes, ...failures] };
       if (!options.probe) {
         const identity = fileIdentity(candidate.path);
@@ -344,7 +344,7 @@ export async function selectICodeBinary(options: SelectICodeOptions = {}): Promi
       }
       return value;
     } catch (error) {
-      failures.push(`候选 iCode 版本探测失败：${candidate.path}：${(error as Error).message}`);
+      failures.push(`Version probe failed for candidate iCode: ${candidate.path}: ${(error as Error).message}`);
     }
   }
   const first = collected.candidates[0]!;

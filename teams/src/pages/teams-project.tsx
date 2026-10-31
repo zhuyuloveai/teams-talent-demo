@@ -26,7 +26,7 @@ import { ProjectWorkLaunch } from '../components/project-work-launch.js';
 import '../teams-project.css';
 
 /** The imported snapshot's own team name is source data, so it stays untranslated. */
-const sourceTeamName = 'Teams 开发团队';
+const sourceTeamName = 'Teams Development Team';
 function SourceTag() { const t = useT(); return <Tag color="blue">{t('tp.sourceTag')}</Tag>; }
 const teamRoute = (tab:string, extra:Record<string,string>={}) => 'projects?'+new URLSearchParams({project:'teams',tab,...extra}).toString();
 const memberName = (id:string) => id==='U' ? currentT('tp.unassigned') : currentT('tp.member', { id });

@@ -1,4 +1,4 @@
-// 构建收尾：把手写的类型声明拷贝为包入口 dist/trace-monitor-vue.d.ts
+// Build finish step: copy the hand-written type declarations to the package entry dist/trace-monitor-vue.d.ts
 import { copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 

@@ -1,12 +1,12 @@
-// 项目状态管理（Pinia）：紧凑工具条单选过滤
-// ★ 项目 ID 由集成方/上报方自带，前端不再管理项目元数据，
-//   仅在 localStorage 记录最近使用的项目 ID 历史（key: "tm_recent_projects"）
+// Project state (Pinia): single-select filter in the compact toolbar
+// ★ Project IDs come from the integrator/reporter; the frontend no longer manages project metadata
+//   and only keeps a history of recently used project IDs in localStorage (key: "tm_recent_projects")
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
 const STORAGE_KEY = "tm_recent_projects";
 const MAX_HISTORY = 8;
-// iCode 实时采集默认写入的项目 id（见 start-icode-trace2.bat 的 TRACE2_PROJECT）
+// Default project id written by iCode live collection (see TRACE2_PROJECT in start-icode-trace2.bat)
 const DEFAULT_PROJECT = "icode";
 
 function readHistory(): { id: string; name: string }[] {
@@ -23,25 +23,25 @@ function writeHistory(list: { id: string; name: string }[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
   } catch {
-    /* 写入失败不影响主流程 */
+    /* A failed write does not affect the main flow */
   }
 }
 
 export const useProjectStore = defineStore("project", () => {
-  // 最近使用的项目 ID 历史（name 即项目 ID 本身，仅为兼容结构保留）
+  // History of recently used project IDs (name is the project ID itself, kept only for structural compatibility)
   const projects = ref<{ id: string; name: string }[]>([]);
-  // 当前选中的项目 id；初始取历史最近一条，无历史时回落到 iCode 采集项目
+  // Currently selected project id; starts with the most recent history entry, or the iCode collection project when there is no history
   const selected = ref<string>(readHistory()[0]?.id ?? DEFAULT_PROJECT);
 
-  /** 当前生效的项目 id */
+  /** The project id currently in effect */
   const projectId = () => selected.value;
 
-  /** 从 localStorage 读取最近使用历史（不再请求后端） */
+  /** Read recent history from localStorage (no backend request) */
   function load() {
     projects.value = readHistory();
   }
 
-  /** 工具条下拉单选统一入口：记录到历史头部（去重、最多保留 8 条） */
+  /** Single entry point for the toolbar select: puts the id at the head of the history (deduplicated, at most 8 entries) */
   function applySelection(v: string) {
     selected.value = v;
     if (!v) return;

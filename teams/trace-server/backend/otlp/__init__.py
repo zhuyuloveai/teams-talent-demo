@@ -1,12 +1,12 @@
-"""OTLP 端点接收：把标准 OTLP/HTTP 上报转换成 trace2 内部事件。
+"""OTLP endpoint ingestion: converts standard OTLP/HTTP reports into trace2 internal events.
 
-模块划分：
-- `decode`  —— 请求体解码（protobuf / JSON）与 ID 归一
-- `semconv` —— OTel 语义约定常量 + span_type 推断
-- `mapper`  —— resourceSpans → 内部事件 dict
-- `sinks`   —— 事件落地通道（kafka / redis / file / none）
+Modules:
+- `decode`  -- request body decoding (protobuf / JSON) and ID normalization
+- `semconv` -- OTel semantic convention constants + span_type inference
+- `mapper`  -- resourceSpans -> internal event dict
+- `sinks`   -- event sinks (kafka / redis / file / none)
 
-设计文档：docs/OTLP端点接收实现方案.md
+Design doc: the OTLP endpoint ingestion design (not included in this repo)
 """
 from __future__ import annotations
 

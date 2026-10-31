@@ -9,6 +9,6 @@ const result = spawnSync(process.execPath, ['--import', 'tsx', join(teams, 'scri
   cwd: teams,
   stdio: 'inherit',
 });
-if (result.error) console.error('无法运行任务重置：' + result.error.message);
-else if (result.signal) console.error('任务重置已中断：' + result.signal);
+if (result.error) console.error('Could not run the task reset: ' + result.error.message);
+else if (result.signal) console.error('Task reset was interrupted: ' + result.signal);
 process.exitCode = result.status ?? 1;

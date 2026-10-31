@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// Trace 详情组件：左侧调用树 + 右侧详情面板
-// 以 props.traceId 驱动，不依赖路由，集成方自行控制数据获取时机
-// ★ 组件不内置取数实现：详情 / 调用树 / LLM 请求 / 节点详情四个数据源均由集成方以
-//   fetchDetail / fetchTree / fetchLlmRequests / fetchSpanDetail 回调注入（可复用组件库导出的取数函数）
+// Trace detail component: call tree on the left + detail panel on the right
+// Driven by props.traceId with no router dependency; the integrator controls when data is fetched
+// ★ The component has no built-in fetching: the detail / call tree / LLM request / node detail data sources are all injected by the integrator as
+//   fetchDetail / fetchTree / fetchLlmRequests / fetchSpanDetail callbacks (the library's exported fetch functions can be reused)
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { ElMessage } from "element-plus";
@@ -22,22 +22,22 @@ import DetailPanel from "@/components/DetailPanel.vue";
 
 const props = withDefaults(
   defineProps<{
-    /** Trace ID，变化时自动重新加载 */
+    /** Trace ID; reloads automatically when it changes */
     traceId: string;
-    /** 行级项目 id（贯穿详情/调用树/LLM 请求，必须为具体项目 id） */
+    /** Row-level project id (used for detail / call tree / LLM requests; must be a concrete project id) */
     projectId: string;
-    /** 可选：session id，file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速 */
+    /** Optional: session id; the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster */
     sessionId?: string | null;
-    /** 必传：详情数据源回调（根 Trace 摘要 + spans + observations） */
+    /** Required: detail data-source callback (root Trace summary + spans + observations) */
     fetchDetail: FetchTraceDetail;
-    /** 必传：调用树数据源回调（按父子关系组装的树） */
+    /** Required: call tree data-source callback (tree assembled from parent/child relations) */
     fetchTree: FetchTraceTree;
-    /** 必传：真实 LLM 请求数据源回调（点击 llm 节点时懒加载） */
+    /** Required: real LLM request data-source callback (lazy-loaded when an llm node is clicked) */
     fetchLlmRequests: FetchLlmRequests;
-    /** 可选：节点详情数据源回调（点击节点时懒加载）；缺省时回退本地 spans 查找。
-     *  file 模式后端不实现该接口，集成方请勿注入（详见按存储模式 gating） */
+    /** Optional: node detail data-source callback (lazy-loaded when a node is clicked); falls back to the local spans when omitted.
+     *  The file-mode backend does not implement this API, so integrators must not inject it (see the storage-mode gating) */
     fetchSpanDetail?: FetchSpanDetail;
-    /** 数据加载完成后的回调，集成方可借此获取摘要信息 */
+    /** Callback after data has loaded; integrators can use it to get the summary */
     onLoaded?: (detail: { trace: Trace }) => void;
   }>(),
   {},
@@ -61,7 +61,7 @@ async function load() {
     detail.value = d;
     props.onLoaded?.({ trace: t.trace });
   } catch {
-    ElMessage.error("加载详情失败，请确认 API 可用");
+    ElMessage.error("Failed to load the detail. Check that the API is available.");
   } finally {
     loading.value = false;
   }
@@ -97,27 +97,27 @@ function fmtTime(v?: string) {
           <el-descriptions-item label="Agent">
             {{ trace?.agentName || "—" }}
           </el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item label="Status">
             <span :class="`tm-status ${trace?.status === 'success' ? 'success' : 'error'}`">
-              {{ trace?.status === "success" ? "成功" : "失败" }}
+              {{ trace?.status === "success" ? "Success" : "Failed" }}
             </span>
           </el-descriptions-item>
-          <el-descriptions-item label="耗时">
+          <el-descriptions-item label="Duration">
             {{ trace?.durationMs != null ? `${trace?.durationMs}ms` : "—" }}
           </el-descriptions-item>
           <el-descriptions-item label="Token">
             {{ trace?.totalTokens ?? "—" }}
           </el-descriptions-item>
-          <el-descriptions-item label="ReAct 步数">
+          <el-descriptions-item label="ReAct steps">
             {{ trace?.reactStepCount ?? "—" }}
           </el-descriptions-item>
-          <el-descriptions-item label="工具数">
+          <el-descriptions-item label="Tools">
             {{ trace?.toolCount ?? "—" }}
           </el-descriptions-item>
-          <el-descriptions-item label="环节数">
+          <el-descriptions-item label="Spans">
             {{ trace?.spanCount ?? "—" }}
           </el-descriptions-item>
-          <el-descriptions-item label="时间" :span="2">
+          <el-descriptions-item label="Time" :span="2">
             {{ fmtTime(trace?.startedAt) }}
           </el-descriptions-item>
         </el-descriptions>

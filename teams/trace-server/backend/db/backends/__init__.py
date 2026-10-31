@@ -1,4 +1,4 @@
-"""存储后端包：统一数据访问接口，按配置选择 database / file 后端。"""
+"""Storage backend package: a unified data access interface; database / file backend chosen by config."""
 from __future__ import annotations
 
 from config import STORAGE_BACKEND
@@ -9,16 +9,16 @@ from .file_backend import FileBackend
 
 
 def create_storage_backend(*args, **kwargs) -> StorageBackend:
-    """按 STORAGE_BACKEND 配置创建后端实例。
+    """Create the backend instance according to STORAGE_BACKEND.
 
-    - database：需要 AsyncSession（由路由依赖注入传入）
-    - file    ：无需连接，直接读 DATA_FILE 目录
+    - database: needs an AsyncSession (passed in by route dependency injection)
+    - file    : no connection needed; reads the DATA_FILE directory directly
     """
     if STORAGE_BACKEND == "database":
         return DatabaseBackend(*args, **kwargs)
     if STORAGE_BACKEND == "file":
         return FileBackend()
-    raise RuntimeError(f"未知存储后端: {STORAGE_BACKEND!r}")
+    raise RuntimeError(f"Unknown storage backend: {STORAGE_BACKEND!r}")
 
 
 __all__ = [

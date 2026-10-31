@@ -18,7 +18,7 @@ if (missing.length) {
     await writeFile(join(service.runtimeDir, 'server.pid'), String(child.pid), { mode: 0o600 });
     let ready = false;
     for (let n = 0; n < 60; n++) { await new Promise(resolve => setTimeout(resolve, 250)); if (await serviceHealth(service)) { ready = true; break; } }
-    if (!ready) throw new Error(service.id + ' 启动未完成，请查看 ' + join(service.runtimeDir, 'server.log'));
+    if (!ready) throw new Error(service.id + ' did not finish starting; see ' + join(service.runtimeDir, 'server.log'));
   }
 }
 for (const service of selected) console.log(service.id + ': ' + service.origin + '/' + service.id);

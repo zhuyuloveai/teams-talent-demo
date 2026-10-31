@@ -1,6 +1,6 @@
-// 组件库构建配置：以 lib 模式打包 src/lib.ts（仅 JS/CSS）
-// 类型声明由 scripts/build-types.mjs 手写生成（见 dist/trace-monitor-vue.d.ts），
-// 避免 vite-plugin-dts / api-extractor 在不同 TS 版本下的解析缺陷。
+// Component library build config: bundles src/lib.ts in lib mode (JS/CSS only)
+// Type declarations are hand-written and produced by scripts/build-types.mjs (see dist/trace-monitor-vue.d.ts),
+// to avoid vite-plugin-dts / api-extractor parsing bugs across TS versions.
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
@@ -21,7 +21,7 @@ export default defineConfig({
       fileName: "trace-monitor-vue",
     },
     rollupOptions: {
-      // 外部化 Vue 与 Element Plus、vue-router 等，避免重复打包，交由宿主应用提供
+      // Externalize Vue, Element Plus, vue-router, etc. to avoid bundling them twice; the host app provides them
       external: ["vue", "vue-router", "element-plus", "pinia", "axios", "dayjs"],
       output: {
         exports: "named",

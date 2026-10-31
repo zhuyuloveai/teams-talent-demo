@@ -15,11 +15,11 @@ export const talentOrigin = 'http://127.0.0.1:' + talentPort;
 export const sharedDir = resolve(process.env.DEMO_SHARED_DIR ?? join(root, '..', 'shared', 'data'));
 /** Committed copies of the shared files, read when the other project has not written its own yet. */
 export const sharedSeedDir = resolve(process.env.DEMO_SHARED_SEED_DIR ?? join(root, '..', 'shared', 'seed'));
-// 开发会话轨迹：demo 内嵌的 trace_server（Python/uvicorn，file 存储）
+// Development session trajectories: the trace_server bundled with the demo (Python/uvicorn, file storage)
 export const traceServerRoot = join(root, 'trace-server');
 export const tracePort = Number(process.env.DEMO_TRACE_PORT ?? 8013);
 export const traceOrigin = 'http://127.0.0.1:' + tracePort;
-// 默认落在 trace-server/trace_data：查询端与 OTLP 接收端读写同一目录
+// Defaults to trace-server/trace_data: the query side and the OTLP receiver read and write the same directory
 export const traceDataDir = resolve(process.env.DEMO_TRACE_DATA_DIR ?? join(traceServerRoot, 'trace_data'));
-if (!Number.isSafeInteger(port) || !Number.isSafeInteger(talentPort) || port < 1024 || port > 65535 || talentPort < 1024 || talentPort > 65535) throw new Error('Teams / Talents 需要有效的本机端口');
-if (port === talentPort) throw new Error('Teams / Talents 必须使用不同端口');
+if (!Number.isSafeInteger(port) || !Number.isSafeInteger(talentPort) || port < 1024 || port > 65535 || talentPort < 1024 || talentPort > 65535) throw new Error('Teams / Talents need valid local ports');
+if (port === talentPort) throw new Error('Teams / Talents must use different ports');

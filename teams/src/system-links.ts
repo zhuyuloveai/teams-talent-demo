@@ -4,13 +4,13 @@ export interface SystemRuntime { app: 'teams'; teamsOrigin: string; talentOrigin
 export interface SystemLinkContext { projectId?: string; requirementId?: string; taskId?: string; role?: Role }
 export function systemRuntime(): SystemRuntime {
   const element = document.getElementById('demo-system-runtime');
-  if (!element?.textContent) throw new Error('缺少系统地址配置，请通过应用服务打开页面');
+  if (!element?.textContent) throw new Error('System address configuration is missing; open the page through the app service');
   const value = JSON.parse(element.textContent) as SystemRuntime;
   for (const origin of [value.teamsOrigin, value.talentOrigin]) {
     const url = new URL(origin);
-    if (url.hostname !== '127.0.0.1' || url.protocol !== 'http:' || url.origin !== origin) throw new Error('系统地址无效');
+    if (url.hostname !== '127.0.0.1' || url.protocol !== 'http:' || url.origin !== origin) throw new Error('Invalid system address');
   }
-  if (value.app !== 'teams' || value.teamsOrigin === value.talentOrigin) throw new Error('Teams 与 Talents 必须使用独立地址');
+  if (value.app !== 'teams' || value.teamsOrigin === value.talentOrigin) throw new Error('Teams and Talents must use separate addresses');
   return value;
 }
 export function currentSystemContext(): Required<Pick<SystemLinkContext, 'projectId' | 'role'>> & Pick<SystemLinkContext, 'requirementId' | 'taskId'> {

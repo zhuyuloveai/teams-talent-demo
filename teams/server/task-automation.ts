@@ -20,7 +20,7 @@ export async function taskReportSessionDocuments(runtime:string,scope:TaskScope,
  if(!task)return undefined;
  const binding=await taskWorktreeBinding(runtime,task,workspaceRepo);
  if(task.workDirectory||task.id==='DEMO-MKT-001'||binding||preparedDirectory)return nativeTaskSessionDocuments(runtime,scope,sessions,capture);
- if(await configuredProjectWorkspace(runtime,task.projectId))throw new Error('本任务缺少已验证的工作区或原生准备目录，未上报会话正文');
+ if(await configuredProjectWorkspace(runtime,task.projectId))throw new Error('This task has no verified workspace or native preparation directory; the session body was not reported');
  return undefined;
 }
 
@@ -30,20 +30,20 @@ export class TaskAutomationService {
   constructor(private store: Store, data: Presentation, private dependencies: Dependencies = {
     async inputs(state, scope) {
       const context = await collaborationContext(state, data, { ...scope, nodeId: 'prepare' });
-      if (context.knowledge.status === 'unavailable') throw new Error(context.knowledge.error ?? '项目知识暂不可读取');
+      if (context.knowledge.status === 'unavailable') throw new Error(context.knowledge.error ?? 'Project knowledge cannot be read right now');
       return { mode: context.mode as ImportedTaskInputs['mode'], contextId: context.contextId, requirement: context.agreement.title,
         knowledgeStatus: context.knowledge.status,
-        knowledge: context.knowledge.assets.map((item: any) => ({ id: item.id, title: item.title ?? item.name, version: String(item.version ?? '未标注') })),
+        knowledge: context.knowledge.assets.map((item: any) => ({ id: item.id, title: item.title ?? item.name, version: String(item.version ?? 'unspecified') })),
         skills: context.skills.map(item => ({ id: item.id, version: item.version, available: !!item.content && !item.availability.includes('unavailable') && item.availability !== 'example-only' })),
         references: context.references.map(item => ({ id: item.id, title: item.title, version: item.version })), materials: context.materials.map(item => ({ id: item.id, title: item.title })),
-        notes: ['这里只读取现有知识、需求和 Skill；尚未替成员确认采用或冻结上下文。', ...context.skills.filter(item => !item.content).map(item => item.id + ' 正文不可用')],
+        notes: ['This only reads existing knowledge, requirements and Skills; nothing has been adopted or frozen as context on the member\'s behalf.', ...context.skills.filter(item => !item.content).map(item => item.id + ' body unavailable')],
       };
     },
     async collect(state, scope) { return collectTaskSessions(state, scope); },
     async report(state,scope){
       const task=deliveryRequirement(state,scope.projectId,scope.taskId),record=taskAutomation(state,scope)!.collection!;
-      const acceptedAt=task?.acceptedAt??[...state.audit].reverse().find(item=>item.action==='通过功能验收')?.at;
-      if(!acceptedAt)throw new Error('缺少验收时间，未发送会话');
+      const acceptedAt=task?.acceptedAt??[...state.audit].reverse().find(item=>['通过功能验收','Functional acceptance passed'].includes(item.action))?.at;
+      if(!acceptedAt)throw new Error('No acceptance time; the session was not sent');
       const inputDigest=task?.inputDigest??createHash('sha256').update(JSON.stringify(state.context)).digest('hex');
       const sessionDocuments=await taskReportSessionDocuments(runtimeDir,scope,task,record.sessions,{id:record.id,acceptedAt},resolve(root,'..'),taskAutomation(state,scope)?.preparation?.session?.directory);
       return exportTaskSessions(state,{...scope,deliveryId:record.id,idempotencyKey:record.id,acceptedAt,inputDigest,sessions:record.sessions,...(sessionDocuments?{sessionDocuments}:{})});
@@ -62,55 +62,55 @@ export class TaskAutomationService {
     requireWritableTask(scope,this.store.state);
 
     const task=deliveryRequirement(this.store.state,scope.projectId,scope.taskId);
-    if (!task && !this.store.state.assigned) throw new DomainError('需求尚未分配，知识导入等待任务开始');
-    if(task)requireDeliveryMember(this.store.state,task,role);else {if(role!=='member')throw new DomainError('仅当前交付人可以读取任务输入',403);requireCurrentTaskMember(this.store.state);}
+    if (!task && !this.store.state.assigned) throw new DomainError('The requirement is not assigned yet; knowledge import waits for the task to start');
+    if(task)requireDeliveryMember(this.store.state,task,role);else {if(role!=='member')throw new DomainError('Only the current assignee can read task inputs',403);requireCurrentTaskMember(this.store.state);}
     const key = 'knowledge:' + scope.projectId + '/' + scope.taskId;
     return this.run(key, async () => {
       const existing = taskAutomation(this.store.state, scope)?.knowledge;
       if (existing && (!retry || existing.status === 'ready')) return this.store.state;
       const id = existing?.id ?? crypto.randomUUID();
-      await this.save(scope, state => { mutableTaskAutomation(state, scope).knowledge = { id, attempts: (existing?.attempts ?? 0) + 1, status: 'running', startedAt: new Date().toISOString(), finishedAt: null }; }, '自动导入任务知识 · 开始', role);
+      await this.save(scope, state => { mutableTaskAutomation(state, scope).knowledge = { id, attempts: (existing?.attempts ?? 0) + 1, status: 'running', startedAt: new Date().toISOString(), finishedAt: null }; }, 'Automatic task knowledge import · started', role);
       try {
         const inputs = await this.dependencies.inputs(this.store.state, scope);
         return await this.save(scope, state => {
-          const record = taskAutomation(state, scope)?.knowledge; if (record?.id !== id) throw new DomainError('工作区已变化，本次知识导入结果未写入');
+          const record = taskAutomation(state, scope)?.knowledge; if (record?.id !== id) throw new DomainError('The workspace changed; this knowledge import result was not saved');
           record.status = inputs.skills.some(skill => skill.available) ? 'ready' : 'waiting'; record.inputs = inputs; record.finishedAt = new Date().toISOString();
-        }, '自动导入任务知识 · 已核对输入', role);
+        }, 'Automatic task knowledge import · inputs checked', role);
       } catch (error) {
         if (taskAutomation(this.store.state, scope)?.knowledge?.id !== id) throw error;
-        return this.save(scope, state => { const record = taskAutomation(state, scope)!.knowledge!; record.status = 'failed'; record.error = (error as Error).message; record.finishedAt = new Date().toISOString(); }, '自动导入任务知识 · 未完成', role);
+        return this.save(scope, state => { const record = taskAutomation(state, scope)!.knowledge!; record.status = 'failed'; record.error = (error as Error).message; record.finishedAt = new Date().toISOString(); }, 'Automatic task knowledge import · not completed', role);
       }
     });
   }
   collect(scope: TaskScope = mainTask, retry = false) {
     requireWritableTask(scope,this.store.state);
-    if ((deliveryRequirement(this.store.state,scope.projectId,scope.taskId)?.stage??this.store.state.stage) !== 'accepted') throw new DomainError('验收尚未通过，不能归集会话数据');
+    if ((deliveryRequirement(this.store.state,scope.projectId,scope.taskId)?.stage??this.store.state.stage) !== 'accepted') throw new DomainError('Acceptance has not passed yet, so session data cannot be collected');
     const key = 'collection:' + scope.projectId + '/' + scope.taskId;
     return this.run(key, async () => {
       const existing = taskAutomation(this.store.state, scope)?.collection;
-      if (!existing) throw new DomainError('此验收没有自动归集任务；原有历史记录保持不变');
+      if (!existing) throw new DomainError('This acceptance has no automatic collection job; existing history is unchanged');
       if(existing.status==='collected'){if(existing.reporting?.status==='reported'||!retry)return this.store.state;return this.upload(scope);}
       if (existing.status !== 'queued' && !retry || existing.status==='empty') return this.store.state;
       const id = existing.id;
-      await this.save(scope, state => { const record = taskAutomation(state, scope)!.collection!; record.status = 'running'; record.attempts++; record.error = undefined; record.startedAt = new Date().toISOString(); record.finishedAt = null; }, '验收后数据归集 · 开始', 'owner');
+      await this.save(scope, state => { const record = taskAutomation(state, scope)!.collection!; record.status = 'running'; record.attempts++; record.error = undefined; record.startedAt = new Date().toISOString(); record.finishedAt = null; }, 'Post-acceptance data collection · started', 'owner');
       try {
         const sessions = await this.dependencies.collect(this.store.state, scope);
         await this.save(scope, state => {
-          const record = taskAutomation(state, scope)?.collection; if (record?.id !== id || (deliveryRequirement(state,scope.projectId,scope.taskId)?.stage??state.stage) !== 'accepted') throw new DomainError('验收范围已变化，本次归集结果未写入');
+          const record = taskAutomation(state, scope)?.collection; if (record?.id !== id || (deliveryRequirement(state,scope.projectId,scope.taskId)?.stage??state.stage) !== 'accepted') throw new DomainError('The acceptance scope changed; this collection result was not saved');
           finishTaskCollection(state,scope,sessions,new Date().toISOString());
-        }, '验收后数据归集 · 已完成', 'owner');
+        }, 'Post-acceptance data collection · completed', 'owner');
         return sessions.length?this.upload(scope):this.store.state;
       } catch (error) {
         if (taskAutomation(this.store.state, scope)?.collection?.id !== id) throw error;
-        return this.save(scope, state => { const record = taskAutomation(state, scope)!.collection!; record.status = 'failed'; record.error = (error as Error).message; record.finishedAt = new Date().toISOString(); }, '验收后数据归集 · 未完成', 'owner');
+        return this.save(scope, state => { const record = taskAutomation(state, scope)!.collection!; record.status = 'failed'; record.error = (error as Error).message; record.finishedAt = new Date().toISOString(); }, 'Post-acceptance data collection · not completed', 'owner');
       }
     });
   }
   private async upload(scope:TaskScope){
     if(!this.dependencies.report)return this.store.state;
-    await this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'uploading',reason:'正在共享本任务会话至 Talents'};},'验收后会话共享 · 开始','owner');
-    try{const receipt=await this.dependencies.report(this.store.state,scope);return this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'reported',reason:'会话已写入共享目录，Talents 可读取',receipt};},'验收后会话共享 · 已写入','owner');}
-    catch(error){return this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'failed',reason:(error as Error).message};},'验收后会话共享 · 未完成','owner');}
+    await this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'uploading',reason:'Sharing this task\'s sessions with Talents'};},'Post-acceptance session sharing · started','owner');
+    try{const receipt=await this.dependencies.report(this.store.state,scope);return this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'reported',reason:'Sessions were written to the shared directory and Talents can read them',receipt};},'Post-acceptance session sharing · written','owner');}
+    catch(error){return this.save(scope,state=>{taskAutomation(state,scope)!.collection!.reporting={status:'failed',reason:(error as Error).message};},'Post-acceptance session sharing · not completed','owner');}
   }
 
 }

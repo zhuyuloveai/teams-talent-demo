@@ -20,7 +20,7 @@ export function projectDeliveryTasks(state: DemoState, projectId: string, role: 
   const tasks: ProjectDeliveryTask[] = [];
   if (projectId === mainTask.projectId && !state.workspace.deliveryRequirements?.some(task=>task.projectId===projectId&&task.id===mainTask.taskId)) {
     const node: RequirementNode = ['submitted', 'accepted'].includes(state.stage) ? 'accept' : ['failed', 'fixed'].includes(state.stage) ? 'verify' : ['developing', 'returned'].includes(state.stage) ? 'develop' : 'prepare';
-    tasks.push({ id: mainTask.taskId, projectId, title: '信用卡消费返现', owner: taskAssigneeName(state), assigneeId: state.assigned ? taskAssigneeId(state) : null, status: currentT(state.assigned ? stageKeys[state.stage] : 'stage.unassigned'), phase: phases[state.stage], node, route: taskRoute(projectId, mainTask.taskId, node), accepted: state.stage === 'accepted', pendingAssignment: !state.assigned });
+    tasks.push({ id: mainTask.taskId, projectId, title: 'Credit Card Spending Cashback', owner: taskAssigneeName(state), assigneeId: state.assigned ? taskAssigneeId(state) : null, status: currentT(state.assigned ? stageKeys[state.stage] : 'stage.unassigned'), phase: phases[state.stage], node, route: taskRoute(projectId, mainTask.taskId, node), accepted: state.stage === 'accepted', pendingAssignment: !state.assigned });
   }
   const records = (state.workspace.deliveryRequirements ?? []).filter(record => record.projectId === projectId);
   if (!records.length) return tasks.filter(task => taskVisibleTo(role, task.assigneeId));

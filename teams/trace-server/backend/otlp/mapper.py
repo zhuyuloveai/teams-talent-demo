@@ -1,12 +1,12 @@
-"""OTLP resourceSpans → trace2 内部事件 dict。
+"""OTLP resourceSpans -> trace2 internal event dicts.
 
-产出的事件结构与 `trace_sdk.events` 完全一致，因此可以直接：
-- file sink：序列化成 JSONL（`file_backend` 直接可读）
-- kafka / redis sink：投递后由 `trace_consumer` 的 `handle_event` 落库
+The produced events have exactly the same structure as `trace_sdk.events`, so they can go directly to:
+- file sink: serialized as JSONL (readable by `file_backend` as is)
+- kafka / redis sink: after delivery, `trace_consumer`'s `handle_event` writes them to the database
 
-事件类型：`trace` / `span` / `observation` / `session`。
+Event types: `trace` / `span` / `observation` / `session`.
 
-幂等：`event_id` 用 uuid5 从 OTel ID 确定性派生，重传天然幂等。
+Idempotency: `event_id` is derived deterministically from the OTel ID with uuid5, so retransmissions are idempotent.
 """
 from __future__ import annotations
 
@@ -39,10 +39,10 @@ from .semconv import (
     infer_span_type,
 )
 
-# uuid5 命名空间：固定值，保证同一 OTel ID 在任何进程/任何时间都派生出同一 event_id
+# uuid5 namespace: a fixed value, so the same OTel ID always yields the same event_id in any process at any time
 _NS = uuid.UUID("6f9619ff-8b86-d011-b42d-00c04fc964ff")
 
-# 单条 span 的 input/output 上限（字符）；超出则截断并告警标记
+# input/output limit per span (characters); longer values are truncated and flagged
 MAX_FIELD_CHARS = 9 * 1024 * 1024
 
 _tz: Any = None
@@ -59,10 +59,10 @@ def _get_tz() -> Any:
 
 
 def _to_wall_clock(nanos: int | None) -> str:
-    """纳秒 → 本地墙钟字符串 `YYYY-MM-DD HH:MM:SS.mmm`（不带时区偏移）。
+    """Nanoseconds -> local wall-clock string `YYYY-MM-DD HH:MM:SS.mmm` (no time zone offset).
 
-    与 SDK 侧 `events._now_iso()` 口径一致：只输出墙钟，落库时由
-    `fields.dt()` 剥掉 tzinfo 保留字面值。若这里输出 UTC，前端会整体偏 8 小时。
+    Same convention as `events._now_iso()` on the SDK side: wall-clock only; when stored,
+    `fields.dt()` strips tzinfo and keeps the literal value. Emitting UTC here would shift the frontend by 8 hours.
     """
     if nanos is None:
         return datetime.now(_get_tz()).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -75,9 +75,9 @@ def _to_wall_clock(nanos: int | None) -> str:
 
 
 def _parse_nano(raw: Any) -> int | None:
-    """兼容三种纳秒时间戳形态：字符串 / 数字 / {high, low}。
+    """Accept three nanosecond timestamp forms: string / number / {high, low}.
 
-    OTLP 纳秒超过 2^53，必须用整数运算，不能先转 float。
+    OTLP nanoseconds exceed 2^53, so integer arithmetic is required; never convert to float first.
     """
     if raw is None or raw == "":
         return None
@@ -99,7 +99,7 @@ def _parse_nano(raw: Any) -> int | None:
 
 
 def hex_to_uuid(otel_hex: str) -> str:
-    """OTel hex → uuid 字符串；16 位 spanId 左补零到 32 位。"""
+    """OTel hex -> uuid string; a 16-char spanId is left-padded with zeros to 32 chars."""
     cleaned = (otel_hex or "").strip()
     if not cleaned:
         return str(uuid.UUID(int=0))
@@ -111,10 +111,10 @@ def _uuid5(*parts: str) -> str:
 
 
 def flatten_attributes(raw: Any) -> dict[str, Any]:
-    """OTLP attributes 列表 → 扁平 dict。
+    """OTLP attributes list -> flat dict.
 
-    OTLP 的 `AnyValue` 是 `{stringValue} / {intValue} / {boolValue} / ...` 包裹，
-    这里统一解包成 Python 原生值；无法识别的保持原样。
+    OTLP's `AnyValue` wraps values as `{stringValue} / {intValue} / {boolValue} / ...`;
+    they are unwrapped into native Python values here, and unrecognized ones are kept as is.
     """
     out: dict[str, Any] = {}
     if not isinstance(raw, list):
@@ -182,7 +182,7 @@ def _as_text(value: Any) -> str | None:
 
 
 def _safe_json_loads(text: str) -> Any:
-    """尝试解析 JSON 字符串；失败原样返回（畸形属性不该弄丢整条 span）。"""
+    """Try to parse a JSON string; return it unchanged on failure (a malformed attribute should not lose the whole span)."""
     stripped = text.strip()
     if not stripped or stripped[0] not in "{[":
         return text
@@ -193,14 +193,14 @@ def _safe_json_loads(text: str) -> Any:
 
 
 def _parse_jsonish(value: Any) -> Any:
-    """把可能是 JSON 字符串的属性值解析成对象。"""
+    """Parse an attribute value that may be a JSON string into an object."""
     if isinstance(value, str):
         return _safe_json_loads(value)
     return value
 
 
 def _clip(value: Any) -> Any:
-    """限制单字段体积，防止一行把表撑爆。"""
+    """Limit the size of a single field so one row cannot blow up the table."""
     if value is None:
         return None
     text = _as_text(value)
@@ -212,7 +212,7 @@ def _clip(value: Any) -> Any:
 
 
 def _extract_input_output(attrs: dict[str, Any]) -> tuple[Any, Any]:
-    """按 §6.6 的优先级尝试提取 input / output，命中即止。"""
+    """Try to extract input / output in the §6.6 priority order; stop at the first hit."""
     for in_key, out_key in INPUT_OUTPUT_KEYS:
         has_in = in_key in attrs and attrs[in_key] not in (None, "")
         has_out = out_key in attrs and attrs[out_key] not in (None, "")
@@ -222,7 +222,7 @@ def _extract_input_output(attrs: dict[str, Any]) -> tuple[Any, Any]:
                 _parse_jsonish(attrs.get(out_key)) if has_out else None,
             )
 
-    # gen_ai.prompt.{i}.role/content 与 gen_ai.completion.{i}.* 的数组拼装
+    # Assemble arrays from gen_ai.prompt.{i}.role/content and gen_ai.completion.{i}.*
     prompt = _assemble_indexed(attrs, "gen_ai.prompt.")
     completion = _assemble_indexed(attrs, "gen_ai.completion.")
     if prompt or completion:
@@ -231,7 +231,7 @@ def _extract_input_output(attrs: dict[str, Any]) -> tuple[Any, Any]:
 
 
 def _assemble_indexed(attrs: dict[str, Any], prefix: str) -> list[dict[str, Any]] | None:
-    """把 `<prefix><i>.<field>` 形式的扁平属性还原成消息数组。"""
+    """Rebuild a message array from flat attributes of the form `<prefix><i>.<field>`."""
     buckets: dict[int, dict[str, Any]] = {}
     for key, value in attrs.items():
         if not key.startswith(prefix):
@@ -247,7 +247,7 @@ def _assemble_indexed(attrs: dict[str, Any], prefix: str) -> list[dict[str, Any]
 
 
 def _extract_usage(attrs: dict[str, Any]) -> dict[str, int] | None:
-    """提取 token 用量；全为 0 时返回 None（不生成 observation）。"""
+    """Extract token usage; returns None when all are 0 (no observation is created)."""
     explicit = attrs.get(LF_OBS_USAGE)
     if explicit:
         parsed = _parse_jsonish(explicit)
@@ -324,7 +324,7 @@ def _extract_tags(attrs: dict[str, Any]) -> list[str] | None:
 
 
 def _leftover_attributes(attrs: dict[str, Any]) -> dict[str, Any]:
-    """剔除已被 input/output/metadata 消费的属性，供 file 模式留档。"""
+    """Remove attributes already consumed by input/output/metadata; the rest is kept for the file-mode record."""
     out: dict[str, Any] = {}
     for key, value in attrs.items():
         if any(key == p or key.startswith(p) for p in INPUT_OUTPUT_PREFIXES):
@@ -346,15 +346,15 @@ def map_resource_spans(
     *,
     default_project_id: str | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
-    """resourceSpans → (事件列表, 被拒绝的 span 数)。
+    """resourceSpans -> (event list, number of rejected spans).
 
-    单条 span 的异常只累加 rejected 计数，不影响同批其它 span。
-    trace 级统计（span/tool 计数、是否有 error）按**整批**同 trace_id 聚合，
-    不跨请求回溯（见方案 §7.4）。
+    An error in one span only increments the rejected count and does not affect other spans in the batch.
+    Trace-level stats (span/tool counts, whether there is an error) are aggregated per trace_id over the **whole batch**,
+    without looking back across requests (see design §7.4).
     """
     fallback_project = default_project_id or OTLP_DEFAULT_PROJECT_ID
 
-    # ---- 第一遍：把 scopeSpan 展平成上下文列表，并统计每个 trace 的指标 ----
+    # ---- Pass 1: flatten scopeSpans into a context list and compute per-trace metrics ----
     scopes: list[dict[str, Any]] = []
     counts: dict[str, dict[str, int]] = {}
     for resource_span in resource_spans or []:
@@ -393,7 +393,7 @@ def map_resource_spans(
                 if _status_of(span) == "error":
                     stat["error"] += 1
 
-    # ---- 第二遍：逐 span 生成内部事件 ----
+    # ---- Pass 2: generate internal events span by span ----
     events: list[dict[str, Any]] = []
     rejected = 0
     seen_sessions: set[str] = set()
@@ -444,7 +444,7 @@ def _map_span(
     parent_hex = parse_otel_id(span.get("parentSpanId")) if span.get("parentSpanId") else ""
 
     if not trace_hex or not span_hex:
-        raise ValueError("缺少 traceId / spanId")
+        raise ValueError("missing traceId / spanId")
 
     trace_id = hex_to_uuid(trace_hex)
     span_id = hex_to_uuid(span_hex)
@@ -476,10 +476,10 @@ def _map_span(
     is_root = not parent_hex or str(attrs.get(LF_AS_ROOT)).lower() == "true"
     events: list[dict[str, Any]] = []
 
-    # ---- trace 事件 ----
+    # ---- trace event ----
     trace_event_id = _uuid5(project_id, trace_id)
     stat = counts.get(trace_hex, {"span": 0, "tool": 0, "error": 0})
-    # 任一子 span 为 error ⇒ 整条 trace 视为 error（方案 §7.4）
+    # Any child span with error => the whole trace counts as error (design §7.4)
     trace_status = "error" if stat.get("error") else status
     base_trace = {
         "event_type": "trace",
@@ -527,10 +527,10 @@ def _map_span(
             update["tags"] = tags
         events.append(update)
     else:
-        # 占位 trace：只保证 trace 行存在，绝不覆盖已有的完整数据
+        # Placeholder trace: only ensures the trace row exists and never overwrites existing complete data
         events.append({**base_trace, "status": "success", "trace_insert_only": True})
 
-    # ---- span 事件 ----
+    # ---- span event ----
     span_input, span_output = _extract_input_output(attrs)
     events.append(
         {
@@ -561,7 +561,7 @@ def _map_span(
         }
     )
 
-    # ---- observation（有 usage 才生成）----
+    # ---- observation (only created when there is usage) ----
     usage = _extract_usage(attrs)
     if usage:
         events.append(
@@ -582,7 +582,7 @@ def _map_span(
             }
         )
 
-    # ---- session 事件（同批同 session 只发一次）----
+    # ---- session event (sent once per session per batch) ----
     if session_id and session_id not in seen_sessions:
         seen_sessions.add(session_id)
         events.append(

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-// 状态徽章：success / error（圆形胶囊，语义色）
+// Status badge: success / error (rounded pill, semantic colors)
 defineProps<{ status: string }>();
 </script>
 
 <template>
   <span class="tm-scope tm-status" :class="status === 'success' ? 'success' : 'error'">
-    {{ status === "success" ? "成功" : "失败" }}
+    {{ status === "success" ? "Success" : "Failed" }}
   </span>
 </template>
 

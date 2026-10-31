@@ -36,7 +36,7 @@ export async function locateChrysEngine(options: LocateEngineOptions): Promise<{
       config = environment.configDirectory;
       sessionRoot = environment.sessionRoot ?? join(config, 'sessions');
     } catch (error) {
-      notes.push('无法读取 iCode 原生配置目录，使用平台默认位置：' + (error as Error).message);
+      notes.push('Cannot read the iCode native config directory; using the platform default location: ' + (error as Error).message);
     }
     return { engine: { state: 'ready', entry: selection.path, version: selection.version, config, sessionRoot, notes } };
   }

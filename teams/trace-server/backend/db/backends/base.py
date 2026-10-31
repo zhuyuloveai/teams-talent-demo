@@ -1,6 +1,6 @@
-"""存储后端抽象：统一"读取 trace 数据"接口。
+"""Storage backend abstraction: a unified "read trace data" interface.
 
-database / file 后端都实现这些方法，路由层只依赖本抽象（Repository Pattern）。
+Both the database and file backends implement these methods; routes depend only on this abstraction (Repository Pattern).
 """
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from typing import Any
 
 
 class TraceRow(dict):
-    """一行 trace 数据（普通 dict，便于序列化）。"""
+    """One row of trace data (a plain dict, easy to serialize)."""
 
 
 class TraceData:
-    """一次 trace 的完整数据（含 spans / observations）。"""
+    """Full data of one trace (including spans / observations)."""
 
     def __init__(
         self,
@@ -27,7 +27,7 @@ class TraceData:
 
 
 class SpanData:
-    """单个 span 的详情（含其 observations）。"""
+    """Detail of a single span (including its observations)."""
 
     def __init__(
         self,
@@ -39,9 +39,9 @@ class SpanData:
 
 
 class StorageBackend(ABC):
-    """存储后端统一接口（当前只读场景：查询展示）。
+    """Unified storage backend interface (currently read-only: query and display).
 
-    项目管理（projects CRUD / agents）已废弃：项目 ID 由集成方/上报方自带。
+    Project management (projects CRUD / agents) is retired: project IDs come from the integrator/reporter.
     """
 
     @abstractmethod
@@ -76,11 +76,11 @@ class StorageBackend(ABC):
         span_id: str,
         session_id: str | None = None,
     ) -> SpanData | None:
-        """按 span_id 读单条 span 详情（含其 observations）。
+        """Read one span detail by span_id (including its observations).
 
-        刻意**不标** `abstractmethod`：file 后端本期不实现懒加载（决策 2），
-        若标 abstract，deps.py 里模块级 `FileBackend()` 会在 import 时抛
-        TypeError，file 模式直接起不来。默认返回 None → 路由层 404，零模式分支。
+        Deliberately **not** marked `abstractmethod`: the file backend does not implement lazy loading yet (decision 2);
+        if it were abstract, the module-level `FileBackend()` in deps.py would raise
+        TypeError at import and file mode would not start. Returns None by default -> 404 in the route, no mode branch.
         """
         return None
 
@@ -90,13 +90,13 @@ class StorageBackend(ABC):
         trace_id: str,
         session_id: str | None = None,
     ) -> str | None:
-        """按 trace_id 还原「文件模式」的 `<trace_id>.jsonl` 全文（每行一条事件 JSON）。
+        """Restore the full file-mode `<trace_id>.jsonl` by trace_id (one event JSON per line).
 
-        database 模式从库表重拼行；file 模式直接回吐磁盘上的
-        `<trace_id>.jsonl` 原文。`session_id` 可选，file 模式据此按
-        `<pid>/<sid>/<trace_id>.jsonl` 直拼路径 O(1) 定位（未传/未命中再全盘兜底）。
+        database mode rebuilds the rows from the tables; file mode returns the
+        original `<trace_id>.jsonl` on disk. `session_id` is optional; file mode uses it to build the
+        `<pid>/<sid>/<trace_id>.jsonl` path directly for an O(1) lookup (full scan when absent or on a miss).
 
-        刻意**不标** `abstractmethod`（同 get_span_detail 的理由），默认返回
-        None → 路由层 404。返回 None 表示 trace 不存在。
+        Deliberately **not** marked `abstractmethod` (same reason as get_span_detail); returns
+        None by default -> 404 in the route. None means the trace does not exist.
         """
         return None

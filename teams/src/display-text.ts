@@ -24,19 +24,16 @@ export function displayRequirementId(value: string): string {
 /** Use explicitly on product metadata or saved UI messages; source bodies stay untouched. */
 export function displayText(value: string): string {
   return displayRequirementId(value)
-    .replace(/（(?:演示|模拟|样例|示例)）|\((?:demo|mock)\)/gi, '')
-    .replace(/(?:演示|模拟)(?:数据|记录)/g, '记录')
-    .replace(/演示工程/g, '工作区').replace(/演示服务/g, '服务').replace(/演示角色/g, '角色')
-    .replace(/演示配置/g, '配置').replace(/演示项目/g, '项目').replace(/演示流程/g, '流程')
-    .replace(/演示日/g, '当日').replace(/演示接入/g, '本地接入')
-    .replace(/演示示例|演示样例|接入示例|接入样例/g, '配置参考')
-    .replace(/演示|模拟/g, '')
-    .replace(/(?<![\w/.:-])(?:mock|demo)(?![\w/.:-])\s*/gi, '')
-    .replace(/样例|示例/g, '参考')
-    .replace(/ {2,}/g, ' ').trim();
+    .replace(/\s*\((?:demo|mock|simulated|sample)\)/gi, '')
+    .replace(/\b(?:demo|mock|simulated)\s+(data|records?)\b/gi, (match: string, noun: string) => { const word = noun.toLowerCase().startsWith('data') ? 'records' : noun.toLowerCase(); return /^[A-Z]/.test(match) ? word[0].toUpperCase() + word.slice(1) : word; })
+    .replace(/\b(?:demo|mock|simulated)\s+(workspace|service|role|configuration|config|project|flow|integration)\b/gi, '$1')
+    .replace(/(?<![\w/.:-])(?:mock|demo|simulated)(?![\w/.:-])\s*/gi, '')
+    .replace(/ {2,}/g, ' ').replace(/ +([,.;:)])/g, '$1').trim();
 }
 
 /** Upgrade only the former default project description in the view; saved/custom text stays untouched. */
 export function displayProjectDescription(value: string): string {
-  return value === '基于存量 CardDemo 系统交付餐饮返现能力，形成可追溯的项目知识与研发经验。' ? '针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。' : value;
+  // The left-hand side is the old default persisted in saved state (Chinese), kept as a match key.
+  return value === '基于存量 CardDemo 系统交付餐饮返现能力，形成可追溯的项目知识与研发经验。' || value === '针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。'
+    ? 'Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months.' : value;
 }

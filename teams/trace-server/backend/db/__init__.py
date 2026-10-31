@@ -1,1 +1,1 @@
-"""数据库连接池包（运行时）。"""
+"""Database connection pool package (runtime)."""

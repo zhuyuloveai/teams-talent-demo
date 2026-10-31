@@ -30,5 +30,5 @@ export function validateCollaborationState(value: unknown): asserts value is Col
     || v.events.some(e=>e.reopen!==undefined&&(e.reopen!==true||e.phase!=='started'||!['prepare','develop','verify'].includes(e.nodeId??'')))
     || v.events.some(e=>e.evidence.some(item=>item.artifact!==undefined&&(!taskArtifactKinds.includes(item.artifact)||typeof item.version!=='string'||!item.version.trim()||!['actual','preset'].includes(item.source??'')||item.codeVersion!==undefined&&(typeof item.codeVersion!=='string'||!item.codeVersion.trim())))||e.evidence.some(item=>item.execution!==undefined&&(item.artifact!=='unit-test-result'||unitTestExecutionShapeErrors(item.execution).length>0))||e.completedCriteria!==undefined&&(!Array.isArray(e.completedCriteria)||e.completedCriteria.some(id=>typeof id!=='string')) )
     || v.operations.some(o => !o || !o.operationId || !o.requestDigest || o.status !== 'saved' || !Number.isSafeInteger(o.revision))
-    || new Set(v.operations.map(o => o.operationId)).size !== v.operations.length) throw new Error('协作记录损坏；未自动覆盖');
+    || new Set(v.operations.map(o => o.operationId)).size !== v.operations.length) throw new Error('Collaboration records are corrupted; not overwritten automatically');
 }

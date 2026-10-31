@@ -1,10 +1,10 @@
-"""OTLP/HTTP 接收端点（默认 `POST /v1/traces`）。
+"""OTLP/HTTP ingestion endpoint (default `POST /v1/traces`).
 
-刻意不挂在 `/api/v1` 前缀下：OTLP 客户端的 endpoint 配置习惯是
-`http://host:4318/v1/traces`，保持标准路径便于直接对接。
+Deliberately not under the `/api/v1` prefix: OTLP clients are usually configured with
+`http://host:4318/v1/traces`, so keeping the standard path makes direct integration easy.
 
-处理顺序见 docs/OTLP端点接收实现方案.md §5.1：
-读 body → gunzip → content-type 分流解码 → mapper 转换 → sink 投递 → 立即响应。
+Processing order (see §5.1 of the OTLP endpoint ingestion design doc):
+read body -> gunzip -> decode by content-type -> mapper conversion -> sink delivery -> respond immediately.
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def _unauthorized() -> Response:
 
 
 def _check_auth(request: Request) -> bool:
-    """OTLP_AUTH_TOKEN 非空时校验 Authorization: Bearer <token>。"""
+    """Check Authorization: Bearer <token> when OTLP_AUTH_TOKEN is non-empty."""
     if not OTLP_AUTH_TOKEN:
         return True
     header = request.headers.get("authorization") or ""
@@ -50,7 +50,7 @@ def _check_auth(request: Request) -> bool:
 
 
 async def _read_body(request: Request) -> bytes:
-    """读取原始 body（受 OTLP_MAX_BODY_BYTES 限制）。"""
+    """Read the raw body (limited by OTLP_MAX_BODY_BYTES)."""
     chunks: list[bytes] = []
     total = 0
     async for chunk in request.stream():
@@ -62,7 +62,7 @@ async def _read_body(request: Request) -> bytes:
 
 
 def _respond(request: Request, rejected: int, message: str | None) -> Response:
-    """按请求的 content-type 返回对应格式的 ExportTraceServiceResponse。"""
+    """Return an ExportTraceServiceResponse in the format of the request content-type."""
     content_type = (request.headers.get("content-type") or "").lower()
     if "application/x-protobuf" in content_type:
         body = build_protobuf_response(rejected, message)
@@ -79,17 +79,17 @@ async def _handle(request: Request) -> Response:
     try:
         body = await _read_body(request)
     except ValueError:
-        logger.warning("OTLP 请求体超过上限 %d 字节", OTLP_MAX_BODY_BYTES)
+        logger.warning("OTLP request body exceeds the %d byte limit", OTLP_MAX_BODY_BYTES)
         return JSONResponse(status_code=413, content={"error": "body too large"})
     except Exception:
-        logger.exception("OTLP 读取请求体失败")
+        logger.exception("OTLP failed to read the request body")
         return JSONResponse(status_code=400, content={"error": "read body failed"})
 
     if (request.headers.get("content-encoding") or "").lower().find("gzip") >= 0:
         try:
             body = gzip.decompress(body)
         except OSError:
-            logger.warning("OTLP gzip 解压失败")
+            logger.warning("OTLP gzip decompression failed")
             return JSONResponse(
                 status_code=400, content={"error": "decompress failed"}
             )
@@ -100,7 +100,7 @@ async def _handle(request: Request) -> Response:
     try:
         resource_spans = decode_body(body, request.headers.get("content-type") or "")
     except OtlpDecodeError as exc:
-        logger.warning("OTLP 请求解析失败: %s", exc)
+        logger.warning("OTLP request parsing failed: %s", exc)
         return JSONResponse(status_code=400, content={"error": str(exc)})
 
     if not resource_spans:
@@ -110,20 +110,20 @@ async def _handle(request: Request) -> Response:
 
     sink = getattr(request.app.state, "otlp_sink", None)
     if sink is None:
-        logger.error("OTLP sink 未初始化，丢弃 %d 条事件", len(events))
+        logger.error("OTLP sink is not initialized; dropping %d events", len(events))
         return JSONResponse(
             status_code=503, content={"error": "otlp sink not ready"}
         )
 
     if not sink.offer(events):
-        # 队列满 → 让客户端按自己的退避策略重试（绝不静默丢）
+        # Queue full: let the client retry with its own backoff (never drop silently)
         return JSONResponse(
             status_code=503, content={"error": "otlp queue full, retry later"}
         )
 
     message = f"rejected {rejected} span(s)" if rejected else None
     if rejected:
-        logger.warning("OTLP 部分 span 解析失败: %d 条", rejected)
+        logger.warning("OTLP failed to parse some spans: %d", rejected)
     return _respond(request, rejected, message)
 
 
@@ -132,7 +132,7 @@ async def ingest_traces(request: Request) -> Response:
     return await _handle(request)
 
 
-# OTel 客户端可能同时导出 metrics / logs，这里给 200 空响应避免刷错误日志
+# OTel clients may also export metrics / logs; return an empty 200 so they do not flood the error log
 @router.post("/v1/metrics", include_in_schema=False)
 async def ingest_metrics() -> Any:
     return {}

@@ -1,6 +1,6 @@
-// 与后端 P4 API 响应结构一一对应（camelCase）
+// Mirrors the backend P4 API response structures one to one (camelCase)
 
-// 与 langfuse 6 类 span_type 对齐：后端可能返回 chain/llm/tool/agent/retriever/span
+// Aligned with langfuse's 6 span_type values: the backend may return chain/llm/tool/agent/retriever/span
 export type SpanType = "chain" | "llm" | "tool" | "agent" | "retriever" | "span";
 
 export interface ErrorInfo {
@@ -16,7 +16,7 @@ export interface Span {
   eventId?: string;
   traceId: string;
   parentSpanId: string | null;
-  name: string; // 原样透传的节点名
+  name: string; // Node name, passed through unchanged
   spanType: SpanType;
   input?: unknown;
   output?: unknown;
@@ -81,7 +81,7 @@ export interface TraceTreeResp {
   tree: TraceNode[];
 }
 
-/** 单个节点的详情：该 Span 完整字段 + 它的 observations */
+/** Detail of a single node: all fields of the Span + its observations */
 export interface SpanDetailResp {
   span: Span;
   observations: Observation[];
@@ -103,37 +103,37 @@ export interface AppConfig {
 }
 
 // ============================================================
-// Trace 详情数据获取回调（组件不内置取数实现，由集成方按需注入）
+// Trace detail data-fetch callbacks (the component has no built-in fetching; integrators inject them as needed)
 // ============================================================
 
-/** 详情：根 Trace 摘要 + 全部 spans + observations
- *  projectId 必须为具体项目 id（行级 pid 贯穿）
- *  sessionId 可选：file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速 */
+/** Detail: root Trace summary + all spans + observations
+ *  projectId must be a concrete project id (row-level pid is passed through)
+ *  sessionId is optional: the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster */
 export type FetchTraceDetail = (
   projectId: string,
   traceId: string,
   sessionId?: string | null,
 ) => Promise<TraceDetailResp>;
 
-/** 调用树：树形结构（按父子关系组装）
- *  projectId 必须为具体项目 id（行级 pid 贯穿）
- *  sessionId 可选：file 后端按路径直查提速 */
+/** Call tree: tree structure (assembled from parent/child relations)
+ *  projectId must be a concrete project id (row-level pid is passed through)
+ *  sessionId is optional: the file backend uses it for a faster direct path lookup */
 export type FetchTraceTree = (
   projectId: string,
   traceId: string,
   sessionId?: string | null,
 ) => Promise<TraceTreeResp>;
 
-/** 真实 LLM 请求：点击 llm 节点时按 projectId + eventId 拉取单条
- *  （后端强制按项目过滤，projectId 必须为具体项目 id） */
+/** Real LLM request: fetched one at a time by projectId + eventId when an llm node is clicked
+ *  (the backend always filters by project; projectId must be a concrete project id) */
 export type FetchLlmRequests = (
   eventId: string,
   projectId: string,
 ) => Promise<LlmRequest | null>;
 
-/** 节点详情：点击节点时按 projectId + traceId + spanId 拉取单个节点详情
- *  （projectId 必须为具体项目 id；file 模式后端不实现该接口，集成方请勿注入）
- *  sessionId 可选：与 fetchTraceDetail / fetchTraceTree 一致透传 */
+/** Node detail: fetched by projectId + traceId + spanId when a node is clicked
+ *  (projectId must be a concrete project id; the file-mode backend does not implement this API, so integrators must not inject it)
+ *  sessionId is optional: passed through the same way as fetchTraceDetail / fetchTraceTree */
 export type FetchSpanDetail = (
   projectId: string,
   traceId: string,

@@ -1,7 +1,7 @@
-"""数据库访问层：SQLAlchemy async engine + Session。
+"""Database access layer: SQLAlchemy async engine + Session.
 
-连接地址来自 config.DATABASE_URL（.env / 环境变量），无硬编码。
-通过更换 URL 可在 PostgreSQL / SQLite 之间切换。
+The connection URL comes from config.DATABASE_URL (.env / environment variables); nothing is hard-coded.
+Changing the URL switches between PostgreSQL / SQLite.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 def init_engine() -> None:
-    """根据 DATABASE_URL 创建 async engine 与 session 工厂（幂等）。"""
+    """Create the async engine and session factory from DATABASE_URL (idempotent)."""
     global _engine, _session_factory
     if _engine is not None:
         return
@@ -28,7 +28,7 @@ def init_engine() -> None:
 
 
 async def close_engine() -> None:
-    """应用关闭时释放连接池。"""
+    """Release the connection pool when the app shuts down."""
     global _engine, _session_factory
     if _engine is not None:
         await _engine.dispose()

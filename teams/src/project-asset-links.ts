@@ -10,5 +10,5 @@ export function legacyAssetSourceIds(asset: Asset): string[] {
 }
 
 export function validateProjectAssets(value: unknown): asserts value is Asset[] {
-  if (!Array.isArray(value) || value.length > 50 || value.some(asset => !asset || typeof asset !== 'object' || ['id', 'title', 'kind', 'location'].some(key => typeof asset[key] !== 'string' || !asset[key]) || (Object.hasOwn(asset, 'sourceAssetId') && typeof asset.sourceAssetId !== 'string')) || new Set(value.map(asset => asset.id)).size !== value.length) throw new Error('项目资产引用损坏；未自动覆盖');
+  if (!Array.isArray(value) || value.length > 50 || value.some(asset => !asset || typeof asset !== 'object' || ['id', 'title', 'kind', 'location'].some(key => typeof asset[key] !== 'string' || !asset[key]) || (Object.hasOwn(asset, 'sourceAssetId') && typeof asset.sourceAssetId !== 'string')) || new Set(value.map(asset => asset.id)).size !== value.length) throw new Error('Project asset references are corrupted; not overwritten automatically');
 }

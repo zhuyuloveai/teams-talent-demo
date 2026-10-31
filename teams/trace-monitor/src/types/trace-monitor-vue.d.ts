@@ -1,11 +1,11 @@
 // ============================================================
-// trace-monitor-vue 类型声明（手写维护）
-// 与 src/lib.ts 导出保持一一对应；组件用 DefineComponent 泛型标注
-// 构建时由 build:lib 脚本拷贝为 dist/trace-monitor-vue.d.ts
+// trace-monitor-vue type declarations (maintained by hand)
+// Kept one to one with the src/lib.ts exports; components are typed with the DefineComponent generic
+// Copied to dist/trace-monitor-vue.d.ts by the build:lib script at build time
 // ============================================================
 import type { App, DefineComponent, Component } from "vue";
 
-/* ================= 类型（与 src/types/index.ts 对应） ================= */
+/* ================= Types (match src/types/index.ts) ================= */
 
 export type SpanType = "chain" | "llm" | "tool" | "agent" | "retriever" | "span";
 
@@ -87,7 +87,7 @@ export interface TraceTreeResp {
   tree: TraceNode[];
 }
 
-/** 单个节点的详情：该 Span 完整字段 + 它的 observations */
+/** Detail of a single node: all fields of the Span + its observations */
 export interface SpanDetailResp {
   span: Span;
   observations: Observation[];
@@ -108,32 +108,32 @@ export interface AppConfig {
   storageBackend: string;
 }
 
-/* ================= Trace 详情数据源回调 ================= */
+/* ================= Trace detail data-source callbacks ================= */
 
-/** 详情：根 Trace 摘要 + 全部 spans + observations
- *  projectId 必须为具体项目 id（行级 pid 贯穿） */
+/** Detail: root Trace summary + all spans + observations
+ *  projectId must be a concrete project id (row-level pid is passed through) */
 export type FetchTraceDetail = (
   projectId: string,
   traceId: string,
 ) => Promise<TraceDetailResp>;
 
-/** 调用树：树形结构（按父子关系组装）
- *  projectId 必须为具体项目 id（行级 pid 贯穿） */
+/** Call tree: tree structure (assembled from parent/child relations)
+ *  projectId must be a concrete project id (row-level pid is passed through) */
 export type FetchTraceTree = (
   projectId: string,
   traceId: string,
 ) => Promise<TraceTreeResp>;
 
-/** 真实 LLM 请求：点击 llm 节点时按 projectId + eventId 拉取单条
- *  （后端强制按项目过滤，projectId 必须为具体项目 id） */
+/** Real LLM request: fetched one at a time by projectId + eventId when an llm node is clicked
+ *  (the backend always filters by project; projectId must be a concrete project id) */
 export type FetchLlmRequests = (
   eventId: string,
   projectId: string,
 ) => Promise<LlmRequest | null>;
 
-/** 节点详情：点击节点时按 projectId + traceId + spanId 拉取单个节点详情
- *  （projectId 必须为具体项目 id；file 模式后端不实现该接口，集成方请勿注入）
- *  sessionId 可选：与 fetchTraceDetail / fetchTraceTree 一致透传 */
+/** Node detail: fetched by projectId + traceId + spanId when a node is clicked
+ *  (projectId must be a concrete project id; the file-mode backend does not implement this API, so integrators must not inject it)
+ *  sessionId is optional: passed through the same way as fetchTraceDetail / fetchTraceTree */
 export type FetchSpanDetail = (
   projectId: string,
   traceId: string,
@@ -141,28 +141,28 @@ export type FetchSpanDetail = (
   sessionId?: string | null,
 ) => Promise<SpanDetailResp>;
 
-/* ================= 页面组件 ================= */
+/* ================= Page components ================= */
 
 export interface TraceDetailProps {
-  /** 必传：要展示的 trace 的 id，变化时自动重新加载 */
+  /** Required: id of the trace to show; reloads automatically when it changes */
   traceId: string;
-  /** 行级项目 id（贯穿详情/调用树/LLM 请求，必须为具体项目 id） */
+  /** Row-level project id (used for detail / call tree / LLM requests; must be a concrete project id) */
   projectId: string;
-  /** 必传：详情数据源回调（根 Trace 摘要 + spans + observations） */
+  /** Required: detail data-source callback (root Trace summary + spans + observations) */
   fetchDetail: FetchTraceDetail;
-  /** 必传：调用树数据源回调（按父子关系组装的树） */
+  /** Required: call tree data-source callback (tree assembled from parent/child relations) */
   fetchTree: FetchTraceTree;
-  /** 必传：真实 LLM 请求数据源回调（点击 llm 节点时懒加载） */
+  /** Required: real LLM request data-source callback (lazy-loaded when an llm node is clicked) */
   fetchLlmRequests: FetchLlmRequests;
-  /** 可选：节点详情数据源回调（点击节点时懒加载）；缺省时回退本地 spans 查找。
-   *  file 模式后端不实现该接口，集成方请勿注入 */
+  /** Optional: node detail data-source callback (lazy-loaded when a node is clicked); falls back to the local spans when omitted.
+   *  The file-mode backend does not implement this API, so integrators must not inject it */
   fetchSpanDetail?: FetchSpanDetail;
-  /** 可选：数据加载完成后的回调，集成方可借此获取摘要信息 */
+  /** Optional: callback after data has loaded; integrators can use it to get the summary */
   onLoaded?: (detail: { trace: Trace }) => void;
 }
 export declare const TraceDetail: DefineComponent<TraceDetailProps>;
 
-/* ================= 基础组件 ================= */
+/* ================= Base components ================= */
 
 export declare const TraceTree: DefineComponent<{
   tree: TraceNode[];
@@ -180,18 +180,18 @@ export declare const TraceTreeNode: DefineComponent<{
 
 export declare const DetailPanel: DefineComponent<{
   trace: Trace;
-  /** 行级项目 id（贯穿详情/调用树/LLM 请求，必须为具体项目 id） */
+  /** Row-level project id (used for detail / call tree / LLM requests; must be a concrete project id) */
   projectId: string;
-  /** 会话 id（可选）：file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速 */
+  /** Session id (optional): the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster */
   sessionId?: string | null;
   traceId: string;
   selectedSpanId: string | null;
   spans: Span[];
   observations: Observation[];
-  /** 必传：真实 LLM 请求数据源回调（点击 llm 节点时懒加载） */
+  /** Required: real LLM request data-source callback (lazy-loaded when an llm node is clicked) */
   fetchLlmRequests: FetchLlmRequests;
-  /** 可选：节点详情数据源回调（点击节点时懒加载）；缺省时回退本地 spans 查找。
-   *  file 模式后端不实现该接口，集成方请勿注入 */
+  /** Optional: node detail data-source callback (lazy-loaded when a node is clicked); falls back to the local spans when omitted.
+   *  The file-mode backend does not implement this API, so integrators must not inject it */
   fetchSpanDetail?: FetchSpanDetail;
 }>;
 
@@ -209,41 +209,41 @@ export declare const StatusBadge: DefineComponent<{
   status: string;
 }>;
 
-/* ================= API / 工具 ================= */
+/* ================= API / utilities ================= */
 
-/** 组件库集成方在应用运行时指定后端 API baseURL（如 "/api/v1" 或完整地址） */
+/** Lets component library integrators set the backend API baseURL at runtime (e.g. "/api/v1" or a full URL) */
 export declare function setTraceApiBase(url: string): void;
 
-/** 当前生效的 API baseURL */
+/** The API baseURL currently in effect */
 export declare function getTraceApiBase(): string;
 
-/** 组件库内部使用的 axios 实例 */
+/** The axios instance used inside the component library */
 export declare const api: import("axios").AxiosInstance;
 
-/** 统一错误消息提取 */
+/** Shared error message extraction */
 export declare function extractError(e: unknown, fallback?: string): string;
 
-/* ================= 数据源取数函数（与 TraceDetail fetch 回调签名一致） ================= */
+/* ================= Data-source fetch functions (same signatures as the TraceDetail fetch callbacks) ================= */
 
-/** 详情：GET /projects/{projectId}/traces/{traceId}?session_id=（行级 pid 贯穿）
- *  sessionId 可选：file 后端按路径直查提速 */
+/** Detail: GET /projects/{projectId}/traces/{traceId}?session_id= (row-level pid is passed through)
+ *  sessionId is optional: the file backend uses it for a faster direct path lookup */
 export declare function fetchTraceDetail(
   projectId: string,
   traceId: string,
   sessionId?: string | null,
 ): Promise<TraceDetailResp>;
 
-/** 调用树：GET /projects/{projectId}/traces/{traceId}/tree?session_id=
- *  sessionId 可选：file 后端按路径直查提速 */
+/** Call tree: GET /projects/{projectId}/traces/{traceId}/tree?session_id=
+ *  sessionId is optional: the file backend uses it for a faster direct path lookup */
 export declare function fetchTraceTree(
   projectId: string,
   traceId: string,
   sessionId?: string | null,
 ): Promise<TraceTreeResp>;
 
-/** 节点详情：GET /projects/{projectId}/traces/{traceId}/spans/{spanId}?session_id=
- *  （行级 pid 贯穿；file 模式后端不实现该接口，集成方请勿注入）
- *  sessionId 可选：file 后端按路径直查提速 */
+/** Node detail: GET /projects/{projectId}/traces/{traceId}/spans/{spanId}?session_id=
+ *  (row-level pid is passed through; the file-mode backend does not implement this API, so integrators must not inject it)
+ *  sessionId is optional: the file backend uses it for a faster direct path lookup */
 export declare function fetchSpanDetail(
   projectId: string,
   traceId: string,
@@ -251,26 +251,26 @@ export declare function fetchSpanDetail(
   sessionId?: string | null,
 ): Promise<SpanDetailResp>;
 
-/** 真实 LLM 请求：GET /projects/{projectId}/llm_requests/{eventId}
- *  （后端强制按项目过滤，projectId 必须为具体项目 id） */
+/** Real LLM request: GET /projects/{projectId}/llm_requests/{eventId}
+ *  (the backend always filters by project; projectId must be a concrete project id) */
 export declare function fetchLlmRequests(
   eventId: string,
   projectId: string,
 ): Promise<LlmRequest | null>;
 
-/** 还原下载：GET /projects/{projectId}/traces/{traceId}/export?session_id=
- *  把该 trace 还原成文件模式的 <traceId>.jsonl 并触发浏览器下载（database 重拼行，file 回吐原文）
- *  sessionId 可选，file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速 */
+/** Restore and download: GET /projects/{projectId}/traces/{traceId}/export?session_id=
+ *  Restores the trace as a file-mode <traceId>.jsonl and triggers a browser download (database rebuilds rows, file returns the original)
+ *  sessionId is optional; the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster */
 export declare function downloadTraceJsonl(
   projectId: string,
   traceId: string,
   sessionId?: string | null,
 ): Promise<void>;
 
-/* ================= 插件对象 ================= */
+/* ================= Plugin object ================= */
 
 export interface TraceMonitorOptions {
-  /** 后端 API baseURL，等效于调用 setTraceApiBase */
+  /** Backend API baseURL; same as calling setTraceApiBase */
   baseURL?: string;
 }
 
@@ -282,5 +282,5 @@ declare const TraceMonitor: TraceMonitorPlugin;
 
 export default TraceMonitor;
 
-/* ================= 全组件注册表 ================= */
+/* ================= Registry of all components ================= */
 export declare const components: Record<string, Component>;

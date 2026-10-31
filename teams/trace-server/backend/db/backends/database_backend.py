@@ -1,4 +1,4 @@
-"""database 存储后端：基于现有 SQLAlchemy Repository 的查询实现。"""
+"""database storage backend: query implementation on top of the existing SQLAlchemy Repository."""
 from __future__ import annotations
 
 import json
@@ -11,7 +11,7 @@ from .base import SpanData, StorageBackend, TraceData
 
 
 def _decode_jsonb(value: Any) -> Any:
-    """ORM jsonb 字段默认以 str 返回，前端需要原生对象。"""
+    """ORM jsonb fields come back as str by default; the frontend needs native objects."""
     if value is None or isinstance(value, (dict, list)):
         return value
     if isinstance(value, str):
@@ -26,7 +26,7 @@ class DatabaseBackend(StorageBackend):
     def __init__(self, session: AsyncSession):
         self._trace_repo = TraceRepository(session)
 
-    # ---- Trace 查询 ----
+    # ---- Trace queries ----
 
     async def list_traces(
         self,
@@ -47,18 +47,18 @@ class DatabaseBackend(StorageBackend):
             session_id=session_id,
             trace_id=trace_id,
         )
-        # ORM → dict（Route 层不再依赖 ORM）
+        # ORM -> dict (the route layer no longer depends on the ORM)
         items = [_trace_dict(t) for t in rows]
         await self._apply_token_totals(items)
         return items, total
 
     async def _apply_token_totals(self, items: list[dict[str, Any]]) -> None:
-        """把 observations 实时聚合的 token 用量覆盖到 trace dict。
+        """Overwrite the trace dict with token usage aggregated live from observations.
 
-        traces 表的 total_tokens 是 SDK 单进程汇总，跨进程子 agent 会漏计；
-        查询时按 trace_id SUM observations 才能得到全量正确值。
-        total 取 observations.total_tokens 原值之和（模型可能把缓存/系统开销
-        计入 total 而不计入 prompt/completion，故 total != prompt + completion）。
+        total_tokens in the traces table is the SDK's single-process sum and misses cross-process sub-agents;
+        summing observations by trace_id at query time gives the complete, correct value.
+        total is the sum of the raw observations.total_tokens values (a model may count cache/system overhead
+        in total but not in prompt/completion, so total != prompt + completion).
         """
         if not items:
             return
@@ -105,15 +105,15 @@ class DatabaseBackend(StorageBackend):
         span_id: str,
         session_id: str | None = None,
     ) -> SpanData | None:
-        """单 span 懒加载：spans.id 主键 + idx_observations_span 两次索引命中。"""
+        """Single span lazy load: two index hits, the spans.id primary key + idx_observations_span."""
         s = await self._trace_repo.get_span(span_id)
         if s is None or str(s.trace_id) != trace_id:
-            # 归属校验：跨 trace 串号一律按「不存在」处理，避免前端缓存 key 冲突
+            # Ownership check: a span from another trace is treated as not found, avoiding frontend cache key collisions
             return None
         obs = await self._trace_repo.get_observations_by_span(span_id)
         return SpanData(span=_span_dict(s), observations=[_obs_dict(o) for o in obs])
 
-    # ---- 文件模式还原 ----
+    # ---- File-mode restore ----
 
     async def export_trace_jsonl(
         self,
@@ -121,19 +121,19 @@ class DatabaseBackend(StorageBackend):
         trace_id: str,
         session_id: str | None = None,
     ) -> str | None:
-        """按 trace_id 从库表重拼文件模式 <trace_id>.jsonl 的全文。
+        """Rebuild the full file-mode <trace_id>.jsonl from the tables by trace_id.
 
-        字段顺序逐行对齐 SDK FileExporter 落盘的真实 jsonl 行。DB 未持久化的列
-        （span 的 model_parameters/level/metadata/tags/time_to_first_token_ms、
-        trace 的 tags、session 事件的 event_id）统一输出 null，保持行形状一致。
+        Field order matches, line by line, the real jsonl lines written by the SDK FileExporter. Columns the DB does not persist
+        (span model_parameters/level/metadata/tags/time_to_first_token_ms,
+        trace tags, session event event_id) are always written as null to keep the line shape consistent.
 
-        不输出 llm_requests：文件模式里它以独立 llm_request/<event_id>.json 落盘，
-        不在 <trace_id>.jsonl 行集合内。
+        llm_requests are not written: in file mode they are stored as separate llm_request/<event_id>.json files
+        and are not part of the <trace_id>.jsonl lines.
         """
         t = await self._trace_repo.get_trace(project_id, trace_id)
         if t is None:
             return None
-        # token 需实时聚合（traces 表不落盘 token 汇总）
+        # Tokens must be aggregated live (the traces table does not store token totals)
         trace = _trace_dict(t)
         await self._apply_token_totals([trace])
         sid = trace.get("session_id")
@@ -144,17 +144,17 @@ class DatabaseBackend(StorageBackend):
         lines: list[dict[str, Any]] = []
         if sid:
             lines.append(await self._session_event_line(sid, trace))
-        # 文件是 append 顺序（created_at 非单调），此处按 created_at 归并 span/observation，
-        # 近似还原交错写入的顺序
+        # The file is in append order (created_at is not monotonic); merge span/observation by created_at here
+        # to approximate the interleaved write order
         children: list[tuple[Any, dict[str, Any]]] = []
         for s in spans:
             children.append((s.created_at, _span_event_line(s, sid)))
         for o in obs:
             children.append((o.created_at, _observation_event_line(o, sid)))
-        # created_at 为 None 的行排最后（对齐 Java 的 nullsLast）
+        # Rows with created_at None go last (like Java's nullsLast)
         children.sort(key=lambda pair: (pair[0] is None, pair[0]))
         lines.extend(ev for _, ev in children)
-        # trace 汇总事件在文件里最后写入
+        # The trace summary event is written last in the file
         lines.append(_trace_event_line(trace))
         return "".join(
             json.dumps(ev, ensure_ascii=False, default=str) + "\n" for ev in lines
@@ -166,7 +166,7 @@ class DatabaseBackend(StorageBackend):
         s = await self._trace_repo.get_session(session_id)
         return {
             "event_type": "session",
-            # sessions 表未落盘 session 事件的 event_id，只能输出 null
+            # The sessions table does not store the session event's event_id, so it can only be null
             "event_id": None,
             "project_id": trace.get("project_id"),
             "created_at": _iso(s.created_at) if s else None,
@@ -177,7 +177,7 @@ class DatabaseBackend(StorageBackend):
             "metadata": _decode_jsonb(s.metadata_json) if s else None,
         }
 
-# ---- ORM 对象 → JSONL 事件行（字段顺序对齐 SDK events.py 的 to_dict()）----
+# ---- ORM object -> JSONL event line (field order matches to_dict() in the SDK's events.py) ----
 
 def _span_event_line(s: Any, session_id: str | None) -> dict[str, Any]:
     return {
@@ -195,14 +195,14 @@ def _span_event_line(s: Any, session_id: str | None) -> dict[str, Any]:
         "output": _decode_jsonb(s.output),
         "duration_ms": s.duration_ms,
         "model": s.model,
-        "model_parameters": None,       # DB 未持久化
+        "model_parameters": None,       # not persisted in DB
         "tool_name": s.tool_name,
         "status": s.status,
-        "level": None,                  # DB 未持久化
-        "metadata": None,               # DB 未持久化
-        "tags": None,                   # DB 未持久化
+        "level": None,                  # not persisted in DB
+        "metadata": None,               # not persisted in DB
+        "tags": None,                   # not persisted in DB
         "error_info": _decode_jsonb(s.error_info),
-        "time_to_first_token_ms": None, # DB 未持久化
+        "time_to_first_token_ms": None, # not persisted in DB
         "started_at": _iso(s.started_at),
         "session_id": session_id,
     }
@@ -249,23 +249,23 @@ def _trace_event_line(t: dict[str, Any]) -> dict[str, Any]:
         "span_count": t.get("span_count"),
         "status": t.get("status"),
         "error_info": t.get("error_info"),
-        "tags": None,                   # DB 未持久化
+        "tags": None,                   # not persisted in DB
         "started_at": _iso(t.get("started_at")),
     }
 
 
 def _iso(value: Any) -> str | None:
-    """datetime → ISO 字符串。
+    """datetime -> ISO string.
 
-    `started_at` 为无时区 TIMESTAMP（无偏移），`created_at`/`updated_at` 为
-    TIMESTAMPTZ（UTC 读回后以 `Z` 结尾）。
+    `started_at` is a time-zone-less TIMESTAMP (no offset); `created_at`/`updated_at` are
+    TIMESTAMPTZ (read back as UTC, ending in `Z`).
     """
     if isinstance(value, datetime):
         return value.isoformat().replace("+00:00", "Z")
     return value
 
 
-# ---- ORM 对象 → dict ----
+# ---- ORM object -> dict ----
 
 def _trace_dict(t: Any) -> dict:
     return {

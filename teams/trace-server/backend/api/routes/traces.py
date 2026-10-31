@@ -1,4 +1,4 @@
-"""Trace 接口：列表 / 详情 / 调用树 / 单 span 详情（经存储后端访问数据）。"""
+"""Trace API: list / detail / call tree / single span detail (data accessed through the storage backend)."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -63,8 +63,8 @@ async def get_trace_detail(
     session_id: str | None = None,
     backend: StorageBackend = Depends(get_storage_backend),
 ):
-    # 详情按 trace_id 直查；file 后端带 project_id/session_id 时按路径
-    # O(1) 定位文件（不再全盘扫描），未命中回退全盘兜底。
+    # Detail is looked up directly by trace_id; with project_id/session_id the file backend
+    # locates the file by path in O(1) (no full scan) and falls back to a full scan on a miss.
     data = await backend.get_trace_detail(project_id, trace_id, session_id=session_id)
     if data is None:
         raise HTTPException(status_code=404, detail="trace not found")
@@ -82,12 +82,12 @@ async def get_trace_tree(
     session_id: str | None = None,
     backend: StorageBackend = Depends(get_storage_backend),
 ):
-    # 调用树与详情同一定位逻辑（带 session_id 走路径直查，未命中回退兜底）
+    # The call tree uses the same lookup as detail (direct path lookup with session_id, fallback on a miss)
     data = await backend.get_trace_detail(project_id, trace_id, session_id=session_id)
     if data is None:
         raise HTTPException(status_code=404, detail="trace not found")
-    # DB 模式：/tree 返回 brief（前端注入 fetchSpanDetail 按需补全 input/output）
-    # file 模式：/tree 返回完整 SpanOut（前端不懒加载，靠这里的 input/output 渲染）
+    # DB mode: /tree returns brief nodes (the frontend injects fetchSpanDetail to fill in input/output on demand)
+    # file mode: /tree returns full SpanOut (the frontend does not lazy-load and renders input/output from here)
     if STORAGE_BACKEND == "database":
         span_list: list = [span_brief_out(s) for s in data.spans]
     else:
@@ -106,12 +106,12 @@ async def get_span_detail(
     session_id: str | None = None,
     backend: StorageBackend = Depends(get_storage_backend),
 ):
-    # 单 span 详情的懒加载入口：DB 模式走 PK + 索引；file 模式后端默认返回
-    # None（决策 2 不实现），此处天然 404，路由层无需模式分支。
+    # Lazy-load entry point for single span detail: DB mode uses PK + index; the file backend returns
+    # None by default (not implemented per decision 2), so this is a natural 404 and the route needs no mode branch.
     if not project_id or project_id.strip() == "":
         raise HTTPException(
             status_code=400,
-            detail="project_id 不能为空，必须指定具体项目 id",
+            detail="project_id must not be empty; specify a concrete project id",
         )
     data = await backend.get_span_detail(
         project_id, trace_id, span_id, session_id=session_id
@@ -133,13 +133,13 @@ async def get_llm_request(
     event_id: str,
     backend: StorageBackend = Depends(get_storage_backend),
 ):
-    # 真实 LLM 请求按 project_id + event_id 定位：file 模式据此把扫描范围缩到
-    # <data_dir>/<project_id> 下，避免跨项目全盘遍历（sess-bench 残留会拖慢）。
-    # project_id 必须是具体项目 id，拒绝空值。
+    # Real LLM requests are located by project_id + event_id: file mode uses this to narrow the scan to
+    # <data_dir>/<project_id>, avoiding a full cross-project walk (leftover sess-bench data slows it down).
+    # project_id must be a concrete project id; empty values are rejected.
     if not project_id or project_id.strip() == "":
         raise HTTPException(
             status_code=400,
-            detail="project_id 不能为空，必须指定具体项目 id",
+            detail="project_id must not be empty; specify a concrete project id",
         )
     item = await backend.get_llm_request(project_id, event_id)
     if item is None:
@@ -154,13 +154,13 @@ async def export_trace_jsonl(
     session_id: str | None = None,
     backend: StorageBackend = Depends(get_storage_backend),
 ):
-    # 下载入口：DB 模式从库表重拼 `<trace_id>.jsonl` 全文；file 模式直接把
-    # 磁盘上的原文回吐。带 session_id 时 file 后端按 <pid>/<sid>/<trace_id>.jsonl
-    # 直拼路径 O(1) 定位，未命中再全盘兜底。
+    # Download entry point: DB mode rebuilds the full `<trace_id>.jsonl` from the tables; file mode returns
+    # the original file on disk. With session_id the file backend builds the <pid>/<sid>/<trace_id>.jsonl
+    # path directly for an O(1) lookup and falls back to a full scan on a miss.
     if not project_id or project_id.strip() == "":
         raise HTTPException(
             status_code=400,
-            detail="project_id 不能为空，必须指定具体项目 id",
+            detail="project_id must not be empty; specify a concrete project id",
         )
     content = await backend.export_trace_jsonl(
         project_id, trace_id, session_id=session_id

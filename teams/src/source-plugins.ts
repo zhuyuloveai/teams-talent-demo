@@ -55,8 +55,9 @@ export interface SourcePluginCatalog {
 }
 
 export const sourceAssetKindLabels: Record<SourceAssetKind, string> = {
-  repository: '代码仓', code: '代码资产', requirement: '需求', defect: '问题单 / 缺陷', document: '设计与业务资料', 'test-case': '测试用例',
+  repository: 'Repository', code: 'Code asset', requirement: 'Requirement', defect: 'Issue / Defect', document: 'Design and business materials', 'test-case': 'Test case',
 };
+const deliveryPhaseText: Record<'准备' | '开发' | '验证' | '待验收' | '已交付', string> = { '准备': 'Preparation', '开发': 'Development', '验证': 'Verification', '待验收': 'Awaiting acceptance', '已交付': 'Delivered' };
 export const sourceAssetId = (pluginId: SourcePluginId, projectId: SourceProjectId, sourceRecordId: string) => `${pluginId}:${projectId}:${sourceRecordId}`;
 
 const cardRequirement = sourceAssetId('requirements', 'carddemo', 'DEMO-MKT-001');
@@ -67,40 +68,40 @@ const authenticationScope = 'teams/fixtures/project-documents/carddemo/docs/desi
 const localFile = (collection: SourceAssetReference['collection'], path: string, label: string): SourceAssetReference => ({
   collection, path, label, extent: collection === 'graph' ? 'excerpt' : 'full-file', origin: 'existing-local-file',
 });
-const cardDesignReference = () => localFile('sources', marketingDesign, '阅读已有营销能力设计');
+const cardDesignReference = () => localFile('sources', marketingDesign, 'Read the existing marketing capability design');
 const teamDocumentReference = (path: string, label: string) => localFile('teams-documents', path, label);
 
 type AssetInput = Pick<SourcePluginAsset, 'sourceRecordId' | 'kind' | 'title' | 'summary' | 'detail'> & Partial<Pick<SourcePluginAsset, 'version' | 'createdAt' | 'updatedAt' | 'references' | 'relatedRequirementIds' | 'requirement' | 'issue' | 'testCase'>>;
 const cardAdditionalRequirements: readonly AssetInput[] = [
-  { sourceRecordId: 'MKT-002', kind: 'requirement', title: '返现明细查询', summary: '按交易查看已有返现的金额、处理状态与来源，支持分页和筛选。',
-    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-002'].due, owner: '陈晨', delivery: { phase: '开发', summary: '明细查询与分页开发中，正在处理重复记录问题。' } },
-    detail: '范围：展示已有返现记录，按交易与处理状态查询。\n验收关注：明细与交易可对应，分页无重复和遗漏。\n本需求不调整返现资格、比例或结算规则。' },
-  { sourceRecordId: 'MKT-003', kind: 'requirement', title: '账单返现汇总', summary: '按账单周期展示已有返现记录的汇总，并支持下钻明细。',
-    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-003'].due, owner: '苏晴', delivery: { phase: '验证', summary: '正在核对汇总与明细的一致性，合计差异待修复。' } },
-    detail: '范围：按账单周期聚合已有返现记录。\n验收关注：汇总可下钻，合计与所含明细一致。\n统计使用既有入账记录，不新增入账或退款规则。' },
-  { sourceRecordId: 'MKT-004', kind: 'requirement', title: '返现到账通知', summary: '展示返现到账消息，提供金额、到账时间和关联交易入口。',
-    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-004'].due, owner: '杨帆', delivery: { phase: '待验收', summary: '通知内容已提交确认，关联交易摘要问题待复测。' } },
-    detail: '范围：基于已有到账记录展示通知与详情。\n验收关注：消息与到账记录对应，关联交易可定位。\n通知不产生返现入账，也不改变活动权益。' },
-  { sourceRecordId: 'MKT-005', kind: 'requirement', title: '历史权益查询', summary: '查询已结束权益的适用期间与原始条款，保留权益版本。',
-    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-005'].due, owner: '赵宁', delivery: { phase: '已交付', summary: '来源记录已交付；日期排序问题已关闭，筛选交互问题待处理。' } },
-    detail: '范围：查看历史权益及其当时有效的条款版本。\n验收关注：历史期间与版本对应，不以当前规则覆盖旧条款。\n历史权益不作为 MKT-001 新需求的业务约束。' },
+  { sourceRecordId: 'MKT-002', kind: 'requirement', title: 'Cashback Detail Query', summary: 'View the amount, processing status and source of existing cashback by transaction, with paging and filters.',
+    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-002'].due, owner: 'Chen Chen', delivery: { phase: '开发', summary: 'Detail query and paging are in development; the duplicate-record issue is being fixed.' } },
+    detail: 'Scope: show existing cashback records, queried by transaction and processing status.\nAcceptance focus: details map to transactions; paging has no duplicates or gaps.\nThis requirement does not change cashback eligibility, rate or settlement rules.' },
+  { sourceRecordId: 'MKT-003', kind: 'requirement', title: 'Statement Cashback Summary', summary: 'Summarize existing cashback records by statement cycle, with drill-down to details.',
+    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-003'].due, owner: 'Su Qing', delivery: { phase: '验证', summary: 'Checking that the summary matches the details; a total mismatch is awaiting a fix.' } },
+    detail: 'Scope: aggregate existing cashback records by statement cycle.\nAcceptance focus: the summary drills down, and its total equals the included details.\nTotals use existing posting records; no new posting or refund rules.' },
+  { sourceRecordId: 'MKT-004', kind: 'requirement', title: 'Cashback Credited Notification', summary: 'Show cashback credited messages with the amount, credit time and a link to the related transaction.',
+    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-004'].due, owner: 'Yang Fan', delivery: { phase: '待验收', summary: 'Notification content is submitted for confirmation; the related-transaction summary issue awaits retest.' } },
+    detail: 'Scope: show notifications and details based on existing credit records.\nAcceptance focus: messages map to credit records, and the related transaction can be located.\nNotifications do not post cashback and do not change campaign benefits.' },
+  { sourceRecordId: 'MKT-005', kind: 'requirement', title: 'Historical Benefit Query', summary: 'Query the valid period and original terms of ended benefits, keeping benefit versions.',
+    requirement: { category: 'requirement', plannedEnd: approvedRequirementSchedule['MKT-005'].due, owner: 'Zhao Ning', delivery: { phase: '已交付', summary: 'Delivered per the source record; the date-sorting issue is closed, the filter interaction issue is open.' } },
+    detail: 'Scope: view historical benefits and the terms version valid at the time.\nAcceptance focus: historical periods map to versions; current rules do not override old terms.\nHistorical benefits are not business constraints for the new MKT-001 requirement.' },
 ];
 const cardAdditionalIssues: readonly AssetInput[] = [
-  { sourceRecordId: 'CARD-BUG-003', kind: 'defect', title: '返现明细翻页出现重复记录', summary: '翻页后部分交易重复出现，影响明细查询交付。',
-    issue: { owner: '陈晨', severity: '高', status: '处理中', closed: false, confirmed: true, blocksDelivery: true, progress: '正在调整分页排序与游标，修复后核对跨页去重。' },
-    detail: '问题：分页边界记录重复。\n期望：同一查询范围内每条记录只出现一次。\n影响：阻塞返现明细查询交付。', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-002')] },
-  { sourceRecordId: 'CARD-BUG-004', kind: 'defect', title: '账单返现汇总与明细合计不一致', summary: '汇总金额与下钻明细合计存在差异。',
-    issue: { owner: '苏晴', severity: '高', status: '待修复', closed: false, confirmed: true, blocksDelivery: true, progress: '已定位统计范围不一致，等待统一汇总与明细过滤条件。' },
-    detail: '问题：同一账单周期的汇总与明细使用不同过滤范围。\n期望：汇总等于当前范围内的明细合计。\n影响：阻塞账单返现汇总交付。', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-003')] },
-  { sourceRecordId: 'CARD-BUG-005', kind: 'defect', title: '返现到账通知缺少关联交易摘要', summary: '通知金额与时间可见，关联交易摘要未完整展示。',
-    issue: { owner: '杨帆', severity: '中', status: '待复测', closed: false, confirmed: true, blocksDelivery: false, progress: '摘要展示已调整，等待复测后确认关闭。' },
-    detail: '问题：通知详情缺少关联交易摘要。\n期望：用户可辨认到账消息对应的交易。\n当前状态：待复测，尚未关闭。', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-004')] },
-  { sourceRecordId: 'CARD-BUG-006', kind: 'defect', title: '历史权益查询切换条件后保留旧筛选', summary: '切换权益类型时仍保留上一次的筛选条件。',
-    issue: { owner: '赵宁', severity: '低', status: '待处理', closed: false, confirmed: true, blocksDelivery: false, progress: '已记录交互问题，等待安排调整。' },
-    detail: '问题：切换查询类型后旧条件仍然生效。\n期望：展示当前有效条件，支持清除筛选。\n范围：已交付历史权益查询的后续问题。', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-005')] },
-  { sourceRecordId: 'CARD-BUG-007', kind: 'defect', title: '历史权益日期排序错误', summary: '历史权益按显示字符串排序，未使用实际日期顺序。',
-    issue: { owner: '赵宁', severity: '低', status: '已关闭', closed: true, confirmed: true, blocksDelivery: false, progress: '来源记录已确认修复并关闭。' },
-    detail: '问题：跨月权益记录顺序错误。\n处理：按权益日期排序。\n当前状态：来源记录已关闭。', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-005')] },
+  { sourceRecordId: 'CARD-BUG-003', kind: 'defect', title: 'Duplicate records when paging cashback details', summary: 'Some transactions appear again after paging, affecting delivery of the detail query.',
+    issue: { owner: 'Chen Chen', severity: 'High', status: 'In progress', closed: false, confirmed: true, blocksDelivery: true, progress: 'Adjusting paging sort order and cursor; cross-page de-duplication will be checked after the fix.' },
+    detail: 'Issue: records at page boundaries are duplicated.\nExpected: each record appears only once within the same query range.\nImpact: blocks delivery of the cashback detail query.', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-002')] },
+  { sourceRecordId: 'CARD-BUG-004', kind: 'defect', title: 'Statement cashback summary does not match detail total', summary: 'The summary amount differs from the total of the drill-down details.',
+    issue: { owner: 'Su Qing', severity: 'High', status: 'To fix', closed: false, confirmed: true, blocksDelivery: true, progress: 'Root cause found: different aggregation scopes; waiting to align summary and detail filters.' },
+    detail: 'Issue: the summary and the details for the same statement cycle use different filter scopes.\nExpected: the summary equals the total of the details in the current scope.\nImpact: blocks delivery of the statement cashback summary.', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-003')] },
+  { sourceRecordId: 'CARD-BUG-005', kind: 'defect', title: 'Cashback credited notification lacks related transaction summary', summary: 'The notification amount and time are visible, but the related transaction summary is incomplete.',
+    issue: { owner: 'Yang Fan', severity: 'Medium', status: 'Awaiting retest', closed: false, confirmed: true, blocksDelivery: false, progress: 'Summary display adjusted; to be closed after retest.' },
+    detail: 'Issue: notification details lack the related transaction summary.\nExpected: users can identify the transaction behind a credited message.\nCurrent status: awaiting retest, not closed.', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-004')] },
+  { sourceRecordId: 'CARD-BUG-006', kind: 'defect', title: 'Historical benefit query keeps old filters after switching criteria', summary: 'Switching the benefit type keeps the previous filter criteria.',
+    issue: { owner: 'Zhao Ning', severity: 'Low', status: 'To handle', closed: false, confirmed: true, blocksDelivery: false, progress: 'Interaction issue recorded; waiting to be scheduled.' },
+    detail: 'Issue: old criteria stay in effect after switching the query type.\nExpected: show the criteria currently in effect and allow clearing filters.\nScope: follow-up issue on the delivered historical benefit query.', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-005')] },
+  { sourceRecordId: 'CARD-BUG-007', kind: 'defect', title: 'Historical benefits sorted by date incorrectly', summary: 'Historical benefits are sorted by display string instead of actual date order.',
+    issue: { owner: 'Zhao Ning', severity: 'Low', status: 'Closed', closed: true, confirmed: true, blocksDelivery: false, progress: 'The source record confirms it is fixed and closed.' },
+    detail: 'Issue: benefit records spanning months are out of order.\nFix: sort by benefit date.\nCurrent status: closed in the source record.', relatedRequirementIds: [sourceAssetId('requirements', 'carddemo', 'MKT-005')] },
 ];
 /** Explicit built-in project links; another project must associate each source separately. */
 export const cardProjectOverviewSourceIds = [
@@ -115,7 +116,7 @@ function asset(data: SourcePluginData, pluginId: SourcePluginId, projectId: Sour
     sourceProjectId: projectId,
     sourceProjectName: projectId === 'teams' ? data.teamsProject.project.name : 'Credit Card',
     origin: 'plugin-mock' as const,
-    detail: `来源记录 · ${value.sourceRecordId}\n\n${value.detail}`,
+    detail: `Source record · ${value.sourceRecordId}\n\n${value.detail}`,
     references: Object.freeze((value.references ?? []).map(reference => Object.freeze({ ...reference }))),
     relatedRequirementIds: Object.freeze([...(value.relatedRequirementIds ?? [])]),
   });
@@ -126,84 +127,84 @@ function repositoryAssets(data: SourcePluginData): readonly SourcePluginAsset[] 
   const repo = data.teamsProject.project.repos[0];
   return [
     card({
-      sourceRecordId: 'carddemo-java-1025', kind: 'repository', title: 'CardDemo 业务代码仓库',
-      summary: '独立 GitHub 仓库，本机路径由项目工作区配置。', version: '项目工作区配置',
-      detail: '仓库：https://github.com/JeffyLiu003/carddemo-java-1025.git\n本机目录、交付基线和任务分支以项目工作区配置及绑定为准。知识中的源码节选是固定历史样本，不代表当前业务仓库版本。',
+      sourceRecordId: 'carddemo-java-1025', kind: 'repository', title: 'CardDemo business code repository',
+      summary: 'Standalone GitHub repository; the local path comes from the project workspace configuration.', version: 'Project workspace configuration',
+      detail: 'Repository: https://github.com/JeffyLiu003/carddemo-java-1025.git\nThe local directory, delivery baseline and task branch follow the project workspace configuration and bindings. Source excerpts in knowledge are fixed historical samples and do not represent the current business repository version.',
       relatedRequirementIds: [cardRequirement],
     }),
     ...(data.graph ?? []).map(source => card({
-      sourceRecordId: `code-${source.id}`, kind: 'code', title: `${source.name} · 源码`,
-      summary: source.file, version: '历史源码节选',
-      detail: `历史规则源码样本\n文件：${source.file}\n固定样本，仅用于知识展示。`,
-      references: [localFile('graph', source.file, '阅读已有源码节选')], relatedRequirementIds: [cardRequirement],
+      sourceRecordId: `code-${source.id}`, kind: 'code', title: `${source.name} · Source code`,
+      summary: source.file, version: 'Historical source excerpt',
+      detail: `Historical rule source sample\nFile: ${source.file}\nFixed sample, for knowledge display only.`,
+      references: [localFile('graph', source.file, 'Read the existing source excerpt')], relatedRequirementIds: [cardRequirement],
     })),
     asset(data, 'repository', 'teams', {
       sourceRecordId: 'icode-teams', kind: 'repository', title: repo.name,
-      summary: repo.note, version: `源码快照 ${data.teamsProject.sourceCommit.slice(0, 7)}`,
-      detail: `项目：${data.teamsProject.project.name}\n代码仓：${repo.name}\n分支：${repo.branch}\n源目录：${repo.path}\n${repo.note}\n记录来自已导入的 Teams 项目快照；引用文件保留原文。`,
-      references: [teamDocumentReference('README.md', '阅读仓库 README'), teamDocumentReference('AGENTS.md', '阅读仓库规范 AGENTS.md')],
+      summary: repo.note, version: `Source snapshot ${data.teamsProject.sourceCommit.slice(0, 7)}`,
+      detail: `Project: ${data.teamsProject.project.name}\nRepository: ${repo.name}\nBranch: ${repo.branch}\nSource directory: ${repo.path}\n${repo.note}\nRecord from the imported Teams project snapshot; referenced files keep their original text.`,
+      references: [teamDocumentReference('README.md', 'Read the repository README'), teamDocumentReference('AGENTS.md', 'Read the repository standards AGENTS.md')],
     }),
   ];
 }
 
 function requirementAssets(data: SourcePluginData): readonly SourcePluginAsset[] {
   const reconnect = data.teamsProject.inputs.find(input => input.id === 'D201');
-  if (!reconnect) throw new Error('Teams 项目数据缺少 D201 需求依据');
+  if (!reconnect) throw new Error('Teams project data is missing the D201 requirement basis');
   return [
     asset(data, 'requirements', 'carddemo', {
-      sourceRecordId: 'DEMO-MKT-001', kind: 'requirement', title: '信用卡消费返现', version: '需求 r1',
-      requirement: { category: 'requirement', owner: '待分配', taskId: 'DEMO-MKT-001' },
+      sourceRecordId: 'DEMO-MKT-001', kind: 'requirement', title: 'Credit Card Spending Cashback', version: 'Requirement r1',
+      requirement: { category: 'requirement', owner: 'Unassigned', taskId: 'DEMO-MKT-001' },
       summary: data.blueprint.scenario.slice,
-      detail: `需求范围：${data.blueprint.scenario.slice}\n\n已确认：\n1. 目标客户为白金卡客户。\n2. 消费期间为未来 3 个月。\n3. 消费额外返现比例为 0.5%。\n\n待确认：活动日期、周期起算、消费范围与排除项、是否报名、消费门槛、返现上限、结算入账及退款规则。\n\n当前本地规则与正式政策分别记录；正式业务细则需确认。`,
+      detail: `Requirement scope: ${data.blueprint.scenario.slice}\n\nConfirmed:\n1. Target customers are platinum card customers.\n2. The spending period is the next 3 months.\n3. The extra cashback rate on spending is 0.5%.\n\nTo be confirmed: campaign dates, cycle start, spending scope and exclusions, whether enrollment is required, spending threshold, cashback cap, settlement posting and refund rules.\n\nCurrent local rules and the formal policy are recorded separately; the formal business details need confirmation.`,
       references: [cardDesignReference()],
     }),
     ...cardAdditionalRequirements.map(item => asset(data, 'requirements', 'carddemo', {
-      ...item, version: '需求 r1',
-      detail: `需求来源：需求平台\n负责人：${item.requirement!.owner}\n交付状态：${item.requirement!.delivery!.phase}\n进展：${item.requirement!.delivery!.summary}\n\n${item.detail}\n\n进展来自需求平台记录，尚未关联 iCode 执行会话或验收证据。`,
+      ...item, version: 'Requirement r1',
+      detail: `Requirement source: requirement platform\nOwner: ${item.requirement!.owner}\nDelivery status: ${deliveryPhaseText[item.requirement!.delivery!.phase]}\nProgress: ${item.requirement!.delivery!.summary}\n\n${item.detail}\n\nProgress comes from the requirement platform record; no iCode execution session or acceptance evidence is linked yet.`,
     })),
     ...data.teamsProject.tasks.map(task => asset(data, 'requirements', 'teams', {
       sourceRecordId: `REQ-${task.id}`, kind: 'requirement', title: task.title,
-      requirement: { category: task.type === '需求' ? 'requirement' : 'research', owner: '成员 ' + task.owner, plannedEnd: task.due, taskId: task.id },
-      summary: task.goal, version: 'Teams 需求快照',
-      detail: `依据：已导入 Teams 事项 ${task.id}（${task.type}）。\n目标：${task.goal}\n\n需求标准：\n${task.criteria.map((criterion, index) => `${index + 1}. ${criterion}`).join('\n')}\n\n这里只投影事项的需求定义，不包含交付节点、会话、执行状态或发布结果。`,
+      requirement: { category: task.type === '需求' ? 'requirement' : 'research', owner: 'Member ' + task.owner, plannedEnd: task.due, taskId: task.id },
+      summary: task.goal, version: 'Teams requirement snapshot',
+      detail: `Basis: imported Teams item ${task.id} (${task.type === '需求' ? 'requirement' : 'research'}).\nGoal: ${task.goal}\n\nRequirement criteria:\n${task.criteria.map((criterion, index) => `${index + 1}. ${criterion}`).join('\n')}\n\nThis shows only the item's requirement definition; it does not include delivery nodes, sessions, execution status or publish results.`,
     })),
     asset(data, 'requirements', 'teams', {
       sourceRecordId: 'REQ-WINDOWS-RECONNECT', kind: 'requirement', title: reconnect.title,
-      requirement: { category: 'issue-input', owner: '成员 C' },
-      summary: '重启后恢复 Agent 连接，并区分正常重启与异常退出路径。', version: '需求 r1',
-      detail: `依据：已导入 Teams 输入 ${reconnect.id}。\n来源引用：${reconnect.ref}\n\n${reconnect.text}\n\n该需求根据已导入输入整理。`,
+      requirement: { category: 'issue-input', owner: 'Member C' },
+      summary: 'Restore the Agent connection after a restart, separating the normal-restart and abnormal-exit paths.', version: 'Requirement r1',
+      detail: `Basis: imported Teams input ${reconnect.id}.\nSource reference: ${reconnect.ref}\n\n${reconnect.text}\n\nThis requirement is compiled from the imported input.`,
     }),
   ];
 }
 
 function defectAssets(data: SourcePluginData): readonly SourcePluginAsset[] {
   const reconnect = data.teamsProject.inputs.find(input => input.id === 'D201');
-  if (!reconnect) throw new Error('Teams 项目数据缺少 D201 问题依据');
+  if (!reconnect) throw new Error('Teams project data is missing the D201 issue basis');
   const web = data.graph?.find(source => source.id === 'web');
   return [
     asset(data, 'defects', 'carddemo', {
-      sourceRecordId: 'CARD-BUG-001', kind: 'defect', title: '普通卡不应进入白金卡返现范围', version: '问题 r1',
-      issue: { owner: '陈晨', severity: '未标注', status: '待复核', closed: null, confirmed: true, blocksDelivery: false, progress: '检查卡片等级与金额计算是否正确关联。' },
-      summary: '补充普通卡反向用例，避免只验证白金卡正向输入。',
-      detail: '问题场景：普通卡发生120元消费。\n问题描述：若只检查消费时间而遗漏卡片等级，会错误计算0.60元奖励。\n期望行为：普通卡不参与，奖励为0。\n当前处理状态由本次交付检查记录补充。',
-      references: [cardDesignReference(), ...(web ? [localFile('graph', web.file, '阅读已有活动中心源码节选')] : [])], relatedRequirementIds: [cardRequirement],
+      sourceRecordId: 'CARD-BUG-001', kind: 'defect', title: 'Standard cards must not enter the platinum cashback scope', version: 'Issue r1',
+      issue: { owner: 'Chen Chen', severity: 'Unlabeled', status: 'Awaiting review', closed: null, confirmed: true, blocksDelivery: false, progress: 'Check that card tier and amount calculation are linked correctly.' },
+      summary: 'Add a negative case for standard cards so that not only positive platinum card input is verified.',
+      detail: 'Scenario: a standard card spends CNY 120.00.\nIssue: if only the spending time is checked and the card tier is missed, a CNY 0.60 reward is calculated by mistake.\nExpected: standard cards do not participate; the reward is 0.\nThe current handling status is filled in by this delivery check record.',
+      references: [cardDesignReference(), ...(web ? [localFile('graph', web.file, 'Read the existing campaign center source excerpt')] : [])], relatedRequirementIds: [cardRequirement],
     }),
     asset(data, 'defects', 'carddemo', {
-      sourceRecordId: 'CARD-BUG-002', kind: 'defect', title: '重复评估需保持一笔奖励和一次入账', version: '问题 r1',
-      issue: { owner: '未分配', severity: '未标注', status: '待复现', closed: null, confirmed: false, blocksDelivery: false, progress: '尚无缺陷复现或关闭记录。' },
-      summary: '重复评估的幂等边界待核验。',
-      detail: '问题描述：同一活动、同一交易收到重复评估请求。\n期望行为：首次按规则计算奖励；后续请求识别已评估，沿用原奖励标识，避免重复入账。\n复现状态：尚未复现，需结合关联需求与测试用例核验。',
-      references: [cardDesignReference(), localFile('sources', marketingIntegration, '阅读已有营销集成决策')], relatedRequirementIds: [cardRequirement],
+      sourceRecordId: 'CARD-BUG-002', kind: 'defect', title: 'Repeated evaluation must keep one reward and one posting', version: 'Issue r1',
+      issue: { owner: 'Unassigned', severity: 'Unlabeled', status: 'Awaiting reproduction', closed: null, confirmed: false, blocksDelivery: false, progress: 'No defect reproduction or close record yet.' },
+      summary: 'The idempotency boundary of repeated evaluation needs verification.',
+      detail: 'Issue: the same campaign and transaction receive repeated evaluation requests.\nExpected: the first request calculates the reward per the rules; later requests detect the prior evaluation and reuse the original reward ID, avoiding duplicate posting.\nReproduction: not yet reproduced; verify against the linked requirement and test cases.',
+      references: [cardDesignReference(), localFile('sources', marketingIntegration, 'Read the existing marketing integration decision')], relatedRequirementIds: [cardRequirement],
     }),
     ...cardAdditionalIssues.map(item => asset(data, 'defects', 'carddemo', {
-      ...item, version: '问题 r1',
-      detail: `问题来源：缺陷平台\n负责人：${item.issue!.owner}\n处理状态：${item.issue!.status}\n进展：${item.issue!.progress}\n\n${item.detail}\n\n处理状态来自缺陷平台记录，尚未关联 iCode 执行证据。`,
+      ...item, version: 'Issue r1',
+      detail: `Issue source: defect platform\nOwner: ${item.issue!.owner}\nHandling status: ${item.issue!.status}\nProgress: ${item.issue!.progress}\n\n${item.detail}\n\nThe handling status comes from the defect platform record; no iCode execution evidence is linked yet.`,
     })),
     asset(data, 'defects', 'teams', {
-      sourceRecordId: 'TEAMS-BUG-001', kind: 'defect', title: reconnect.title, version: 'Teams 问题快照',
-      issue: { owner: '成员 C', severity: '未标注', status: '待补复现 · 关闭状态未记录', closed: null, confirmed: true, blocksDelivery: false, progress: 'D201 → R20 讨论中，需补充正常重启和异常退出的复现步骤。' },
-      summary: 'Windows 重启后的 Agent 连接恢复问题。',
-      detail: `来源依据：Teams 输入 ${reconnect.id}。\n来源引用：${reconnect.ref}\n\n${reconnect.text}\n\n保留来源输入作为问题描述；处理与验证结果待补充。`,
+      sourceRecordId: 'TEAMS-BUG-001', kind: 'defect', title: reconnect.title, version: 'Teams issue snapshot',
+      issue: { owner: 'Member C', severity: 'Unlabeled', status: 'Reproduction needed · close state not recorded', closed: null, confirmed: true, blocksDelivery: false, progress: 'D201 → R20 under discussion; reproduction steps for normal restart and abnormal exit are needed.' },
+      summary: 'Agent connection recovery after a Windows restart.',
+      detail: `Source basis: Teams input ${reconnect.id}.\nSource reference: ${reconnect.ref}\n\n${reconnect.text}\n\nThe source input is kept as the issue description; handling and verification results are pending.`,
       relatedRequirementIds: [teamRequirement('REQ-WINDOWS-RECONNECT')],
     }),
   ];
@@ -211,48 +212,48 @@ function defectAssets(data: SourcePluginData): readonly SourcePluginAsset[] {
 
 function designAssets(data: SourcePluginData): readonly SourcePluginAsset[] {
   const cards = [
-    { sourceRecordId: 'marketing-capability', title: '营销能力设计', path: marketingDesign, summary: '白金卡资格、三个月期间、额外0.5%与金额舍入规则。' },
-    { sourceRecordId: 'ADR-009', title: '营销集成与入账边界', path: marketingIntegration, summary: '交易入账与营销评估之间的调用、提交及重试约定。' },
-    { sourceRecordId: 'ADR-007', title: '鉴权范围设计决策', path: authenticationScope, summary: '已有系统的认证范围与限制说明；属于设计资料。' },
+    { sourceRecordId: 'marketing-capability', title: 'Marketing capability design', path: marketingDesign, summary: 'Platinum card eligibility, the three-month period, the extra 0.5% and amount rounding rules.' },
+    { sourceRecordId: 'ADR-009', title: 'Marketing integration and posting boundary', path: marketingIntegration, summary: 'Call, commit and retry conventions between transaction posting and marketing evaluation.' },
+    { sourceRecordId: 'ADR-007', title: 'Authentication scope design decision', path: authenticationScope, summary: 'Authentication scope and limits of the existing system; design material.' },
   ];
   return [
     ...cards.map(document => asset(data, 'design-library', 'carddemo', {
       sourceRecordId: document.sourceRecordId, kind: 'document', title: document.title, summary: document.summary,
-      version: '当前规则文件',
-      detail: `文档路径：${document.path}\n${document.summary}\n\n插件仅提供文档目录记录；阅读入口返回当前规则文档。`,
-      references: [localFile('sources', document.path, `阅读${document.title}`)], relatedRequirementIds: [cardRequirement],
+      version: 'Current rule file',
+      detail: `Document path: ${document.path}\n${document.summary}\n\nThe plugin provides only the document catalog record; the read entry returns the current rule document.`,
+      references: [localFile('sources', document.path, `Read ${document.title}`)], relatedRequirementIds: [cardRequirement],
     })),
-    ...[{ name: '项目规范 AGENTS.md', path: 'AGENTS.md', description: data.teamsProject.project.agentsNote }, ...data.teamsProject.project.docs].map(document => asset(data, 'design-library', 'teams', {
+    ...[{ name: 'Project standards AGENTS.md', path: 'AGENTS.md', description: data.teamsProject.project.agentsNote }, ...data.teamsProject.project.docs].map(document => asset(data, 'design-library', 'teams', {
       sourceRecordId: document.path, kind: 'document', title: document.name, summary: document.description,
-      version: `源码快照 ${data.teamsProject.sourceCommit.slice(0, 7)}`,
-      detail: `项目：${data.teamsProject.project.name}\n文档路径：${document.path}\n${document.description}\n\n插件记录引用原 Teams 导入快照，阅读入口保留原文。`,
-      references: [teamDocumentReference(document.path, `阅读${document.name}`)],
+      version: `Source snapshot ${data.teamsProject.sourceCommit.slice(0, 7)}`,
+      detail: `Project: ${data.teamsProject.project.name}\nDocument path: ${document.path}\n${document.description}\n\nThe plugin record references the original Teams import snapshot; the read entry keeps the original text.`,
+      references: [teamDocumentReference(document.path, `Read ${document.name}`)],
     })),
   ];
 }
 
 function testAssets(data: SourcePluginData): readonly SourcePluginAsset[] {
   const titles: Record<string, string> = {
-    'AC-01': '白金卡客户范围', 'AC-02': '未来 3 个月消费期间', 'AC-03': '消费额外返现 0.5%',
+    'AC-01': 'Platinum card customer scope', 'AC-02': 'Spending period: next 3 months', 'AC-03': 'Extra 0.5% cashback on spending',
   };
   const definitions = [
-    { id: 'TEAMS-TC-001', requirement: 'REQ-T104', title: '新成员获取项目配置前查看范围', given: '用户已加入团队，项目包含资料与配置。', steps: '打开团队项目，选择待应用配置，查看内容和影响范围。', expected: '展示项目资料、配置内容及作用范围；此处仅定义预期，不记录实际应用结果。' },
-    { id: 'TEAMS-TC-002', requirement: 'REQ-T105', title: '切换项目后只显示目标项目内容', given: '两个项目分别拥有不同的资料与来源关联。', steps: '在侧栏依次进入两个项目，再进入一个未关联资产的新项目。', expected: '已有项目显示各自关联；新项目初始为空，不自动继承其他项目数据。' },
-    { id: 'TEAMS-TC-003', requirement: 'REQ-T107', title: '工作目录与代码仓身份核对', given: '项目登记了代码仓，本机存在候选工作目录。', steps: '选择匹配目录，再选择不匹配目录，检查页面反馈。', expected: '匹配目录可按合同关联；不匹配目录明确提示，不能默认为已核验。' },
-    { id: 'TEAMS-TC-004', requirement: 'REQ-WINDOWS-RECONNECT', title: 'Windows 正常重启与异常退出后的连接恢复', given: 'Windows 环境已接入一个 Agent 实例。', steps: '分别使用正常重启和异常退出的独立场景，再启动客户端检查连接提示。', expected: '呈现真实连接状态与可执行的下一步；此用例定义不代表已运行或验证通过。' },
+    { id: 'TEAMS-TC-001', requirement: 'REQ-T104', title: 'New member reviews scope before getting project configuration', given: 'The user has joined the team, and the project has materials and configuration.', steps: 'Open the team project, select the configuration to apply, and review its content and scope of impact.', expected: 'Project materials, configuration content and scope are shown; this only defines the expectation and does not record an actual apply result.' },
+    { id: 'TEAMS-TC-002', requirement: 'REQ-T105', title: 'After switching projects only the target project content is shown', given: 'Two projects have different materials and source links.', steps: 'Open both projects in turn from the sidebar, then open a new project with no linked assets.', expected: 'Existing projects show their own links; the new project starts empty and does not inherit data from other projects.' },
+    { id: 'TEAMS-TC-003', requirement: 'REQ-T107', title: 'Working directory and repository identity check', given: 'The project has a registered repository and there is a candidate working directory on this machine.', steps: 'Select a matching directory, then a non-matching one, and check the page feedback.', expected: 'A matching directory can be linked per the contract; a non-matching directory gets a clear warning and is never assumed verified.' },
+    { id: 'TEAMS-TC-004', requirement: 'REQ-WINDOWS-RECONNECT', title: 'Connection recovery after a normal Windows restart and an abnormal exit', given: 'One Agent instance is connected in a Windows environment.', steps: 'Run the normal-restart and abnormal-exit scenarios separately, then start the client and check the connection prompt.', expected: 'The real connection status and an actionable next step are shown; this case definition does not mean it has run or passed.' },
   ];
   return [
     ...data.blueprint.acceptance_criteria.filter(criterion => criterion.id in titles).map(criterion => asset(data, 'test-assets', 'carddemo', {
       sourceRecordId: `CARD-TC-${criterion.id.slice(3)}`, kind: 'test-case', title: titles[criterion.id],
-      summary: criterion.given, version: '用例 v1',
-      testCase:{given:criterion.given,steps:'按已确认的 PRD 范围核对；未决政策不设虚构预期。',expected:criterion.expected},
-      detail: `用例依据：验收标准 ${criterion.id}。\n前置条件 / 输入：${criterion.given}\n操作：按已确认的需求范围核对；具体执行步骤待业务细则明确后补充。\n预期结果：${criterion.expected}\n\n本记录是测试用例定义，不包含测试运行、测试报告或验收结论。`,
+      summary: criterion.given, version: 'Case v1',
+      testCase:{given:criterion.given,steps:'Check against the confirmed PRD scope; no invented expectations for open policies.',expected:criterion.expected},
+      detail: `Case basis: acceptance criterion ${criterion.id}.\nPrecondition / input: ${criterion.given}\nAction: check against the confirmed requirement scope; concrete steps will be added once the business details are clear.\nExpected result: ${criterion.expected}\n\nThis record is a test case definition; it contains no test run, test report or acceptance decision.`,
       references: [cardDesignReference()], relatedRequirementIds: [cardRequirement],
     })),
     ...definitions.map(definition => asset(data, 'test-assets', 'teams', {
       sourceRecordId: definition.id, kind: 'test-case', title: definition.title, summary: definition.given,
-      version: '用例 v1', testCase:{given:definition.given,steps:definition.steps,expected:definition.expected},
-      detail: `前置条件：${definition.given}\n操作步骤：${definition.steps}\n预期结果：${definition.expected}\n\n此为测试用例定义，未执行测试。`,
+      version: 'Case v1', testCase:{given:definition.given,steps:definition.steps,expected:definition.expected},
+      detail: `Precondition: ${definition.given}\nSteps: ${definition.steps}\nExpected result: ${definition.expected}\n\nThis is a test case definition; no test has been run.`,
       relatedRequirementIds: [teamRequirement(definition.requirement)],
     })),
   ];
@@ -275,12 +276,12 @@ export function createSourcePluginCatalog(data: SourcePluginData): SourcePluginC
   const records = sourcePluginProviders.flatMap(plugin => [...plugin.provide(data)]);
   const byId = new Map<string, SourcePluginAsset>();
   for (const record of records) {
-    if (byId.has(record.id)) throw new Error(`源插件记录 ID 重复：${record.id}`);
+    if (byId.has(record.id)) throw new Error(`Duplicate source plugin record ID: ${record.id}`);
     byId.set(record.id, record);
   }
   for (const record of records) for (const requirementId of record.relatedRequirementIds) {
     const requirement = byId.get(requirementId);
-    if (!requirement || requirement.pluginId !== 'requirements' || requirement.sourceProjectId !== record.sourceProjectId) throw new Error(`源插件需求关联无效：${record.id} → ${requirementId}`);
+    if (!requirement || requirement.pluginId !== 'requirements' || requirement.sourceProjectId !== record.sourceProjectId) throw new Error(`Invalid source plugin requirement link: ${record.id} → ${requirementId}`);
   }
   return Object.freeze({
     plugins: sourcePluginProviders,
@@ -298,15 +299,15 @@ export function createSourcePluginCatalog(data: SourcePluginData): SourcePluginC
 /** Explicit project/task mapping; source candidates never become tests for unrelated tasks. */
 export function taskTestCases(data:SourcePluginData,task:{projectId:string;id:string;title:string;description?:string}):readonly SourcePluginAsset[]{
  const four=fourRequirementScenario(task.projectId,task);
- if(four)return four.cases.map(item=>asset(data,'test-assets','carddemo',{sourceRecordId:item.id,kind:'test-case',title:item.title,summary:item.given,version:four.casesVersion,testCase:{given:item.given,steps:item.steps,expected:item.expected},detail:`${four.businessId} ${item.sourceSection} 原始用例定义（未执行）\n前置：${item.given}\n步骤：${item.steps}\n原文预期：${item.expected}\n本次执行同时应用独立 test-profile-v${four.version}；原文冲突保留，按已登记试验口径核对，不将原文矛盾示例作为通过依据。`,relatedRequirementIds:[]}));
+ if(four)return four.cases.map(item=>asset(data,'test-assets','carddemo',{sourceRecordId:item.id,kind:'test-case',title:item.title,summary:item.given,version:four.casesVersion,testCase:{given:item.given,steps:item.steps,expected:item.expected},detail:`${four.businessId} ${item.sourceSection} original case definition (not executed)\nPrecondition: ${item.given}\nSteps: ${item.steps}\nOriginal expected result: ${item.expected}\nThis run also applies the separate test-profile-v${four.version}; conflicts in the original text are kept, checks follow the registered test profile, and contradictory examples in the original text are not used as pass evidence.`,relatedRequirementIds:[]}));
  if(matchesPlatinumCashbackPage(task.projectId,task)){
   const cases=[
-   {id:'PLATINUM-PAGE-TC-01',title:'白金卡与非白金卡入口隔离',given:'PRD 已确认可核验的客户资格字段；缺字段时记录阻塞。',steps:'分别以明确白金卡和非白金卡资格打开卡片详情。',expected:'仅白金卡展示消费返现权益入口；非白金卡不展示。'},
-   {id:'PLATINUM-PAGE-TC-02',title:'权益说明与未决政策边界',given:'通过白金卡入口进入说明页。',steps:'核对适用客户、未来 3 个月、额外 0.5% 及未决事项。',expected:'已确认与待确认分开；日期起算、消费范围、上限、舍入、到账、退款不补造确定规则。'},
-   {id:'PLATINUM-PAGE-TC-03',title:'未知资格与数据异常',given:'资格信息缺失、未知或请求失败。',steps:'查看入口与说明的异常反馈。',expected:'不把未知资格当成白金卡；采用 PRD 确认的异常提示，不伪称已取得资格。'},
-   {id:'PLATINUM-PAGE-TC-04',title:'只读展示不触发资金操作',given:'当前需求范围只包含入口和说明页。',steps:'检查页面操作及相关调用，核对上游代码版本。',expected:'不新增实际返现计算、记账、入账或资金写操作；相关检查记录实际工具与结果。'},
+   {id:'PLATINUM-PAGE-TC-01',title:'Entry isolation for platinum and non-platinum cards',given:'The PRD has confirmed a verifiable customer eligibility field; if the field is missing, record a blocker.',steps:'Open card details with a clearly platinum and a clearly non-platinum eligibility.',expected:'Only platinum cards show the spending cashback benefit entry; non-platinum cards do not.'},
+   {id:'PLATINUM-PAGE-TC-02',title:'Benefit description and open-policy boundary',given:'Open the benefit page through the platinum card entry.',steps:'Check the eligible customers, the next 3 months, the extra 0.5% and the open items.',expected:'Confirmed and to-be-confirmed items are separate; no definite rules are invented for date start, spending scope, cap, rounding, crediting or refunds.'},
+   {id:'PLATINUM-PAGE-TC-03',title:'Unknown eligibility and data errors',given:'Eligibility information is missing, unknown or the request fails.',steps:'Check the error feedback of the entry and the benefit page.',expected:'Unknown eligibility is not treated as platinum; the PRD-confirmed error message is used, without claiming eligibility.'},
+   {id:'PLATINUM-PAGE-TC-04',title:'Read-only display triggers no funds operation',given:'The current requirement scope covers only the entry and the benefit page.',steps:'Check page actions and related calls, and verify the upstream code version.',expected:'No actual cashback calculation, booking, posting or funds write is added; related checks record the actual tools and results.'},
   ];
-  return cases.map(item=>asset(data,'test-assets','carddemo',{sourceRecordId:item.id,kind:'test-case',title:item.title,summary:item.given,version:'platinum-page-cases-v1',testCase:{given:item.given,steps:item.steps,expected:item.expected},detail:`用例 ID：${item.id}\n前置条件：${item.given}\n操作步骤：${item.steps}\n预期结果：${item.expected}\n\n企业测试资产插件的场景用例定义，未执行测试；按项目及精确需求标题匹配，采用前核对当前 PRD。`,relatedRequirementIds:[]}));
+  return cases.map(item=>asset(data,'test-assets','carddemo',{sourceRecordId:item.id,kind:'test-case',title:item.title,summary:item.given,version:'platinum-page-cases-v1',testCase:{given:item.given,steps:item.steps,expected:item.expected},detail:`Case ID: ${item.id}\nPrecondition: ${item.given}\nSteps: ${item.steps}\nExpected result: ${item.expected}\n\nScenario case definition from the enterprise test asset plugin; no test has been run. Matched by project and exact requirement title; check against the current PRD before adopting.`,relatedRequirementIds:[]}));
  }
  const requirementId=sourceAssetId('requirements',task.projectId,task.projectId==='teams'&&/^T\d+$/.test(task.id)?'REQ-'+task.id:task.id);
  return testAssets(data).filter(item=>item.sourceProjectId===task.projectId&&item.relatedRequirementIds.includes(requirementId));

@@ -1,15 +1,15 @@
-// 应用配置全局单例：storageBackend 供顶栏展示 + 节点详情懒加载 gating
-// 全应用只拉一次 /config（并发去重），避免 App.vue 与 TraceList.vue 各自重复请求
+// Global app config singleton: storageBackend is shown in the top bar and gates node detail lazy loading
+// The whole app fetches /config only once (concurrent calls deduplicated), so App.vue and TraceList.vue do not each request it
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { fetchConfig } from "@/api/metrics";
 
 export const useAppConfigStore = defineStore("appConfig", () => {
-  // 顶栏展示用；默认 "database" 保持现有 AppTopbar 行为不变
+  // Shown in the top bar; the "database" default keeps the existing AppTopbar behavior
   const storageBackend = ref("database");
-  // 是否已成功拿到配置：gating 必须依赖它（默认值 database 不能作为判断依据）
+  // Whether the config was loaded successfully: gating must rely on this (the database default cannot be used to decide)
   const loaded = ref(false);
-  let inflight: Promise<void> | null = null; // 并发去重：多处同时 load() 只发 1 次请求
+  let inflight: Promise<void> | null = null; // Concurrent dedup: simultaneous load() calls send only 1 request
 
   function load() {
     if (loaded.value) return Promise.resolve();
@@ -20,7 +20,7 @@ export const useAppConfigStore = defineStore("appConfig", () => {
         storageBackend.value = cfg.storageBackend;
         loaded.value = true;
       } catch {
-        /* 失败保持默认值，loaded 仍为 false */
+        /* On failure keep the defaults; loaded stays false */
       } finally {
         inflight = null;
       }
@@ -28,8 +28,8 @@ export const useAppConfigStore = defineStore("appConfig", () => {
     return inflight;
   }
 
-  /** 节点详情懒加载是否启用：必须同时满足「已加载」与「database」
-   *  未确认模式期间一律返回 false（走本地 spans 全量兜底，失败方向永远偏向不懒加载） */
+  /** Whether node detail lazy loading is enabled: requires both "loaded" and "database"
+   *  Always false until the mode is confirmed (falls back to the full local spans; when in doubt, never lazy-load) */
   const lazyDetailEnabled = () => loaded.value && storageBackend.value === "database";
 
   return { storageBackend, loaded, lazyDetailEnabled, load };

@@ -1,16 +1,16 @@
 /* ============================================================
-   Trace Monitor (Vue) — 组件级样式（组件库产物使用）
+   Trace Monitor (Vue) — component-level styles (used by the component library build)
    ------------------------------------------------------------
-   · 设计 token 挂在组件根容器 .tm-scope 上（不用 :root），不污染宿主全局
-   · 集成方换肤：在自己的样式里覆写 .tm-scope { --ink: ...; --accent: ...; }
-   · 本文件不含任何元素级 / 全局重置（html、body、* 等），也不含
-     Element Plus 基础样式；宿主需自行 import EP 样式与 app.use(ElementPlus)
+   · Design tokens live on the component root container .tm-scope (not :root), so the host's globals stay untouched
+   · Integrator theming: override .tm-scope { --ink: ...; --accent: ...; } in your own styles
+   · This file has no element-level / global resets (html, body, *, etc.) and no
+     Element Plus base styles; the host must import the EP styles and call app.use(ElementPlus) itself
    ============================================================ */
 
 @use "./tokens" as *;
 
-/* 作用域根容器：用 :where() 压低优先级（0 特异性），
-   保证集成方任何 .tm-scope { ... } 覆写都能稳定生效，不受引入顺序影响 */
+/* Scope root container: :where() lowers the priority (0 specificity),
+   so any integrator .tm-scope { ... } override reliably wins regardless of import order */
 :where(.tm-scope) {
   @include tm-tokens;
 }
@@ -22,7 +22,7 @@
   color: var(--ink);
 }
 
-/* 盒模型：仅作用于组件自身子树，不泄漏到宿主其它元素 */
+/* Box model: applies only to the component's own subtree and does not leak to other host elements */
 .tm-scope,
 .tm-scope *,
 .tm-scope *::before,
@@ -35,7 +35,7 @@
   background: var(--accent-soft-strong);
 }
 
-/* 滚动条：仅作用于组件自身子树 */
+/* Scrollbar: applies only to the component's own subtree */
 .tm-scope,
 .tm-scope * {
   scrollbar-width: thin;
@@ -64,13 +64,13 @@
   background: transparent;
 }
 
-/* 组件内 Element Plus 元素局部对齐（弹层类 popper 会被 teleport 到 body，不在此处理） */
+/* Local alignment of Element Plus elements inside the component (poppers are teleported to body and not handled here) */
 .tm-scope .el-button {
   border-radius: var(--radius-sm);
   font-size: 12.5px;
 }
 
-/* 组件内共享类 */
+/* Shared classes inside the component */
 .tm-scope .tm-panel {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);

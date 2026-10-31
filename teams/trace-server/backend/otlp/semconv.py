@@ -1,27 +1,27 @@
-"""OTel 语义约定：属性名常量 + span_type 推断。
+"""OTel semantic conventions: attribute name constants + span_type inference.
 
-`span_type` 必须收敛到现有表与前端支持的 6 类：
+`span_type` must be one of the 6 types supported by the existing tables and the frontend:
 `chain` / `llm` / `tool` / `retriever` / `agent` / `span`。
 
-推断采用「注册表 + 优先级」：每条规则声明 matches / resolve，
-按 priority 升序取第一条命中的结果。新增厂商只需插入一条规则，
-不改主流程（借自 langfuse 的 ObservationTypeMapperRegistry 设计）。
+Inference uses "registry + priority": each rule declares matches / resolve,
+and the first matching rule by ascending priority wins. A new vendor only needs one more rule,
+with no change to the main flow (borrowed from langfuse's ObservationTypeMapperRegistry design).
 """
 from __future__ import annotations
 
 from typing import Any, Callable
 
-# ---- 表/前端支持的 span_type ----
+# ---- span_type values supported by the tables/frontend ----
 SPAN_TYPES = ("chain", "llm", "tool", "retriever", "agent", "span")
 DEFAULT_SPAN_TYPE = "span"
 
-# ---- 项目 / 会话 ----
+# ---- Project / session ----
 PROJECT_ID_KEYS = ("trace2.project.id", "langfuse.project.id")
-# gen_ai.conversation.id 是 OTel GenAI 语义约定里的会话标识
-# （iCode / OpenLLMetry 等原生埋点用它，不带 langfuse.* 前缀）。
+# gen_ai.conversation.id is the session identifier in the OTel GenAI semantic conventions
+# (used by native instrumentation such as iCode / OpenLLMetry, without the langfuse.* prefix).
 SESSION_ID_KEYS = ("session.id", "langfuse.session.id", "gen_ai.conversation.id")
 
-# ---- langfuse 原生属性 ----
+# ---- Native langfuse attributes ----
 LF_TRACE_NAME = "langfuse.trace.name"
 LF_TRACE_INPUT = "langfuse.trace.input"
 LF_TRACE_OUTPUT = "langfuse.trace.output"
@@ -35,7 +35,7 @@ LF_OBS_USAGE = "langfuse.observation.usage_details"
 LF_OBS_LEVEL = "langfuse.observation.level"
 LF_AS_ROOT = "langfuse.internal.as_root"
 
-# 出现任一即认为该 span 携带 trace 级更新（需要产出 trace 事件）
+# If any of these is present, the span carries a trace-level update (a trace event must be emitted)
 TRACE_UPDATE_KEYS = (
     LF_TRACE_NAME,
     LF_TRACE_INPUT,
@@ -80,14 +80,14 @@ USAGE_TOTAL_KEYS = (
     "ai.usage.tokens",
 )
 
-# ---- input / output（按优先级排列，见方案 §6.6）----
+# ---- input / output (in priority order, see design §6.6) ----
 INPUT_OUTPUT_KEYS = (
-    # OTel GenAI 新版
+    # OTel GenAI (new version)
     ("gen_ai.input.messages", "gen_ai.output.messages"),
-    # OTel GenAI 工具调用（iCode / Microsoft Agent Framework 等工具 span 用这两个，
-    # 不带 gen_ai.input.messages，缺了它工具 span 的 input/output 就全是 null）
+    # OTel GenAI tool calls (tool spans from iCode / Microsoft Agent Framework etc. use these two
+    # without gen_ai.input.messages; without them a tool span's input/output would all be null)
     ("gen_ai.tool.call.arguments", "gen_ai.tool.call.result"),
-    # langfuse 原生
+    # Native langfuse
     (LF_OBS_INPUT, LF_OBS_OUTPUT),
     (LF_TRACE_INPUT, LF_TRACE_OUTPUT),
     # OpenInference / SmolAgents
@@ -107,7 +107,7 @@ INPUT_OUTPUT_KEYS = (
     ("genkit:input", "genkit:output"),
 )
 
-# 已被 input/output 消费的属性前缀（用于从「残留属性」里剔除，避免 metadata 重复）
+# Attribute prefixes already consumed by input/output (removed from the leftover attributes to avoid duplicate metadata)
 INPUT_OUTPUT_PREFIXES = (
     "gen_ai.prompt",
     "gen_ai.completion",
@@ -165,7 +165,7 @@ _GENAI_OP_MAP = {
 
 
 def _meaningful(value: Any) -> bool:
-    """值非 None / 空串 / 空数组 / 空对象。"""
+    """The value is not None / an empty string / an empty array / an empty object."""
     if value is None or value == "":
         return False
     if isinstance(value, (list, tuple, dict)):
@@ -181,7 +181,7 @@ def _map_value(attrs: dict[str, Any], key: str, table: dict[str, str]) -> str | 
     mapped = table.get(key_str)
     if mapped:
         return mapped
-    # 大小写不敏感兜底（部分 SDK 用大写）
+    # Case-insensitive fallback (some SDKs use upper case)
     mapped = table.get(key_str.upper()) or table.get(key_str.lower())
     return mapped
 
@@ -237,7 +237,7 @@ def infer_span_type(
     scope_name: str | None = None,
     span_name: str | None = None,
 ) -> str:
-    """按优先级推断 span_type，未命中回落到 `span`。"""
+    """Infer span_type by priority; falls back to `span` when nothing matches."""
     ctx = {
         "resource_attrs": resource_attrs or {},
         "scope_name": scope_name,
@@ -251,5 +251,5 @@ def infer_span_type(
 
 
 def has_trace_updates(attrs: dict[str, Any]) -> bool:
-    """该 span 是否携带 trace 级属性（需要产出 trace 事件）。"""
+    """Whether the span carries trace-level attributes (a trace event must be emitted)."""
     return any(_meaningful(attrs.get(k)) for k in TRACE_UPDATE_KEYS)

@@ -4,7 +4,7 @@ import { root, selectedServices, serviceHealth } from './services.mjs';
 // Never kill a listener merely because it occupies a configured port.
 const launching = selectedServices();
 for (const service of launching) {
-  if (await serviceHealth(service)) throw new Error(service.id + ' 已在当前目录运行；请先用 stop 停止已核验的服务，或使用另一个端口');
+  if (await serviceHealth(service)) throw new Error(service.id + ' is already running from this directory; stop the verified service with stop first, or use another port');
 }
 const children = launching.map(service => spawn(process.execPath, ['--import', 'tsx', join(root, service.entry)], { cwd: root, stdio: 'inherit' }));
 let stopping = false;

@@ -37,4 +37,4 @@ async function main() {
     await atomic(injectedPath, { ...receipt, status: 'reminder-returned', reminderMode: previous ? 'continuation' : 'initial' });
   } else await writeFile(resultPath, JSON.stringify({ action: 'allow' }));
 }
-main().catch(error => { console.error('Teams 工作上下文 Hook 失败：' + error.message); process.exitCode = 1; });
+main().catch(error => { console.error('Teams work context hook failed: ' + error.message); process.exitCode = 1; });

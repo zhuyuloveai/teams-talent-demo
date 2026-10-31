@@ -33,7 +33,7 @@ export class Store {
   async init() {
     try { this.state = JSON.parse(await readFile(this.path, 'utf8')); }
     catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; this.state = initialState(); await atomicJson(this.path, this.state); }
-    if (!Number.isInteger(this.state.revision) || !Array.isArray(this.state.audit) || this.state.security !== 'unverified') throw new Error('工作区状态文件损坏；请保留文件后显式重置');
+    if (!Number.isInteger(this.state.revision) || !Array.isArray(this.state.audit) || this.state.security !== 'unverified') throw new Error('The workspace state file is corrupt; keep the file and reset explicitly');
     // Explicit one-time v1 -> v2 migration, preserving the original demo state.
     if (!Object.hasOwn(this.state,'schemaVersion') && !Object.hasOwn(this.state,'workspace')) {
       await atomicJson(this.path+'.pre-v2.json',this.state);
@@ -41,7 +41,7 @@ export class Store {
       if(this.state.context){this.state.context.selectedSkills=[...this.state.workspace.selectedSkills];this.state.context.materials=[];this.state.context.assets=structuredClone(this.state.workspace.project.assets);}
       await atomicJson(this.path,this.state);
     }
-    if(this.state.schemaVersion!==2 || !this.state.workspace || !Array.isArray(this.state.workspace.project?.assets) || !Array.isArray(this.state.workspace.selectedSkills) || !Array.isArray(this.state.workspace.acquiredResources) || !Array.isArray(this.state.workspace.materials) || !Array.isArray(this.state.workspace.team?.members) || !Array.isArray(this.state.workspace.connections) || !Array.isArray(this.state.workspace.progress) || !this.state.workspace.foundation || !['idle','analyzed'].includes(this.state.workspace.analysis?.status)) throw new Error('工作区状态无效；未自动覆盖');
+    if(this.state.schemaVersion!==2 || !this.state.workspace || !Array.isArray(this.state.workspace.project?.assets) || !Array.isArray(this.state.workspace.selectedSkills) || !Array.isArray(this.state.workspace.acquiredResources) || !Array.isArray(this.state.workspace.materials) || !Array.isArray(this.state.workspace.team?.members) || !Array.isArray(this.state.workspace.connections) || !Array.isArray(this.state.workspace.progress) || !this.state.workspace.foundation || !['idle','analyzed'].includes(this.state.workspace.analysis?.status)) throw new Error('Invalid workspace state; it was not overwritten automatically');
     if (Object.hasOwn(this.state.workspace, 'projects')) validateCreatedProjects(this.state.workspace.projects);
     if (Object.hasOwn(this.state.workspace, 'collaboration')) validateCollaborationState(this.state.workspace.collaboration);
     validateResourceState(this.state);
@@ -55,7 +55,7 @@ export class Store {
     if(!this.state.workspace.deliveryRequirements?.some(task=>task.projectId==='carddemo'&&task.id==='DEMO-MKT-001')){
       const original=await readFile(this.path,'utf8'),backup=this.path+'.pre-unified-delivery.json';
       try{const file=await open(backup,'wx',0o600);try{await file.writeFile(original);await file.sync();}finally{await file.close();}}
-      catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;if(await readFile(backup,'utf8')!==original)throw new Error('主需求迁移备份已存在且内容不同；未覆盖状态');}
+      catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;if(await readFile(backup,'utf8')!==original)throw new Error('A main requirement migration backup already exists with different content; the state was not overwritten');}
       migrateMainDelivery(this.state);validateDeliveryRequirements(this.state);await atomicJson(this.path,this.state);
     }
   }
@@ -66,7 +66,7 @@ export class Store {
   }
   mutate(revision: number, operation: (state: DemoState) => DemoState) {
     const next = this.queue.then(async () => {
-      if (revision !== this.state.revision) throw new DomainError('另一页面已更新数据，请刷新后重试');
+      if (revision !== this.state.revision) throw new DomainError('Another page updated the data. Refresh and try again.');
       const state = operation(this.state);
       await atomicJson(this.path, state); this.state = state; this.onCommit(); return state;
     });

@@ -1,10 +1,10 @@
-"""API 启动入口：uvicorn，地址/端口由 config（.env）控制。"""
+"""API launcher: uvicorn; host/port come from config (.env)."""
 import sys
 from pathlib import Path
 
 import uvicorn
 
-# 让 backend 根目录可导入（api/db 包位于 backend 下）
+# Make the backend root importable (the api/db packages live under backend)
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 if __name__ == "__main__":

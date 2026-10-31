@@ -3,7 +3,7 @@ import images from '../assets/enterprise-brands/images.json';
 export const enterpriseBrands = {
   repository: { name: 'GitHub', image: images.githubBlack },
   requirements: { name: 'Jira', image: images.jira },
-  defects: { name: '禅道 ZenTao', image: images.zentao },
+  defects: { name: 'ZenTao', image: images.zentao },
   'design-library': { name: 'Confluence', image: images.confluence },
   'test-assets': { name: 'TestRail', image: images.testrail },
 } as const;

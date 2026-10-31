@@ -35,8 +35,8 @@ export function projectModelContext(full:FullContext):ModelTaskContext {
   const body=bodies.get(reference.id);
   if(!body||!body.body)return reference;
   if(reference.description===body.body){const {description:_description,...metadata}=reference;return{...metadata,contentRef:body.pointer};}
-  const prefix=body.body+'\n关联理由：';
-  if(reference.description.startsWith(prefix))return{...reference,description:reference.description.slice(body.body.length+1),contentRef:body.pointer};
+  // Accept both the original Chinese label and the English one written on the demo-en branch.
+  if(['\n关联理由：','\nReason: '].some(label=>reference.description.startsWith(body.body+label)))return{...reference,description:reference.description.slice(body.body.length+1),contentRef:body.pointer};
   // Same ID with different prose is not interchangeable; retain it verbatim.
   return reference;
  };

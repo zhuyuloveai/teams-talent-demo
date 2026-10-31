@@ -33,47 +33,47 @@ export class DomainError extends Error { constructor(message: string, public sta
 function requireCondition(ok: unknown, message: string): asserts ok { if (!ok) throw new DomainError(message); }
 const owners: Action[] = ['assign', 'knowledge', 'candidate', 'evaluate', 'enroll', 'purchase', 'deduplicate', 'uat', 'accept', 'return', 'release', 'adopt'];
 const members: Action[] = ['prepare', 'replay', 'check-fail', 'fix', 'submit'];
-/** Stable ids for action labels. The audit trail keeps the Chinese text, so labels mirror the zh catalog. */
+/** Stable ids for action labels. On the English branch the audit trail is written in English, so labels mirror the en catalog. */
 export const actionKeys = { assign: 'action.assign', knowledge: 'action.knowledge', prepare: 'action.prepare', replay: 'action.replay', 'check-fail': 'action.check-fail', fix: 'action.fix', submit: 'action.submit', enroll: 'action.enroll', purchase: 'action.purchase', deduplicate: 'action.deduplicate', uat: 'action.uat', accept: 'action.accept', return: 'action.return', candidate: 'action.candidate', evaluate: 'action.evaluate', release: 'action.release', adopt: 'action.adopt' } as const satisfies Record<Action, MessageKey>;
 export const actionLabels: Record<Action, string> = Object.fromEntries(
-  (Object.keys(actionKeys) as Action[]).map(action => [action, translate('zh', actionKeys[action])]),
+  (Object.keys(actionKeys) as Action[]).map(action => [action, translate('en', actionKeys[action])]),
 ) as Record<Action, string>;
 export function transition(previous: DemoState, action: Action, role: Role, payload: { reason?: string; knowledgeVersion?: string; assigneeId?: string } = {}): DemoState {
-  requireCondition(Object.hasOwn(actionLabels, action), '未知操作');
-  if (owners.includes(action) && role !== 'owner' || members.includes(action) && role !== 'member') throw new DomainError('当前角色无权执行此操作', 403);
+  requireCondition(Object.hasOwn(actionLabels, action), 'Unknown action');
+  if (owners.includes(action) && role !== 'owner' || members.includes(action) && role !== 'member') throw new DomainError('The current role is not allowed to perform this action', 403);
   const unified=deliveryRequirement(previous,'carddemo',mainRequirementId);
-  if(unified&&['prepare','replay','check-fail','fix','submit','enroll','purchase','deduplicate','uat','accept','return'].includes(action))throw new DomainError('请使用任务节点的 Teams CLI 回传与 Owner 验收；旧演练推进入口已停用');
-  requireCondition(previous.campaignId === campaign.id, '当前工作区使用旧活动规则，请由 Owner 在个人设置中重置工作区后继续');
+  if(unified&&['prepare','replay','check-fail','fix','submit','enroll','purchase','deduplicate','uat','accept','return'].includes(action))throw new DomainError('Use the task node Teams CLI submission and Owner acceptance; the old walkthrough entry is disabled');
+  requireCondition(previous.campaignId === campaign.id, 'The current workspace uses old campaign rules; ask the Owner to reset the workspace in personal settings before continuing');
   if (previous.assigned && members.includes(action)) requireCurrentTaskMember(previous);
   const s = structuredClone(previous);
   let detail = '';
   switch (action) {
     case 'assign': {
       const task=deliveryRequirement(s,'carddemo',mainRequirementId);
-      requireCondition((task?.stage??s.stage) !== 'accepted', '已验收需求不能调整交付人');
+      requireCondition((task?.stage??s.stage) !== 'accepted', 'The assignee of an accepted requirement cannot be changed');
       const member = projectMembers(s, 'carddemo').find(member => member.id === payload.assigneeId && member.status === 'active');
-      requireCondition(member, '请选择有效的项目成员作为交付人');
-      requireCondition(task?task.assigneeId!==member.id:!s.assigned || s.assigneeId !== member.id, '该成员已是当前交付人');
+      requireCondition(member, 'Select a valid project member as the assignee');
+      requireCondition(task?task.assigneeId!==member.id:!s.assigned || s.assigneeId !== member.id, 'This member is already the current assignee');
       if(task){task.assigneeId=member.id;task.updatedAt=new Date().toISOString();}
       else {if (!s.assigned) s.stage = 'assigned'; s.assigned = true; s.assigneeId = member.id;}
-      detail = 'DEMO-MKT-001 → ' + taskAssigneeName(s) + ' · 交付人'; break;
+      detail = 'DEMO-MKT-001 → ' + taskAssigneeName(s) + ' · Assignee'; break;
     }
-    case 'knowledge': { const version = payload.knowledgeVersion ?? 'Talents 项目知识'; requireCondition(version !== s.knowledgeVersion, 'Talents 尚未发布新的项目知识'); s.knowledge = true; s.knowledgeVersion = version; detail = 'Talents 已发布项目知识：' + version; break; }
-    case 'prepare': requireCondition(s.assigned && !s.context, '请先分配需求；上下文不可重复冻结'); requireCondition(s.workspace.selectedSkills.length > 0 && s.workspace.selectedSkills.every(id => availableSkillIdsFor(s,role).includes(id)), '请选择有效的项目或用户 Skill'); s.context = { id: 'CTX-MKT-001', skillVersion: s.adoptedSkill, agentVersion: s.adoptedAgent, knowledgeVersion: s.knowledgeVersion ?? 'knowledge-v1', createdAt: new Date().toISOString(),selectedSkills:[...s.workspace.selectedSkills],skillBindings:selectedSkillBindings(s,role),materials:structuredClone(s.workspace.materials),assets:structuredClone(s.workspace.project.assets) }; detail = '冻结需求、验收标准、知识与能力版本'; break;
-    case 'replay': requireCondition(s.context && s.stage === 'assigned', '请先冻结上下文'); s.stage = 'developing'; detail = '开始本次需求开发，记录工作进度'; break;
-    case 'check-fail': requireCondition(s.stage === 'developing', '请先开始开发'); s.checks = 'failed'; s.stage = 'failed'; detail = '检查记录 E3 · 6/7 · 普通卡被错误纳入返现范围'; break;
-    case 'fix': requireCondition(s.stage === 'failed' || s.stage === 'returned', '当前没有待修复事项'); s.checks = 'passed'; s.stage = 'fixed'; s.uat = false; detail = '修复记录 E4 → 复测 E5 · 7/7 · 安全仍待验证'; break;
-    case 'submit': requireCondition(s.stage === 'fixed' && s.checks === 'passed', '检查未通过，不能提交'); s.stage = 'submitted'; detail = 'DELIVERY-MKT-001 · 包含变更、失败与复测证据'; break;
-    case 'enroll': requireCondition(s.stage === 'submitted' && !s.enrolled, '资格已确认或当前不可操作'); s.enrolled = true; detail = '卡尾号 9900 · 白金卡资格已确认'; break;
-    case 'purchase': { requireCondition(s.stage === 'submitted' && !s.transactions.length, '请先提交交付；该交易只记账一次'); const result = calculateCashback({ amountCents: 12000, cardTier: 'platinum', purchasedAt: campaign.purchaseAt }); s.transactions.push({ id: 'TX-PLATINUM-120', amount: 120, reward: result.rewardCents / 100 }); s.balance = (255075 + 12000 - result.rewardCents) / 100; detail = '消费记录 120.00 → 额外返现 0.60 → 欠款 2670.15'; break; }
-    case 'deduplicate': requireCondition(s.stage === 'submitted' && s.transactions.length === 1 && !s.duplicateChecked, '请先完成交易'); s.duplicateChecked = true; detail = 'ALREADY_EVALUATED · 奖励条数仍为 1'; break;
-    case 'uat': requireCondition(s.stage === 'submitted' && s.duplicateChecked, '请先验证消费与去重'); requireCondition(runCashbackChecks().every(check => check.passed), '边界验收未通过'); s.uat = true; detail = '已核对 7 项资格、期间、金额与重复入账规则；生产安全仍待验证'; break;
-    case 'accept': requireCondition(s.stage === 'submitted' && s.uat && s.checks === 'passed', '验收条件未完成'); s.stage = 'accepted'; queueTaskCollection(s); detail = '功能验收通过 · 生产安全放行仍未验证'; break;
-    case 'return': requireCondition(s.stage === 'submitted' && payload.reason?.trim(), '请填写退回原因'); s.stage = 'returned'; s.returnReason = payload.reason!.trim().slice(0, 500); s.uat = false; detail = s.returnReason; break;
-    case 'candidate': requireCondition(s.stage === 'accepted' && s.evolution === 'none', '请先完成验收');requireCondition(s.workspace.analysis.status==='analyzed','请先完成 Talents 轨迹分析'); s.evolution = 'candidate'; detail = 'Talents 根据 E3/E4/E5 记录 Skill 1.1.0 与 Agent r2 改进候选'; break;
-    case 'evaluate': requireCondition(s.evolution === 'candidate', '请先生成候选'); s.evolution = 'evaluated'; detail = '固定输入的 Skill / Agent 独立对照评估结果'; break;
-    case 'release': requireCondition(s.evolution === 'evaluated', '候选尚未评估'); s.evolution = 'published'; detail = 'Talents 发布 Skill 1.1.0、Agent r2 版本'; break;
-    case 'adopt': requireCondition(s.evolution === 'published', '请先在 Talents 发布候选'); s.evolution = 'adopted'; s.adoptedSkill = '1.1.0'; s.adoptedAgent = 'r2'; detail = '供下一次作业采用；CTX-MKT-001 仍保持 Skill 1.0.0 / Agent r1'; break;
+    case 'knowledge': { const version = payload.knowledgeVersion ?? 'Talents project knowledge'; requireCondition(version !== s.knowledgeVersion, 'Talents has not published new project knowledge'); s.knowledge = true; s.knowledgeVersion = version; detail = 'Talents published project knowledge: ' + version; break; }
+    case 'prepare': requireCondition(s.assigned && !s.context, 'Assign the requirement first; the context cannot be frozen twice'); requireCondition(s.workspace.selectedSkills.length > 0 && s.workspace.selectedSkills.every(id => availableSkillIdsFor(s,role).includes(id)), 'Select valid project or user Skills'); s.context = { id: 'CTX-MKT-001', skillVersion: s.adoptedSkill, agentVersion: s.adoptedAgent, knowledgeVersion: s.knowledgeVersion ?? 'knowledge-v1', createdAt: new Date().toISOString(),selectedSkills:[...s.workspace.selectedSkills],skillBindings:selectedSkillBindings(s,role),materials:structuredClone(s.workspace.materials),assets:structuredClone(s.workspace.project.assets) }; detail = 'Froze requirement, acceptance criteria, knowledge and capability versions'; break;
+    case 'replay': requireCondition(s.context && s.stage === 'assigned', 'Freeze the context first'); s.stage = 'developing'; detail = 'Started development of this requirement; recording work progress'; break;
+    case 'check-fail': requireCondition(s.stage === 'developing', 'Start development first'); s.checks = 'failed'; s.stage = 'failed'; detail = 'Check record E3 · 6/7 · standard card wrongly included in the cashback scope'; break;
+    case 'fix': requireCondition(s.stage === 'failed' || s.stage === 'returned', 'Nothing to fix right now'); s.checks = 'passed'; s.stage = 'fixed'; s.uat = false; detail = 'Fix record E4 → retest E5 · 7/7 · security still unverified'; break;
+    case 'submit': requireCondition(s.stage === 'fixed' && s.checks === 'passed', 'Checks did not pass; cannot submit'); s.stage = 'submitted'; detail = 'DELIVERY-MKT-001 · includes changes, failure and retest evidence'; break;
+    case 'enroll': requireCondition(s.stage === 'submitted' && !s.enrolled, 'Eligibility already confirmed or not available right now'); s.enrolled = true; detail = 'Card ending 9900 · platinum card eligibility confirmed'; break;
+    case 'purchase': { requireCondition(s.stage === 'submitted' && !s.transactions.length, 'Submit the delivery first; this transaction is booked only once'); const result = calculateCashback({ amountCents: 12000, cardTier: 'platinum', purchasedAt: campaign.purchaseAt }); s.transactions.push({ id: 'TX-PLATINUM-120', amount: 120, reward: result.rewardCents / 100 }); s.balance = (255075 + 12000 - result.rewardCents) / 100; detail = 'Purchase 120.00 → extra cashback 0.60 → balance owed 2670.15'; break; }
+    case 'deduplicate': requireCondition(s.stage === 'submitted' && s.transactions.length === 1 && !s.duplicateChecked, 'Complete the transaction first'); s.duplicateChecked = true; detail = 'ALREADY_EVALUATED · reward count is still 1'; break;
+    case 'uat': requireCondition(s.stage === 'submitted' && s.duplicateChecked, 'Verify the purchase and de-duplication first'); requireCondition(runCashbackChecks().every(check => check.passed), 'Boundary acceptance did not pass'); s.uat = true; detail = 'Checked 7 eligibility, period, amount and duplicate-posting rules; production security still unverified'; break;
+    case 'accept': requireCondition(s.stage === 'submitted' && s.uat && s.checks === 'passed', 'Acceptance conditions not met'); s.stage = 'accepted'; queueTaskCollection(s); detail = 'Functional acceptance passed · production security release still unverified'; break;
+    case 'return': requireCondition(s.stage === 'submitted' && payload.reason?.trim(), 'Enter a reason for sending back'); s.stage = 'returned'; s.returnReason = payload.reason!.trim().slice(0, 500); s.uat = false; detail = s.returnReason; break;
+    case 'candidate': requireCondition(s.stage === 'accepted' && s.evolution === 'none', 'Complete acceptance first');requireCondition(s.workspace.analysis.status==='analyzed','Complete the Talents trajectory analysis first'); s.evolution = 'candidate'; detail = 'Talents recorded Skill 1.1.0 and Agent r2 improvement candidates based on E3/E4/E5'; break;
+    case 'evaluate': requireCondition(s.evolution === 'candidate', 'Generate a candidate first'); s.evolution = 'evaluated'; detail = 'Independent comparison of Skill / Agent with fixed inputs'; break;
+    case 'release': requireCondition(s.evolution === 'evaluated', 'The candidate has not been evaluated'); s.evolution = 'published'; detail = 'Talents published Skill 1.1.0 and Agent r2'; break;
+    case 'adopt': requireCondition(s.evolution === 'published', 'Publish the candidate in Talents first'); s.evolution = 'adopted'; s.adoptedSkill = '1.1.0'; s.adoptedAgent = 'r2'; detail = 'For adoption in the next run; CTX-MKT-001 still uses Skill 1.0.0 / Agent r1'; break;
   }
   s.revision++;
   s.audit.push({ id: s.revision, at: new Date().toISOString(), role, system: ['candidate', 'evaluate', 'release'].includes(action) ? 'Talent' : 'Teams', action: actionLabels[action], detail, origin: 'simulated' });

@@ -53,7 +53,7 @@ export function powershellPayload(input: TerminalInput) {
     `$start.Arguments = ${powershellQuote(input.args.map(windowsArgument).join(' '))}`,
     '$tool = [System.Diagnostics.Process]::Start($start)', "if ($null -eq $tool) { throw 'Tool process was not started' }",
     '$tool.WaitForExit()', '$toolExit = $tool.ExitCode', '$tool.Dispose()',
-    input.keepOpen === false ? 'exit $toolExit' : "if ($toolExit -ne 0) { Write-Host ('工具退出码：' + $toolExit) }",
+    input.keepOpen === false ? 'exit $toolExit' : "if ($toolExit -ne 0) { Write-Host ('Tool exit code: ' + $toolExit) }",
   ].join('\n');
 }
 export async function findExecutable(name: string, platform: NodeJS.Platform = process.platform, env: NodeJS.ProcessEnv = process.env, canExecute = async (path: string) => {
@@ -82,8 +82,8 @@ export function createTerminalLauncher(overrides: Partial<TerminalRuntime> = {})
   async function configured(key: string, names: string[]) {
     const explicit = runtime.env[key];
     if (explicit) {
-      if (!(runtime.platform === 'win32' ? win32.isAbsolute(explicit) : isAbsolute(explicit))) throw new Error(key + ' 必须是绝对路径');
-      const found = await runtime.resolveExecutable(explicit); if (!found) throw new Error(key + ' 指向的可执行文件不存在'); return found;
+      if (!(runtime.platform === 'win32' ? win32.isAbsolute(explicit) : isAbsolute(explicit))) throw new Error(key + ' must be an absolute path');
+      const found = await runtime.resolveExecutable(explicit); if (!found) throw new Error(key + ' points to an executable that does not exist'); return found;
     }
     for (const name of names) { const found = await runtime.resolveExecutable(name); if (found) return found; }
     return null;
@@ -93,15 +93,15 @@ export function createTerminalLauncher(overrides: Partial<TerminalRuntime> = {})
     if (runtime.platform === 'win32') return [{ id: 'system', name: runtime.env.WT_SESSION && runtime.env.DEMO_WINDOWS_TERMINAL !== 'none' && await configured('DEMO_WINDOWS_TERMINAL', ['wt.exe']) ? 'Windows Terminal' : 'PowerShell' }];
     return [];
   }, async launch(input: TerminalInput): Promise<TerminalReceipt> {
-    if (runtime.env.DEMO_NATIVE_DISABLED === '1') throw new Error('此验证实例未开放真实原生启动');
-    if (!['darwin', 'win32'].includes(runtime.platform)) throw new Error('自动终端启动仅支持 Windows 与 macOS；请在当前系统手工启动工具');
-    for (const value of [input.executable, input.directory, ...input.args, input.instruction ?? '']) if (typeof value !== 'string' || value.includes('\0')) throw new Error('终端参数包含无效字符');
-    if (!(runtime.platform === 'win32' ? win32.isAbsolute(input.directory) : isAbsolute(input.directory))) throw new Error('工作目录必须是绝对路径');
-    const executable = await runtime.resolveExecutable(input.executable); if (!executable) throw new Error('工具程序不存在：' + input.executable);
-    if (runtime.platform === 'win32' && !/\.exe$/i.test(executable)) throw new Error('Windows 自动启动需要原生 .exe；不执行 .cmd/.bat 的二次 shell 解析。OpenCode 请设置 DEMO_OPENCODE_BINARY 为 opencode.exe 绝对路径，iCode 使用 DEMO_ICODE_BINARY。');
+    if (runtime.env.DEMO_NATIVE_DISABLED === '1') throw new Error('This verification instance does not allow real native launches');
+    if (!['darwin', 'win32'].includes(runtime.platform)) throw new Error('Automatic terminal launch supports only Windows and macOS; start the tool manually on this system');
+    for (const value of [input.executable, input.directory, ...input.args, input.instruction ?? '']) if (typeof value !== 'string' || value.includes('\0')) throw new Error('Terminal arguments contain invalid characters');
+    if (!(runtime.platform === 'win32' ? win32.isAbsolute(input.directory) : isAbsolute(input.directory))) throw new Error('The working directory must be an absolute path');
+    const executable = await runtime.resolveExecutable(input.executable); if (!executable) throw new Error('Tool executable not found: ' + input.executable);
+    if (runtime.platform === 'win32' && !/\.exe$/i.test(executable)) throw new Error('Automatic launch on Windows needs a native .exe; .cmd/.bat files are not run through a second shell. For OpenCode set DEMO_OPENCODE_BINARY to the absolute path of opencode.exe; for iCode use DEMO_ICODE_BINARY.');
     if (runtime.platform === 'darwin') {
       const selected = (await runtime.macTerminals()).find(item => item.id === (input.terminal ?? 'terminal'));
-      if (!selected?.path) throw new Error('所选终端不可用：' + (input.terminal ?? 'terminal') + '；请安装或在 Agent 管理中重新选择，未改用其他终端');
+      if (!selected?.path) throw new Error('The selected terminal is unavailable: ' + (input.terminal ?? 'terminal') + '. Install it or choose again in Agent management; no other terminal was used');
       const command = interactiveShellSetup + 'cd ' + posixQuote(input.directory) + ' && ' + (input.instruction ? 'printf ' + posixQuote('%s\n') + ' ' + posixQuote(input.instruction) + ' && ' : '') + formatShellCommand([executable, ...input.args], 'darwin');
       const application = '"' + selected.path.replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"';
       // Create a new surface; never send a command to an existing user session.
@@ -109,22 +109,22 @@ export function createTerminalLauncher(overrides: Partial<TerminalRuntime> = {})
         ? 'on run argv\ntell application ' + application + '\nset cfg to new surface configuration\nset initial working directory of cfg to item 2 of argv\nset command of cfg to item 1 of argv\nset wait after command of cfg to ' + (input.keepOpen === false ? 'false' : 'true') + '\nset agentWindow to new window with configuration cfg\nactivate window agentWindow\nreturn id of (focused terminal of selected tab of agentWindow)\nend tell\nend run'
         : 'on run argv\ntell application ' + application + '\nactivate\nset agentTab to do script (item 1 of argv)\nreturn tty of agentTab\nend tell\nend run';
       const reply = await runtime.execute('/usr/bin/osascript', ['-e', script, selected.id === 'ghostty' ? '/bin/sh -c ' + posixQuote(command) : command, input.directory], { cwd: input.directory, env: launchEnvironment(runtime.env) });
-      return { status: 'terminal-requested', terminal: selected.name as 'Terminal' | 'Ghostty', ...(reply?.stdout.trim() ? { terminalId: reply.stdout.trim() } : {}), command, note: '系统已受理 ' + selected.name + ' 启动请求；不代表模型执行或上下文已读取。' };
+      return { status: 'terminal-requested', terminal: selected.name as 'Terminal' | 'Ghostty', ...(reply?.stdout.trim() ? { terminalId: reply.stdout.trim() } : {}), command, note: 'The system accepted the ' + selected.name + ' launch request; this does not mean the model ran or read the context.' };
     }
-    if (input.terminal && input.terminal !== 'system') throw new Error('所选终端不适用于 Windows，未启动其他终端');
+    if (input.terminal && input.terminal !== 'system') throw new Error('The selected terminal is not available on Windows; no other terminal was started');
     const launchEnv = launchEnvironment(runtime.env);
     const shell = await configured('DEMO_POWERSHELL_BINARY', ['pwsh.exe', 'powershell.exe', ...(runtime.env.SystemRoot ? [win32.join(runtime.env.SystemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe')] : [])]);
-    if (!shell) throw new Error('未找到 PowerShell；请安装 PowerShell 7 或设置 DEMO_POWERSHELL_BINARY 为 powershell.exe / pwsh.exe 绝对路径');
+    if (!shell) throw new Error('PowerShell not found; install PowerShell 7 or set DEMO_POWERSHELL_BINARY to the absolute path of powershell.exe / pwsh.exe');
     const command = powershellPayload({ ...input, executable }), encoded = Buffer.from(command, 'utf16le').toString('base64');
     const shellArgs = [...(input.keepOpen === false ? [] : ['-NoExit']), '-NoProfile', '-EncodedCommand', encoded];
     const wt = runtime.env.DEMO_WINDOWS_TERMINAL === 'none' ? null : await configured('DEMO_WINDOWS_TERMINAL', ['wt.exe']);
     if (runtime.env.WT_SESSION && wt) {
       const profile = runtime.env.WT_PROFILE_ID?.trim();
-      if (profile && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(profile.replace(/^\{(.*)\}$/, '$1'))) throw new Error('WT_PROFILE_ID 必须是有效 GUID，未发送终端请求');
-      if (shell.includes(';')) throw new Error('PowerShell 路径含 Windows Terminal 命令分隔符；请设置 DEMO_WINDOWS_TERMINAL=none 使用独立控制台');
+      if (profile && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(profile.replace(/^\{(.*)\}$/, '$1'))) throw new Error('WT_PROFILE_ID must be a valid GUID; no terminal request was sent');
+      if (shell.includes(';')) throw new Error('The PowerShell path contains a Windows Terminal command separator; set DEMO_WINDOWS_TERMINAL=none to use a separate console');
       // No user cwd/title/argv is exposed to WT's semicolon command parser.
       await runtime.execute(wt, ['-w', '0', 'nt', ...(profile ? ['--profile', profile] : []), '--title', 'Teams Agent', shell, ...shellArgs], { cwd: input.directory, env: launchEnv });
-      return { status: 'terminal-requested', terminal: 'Windows Terminal', command, note: 'Windows Terminal 已受理新标签页请求；不代表工具已读取上下文或完成工作。' };
+      return { status: 'terminal-requested', terminal: 'Windows Terminal', command, note: 'Windows Terminal accepted the new tab request; this does not mean the tool has read the context or finished the work.' };
     }
     // Start-Process creates a fresh console with real standard handles; detached +
     // stdio:ignore would pass NUL to a TUI even if the process itself was started.
@@ -134,7 +134,7 @@ export function createTerminalLauncher(overrides: Partial<TerminalRuntime> = {})
     ].join('\n');
     const reply = await runtime.execute(shell, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(controller, 'utf16le').toString('base64')], { cwd: input.directory, env: launchEnv });
     const pidText = reply?.stdout.trim(), pid = Number(pidText);
-    if (!pidText || !/^\d+$/.test(pidText) || !Number.isSafeInteger(pid) || pid < 2) throw new Error('PowerShell 终端请求未返回可核对的 PID；结果待核对，未重复启动');
-    return { status: 'terminal-requested', terminal: 'PowerShell', pid, command, note: '系统已创建 PowerShell 终端进程；工具启动或模型结果需在终端核对。' };
+    if (!pidText || !/^\d+$/.test(pidText) || !Number.isSafeInteger(pid) || pid < 2) throw new Error('The PowerShell terminal request returned no verifiable PID; the result needs checking and nothing was launched again');
+    return { status: 'terminal-requested', terminal: 'PowerShell', pid, command, note: 'The system created a PowerShell terminal process; check the tool launch and model result in the terminal.' };
   } };
 }

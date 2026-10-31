@@ -1,18 +1,18 @@
-"""ORM 模型：与 db/schema.sql 的 trace 数据表一一对应（Repository Pattern 的领域模型层）。
+"""ORM models: one to one with the trace tables in db/schema.sql (domain model layer of the Repository Pattern).
 
-字段类型采用跨方言通用类型：
-- UUID 语义列用 UUID36（PG 下为原生 UUID 列，绑定参数自动转 uuid；
-  MySQL 下为 VARCHAR(36) 存带连字符 UUID 字符串，与 schema_mysql.sql 的 CHAR(36) 一致）
-- JSON 列用 JSON（PG 下为 JSONB，MySQL 下为 JSON）
+Column types are portable across dialects:
+- UUID columns use UUID36 (a native UUID column on PG, bound parameters are converted to uuid;
+  VARCHAR(36) on MySQL storing hyphenated UUID strings, matching CHAR(36) in schema_mysql.sql)
+- JSON columns use JSON (JSONB on PG, JSON on MySQL)
 
-注：项目管理功能已移除，project_id 仅作为集成方自带的数据隔离维度（无外键、
-无 projects 表），故此处不映射 Project 模型；它为任意字符串（如 l0/l1/l2），
-SQL 侧为 VARCHAR(64)（PG/MySQL 一致），故映射为 String(64) 而非 UUID36。
+Note: project management has been removed; project_id is only a data isolation dimension supplied by the integrator (no foreign key,
+no projects table), so no Project model is mapped here; it is any string (e.g. l0/l1/l2),
+VARCHAR(64) in SQL (same on PG/MySQL), so it maps to String(64) rather than UUID36.
 
-注：与 db/schema.sql / schema_mysql.sql 一致，**不声明任何表级外键**——按日分区
-改造要求子表不 REFERENCES 分区父表，且外键检查会对父行加共享锁带来写争用。
-session_id / trace_id / span_id 仅为普通列，引用完整性由 consumer 的
-ensure_* 占位与查询过滤保证（本模块不参与建表，仅供 ORM 查询映射）。
+Note: like db/schema.sql / schema_mysql.sql, **no table-level foreign keys are declared**: daily partitioning
+requires child tables not to REFERENCE partitioned parents, and FK checks take shared locks on parent rows, causing write contention.
+session_id / trace_id / span_id are plain columns; referential integrity is ensured by the consumer's
+ensure_* placeholders and query filters (this module does not create tables; it only maps ORM queries).
 """
 from __future__ import annotations
 
@@ -32,8 +32,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-# 跨方言 UUID 列：PG 存原生 uuid 列（Uuid 绑定自动转 uuid，避免 uuid=varchar 报错），
-# MySQL 存 VARCHAR(36) 带连字符字符串（与 schema_mysql.sql 的 CHAR(36) 语义一致）。
+# Cross-dialect UUID column: PG stores a native uuid column (Uuid binding converts to uuid, avoiding uuid=varchar errors),
+# MySQL stores a hyphenated VARCHAR(36) string (same meaning as CHAR(36) in schema_mysql.sql).
 UUID36 = String(36).with_variant(Uuid, "postgresql")
 
 
@@ -44,7 +44,7 @@ class Base(DeclarativeBase):
 class Session(Base):
     __tablename__ = "sessions"
 
-    # id 用 VARCHAR：session_id 语义与 langfuse 一致（可为任意字符串，如 sess-xxx）
+    # id is VARCHAR: session_id means the same as in langfuse (any string, e.g. sess-xxx)
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     project_id: Mapped[str] = mapped_column(String(64))
     name: Mapped[str | None] = mapped_column(String(255))
@@ -151,10 +151,10 @@ class Observation(Base):
 
 
 class LlmRequest(Base):
-    """真实 LLM 请求（中间件拦截，event_id 关联 llm span）。
+    """Real LLM request (captured by middleware; event_id links it to the llm span).
 
-    与 db/schema.sql 的 llm_requests 表对应：event_id 主键（幂等），
-    input/output 为真实请求/响应 payload。
+    Matches the llm_requests table in db/schema.sql: event_id primary key (idempotent),
+    input/output are the real request/response payloads.
     """
 
     __tablename__ = "llm_requests"

@@ -1,10 +1,10 @@
 /* ============================================================
-   Trace Monitor (Vue) — dev 预览外壳样式（仅本地开发使用）
+   Trace Monitor (Vue) — dev preview shell styles (local development only)
    ------------------------------------------------------------
-   · 本文件不会进入组件库产物（lib 构建只引 styles/index.scss）
-   · 这里才允许出现全局重置（html/body/#app）、全局滚动条、
-     以及 el-table / el-pagination 等「dev 列表页专用」的 EP 覆写
-   · 设计 token 与组件库同源，在 :root 展开，供外壳与页面使用
+   · This file is not part of the component library build (the lib build only imports styles/index.scss)
+   · Only here are global resets (html/body/#app), global scrollbars,
+     and dev-list-page-only EP overrides such as el-table / el-pagination allowed
+   · Design tokens share the component library source and are expanded on :root for the shell and pages
    ============================================================ */
 
 @use "./tokens" as *;
@@ -41,7 +41,7 @@ body {
   background: var(--accent-soft-strong);
 }
 
-/* 滚动条 */
+/* Scrollbar */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar) transparent;
@@ -65,13 +65,13 @@ body {
   background: transparent;
 }
 
-/* 应用外壳 */
+/* App shell */
 .tm-app {
   min-height: 100vh;
   background: var(--bg-canvas);
 }
 
-/* 页面 */
+/* Page */
 .tm-page {
   animation: tmFadeUp 0.28s ease both;
 }
@@ -87,7 +87,7 @@ body {
   }
 }
 
-/* 面板 */
+/* Panel */
 .tm-panel {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
@@ -96,7 +96,7 @@ body {
   overflow: hidden;
 }
 
-/* 表格统一收窄（dev 列表页专用） */
+/* Compact tables (dev list page only) */
 .el-table {
   font-size: 12.5px;
   --el-table-header-bg-color: var(--bg-subtle);
@@ -119,13 +119,13 @@ body {
   cursor: pointer;
 }
 
-/* 分页 */
+/* Pagination */
 .el-pagination {
   --el-pagination-hover-color: var(--accent);
   --el-pagination-active-color: var(--accent-strong);
 }
 
-/* 输入 / 下拉 */
+/* Input / select */
 .el-input__wrapper,
 .el-select__wrapper {
   border-radius: var(--radius-sm);
@@ -137,20 +137,20 @@ body {
   box-shadow: 0 0 0 1px var(--accent) inset;
 }
 
-/* 按钮 */
+/* Buttons */
 .el-button {
   border-radius: var(--radius-sm);
   font-size: 12.5px;
 }
 
-/* 弹层 */
+/* Popovers */
 .el-dropdown__popper,
 .el-select__popper {
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-pop) !important;
 }
 
-/* 表格内联数值 / 代码 */
+/* Inline numbers / code in tables */
 .tm-num {
   font-variant-numeric: tabular-nums;
   color: var(--ink);
@@ -163,7 +163,7 @@ body {
   color: var(--ink-mid);
 }
 
-/* 响应式 */
+/* Responsive */
 @media (max-width: 900px) {
   .tm-brand-name {
     display: none;

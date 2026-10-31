@@ -1,5 +1,5 @@
-// 路由配置（Vue Router 4）
-// base 取自 Vite 的 BASE_URL：demo 内嵌时挂在 /trace-monitor/ 下
+// Route configuration (Vue Router 4)
+// base comes from Vite's BASE_URL: when embedded in the demo it is mounted under /trace-monitor/
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({

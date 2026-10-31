@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Trace 列表页：表格 + Agent/状态/ID 筛选 + 可配置列 + 分页 + 行点击跳详情
+// Trace list page: table + Agent/status/ID filters + configurable columns + pagination + row click opens detail
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import dayjs from "dayjs";
@@ -16,18 +16,18 @@ const router = useRouter();
 const projectStore = useProjectStore();
 const appConfigStore = useAppConfigStore();
 
-// 全部可选列定义（key 用于显隐控制，label 为列名，width 为列宽）
+// All selectable column definitions (key controls visibility, label is the column name, width is the column width)
 const ALL_COLUMNS = [
-  { key: "startedAt", label: "时间", width: 170 },
-  { key: "projectId", label: "项目 ID", width: 240 },
+  { key: "startedAt", label: "Time", width: 170 },
+  { key: "projectId", label: "Project ID", width: 240 },
   { key: "sessionId", label: "Session ID", width: 240 },
   { key: "id", label: "Trace ID", width: 240 },
   { key: "agentName", label: "Agent", width: 140 },
-  { key: "durationMs", label: "耗时(ms)", width: 110 },
+  { key: "durationMs", label: "Duration (ms)", width: 110 },
   { key: "totalTokens", label: "Token", width: 100 },
-  { key: "spanCount", label: "环节数", width: 90 },
-  { key: "toolCount", label: "工具数", width: 90 },
-  { key: "status", label: "状态", width: 100 },
+  { key: "spanCount", label: "Spans", width: 90 },
+  { key: "toolCount", label: "Tools", width: 90 },
+  { key: "status", label: "Status", width: 100 },
 ] as const;
 type ColumnKey = (typeof ALL_COLUMNS)[number]["key"];
 
@@ -41,7 +41,7 @@ const agentName = ref<string | undefined>();
 const status = ref<string | undefined>();
 const idKeyword = ref<string | undefined>();
 const keywordInput = ref<string>("");
-// Agent 下拉选项：从当前列表数据派生（后端已无 GET /agents 接口）
+// Agent select options: derived from the current list data (the backend no longer has a GET /agents API)
 const agentOptions = computed<{ label: string; value: string }[]>(() => {
   const names = new Set<string>();
   for (const it of items.value) if (it.agentName) names.add(it.agentName);
@@ -80,13 +80,13 @@ async function load(preserveOnError = false) {
   } catch {
     loadError.value = true;
     if (!preserveOnError) { items.value = []; total.value = 0; }
-    ElMessage.error("加载 Trace 列表失败，请确认 API 可用");
+    ElMessage.error("Failed to load the trace list. Check that the API is available.");
   } finally {
     loading.value = false;
   }
 }
 
-// 监听筛选条件变化：分页条件变化重查，其余条件重置到第 1 页
+// Watch filter changes: pagination changes re-query, other changes reset to page 1
 watch(
   [() => projectStore.selected, () => projectStore.projects.length],
   () => {
@@ -100,14 +100,14 @@ watch([agentName, status], () => {
   load();
 });
 
-// 存储模式：file 模式下 list_traces 只返回 {id, projectId, sessionId}，摘要列无数据
+// Storage mode: in file mode list_traces only returns {id, projectId, sessionId}, so summary columns have no data
 onMounted(() => {
   applyHostScope();
   appConfigStore.load();
   load();
 });
 
-// 切换项目时重置 Agent 筛选值
+// Reset the Agent filter when the project changes
 watch(
   () => projectStore.projectId(),
   () => {
@@ -135,12 +135,12 @@ function toggleColumn(key: ColumnKey) {
   const next = new Set(visibleKeys.value);
   if (next.has(key)) next.delete(key);
   else next.add(key);
-  if (next.size === 0) return; // 至少保留一列
+  if (next.size === 0) return; // Keep at least one column
   visibleKeys.value = next;
 }
 
-// 有效列：file 模式只保留有数据的列（项目 ID / Session ID / Trace ID），摘要列隐藏
-// config 未返回时 store 默认为 "database" → 非 file，与改造前行为一致
+// Effective columns: file mode keeps only columns with data (Project ID / Session ID / Trace ID) and hides summary columns
+// Until config returns, the store defaults to "database" (not file), matching the previous behavior
 const isFileBackend = computed(() => appConfigStore.storageBackend === "file");
 const effectiveColumns = computed(() =>
   isFileBackend.value
@@ -152,7 +152,7 @@ const columns = computed(() =>
   effectiveColumns.value.map((c) => ({
     key: c.key,
     label: c.label,
-    // file 模式只剩 3 个 ID 列：不写死宽度，让 el-table 自动铺满整行
+    // File mode has only 3 ID columns: no fixed width, so el-table fills the whole row
     width: isFileBackend.value ? undefined : c.width,
   })),
 );
@@ -161,7 +161,7 @@ function fmtTime(v?: string) {
   return v ? dayjs(v).format("YYYY-MM-DD HH:mm:ss") : "—";
 }
 
-// 项目切换 / 刷新：原先在 iframe 顶部工具条，现并入页面工具条，避免重复标题条
+// Project switch / refresh: formerly in the iframe's top toolbar, now merged into the page toolbar to avoid a duplicate title bar
 function onProjectChange(v: string) {
   projectStore.applySelection(v);
 }
@@ -172,7 +172,7 @@ function reload() {
 function rowClick(row: Trace) {
   const pid = row.projectId || projectStore.projectId();
   if (!pid) return;
-  // 详情与返回都保留真实项目/会话范围，宿主可据此恢复同一条 Trace。
+  // Both detail and back keep the real project/session scope, so the host can restore the same trace.
   notifyHost(pid, row.sessionId || null, row.id);
   router.push({
     path: row.sessionId ? `/traces/${pid}/${row.sessionId}/${row.id}` : `/traces/${pid}/${row.id}`,
@@ -180,7 +180,7 @@ function rowClick(row: Trace) {
   });
 }
 
-// 下载该行 trace 还原出的 jsonl：操作列按钮，需阻止冒泡避免触发行点击跳详情
+// Download the jsonl restored from this row's trace: action column button; stop propagation so the row click does not open the detail
 const downloadingId = ref<string | null>(null);
 
 async function onDownload(row: Trace) {
@@ -190,7 +190,7 @@ async function onDownload(row: Trace) {
   try {
     await downloadTraceJsonl(pid, row.id, row.sessionId);
   } catch {
-    ElMessage.error("下载失败，请确认该 Trace 存在");
+    ElMessage.error("Download failed. Check that this trace exists.");
   } finally {
     downloadingId.value = null;
   }
@@ -201,8 +201,8 @@ async function onDownload(row: Trace) {
   <div class="tm-page">
     <div class="tm-page-head">
       <div>
-        <h2 class="tm-page-title">Trace 列表</h2>
-        <p class="tm-page-sub">Agent 运行轨迹与关键指标一览，点击行查看完整调用链</p>
+        <h2 class="tm-page-title">Traces</h2>
+        <p class="tm-page-sub">Agent run traces and key metrics. Click a row to see the full call chain.</p>
       </div>
       <div class="tm-toolbar" style="margin-bottom: 0">
         <el-select
@@ -210,7 +210,7 @@ async function onDownload(row: Trace) {
           filterable
           allow-create
           default-first-option
-          placeholder="项目 ID"
+          placeholder="Project ID"
           class="tm-project-select"
           @change="onProjectChange"
         >
@@ -224,13 +224,13 @@ async function onDownload(row: Trace) {
         <el-input
           v-model="keywordInput"
           clearable
-          placeholder="按 Trace ID / Session ID 过滤"
+          placeholder="Filter by Trace ID / Session ID"
           style="width: 260px"
           @keyup.enter="onSearch"
           @clear="onSearch"
         >
           <template #append>
-            <el-button @click="onSearch">搜索</el-button>
+            <el-button @click="onSearch">Search</el-button>
           </template>
         </el-input>
         <template v-if="!isFileBackend">
@@ -246,18 +246,18 @@ async function onDownload(row: Trace) {
           <el-select
             v-model="status"
             clearable
-            placeholder="状态"
+            placeholder="Status"
             style="width: 110px"
             @change="onStatusChange"
           >
-            <el-option label="成功" value="success" />
-            <el-option label="失败" value="error" />
+            <el-option label="Success" value="success" />
+            <el-option label="Failed" value="error" />
           </el-select>
           <el-dropdown trigger="click">
-            <el-button>列设置</el-button>
+            <el-button>Columns</el-button>
             <template #dropdown>
               <div class="tm-column-menu">
-                <div class="tm-column-menu-title">显示列</div>
+                <div class="tm-column-menu-title">Visible columns</div>
                 <el-checkbox
                   v-for="c in ALL_COLUMNS"
                   :key="c.key"
@@ -272,13 +272,13 @@ async function onDownload(row: Trace) {
         </template>
         <span class="tm-mode">
           <span class="tm-mode-dot" :class="{ file: isFileBackend }" />
-          {{ isFileBackend ? "文件模式" : "数据库模式" }}
+          {{ isFileBackend ? "File mode" : "Database mode" }}
         </span>
-        <el-button :icon="Refresh" @click="reload">刷新</el-button>
+        <el-button :icon="Refresh" @click="reload">Refresh</el-button>
       </div>
     </div>
 
-    <div v-if="loadError" class="tm-load-error" role="alert"><span>{{ items.length ? "刷新失败，当前展示最近一次成功结果。" : "Trace 数据加载失败，请检查服务后重试。" }}</span><el-button size="small" @click="reload">重试</el-button></div>
+    <div v-if="loadError" class="tm-load-error" role="alert"><span>{{ items.length ? "Refresh failed. Showing the last successful result." : "Failed to load trace data. Check the service and try again." }}</span><el-button size="small" @click="reload">Retry</el-button></div>
 
     <div class="tm-panel">
       <div class="tm-table-wrap">
@@ -324,9 +324,9 @@ async function onDownload(row: Trace) {
             </template>
           </template>
         </el-table-column>
-        <!-- 下载：后端按 trace_id 还原 <trace_id>.jsonl（database 重拼行 / file 回吐原文） -->
+        <!-- Download: the backend restores <trace_id>.jsonl by trace_id (database rebuilds rows / file returns the original) -->
         <el-table-column
-          label="操作"
+          label="Actions"
           width="90"
         >
           <template #default="{ row }">
@@ -336,7 +336,7 @@ async function onDownload(row: Trace) {
               :loading="downloadingId === row.id"
               @click.stop="onDownload(row)"
             >
-              下载
+              Download
             </el-button>
           </template>
         </el-table-column>

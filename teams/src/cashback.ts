@@ -11,14 +11,14 @@ export const campaign = Object.freeze({
 export interface PurchaseInput { amountCents: number; cardTier: 'platinum' | 'standard'; purchasedAt: string }
 export interface CashbackResult { eligible: boolean; rewardCents: number; reason: 'ELIGIBLE' | 'CARD_TIER' | 'OUTSIDE_WINDOW' }
 export function calculateCashback(input: PurchaseInput): CashbackResult {
-  if (!Number.isSafeInteger(input.amountCents) || input.amountCents <= 0) throw new RangeError('消费金额必须为正整数分');
-  if (!['platinum', 'standard'].includes(input.cardTier)) throw new RangeError('卡片等级无效');
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(input.purchasedAt)) throw new RangeError('消费时间必须包含时区');
+  if (!Number.isSafeInteger(input.amountCents) || input.amountCents <= 0) throw new RangeError('The purchase amount must be a positive integer number of cents');
+  if (!['platinum', 'standard'].includes(input.cardTier)) throw new RangeError('Invalid card tier');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(input.purchasedAt)) throw new RangeError('The purchase time must include a time zone');
   const date = input.purchasedAt.slice(0, 10);
   const calendarDay = Date.parse(date + 'T00:00:00Z');
-  if (!Number.isFinite(calendarDay) || new Date(calendarDay).toISOString().slice(0, 10) !== date) throw new RangeError('消费日期无效');
+  if (!Number.isFinite(calendarDay) || new Date(calendarDay).toISOString().slice(0, 10) !== date) throw new RangeError('Invalid purchase date');
   const instant = Date.parse(input.purchasedAt);
-  if (!Number.isFinite(instant)) throw new RangeError('消费时间无效');
+  if (!Number.isFinite(instant)) throw new RangeError('Invalid purchase time');
   if (input.cardTier !== 'platinum') return { eligible: false, rewardCents: 0, reason: 'CARD_TIER' };
   if (instant < Date.parse(campaign.start) || instant >= Date.parse(campaign.endExclusive)) return { eligible: false, rewardCents: 0, reason: 'OUTSIDE_WINDOW' };
   // 0.5% = 1/200. Integer half-up rounding avoids floating-point amount drift.

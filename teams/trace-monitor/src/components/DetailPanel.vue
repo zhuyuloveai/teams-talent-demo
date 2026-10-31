@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// 右侧详情面板：Input/Output + 元数据 Chips + Formatted JSON + Real LLM Request + 错误详情
-// 真实 LLM 请求数据源以 fetchLlmRequests 回调注入，组件不内置取数实现
-// 节点详情（input/output/errorInfo/observations）以 fetchSpanDetail 回调按需注入：
-//   注入时点击节点懒加载（详情优先，本地 spans 兜底）；未注入时回退本地内存查找
+// Right-hand detail panel: Input/Output + metadata chips + Formatted JSON + Real LLM Request + error details
+// The real LLM request data source is injected as the fetchLlmRequests callback; the component has no built-in fetching
+// Node detail (input/output/errorInfo/observations) is optionally injected as the fetchSpanDetail callback:
+//   when injected, clicking a node lazy-loads it (detail first, local spans as fallback); otherwise local in-memory lookup is used
 import { computed, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import type {
@@ -19,19 +19,19 @@ import MetaChips from "@/components/MetaChips.vue";
 
 const props = defineProps<{
   trace: Trace;
-  /** 行级项目 id（贯穿详情/调用树/LLM 请求，必须为具体项目 id） */
+  /** Row-level project id (used for detail / call tree / LLM requests; must be a concrete project id) */
   projectId: string;
-  /** 会话 id（可选）：file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速 */
+  /** Session id (optional): the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster */
   sessionId?: string | null;
   traceId: string;
-  // selectedSpanId === null 表示选中根 Trace
+  // selectedSpanId === null means the root Trace is selected
   selectedSpanId: string | null;
   spans: Span[];
   observations: Observation[];
-  /** 必传：真实 LLM 请求数据源回调（点击 llm 节点时懒加载） */
+  /** Required: real LLM request data-source callback (lazy-loaded when an llm node is clicked) */
   fetchLlmRequests: FetchLlmRequests;
-  /** 可选：节点详情数据源回调；缺省时回退到 spans 内查找（向后兼容）
-   *  注意：file 模式后端不实现该接口，集成方请勿注入 */
+  /** Optional: node detail data-source callback; falls back to looking up spans when omitted (backward compatible)
+   *  Note: the file-mode backend does not implement this API, so integrators must not inject it */
   fetchSpanDetail?: FetchSpanDetail;
 }>();
 
@@ -39,20 +39,20 @@ const tab = ref("io");
 const llmRequests = ref<LlmRequest[]>([]);
 const llmLoading = ref(false);
 
-// ===== 节点详情懒加载：详情优先，本地兜底 =====
+// ===== Node detail lazy loading: detail first, local fallback =====
 const spanDetail = ref<SpanDetailResp | null>(null);
 const spanLoading = ref(false);
 const spanError = ref(false);
-const detailCache = new Map<string, SpanDetailResp>(); // key = spanId，无 TTL，切 trace/project 时清空
-let detailSeq = 0; // 竞态序号：连点节点时丢弃迟到响应
+const detailCache = new Map<string, SpanDetailResp>(); // key = spanId, no TTL, cleared when trace/project changes
+let detailSeq = 0; // Race sequence number: drops late responses when nodes are clicked in quick succession
 
-// 本地 span（来自 props.spans，即 /detail 的 spans 数组）
+// Local span (from props.spans, i.e. the spans array of /detail)
 const localSpan = computed<Span | undefined>(() =>
   props.selectedSpanId ? props.spans.find((s) => s.id === props.selectedSpanId) : undefined,
 );
-// 最终展示用的 span：优先用懒加载回来的详情，未到达时先用本地渲染
+// Span used for display: prefers the lazy-loaded detail and renders the local one until it arrives
 const span = computed<Span | undefined>(() => spanDetail.value?.span ?? localSpan.value);
-// observations：优先用懒加载结果；注入回调时懒加载中/失败均不显示本地那份
+// observations: prefer the lazy-loaded result; when the callback is injected, the local copy is not shown while loading or on failure
 const spanObs = computed(() => {
   if (spanDetail.value) return spanDetail.value.observations;
   if (props.fetchSpanDetail) return [];
@@ -62,7 +62,7 @@ const spanObs = computed(() => {
 });
 
 async function loadSpanDetail(sid: string | null, force = false) {
-  // 先占号：任何早退（切根节点 / 未注入回调）都会让在途响应失效，避免串号
+  // Take a sequence number first: any early return (root node / no callback) invalidates in-flight responses so they do not get mixed up
   const seq = ++detailSeq;
   spanDetail.value = null;
   spanError.value = false;
@@ -70,25 +70,25 @@ async function loadSpanDetail(sid: string | null, force = false) {
 
   const fetcher = props.fetchSpanDetail;
   const pid = props.projectId || props.trace.projectId || "";
-  // 根 Trace（sid 为空）或未注入回调 → 不懒加载，走本地 spans / trace 兜底
+  // Root Trace (empty sid) or no callback: no lazy loading, fall back to local spans / trace
   if (!fetcher || !sid || !pid || !props.traceId) return;
 
   if (force) detailCache.delete(sid);
   const hit = detailCache.get(sid);
   if (hit) {
-    spanDetail.value = hit; // 命中缓存：零请求零闪烁
+    spanDetail.value = hit; // Cache hit: no request, no flicker
     return;
   }
 
   spanLoading.value = true;
   try {
     const resp = await fetcher(pid, props.traceId, sid, props.sessionId);
-    if (seq !== detailSeq) return; // 已切走，丢弃
+    if (seq !== detailSeq) return; // Selection changed; discard
     detailCache.set(sid, resp);
     spanDetail.value = resp;
   } catch {
     if (seq !== detailSeq) return;
-    spanError.value = true; // 单节点失败不污染整页
+    spanError.value = true; // A single node failure does not affect the whole page
   } finally {
     if (seq === detailSeq) spanLoading.value = false;
   }
@@ -98,13 +98,13 @@ function retrySpanDetail() {
   loadSpanDetail(props.selectedSpanId, true);
 }
 
-// 缓存失效：切 trace / project / session 时清空（先于懒加载 watch 注册，避免用到上一个 trace 的缓存）
+// Cache invalidation: cleared when trace / project / session changes (registered before the lazy-load watch so the previous trace's cache is never used)
 watch(
   [() => props.traceId, () => props.projectId, () => props.sessionId],
   () => detailCache.clear(),
 );
 
-// 选中节点变化时按 projectId + traceId + spanId 拉取该节点详情
+// When the selected node changes, fetch its detail by projectId + traceId + spanId
 watch(
   [() => props.selectedSpanId, () => props.projectId, () => props.traceId, () => props.sessionId],
   ([sid]) => {
@@ -126,18 +126,18 @@ const errorInfo = computed(() =>
   isRoot.value ? props.trace.errorInfo : span.value!.errorInfo,
 );
 
-// 切节点时若当前 tab 在该节点上不存在（如非 llm 节点的 "Real LLM Request"），
-// 重置回 "io"，避免消失 tab 残留
+// When switching nodes, if the current tab does not exist on the new node (e.g. "Real LLM Request" on a non-llm node),
+// reset to "io" so a vanished tab does not stay selected
 watch([tab, isLlm, () => props.selectedSpanId], ([t, llm]) => {
   if (t === "llm" && !llm) tab.value = "io";
 });
 
-// 选中 llm 节点时按 projectId + eventId 拉取真实 LLM 请求（1:1 关联）
-// 后端强制按项目过滤：projectId 取组件传入的行级 pid（detail 根 trace 的
-// projectId 兜底），必须是具体项目 id
-// 依赖 eventId 而非 span 对象引用：一次点击里 span 会先取本地 brief（props.spans）、
-// 后取懒加载详情（detailCache/接口返回），两者引用不同但 eventId 相同；
-// 直接依赖 span 会让同一节点发两次一模一样的请求
+// When an llm node is selected, fetch the real LLM request by projectId + eventId (1:1 relation)
+// The backend always filters by project: projectId is the row-level pid passed to the component (with the detail root trace's
+// projectId as fallback) and must be a concrete project id
+// Depend on eventId rather than the span object reference: in one click the span is first the local brief (props.spans),
+// then the lazy-loaded detail (detailCache/API response); the references differ but the eventId is the same;
+// depending on span directly would send the same request twice for one node
 watch(
   [
     () => props.selectedSpanId,
@@ -172,20 +172,20 @@ function copyJson() {
     2,
   );
   navigator.clipboard?.writeText(payload);
-  ElMessage.success("已复制 JSON");
+  ElMessage.success("JSON copied");
 }
 
-// 后端可能把 input/output 双层编码为 JSON 字符串（如 tool 的 HTTP 响应体），
-// 直接 stringify 会把引号、换行全部转义成 \" 与 \n，无法阅读；
-// 这里递归把「本身就是 JSON 的字符串」解析回结构后再格式化
-// 解析层数上限：兼容嵌套编码，同时防御恶意构造的深层嵌套字符串
+// The backend may double-encode input/output as JSON strings (e.g. a tool's HTTP response body);
+// stringifying directly escapes all quotes and newlines as \" and \n, which is unreadable;
+// so strings that are themselves JSON are parsed back into structures recursively before formatting
+// Parse depth limit: handles nested encoding while guarding against maliciously deep nested strings
 const MAX_PARSE_DEPTH = 8;
 
 function normalize(v: unknown, depth = 0): unknown {
   if (typeof v === "string") {
     if (depth >= MAX_PARSE_DEPTH) return v;
     const s = v.trim();
-    // 只尝试对象/数组，避免把 "123"、普通文本误解析成其它类型
+    // Only try objects/arrays so "123" or plain text is not parsed into another type
     if (!s.startsWith("{") && !s.startsWith("[")) return v;
     try {
       return normalize(JSON.parse(s), depth + 1);
@@ -221,19 +221,19 @@ function fmt(v: unknown): string {
         type="error"
         :closable="false"
         show-icon
-        :title="errorInfo.message || errorInfo.errorType || '错误'"
+        :title="errorInfo.message || errorInfo.errorType || 'Error'"
         class="tm-error-alert"
       >
         <div>
-          <div v-if="errorInfo.errorType">类型: {{ errorInfo.errorType }}</div>
-          <div v-if="errorInfo.errorCode">编码: {{ errorInfo.errorCode }}</div>
-          <div v-if="errorInfo.errorCategory">类别: {{ errorInfo.errorCategory }}</div>
+          <div v-if="errorInfo.errorType">Type: {{ errorInfo.errorType }}</div>
+          <div v-if="errorInfo.errorCode">Code: {{ errorInfo.errorCode }}</div>
+          <div v-if="errorInfo.errorCategory">Category: {{ errorInfo.errorCategory }}</div>
           <pre v-if="errorInfo.stackTrace" class="tm-json-block tm-stack">{{ errorInfo.stackTrace }}</pre>
         </div>
       </el-alert>
 
       <div v-if="spanObs.length > 0" class="tm-obs">
-        <div class="tm-section-label">Token 明细 (observation)</div>
+        <div class="tm-section-label">Token breakdown (observation)</div>
         <div class="tm-obs-list">
           <div v-for="o in spanObs" :key="o.id" class="tm-meta-chip">
             <span class="tm-obs-model">{{ o.model }}</span>
@@ -247,13 +247,13 @@ function fmt(v: unknown): string {
 
       <el-tabs v-model="tab" size="small" class="tm-tabs">
         <template #extra>
-          <el-button size="small" @click="copyJson">复制</el-button>
+          <el-button size="small" @click="copyJson">Copy</el-button>
         </template>
         <el-tab-pane label="Input / Output" name="io">
           <div v-loading="spanLoading">
             <div v-if="spanError" class="tm-empty">
-              <div>节点详情加载失败</div>
-              <el-button size="small" type="primary" link @click="retrySpanDetail">点击重试</el-button>
+              <div>Failed to load node detail</div>
+              <el-button size="small" type="primary" link @click="retrySpanDetail">Retry</el-button>
             </div>
             <div v-else-if="input !== undefined || output !== undefined || errorInfo !== undefined">
               <div class="tm-section-label">Input</div>
@@ -264,7 +264,7 @@ function fmt(v: unknown): string {
               <div class="tm-json-block"><JsonView :data="errorInfo" /></div>
             </div>
             <div v-else class="tm-empty">
-              <div>无数据</div>
+              <div>No data</div>
             </div>
           </div>
         </el-tab-pane>
@@ -272,8 +272,8 @@ function fmt(v: unknown): string {
           <div v-loading="spanLoading">
             <pre v-if="!spanError" class="tm-json-block">{{ fmt({ input, output, error: errorInfo }) }}</pre>
             <div v-else class="tm-empty">
-              <div>节点详情加载失败</div>
-              <el-button size="small" type="primary" link @click="retrySpanDetail">点击重试</el-button>
+              <div>Failed to load node detail</div>
+              <el-button size="small" type="primary" link @click="retrySpanDetail">Retry</el-button>
             </div>
           </div>
         </el-tab-pane>
@@ -284,7 +284,7 @@ function fmt(v: unknown): string {
                 <span class="tm-obs-model">{{ r.model }}</span>
                 <span>·</span>
                 <span :class="r.status === 'error' ? 'tm-status error' : 'tm-status success'">
-                  {{ r.status === "error" ? "失败" : "成功" }}
+                  {{ r.status === "error" ? "Failed" : "Success" }}
                 </span>
               </div>
               <div class="tm-section-label">Input</div>

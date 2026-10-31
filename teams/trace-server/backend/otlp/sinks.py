@@ -1,15 +1,15 @@
-"""OTLP 接收的事件落地通道（Sink）。
+"""Sinks for events received over OTLP.
 
-设计要点（见 docs/OTLP端点接收实现方案.md §8）：
-- `offer()` 只入内存队列，**从不 await 网络/磁盘**，保证 HTTP 响应不被下游阻塞
-- 队列满 ⇒ `offer()` 返回 False，路由层据此返回 503，让 OTel SDK 自行退避重试
-- 后台 task 批量取 + `_write_batch()`；写失败只记日志，**不重试、不回队**
-  （重试交给客户端，我们重试只会放大重复）
-- `stop()` 在 lifespan shutdown 调用，flush 残余
+Design points (see §8 of the OTLP endpoint ingestion design doc):
+- `offer()` only enqueues in memory and **never awaits network/disk**, so HTTP responses are never blocked by downstream
+- Queue full => `offer()` returns False and the route returns 503, so the OTel SDK backs off and retries itself
+- A background task takes batches + `_write_batch()`; write failures are only logged, **no retry, no requeue**
+  (retries are left to the client; retrying here would only amplify duplicates)
+- `stop()` is called on lifespan shutdown and flushes what is left
 
-通道：`kafka`（默认，耐久可重放）/ `redis` / `file` / `none`。
-下游不可达时 sink 不退出，只置为「未就绪」并后台重连；未就绪期间
-`offer()` 返回 False → 路由 503，下游恢复后无需重启 server。
+Sinks: `kafka` (default, durable and replayable) / `redis` / `file` / `none`.
+When downstream is unreachable the sink does not exit; it is marked "not ready" and reconnects in the background. While not ready,
+`offer()` returns False -> 503 from the route; no server restart is needed once downstream recovers.
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def _safe_segment(value: Any, fallback: str) -> str:
 
 
 def _long_path(path: Path) -> Path:
-    """Windows 长路径加 \\\\?\\ 前缀（复用 FileExporter 的实践）。"""
+    """Add the \\\\?\\ prefix for long Windows paths (same practice as FileExporter)."""
     text = str(path)
     if os.name != "nt" or text.startswith(_LONG_PATH_PREFIX) or len(text) < 200:
         return path
@@ -46,10 +46,10 @@ def _long_path(path: Path) -> Path:
 
 
 class BaseSink(ABC):
-    """所有 sink 的公共骨架：有界队列 + 后台批量刷盘。"""
+    """Common skeleton of all sinks: bounded queue + background batch flushing."""
 
-    # 写失败是否说明「下游连接已不可用」；True 时置为未就绪并后台重连，
-    # 期间 offer() 返回 False（503），避免继续收下又静默丢弃
+    # Whether a write failure means the downstream connection is gone; if True, mark not ready and reconnect in the background;
+    # meanwhile offer() returns False (503) instead of accepting events and silently dropping them
     _mark_unready_on_failure = False
 
     def __init__(
@@ -66,24 +66,24 @@ class BaseSink(ABC):
         self._reconnect_interval = max(0.2, reconnect_interval)
         self._task: asyncio.Task[None] | None = None
         self._closed = False
-        # 下游是否可用；False 时 offer() 直接拒收（路由 503），后台按间隔重连
+        # Whether downstream is available; when False offer() rejects (503 from the route) and reconnects in the background at an interval
         self._ready = True
         self.dropped_batches = 0
         self.write_failures = 0
 
-    # ---- 生命周期 ----
+    # ---- Lifecycle ----
 
     async def start(self) -> None:
-        """建立下游连接（子类可覆盖）；失败不抛，只降级为拒收。"""
+        """Connect to downstream (subclasses may override); failures do not raise, they only degrade to rejecting."""
         await self._on_start()
         self._closed = False
         self._task = asyncio.create_task(self._run(), name="otlp-sink")
 
-    async def _on_start(self) -> None:  # pragma: no cover - 默认无操作
+    async def _on_start(self) -> None:  # pragma: no cover - no-op by default
         return
 
-    async def _reconnect(self) -> None:  # pragma: no cover - 默认无操作
-        """下游不可达时的重连尝试；子类实现。"""
+    async def _reconnect(self) -> None:  # pragma: no cover - no-op by default
+        """Reconnect attempt when downstream is unreachable; implemented by subclasses."""
         return
 
     async def stop(self) -> None:
@@ -95,7 +95,7 @@ class BaseSink(ABC):
             except (asyncio.CancelledError, Exception):
                 pass
             self._task = None
-        # 刷掉队列里残余的事件
+        # Flush the events left in the queue
         while not self._q.empty():
             try:
                 batch = self._q.get_nowait()
@@ -104,16 +104,16 @@ class BaseSink(ABC):
             try:
                 await self._write_batch(batch)
             except Exception:
-                logger.warning("OTLP sink 关闭时刷残余失败", exc_info=True)
+                logger.warning("OTLP sink failed to flush remaining events on shutdown", exc_info=True)
         await self._on_stop()
 
-    async def _on_stop(self) -> None:  # pragma: no cover - 默认无操作
+    async def _on_stop(self) -> None:  # pragma: no cover - no-op by default
         return
 
-    # ---- 投递 ----
+    # ---- Delivery ----
 
     def offer(self, events: list[dict[str, Any]]) -> bool:
-        """非阻塞入队；队列已满或下游不可用返回 False（调用方据此回 503）。"""
+        """Non-blocking enqueue; returns False when the queue is full or downstream is unavailable (the caller then returns 503)."""
         if not events:
             return True
         if self._closed or not self._ready:
@@ -124,19 +124,19 @@ class BaseSink(ABC):
         except asyncio.QueueFull:
             self.dropped_batches += 1
             logger.warning(
-                "OTLP sink 队列已满（%d 批被拒），返回 503 让客户端重试",
+                "OTLP sink queue is full (%d batches rejected); returning 503 so the client retries",
                 self.dropped_batches,
             )
             return False
 
-    # ---- 后台循环 ----
+    # ---- Background loop ----
 
     async def _run(self) -> None:
         pending: list[dict[str, Any]] = []
         while True:
             try:
                 if not self._ready:
-                    # 下游不可达：不消费队列（队列会被填满 → 503 让客户端退避）
+                    # Downstream unreachable: do not consume the queue (it fills up -> 503 makes the client back off)
                     await asyncio.sleep(self._reconnect_interval)
                     await self._reconnect()
                     continue
@@ -145,7 +145,7 @@ class BaseSink(ABC):
                     self._q.get(), timeout=self._flush_interval
                 )
                 pending.extend(batch)
-                # 攒够一批或多批后一起写出
+                # Write out once one or more batches have accumulated
                 while not self._q.empty() and len(pending) < self._batch_size * 5:
                     try:
                         pending.extend(self._q.get_nowait())
@@ -160,8 +160,8 @@ class BaseSink(ABC):
                     pending = []
             except asyncio.CancelledError:
                 raise
-            except Exception:  # pragma: no cover - 防御
-                logger.exception("OTLP sink 后台循环异常")
+            except Exception:  # pragma: no cover - defensive
+                logger.exception("OTLP sink background loop error")
                 await asyncio.sleep(0.5)
 
     async def _flush(self, events: list[dict[str, Any]]) -> None:
@@ -170,36 +170,36 @@ class BaseSink(ABC):
         except Exception:
             self.write_failures += 1
             logger.exception(
-                "OTLP sink 写失败，丢弃 %d 条事件（由客户端重试兜底）", len(events)
+                "OTLP sink write failed; dropping %d events (client retries cover this)", len(events)
             )
             if self._mark_unready_on_failure:
-                # 下游连接已不可用：停掉旧连接，置为未就绪，由后台循环重连；
-                # 期间 offer() 返回 False → 503，客户端会带着这批数据重投
+                # Downstream connection is gone: stop the old connection, mark not ready, and let the background loop reconnect;
+                # meanwhile offer() returns False -> 503, and the client resends this batch
                 self._ready = False
                 try:
                     await self._on_stop()
-                except Exception:  # pragma: no cover - 清理失败不影响流程
-                    logger.warning("OTLP sink 断开清理失败", exc_info=True)
+                except Exception:  # pragma: no cover - cleanup failure does not affect the flow
+                    logger.warning("OTLP sink failed to clean up after disconnect", exc_info=True)
 
     @abstractmethod
     async def _write_batch(self, events: list[dict[str, Any]]) -> None:
-        """把一批事件写到下游。失败请抛异常，基类负责计数与日志。"""
+        """Write a batch of events downstream. Raise on failure; the base class handles counting and logging."""
 
 
 class NilSink(BaseSink):
-    """只吞不写：用于压测 / 只验协议。"""
+    """Accepts but never writes: for load testing / protocol-only checks."""
 
     async def _write_batch(self, events: list[dict[str, Any]]) -> None:
         return
 
 
 class FileSink(BaseSink):
-    """写 JSONL，目录布局与 `trace_sdk.FileExporter` 完全一致：
+    """Writes JSONL with exactly the same directory layout as `trace_sdk.FileExporter`:
 
         <root>/<project_id>/<session_id>/<trace_id>.jsonl
         <root>/<project_id>/_no_session/<trace_id>.jsonl
 
-    这样 `FileBackend` 无需任何改动即可读回。
+    so `FileBackend` can read it back without any change.
     """
 
     def __init__(
@@ -218,15 +218,15 @@ class FileSink(BaseSink):
         self._handles: dict[str, Any] = {}
         self._handle_order: list[str] = []
         self._max_handles = max(1, max_handles)
-        # trace_id -> session_id：observation 事件不带 session_id，靠所属 trace 归目录，
-        # 否则同一个 trace 会分裂成 <sid>/ 和 _no_session/ 两个文件（与 FileExporter 一致）。
+        # trace_id -> session_id: observation events carry no session_id and are filed under their trace's directory;
+        # otherwise one trace would split into two files under <sid>/ and _no_session/ (same as FileExporter).
         self._trace_session: dict[str, str] = {}
 
     async def _on_start(self) -> None:
         try:
             self._root.mkdir(parents=True, exist_ok=True)
         except OSError:
-            logger.exception("OTLP FileSink 无法创建目录 %s", self._root)
+            logger.exception("OTLP FileSink cannot create directory %s", self._root)
 
     def _path_for(self, ev: dict[str, Any]) -> Path | None:
         etype = ev.get("event_type")
@@ -236,8 +236,8 @@ class FileSink(BaseSink):
         project_id = _safe_segment(ev.get("project_id"), "default")
         trace_seg = _safe_segment(trace_id, "unknown")
         session_id = ev.get("session_id")
-        # session / trace 事件携带 session_id：建立 trace -> session 映射，
-        # 后续不带 session_id 的 span / observation 据此归入同一目录。
+        # session / trace events carry session_id: build the trace -> session mapping
+        # so later span / observation events without session_id go into the same directory.
         if session_id and etype in ("session", "trace") and trace_id:
             self._trace_session[str(trace_id)] = str(session_id)
         elif not session_id and trace_id:
@@ -285,16 +285,16 @@ class FileSink(BaseSink):
             except OSError:
                 self.write_failures += 1
                 self._ready = False
-                logger.exception("OTLP FileSink 写入失败: %s", path)
+                logger.exception("OTLP FileSink write failed: %s", path)
         for handle in self._handles.values():
             try:
                 handle.flush()
             except (OSError, ValueError):
                 self.write_failures += 1
                 self._ready = False
-                logger.exception("OTLP FileSink flush 失败")
+                logger.exception("OTLP FileSink flush failed")
         if written:
-            logger.debug("OTLP FileSink 写入 %d 条事件", written)
+            logger.debug("OTLP FileSink wrote %d events", written)
 
     async def _on_stop(self) -> None:
         for handle in self._handles.values():
@@ -307,10 +307,10 @@ class FileSink(BaseSink):
 
 
 class KafkaSink(BaseSink):
-    """投递到 Kafka，消息体与 `trace_sdk.KafkaExporter` 完全一致（JSON value）。
+    """Delivers to Kafka with exactly the same message body as `trace_sdk.KafkaExporter` (JSON value).
 
-    `key = trace_id` 让同一 trace 的事件落同一分区，天然保序；
-    `acks=all` + `enable_idempotence` 保证不丢不重（重传仍由 §6.2 的 event_id 兜底）。
+    `key = trace_id` puts all events of a trace in the same partition, which preserves order;
+    `acks=all` + `enable_idempotence` prevent loss and duplicates (retransmissions are still covered by the event_id from §6.2).
     """
 
     _mark_unready_on_failure = True
@@ -358,8 +358,8 @@ class KafkaSink(BaseSink):
         producer = None
         try:
             producer = self._new_producer()
-            # broker 不可达时 aiokafka 可能长时间卡在重试，必须加超时，
-            # 否则服务启动会被拖住（此时直接降级为拒收）
+            # When the broker is unreachable aiokafka may hang in retries for a long time, so a timeout is required;
+            # otherwise server startup would stall (in that case degrade to rejecting)
             await asyncio.wait_for(producer.start(), timeout=self._connect_timeout)
         except Exception:
             self._ready = False
@@ -367,11 +367,11 @@ class KafkaSink(BaseSink):
             if producer is not None:
                 try:
                     await producer.stop()
-                except Exception:  # pragma: no cover - 清理失败不影响降级
+                except Exception:  # pragma: no cover - cleanup failure does not affect degradation
                     pass
             logger.warning(
-                "OTLP KafkaSink 连接 %s 失败，暂拒收并每 %.0fs 重连"
-                "（客户端会收到 503 并自行退避）",
+                "OTLP KafkaSink failed to connect to %s; rejecting for now and reconnecting every %.0fs "
+                "(clients get 503 and back off)",
                 self._bootstrap,
                 self._reconnect_interval,
                 exc_info=True,
@@ -379,14 +379,14 @@ class KafkaSink(BaseSink):
             return
         self._producer = producer
         self._ready = True
-        logger.info("OTLP KafkaSink 已连接 %s（topic=%s）", self._bootstrap, self._topic)
+        logger.info("OTLP KafkaSink connected to %s (topic=%s)", self._bootstrap, self._topic)
 
     async def _reconnect(self) -> None:
         await self._on_start()
 
     async def _write_batch(self, events: list[dict[str, Any]]) -> None:
         if self._producer is None:
-            raise RuntimeError("kafka producer 未就绪")
+            raise RuntimeError("kafka producer is not ready")
         for ev in events:
             key = str(ev.get("trace_id") or ev.get("id") or "")
             await self._producer.send(self._topic, key=key, value=ev)
@@ -398,16 +398,16 @@ class KafkaSink(BaseSink):
             return
         try:
             await producer.flush()
-        except Exception:  # pragma: no cover - 关闭期异常只记录
-            logger.warning("OTLP KafkaSink flush 失败", exc_info=True)
+        except Exception:  # pragma: no cover - errors during shutdown are only logged
+            logger.warning("OTLP KafkaSink flush failed", exc_info=True)
         try:
             await producer.stop()
         except Exception:  # pragma: no cover
-            logger.warning("OTLP KafkaSink 关闭失败", exc_info=True)
+            logger.warning("OTLP KafkaSink shutdown failed", exc_info=True)
 
 
 class RedisSink(BaseSink):
-    """XADD 到 Redis Stream，字段 `data` 与 `trace_sdk.RedisExporter` 逐字节一致。"""
+    """XADD to a Redis Stream; the `data` field is byte-for-byte identical to `trace_sdk.RedisExporter`."""
 
     _mark_unready_on_failure = True
 
@@ -452,21 +452,21 @@ class RedisSink(BaseSink):
             self._client = None
             self._ready = False
             logger.warning(
-                "OTLP RedisSink 连接失败，暂拒收并每 %.0fs 重连"
-                "（客户端会收到 503 并自行退避）",
+                "OTLP RedisSink failed to connect; rejecting for now and reconnecting every %.0fs "
+                "(clients get 503 and back off)",
                 self._reconnect_interval,
                 exc_info=True,
             )
             return
         self._ready = True
-        logger.info("OTLP RedisSink 已连接（topic=%s）", self._topic)
+        logger.info("OTLP RedisSink connected (topic=%s)", self._topic)
 
     async def _reconnect(self) -> None:
         await self._on_start()
 
     async def _write_batch(self, events: list[dict[str, Any]]) -> None:
         if self._client is None:
-            raise RuntimeError("redis 客户端未就绪")
+            raise RuntimeError("redis client is not ready")
         pipe = self._client.pipeline()
         for ev in events:
             pipe.xadd(self._topic, {"data": json.dumps(ev, ensure_ascii=False)})
@@ -479,7 +479,7 @@ class RedisSink(BaseSink):
         try:
             await client.aclose()
         except Exception:  # pragma: no cover
-            logger.warning("OTLP RedisSink 关闭失败", exc_info=True)
+            logger.warning("OTLP RedisSink shutdown failed", exc_info=True)
 
 
 def _batch_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -493,7 +493,7 @@ def _reconnect_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_sink(sink_kind: str = "", **kwargs: Any) -> BaseSink:
-    """按 OTLP_SINK 构造 sink 实例（未显式传入的连接参数从 config 取）。"""
+    """Build the sink instance according to OTLP_SINK (connection parameters not passed explicitly come from config)."""
     kind = (sink_kind or "").strip().lower()
     batch = _batch_kwargs(kwargs)
     net = {**batch, **_reconnect_kwargs(kwargs)}
@@ -530,4 +530,4 @@ def build_sink(sink_kind: str = "", **kwargs: Any) -> BaseSink:
             client=kwargs.get("client"),
             **net,
         )
-    raise RuntimeError(f"未知的 OTLP_SINK: {sink_kind!r}")
+    raise RuntimeError(f"Unknown OTLP_SINK: {sink_kind!r}")

@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { atomicJson } from '../server/store.js';
 
 const source = process.argv[2];
-if (!source || !isAbsolute(source)) throw new Error('请提供原 Teams 仓库的绝对路径');
+if (!source || !isAbsolute(source)) throw new Error('Provide the absolute path of the original Teams repository');
 const files = {
   project: 'business/domain/project-management/src/client/ui/demo-data.ts',
   tasks: 'business/domain/team-collaboration/src/client/ui/project-demo-data.ts',
@@ -28,7 +28,7 @@ const snapshot = {
   importedAt: new Date().toISOString(), sourceRoot: source,
   sourceCommit: execFileSync('git',['-C',source,'rev-parse','HEAD'],{encoding:'utf8'}).trim(), sourceFiles,
   project,
-  members: [{id:'A',name:'成员 A',role:'项目 Owner'},{id:'B',name:'成员 B',role:'开发与特性交付'},{id:'C',name:'成员 C',role:'评审与验证'}],
+  members: [{id:'A',name:'Member A',role:'Project Owner'},{id:'B',name:'Member B',role:'Development and feature delivery'},{id:'C',name:'Member C',role:'Review and verification'}],
   tasks: state.tasks.map((task: {id:string})=>({...task,nodes:stateModule.taskNodes(task).map((id:string)=>({id,name:stateModule.nodeNames[id],...stateModule.nodeStage(task,id,state)}))})),
   inputs: intakeModule.initialInputs, discussions:intakeModule.initialDiscussions,
   releases:releaseModule.releaseVersions,sessions:sessionModule.sessionSeeds('teams'),documents,

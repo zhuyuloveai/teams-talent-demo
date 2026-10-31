@@ -1,1 +1,1 @@
-"""Repository 层：业务逻辑与数据访问解耦，API 路由只依赖仓储接口。"""
+"""Repository layer: decouples business logic from data access; API routes depend only on repository interfaces."""

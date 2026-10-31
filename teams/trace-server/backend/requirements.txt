@@ -1,13 +1,13 @@
-# Trace Server 后端依赖（与 docker/Dockerfile 保持一致）
+# Trace Server backend dependencies (keep in sync with docker/Dockerfile)
 fastapi>=0.110
 uvicorn[standard]>=0.29
 sqlalchemy[asyncio]>=2.0
 asyncpg>=0.29
 aiomysql>=0.2
 python-dotenv>=1.0
-# OTLP 端点接收：只取 proto 定义（不引入 SDK / exporter / collector）
+# OTLP endpoint ingestion: proto definitions only (no SDK / exporter / collector)
 opentelemetry-proto>=1.20
 protobuf>=4.25
-# OTLP 写入通道（kafka / redis）
+# OTLP write sinks (kafka / redis)
 aiokafka>=0.10
 redis>=5.0

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 内嵌版 Trace 详情页：注入取数回调，顶部提供返回列表
+// Embedded Trace detail page: injects the fetch callbacks and offers a back-to-list link at the top
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAppConfigStore } from "@/stores/appConfig";
@@ -13,7 +13,7 @@ const sessionId = route.params.sessionId ? String(route.params.sessionId) : null
 const traceId = String(route.params.traceId || "");
 
 const appConfigStore = useAppConfigStore();
-// config 未确认（loaded 为 false）期间为 false → 不注入懒加载，失败方向偏向不懒加载
+// false while config is unconfirmed (loaded is false), so lazy loading is not injected; when in doubt, do not lazy-load
 const spanDetailFetcher = computed(() =>
   appConfigStore.lazyDetailEnabled() ? fetchSpanDetail : undefined,
 );
@@ -26,7 +26,7 @@ function backToList() {
 
 <template>
   <div class="tm-detail-page">
-    <button class="tm-back" type="button" @click="backToList">← 返回列表</button>
+    <button class="tm-back" type="button" @click="backToList">← Back to list</button>
     <TraceDetail
       :project-id="projectId"
       :trace-id="traceId"
@@ -46,7 +46,7 @@ function backToList() {
   flex-direction: column;
   gap: 8px;
   min-height: 520px;
-  /* 与 App.vue 内容区上下内边距（16 + 24）对齐 */
+  /* Matches the App.vue content area's vertical padding (16 + 24) */
   height: calc(100vh - 40px);
 }
 .tm-back {

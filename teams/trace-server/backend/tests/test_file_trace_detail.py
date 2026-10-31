@@ -1,4 +1,4 @@
-"""文件详情计数回归。可用 TRACE_DETAIL_REPLAY 指定只读真实 JSONL 回放。"""
+"""Regression test for file detail counts. Set TRACE_DETAIL_REPLAY to replay a real JSONL file read-only."""
 from __future__ import annotations
 
 import hashlib
@@ -120,7 +120,7 @@ class FileTraceDetailTest(unittest.IsolatedAsyncioTestCase):
         for key in ("total_tokens", "prompt_tokens", "completion_tokens"):
             self.assertEqual(detail.trace.get(key), raw_summary.get(key))
         self.assertEqual(await self.backend.export_trace_jsonl(project, trace, session), original.decode())
-        # 重放所有原始事件，仅写临时副本，既不改变计数也不改真实采集文件。
+        # Replay all original events into a temporary copy only; neither the counts nor the real collected file change.
         path.write_bytes(original.rstrip(b"\n") + b"\n" + original)
         replay = await self.backend.get_trace_detail(project, trace, session)
         self.assertEqual((replay.trace["span_count"], replay.trace["tool_count"]), (12, 7))

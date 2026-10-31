@@ -1,6 +1,6 @@
-// Trace 接口封装：列表 / 详情 / 调用树 / 节点详情 / 真实 LLM 请求
-// 详情 / 调用树 / 节点详情 / LLM 请求四个函数签名与 TraceDetail 的 fetch 回调一致，
-// 组件库集成方可直接复用它们构造 <TraceDetail> 的 fetch 回调（端点格式由本文件集中维护）
+// Trace API wrappers: list / detail / call tree / node detail / real LLM request
+// The detail / call tree / node detail / LLM request functions match TraceDetail's fetch callback signatures,
+// so integrators can reuse them to build <TraceDetail>'s fetch callbacks (endpoint formats are maintained here)
 import { api } from "@/utils/request";
 import type {
   FetchLlmRequests,
@@ -23,7 +23,7 @@ export interface TraceQuery {
   traceId?: string;
 }
 
-// 列表：GET /projects/{pid}/traces?page=&page_size=&agent_name=&status=&session_id=&trace_id=
+// List: GET /projects/{pid}/traces?page=&page_size=&agent_name=&status=&session_id=&trace_id=
 export async function fetchTraces(
   projectId: string,
   params: TraceQuery,
@@ -41,9 +41,9 @@ export async function fetchTraces(
   return data;
 }
 
-// 详情：GET /projects/{projectId}/traces/{traceId}?session_id=
-// projectId 必须为具体项目 id（行级 pid 贯穿）
-// sessionId 可选：file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速
+// Detail: GET /projects/{projectId}/traces/{traceId}?session_id=
+// projectId must be a concrete project id (row-level pid is passed through)
+// sessionId is optional: the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster
 export const fetchTraceDetail: FetchTraceDetail = async (
   projectId,
   traceId,
@@ -56,7 +56,7 @@ export const fetchTraceDetail: FetchTraceDetail = async (
   return data;
 };
 
-// 调用树：GET /projects/{projectId}/traces/{traceId}/tree?session_id=
+// Call tree: GET /projects/{projectId}/traces/{traceId}/tree?session_id=
 export const fetchTraceTree: FetchTraceTree = async (
   projectId,
   traceId,
@@ -69,9 +69,9 @@ export const fetchTraceTree: FetchTraceTree = async (
   return data;
 };
 
-// 节点详情：GET /projects/{projectId}/traces/{traceId}/spans/{spanId}?session_id=
-// projectId 必须为具体项目 id（行级 pid 贯穿）
-// 注意：file 模式后端不实现该端点，集成方在 file 模式下请勿注入
+// Node detail: GET /projects/{projectId}/traces/{traceId}/spans/{spanId}?session_id=
+// projectId must be a concrete project id (row-level pid is passed through)
+// Note: the file-mode backend does not implement this endpoint; integrators must not inject it in file mode
 export const fetchSpanDetail: FetchSpanDetail = async (
   projectId,
   traceId,
@@ -85,8 +85,8 @@ export const fetchSpanDetail: FetchSpanDetail = async (
   return data;
 };
 
-// 真实 LLM 请求：GET /projects/{projectId}/llm_requests/{eventId}
-// 后端强制按项目过滤（projectId 必须为具体项目 id）
+// Real LLM request: GET /projects/{projectId}/llm_requests/{eventId}
+// The backend always filters by project (projectId must be a concrete project id)
 export const fetchLlmRequests: FetchLlmRequests = async (eventId, projectId) => {
   const { data } = await api.get<LlmRequest>(
     `/projects/${projectId}/llm_requests/${eventId}`,
@@ -94,10 +94,10 @@ export const fetchLlmRequests: FetchLlmRequests = async (eventId, projectId) => 
   return data ?? null;
 };
 
-// 还原下载：GET /projects/{projectId}/traces/{traceId}/export?session_id=
-// 把该 trace 还原成文件模式的 <traceId>.jsonl，直接触发浏览器下载
-// database 模式从库表重拼行，file 模式回吐磁盘原文，两种模式都支持
-// sessionId 可选：file 后端按 <pid>/<sid>/<trace_id>.jsonl 路径直查提速
+// Restore and download: GET /projects/{projectId}/traces/{traceId}/export?session_id=
+// Restores the trace as a file-mode <traceId>.jsonl and triggers a browser download
+// Both modes are supported: database mode rebuilds the rows from tables, file mode returns the file on disk as is
+// sessionId is optional: the file backend uses it to look up <pid>/<sid>/<trace_id>.jsonl directly, which is faster
 export async function downloadTraceJsonl(
   projectId: string,
   traceId: string,

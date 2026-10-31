@@ -1,12 +1,12 @@
-"""服务端集中配置：从 trace_server/.env / 环境变量读取，无硬编码默认值。
+"""Central server configuration: read from trace_server/.env / environment variables, no hard-coded defaults.
 
-所有可配置项：
+All settings:
 - STORAGE_BACKEND : database | file
-- DATABASE_URL    : SQLAlchemy async URL（database 后端）
-- DATA_FILE       : SDK 直写 JSONL 文件目录（file 后端，只读）
-- HOST / PORT     : 服务监听地址
+- DATABASE_URL    : SQLAlchemy async URL (database backend)
+- DATA_FILE       : Directory of JSONL files written directly by the SDK (file backend, read-only)
+- HOST / PORT     : server listen address
 
-配置文件位于 trace_server/.env，本文件在 backend/ 下。
+The config file is trace_server/.env; this module lives under backend/.
 """
 from __future__ import annotations
 
@@ -15,99 +15,99 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# trace_server 根目录 = backend 的上一级
+# trace_server root = parent directory of backend
 SERVER_ROOT = Path(__file__).resolve().parent.parent
-# 加载 trace_server/.env（存在时），环境变量优先（load_dotenv 默认不覆盖已存在变量）
+# Load trace_server/.env (when present); environment variables win (load_dotenv does not override existing variables by default)
 _ENV_FILE = SERVER_ROOT / ".env"
 load_dotenv(_ENV_FILE, override=False)
 
 DEFAULT_STORAGE_BACKEND = "database"
 STORAGE_BACKENDS = ("database", "file")
 
-# 存储后端
+# Storage backend
 STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", DEFAULT_STORAGE_BACKEND)
 if STORAGE_BACKEND not in STORAGE_BACKENDS:
     raise RuntimeError(
-        f"STORAGE_BACKEND 无效: {STORAGE_BACKEND!r}，可选 {STORAGE_BACKENDS}"
+        f"Invalid STORAGE_BACKEND: {STORAGE_BACKEND!r}, allowed values: {STORAGE_BACKENDS}"
     )
 
-# 数据库 URL（database 后端必需）
+# Database URL (required by the database backend)
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 if STORAGE_BACKEND == "database" and not DATABASE_URL:
     raise RuntimeError(
-        "未配置 DATABASE_URL：请在 trace_server/.env 中设置数据库连接，"
-        "例如 postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/trace_db"
+        "DATABASE_URL is not set: configure the database connection in trace_server/.env, "
+        "for example postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/trace_db"
     )
 
-# SDK 直写 JSONL 文件目录（file 后端使用，只读）
+# Directory of JSONL files written directly by the SDK (used by the file backend, read-only)
 DATA_FILE = os.getenv("DATA_FILE", "trace_data")
 
-# 服务监听
+# Server listen address
 HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", "8000"))
 
-# 若 DATA_FILE 为相对路径，则相对 trace_server/ 根目录解析
+# A relative DATA_FILE is resolved against the trace_server/ root
 if not os.path.isabs(DATA_FILE):
     DATA_FILE = str(SERVER_ROOT / DATA_FILE)
 
 
 # ============================================================
-# OTLP 端点接收（见 docs/OTLP端点接收实现方案.md）
+# OTLP endpoint ingestion (see the OTLP endpoint ingestion design doc)
 #
-# 注意：OTLP_SINK 与 STORAGE_BACKEND 是**两个独立开关**：
-#   OTLP_SINK       —— 接收端把事件写到哪里
-#   STORAGE_BACKEND —— 查询端从哪里读
-# 二者互不牵连，允许「写 Kafka 读 Python 文件」这类组合。
+# Note: OTLP_SINK and STORAGE_BACKEND are **two independent switches**:
+#   OTLP_SINK       -- where the receiver writes events
+#   STORAGE_BACKEND -- where the query side reads from
+# They do not depend on each other, so combinations such as "write to Kafka, read Python files" are allowed.
 # ============================================================
 
 OTLP_ENABLED = os.getenv("OTLP_ENABLED", "1") == "1"
 
-# 接收路径（挂在根路径下，不在 /api/v1 前缀内）
+# Ingestion path (mounted at the root, not under the /api/v1 prefix)
 OTLP_PATH = os.getenv("OTLP_PATH", "/v1/traces")
 
-# 写入通道：kafka（默认）| redis | file | none
+# Write sink: kafka (default) | redis | file | none
 OTLP_SINK = os.getenv("OTLP_SINK", "kafka").strip().lower()
 OTLP_SINK_CHOICES = ("kafka", "redis", "file", "none")
 
-# 客户端未带 project 属性时的兜底项目
+# Fallback project when the client sends no project attribute
 OTLP_DEFAULT_PROJECT_ID = os.getenv("OTLP_DEFAULT_PROJECT_ID", "otlp")
 
-# 非空则校验 Authorization: Bearer <token>
+# When non-empty, Authorization: Bearer <token> is checked
 OTLP_AUTH_TOKEN = os.getenv("OTLP_AUTH_TOKEN", "").strip()
 
-# 请求体上限（字节），默认 16MB
+# Request body limit (bytes), default 16MB
 OTLP_MAX_BODY_BYTES = int(os.getenv("OTLP_MAX_BODY_BYTES", str(16 * 1024 * 1024)))
 
-# 批处理参数
+# Batching parameters
 OTLP_QUEUE_SIZE = int(os.getenv("OTLP_QUEUE_SIZE", "10000"))
 OTLP_FLUSH_INTERVAL = float(os.getenv("OTLP_FLUSH_INTERVAL", "1.0"))
 OTLP_BATCH_SIZE = int(os.getenv("OTLP_BATCH_SIZE", "200"))
 
-# 事件时间戳时区（IANA 名），需与 SDK 侧 TRACE_TIMEZONE 口径一致
+# Event timestamp time zone (IANA name); must match TRACE_TIMEZONE on the SDK side
 OTLP_TIMEZONE = os.getenv("OTLP_TIMEZONE", "Asia/Shanghai")
 
-# file 通道输出目录；留空则沿用 DATA_FILE
+# Output directory of the file sink; empty means DATA_FILE is used
 _OTLP_FILE_DIR_RAW = os.getenv("OTLP_FILE_DIR", "").strip()
 OTLP_FILE_DIR = _OTLP_FILE_DIR_RAW or DATA_FILE
 if _OTLP_FILE_DIR_RAW and not os.path.isabs(_OTLP_FILE_DIR_RAW):
     OTLP_FILE_DIR = str(SERVER_ROOT / _OTLP_FILE_DIR_RAW)
 
-# kafka 通道（OTLP_SINK=kafka 时生效）：接收端自己的连接串，
-# 与查询侧、consumer 侧配置互不影响
+# kafka sink (used when OTLP_SINK=kafka): the receiver's own connection string,
+# independent of the query-side and consumer-side settings
 OTLP_KAFKA_BOOTSTRAP = os.getenv("OTLP_KAFKA_BOOTSTRAP", "127.0.0.1:9092").strip()
 OTLP_KAFKA_TOPIC = os.getenv("OTLP_KAFKA_TOPIC", "trace_topic").strip()
 OTLP_KAFKA_ACKS = os.getenv("OTLP_KAFKA_ACKS", "all").strip()
 
-# redis 通道（OTLP_SINK=redis 时生效）
+# redis sink (used when OTLP_SINK=redis)
 OTLP_REDIS_URL = os.getenv(
     "OTLP_REDIS_URL", "redis://:myredissecret@127.0.0.1:6379/0"
 ).strip()
 OTLP_REDIS_TOPIC = os.getenv("OTLP_REDIS_TOPIC", "trace_topic").strip()
 
-# 下游不可达时的重连间隔（秒）
+# Reconnect interval when downstream is unreachable (seconds)
 OTLP_RECONNECT_INTERVAL = float(os.getenv("OTLP_RECONNECT_INTERVAL", "5.0"))
 
 if OTLP_ENABLED and OTLP_SINK not in OTLP_SINK_CHOICES:
     raise RuntimeError(
-        f"OTLP_SINK 无效: {OTLP_SINK!r}，可选 {OTLP_SINK_CHOICES}"
+        f"Invalid OTLP_SINK: {OTLP_SINK!r}, allowed values: {OTLP_SINK_CHOICES}"
     )

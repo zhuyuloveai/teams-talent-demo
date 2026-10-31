@@ -20,10 +20,10 @@ export function planRequirementSchedule(state: DemoState) {
   for (const [taskId, schedule] of Object.entries(approvedRequirementSchedule)) {
     if (schedule.storage !== 'teams') continue;
     const matches = (next.workspace.deliveryRequirements ?? []).flatMap((task, index) => task.projectId === 'carddemo' && task.id === taskId ? [{ task, index }] : []);
-    if (matches.length !== 1) throw new Error('排期目标必须唯一且已存在：' + taskId);
+    if (matches.length !== 1) throw new Error('The schedule target must be unique and exist: ' + taskId);
     const { task, index } = matches[0];
     if (task.due !== undefined && task.due !== null && task.due !== '') { preserved.push({ taskId, due: task.due }); continue; }
-    if (!Number.isFinite(Date.parse(task.createdAt)) || schedule.due < new Date(task.createdAt).toISOString().slice(0, 10)) throw new Error('计划日期不得早于实际创建日期：' + taskId);
+    if (!Number.isFinite(Date.parse(task.createdAt)) || schedule.due < new Date(task.createdAt).toISOString().slice(0, 10)) throw new Error('The planned date cannot be earlier than the actual creation date: ' + taskId);
     changes.push({ projectId: 'carddemo', taskId, path: `/workspace/deliveryRequirements/${index}/due`, before: task.due ?? null, after: schedule.due });
     task.due = schedule.due;
   }

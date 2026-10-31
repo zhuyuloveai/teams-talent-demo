@@ -27,24 +27,24 @@ async function openCodePath() {
 export async function nativeWorkspace() {
   const configured=await configuredProjectWorkspace(runtimeDir);
   if(configured) {await verifyProjectWorkspace(configured);return configured.directory;}
-  throw new Error('尚未配置项目工作区，请到项目概览的工作区设置中指定独立仓库路径');
+  throw new Error('No project workspace is configured. Set a separate repository path in the workspace settings of the project overview.');
 }
 export async function toolsStatus() {
   const configured=await configuredProjectWorkspace(runtimeDir);
   let launchWorkspace:string|null=null,workspaceError:string|undefined;
   if(configured)try{await verifyProjectWorkspace(configured);launchWorkspace=configured.directory;}catch(error){workspaceError=(error as Error).message;}
-  else workspaceError='尚未配置项目工作区，请到项目概览设置独立仓库路径';
-  const selection = await selectICode().catch(error => ({ path: undefined, version: undefined, source: icodeBinarySource, status: 'none' as const, notes: [...icodeBinaryNotes, 'iCode 探测失败：' + (error as Error).message] }));
+  else workspaceError='No project workspace is configured. Set a separate repository path in the project overview.';
+  const selection = await selectICode().catch(error => ({ path: undefined, version: undefined, source: icodeBinarySource, status: 'none' as const, notes: [...icodeBinaryNotes, 'iCode detection failed: ' + (error as Error).message] }));
   const installedICode = selection.status === 'ready';
   const version: string | null = selection.version ?? null;
   let opencode: string | null = null, openError: string | undefined;
   try { opencode = await openCodePath(); }
-  catch (error) { openError = 'OpenCode 探测失败：' + (error as Error).message; }
-  const unsupportedReason = openError ?? (process.platform === 'win32' && opencode && !/\.exe$/i.test(opencode) ? '检测到 OpenCode .cmd/.bat；自动启动需设置 DEMO_OPENCODE_BINARY 为 opencode.exe 的绝对路径。' : undefined);
+  catch (error) { openError = 'OpenCode detection failed: ' + (error as Error).message; }
+  const unsupportedReason = openError ?? (process.platform === 'win32' && opencode && !/\.exe$/i.test(opencode) ? 'Detected an OpenCode .cmd/.bat. To launch automatically, set DEMO_OPENCODE_BINARY to the absolute path of opencode.exe.' : undefined);
   let openVersion: string | null = null;
   if (opencode && !unsupportedReason) {
     try { openVersion = (await execute(opencode, ['--version'], { timeout: 15000, windowsHide: true })).stdout.trim(); }
-    catch (error) { openError = 'OpenCode 版本探测失败：' + (error as Error).message; }
+    catch (error) { openError = 'OpenCode version detection failed: ' + (error as Error).message; }
   }
   return {
     ...await terminalPreferences.context(),
@@ -61,44 +61,44 @@ export async function foundationSkill() {
   return { path, content, cli, origin: 'demo-local-cli' };
 }
 export async function writeContext(state: DemoState) {
-  if (!state.context) throw new Error('请先冻结项目上下文');
+  if (!state.context) throw new Error('Freeze the project context first');
   const projectWorkspace=await configuredProjectWorkspace(runtimeDir,'carddemo');
-  if(!projectWorkspace)throw new Error('请先在 Credit Card 项目概览配置独立仓库路径');
+  if(!projectWorkspace)throw new Error('Configure a separate repository path in the Credit Card project overview first');
   await verifyProjectWorkspace(projectWorkspace);
   const projectDirectory=projectWorkspace.directory;
   const chosen=state.context.selectedSkills;
   const foundation=await foundationSkill();
   const path = join(runtimeDir, 'contexts', state.context.id + '-' + createHash('sha256').update(state.context.createdAt).digest('hex').slice(0, 12) + '-v4-'+createHash('sha256').update(projectDirectory).digest('hex').slice(0,12)+'.md');
   const content = [
-    '# 信用卡消费返现 · DEMO-MKT-001', '',
-    '这是历史主需求的上下文材料。业务代码目录以本机项目工作区为准；当前任务请从任务交付节点启动，读取该节点的最新输入与工作区绑定。teams/src/cashback.ts 仅作为历史规则参考，不代表业务仓库当前实现。', '',
-    '## 需求描述', '针对白金卡客户未来 3 个月的消费，额外增加 0.5% 的消费返现。', '',
-    '## 已确认范围与待定事项', '已确认：白金卡客户、3 个月、额外返现 0.5%。具体日期、周期起算、消费范围、报名要求、门槛、上限及结算等其他规则待定。当前本地参数不替代正式业务政策。', '',
-    '## 采用依据', JSON.stringify(state.context, null, 2), '',
-    '## 本机资料', '项目：' + projectDirectory, '历史规则参考：' + join(root, 'src/cashback.ts'), '需求设计：' + join(root, 'docs/cashback-contract.md'), 'Skill：' + join(workspace, '.agents', 'skills'), '',
-    chosen.some(name=>userSkillExamples.some(skill=>skill.id===name)) ? '## 本次选用 Skill（项目与用户）' : '## 本次项目选用 Skill', ...chosen.map(name => { const example=userSkillExamples.find(skill=>skill.id===name);return example ? '- '+example.name+'（'+name+' · 用户 Skill，未核验本机安装）：'+example.content : '- ' + name + '：' + join(workspace, '.agents', 'skills', name, 'SKILL.md'); }), '',
-    '## 需求补充材料', ...state.context.materials.flatMap(m=>['### '+m.title,m.body,'']),
-    '## Agent 基础协作', 'Teams 进度同步 Skill：'+foundation.path,'通过 Teams CLI 回传进度。业务 Skill 与该基础能力分别管理。','',
-    '## 验证范围', '卡片资格、期间与金额规则可本地验证；真实服务与生产安全仍未验证。功能验收不代表生产放行。', '',
-    '上下文由 Teams 导出；提供文件不等于 iCode 已读取或已采用。'
+    '# Credit Card Spending Cashback · DEMO-MKT-001', '',
+    'This is context material for the former main requirement. The local project workspace is the source of truth for the business code directory. Start the current task from its delivery node and read that node\'s latest inputs and workspace binding. teams/src/cashback.ts is only a historical rule reference and does not represent the current implementation in the business repository.', '',
+    '## Requirement description', 'Platinum card customers get an extra 0.5% cashback on their spending over the next 3 months.', '',
+    '## Confirmed scope and open items', 'Confirmed: platinum card customers, 3 months, extra 0.5% cashback. Other rules are still open: exact dates, period start, spending scope, enrollment requirements, thresholds, caps and settlement. The current local parameters do not replace the official business policy.', '',
+    '## Adoption basis', JSON.stringify(state.context, null, 2), '',
+    '## Local materials', 'Project: ' + projectDirectory, 'Historical rule reference: ' + join(root, 'src/cashback.ts'), 'Requirement design: ' + join(root, 'docs/cashback-contract.md'), 'Skill: ' + join(workspace, '.agents', 'skills'), '',
+    chosen.some(name=>userSkillExamples.some(skill=>skill.id===name)) ? '## Skills selected for this run (project and user)' : '## Project Skills selected for this run', ...chosen.map(name => { const example=userSkillExamples.find(skill=>skill.id===name);return example ? '- '+example.name+' ('+name+' · user Skill, local installation not verified): '+example.content : '- ' + name + ': ' + join(workspace, '.agents', 'skills', name, 'SKILL.md'); }), '',
+    '## Supplementary requirement materials', ...state.context.materials.flatMap(m=>['### '+m.title,m.body,'']),
+    '## Agent base collaboration', 'Teams progress sync Skill: '+foundation.path,'Report progress back through the Teams CLI. Business Skills and this base capability are managed separately.','',
+    '## Verification scope', 'Card eligibility, period and amount rules can be verified locally; real services and production security are not verified. Functional acceptance does not mean production release.', '',
+    'Context exported by Teams. Providing a file does not mean iCode has read or adopted it.'
   ].join('\n');
   await mkdir(join(runtimeDir, 'contexts'), { recursive: true });
   let previous: string | undefined;
   try { previous = await readFile(path, 'utf8'); } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; }
-  if (previous !== undefined && previous !== content) throw new Error('已冻结上下文文件不同，请重置工作区后重新准备');
+  if (previous !== undefined && previous !== content) throw new Error('The frozen context file differs. Reset the workspace and prepare again.');
   if (previous === undefined) await atomicText(path, content);
-  return { path, sha256: createHash('sha256').update(content).digest('hex'), content, prompt: '请读取并核对这份项目上下文，先不要修改代码：' + path };
+  return { path, sha256: createHash('sha256').update(content).digest('hex'), content, prompt: 'Read and check this project context. Do not change any code yet: ' + path };
 }
 export function launch(tool: 'icode' | 'opencode', restore: boolean, requestId: string, expectedTerminal?: string) {
   const identity = JSON.stringify({ tool, restore, expectedTerminal }), previous = launched.get(requestId);
-  if (previous) { if (previous.identity !== identity) return Promise.reject(new Error('原启动请求标识已用于另一动作')); return previous.result; }
-  if (launchBusy) return Promise.reject(new Error('启动请求正在执行'));
+  if (previous) { if (previous.identity !== identity) return Promise.reject(new Error('The original launch request ID was already used for another action')); return previous.result; }
+  if (launchBusy) return Promise.reject(new Error('A launch request is already running'));
   launchBusy = true;
   const result = (async () => {
     const selection = await selectICode();
     const entry = tool === 'icode' ? (selection.status === 'ready' ? selection.path : undefined) : await openCodePath();
-    if (!entry || !await installed(entry)) throw new Error(tool + ' 尚未安装');
-    if (restore) throw new Error('历史恢复入口已移除，请新建当前工作的会话');
+    if (!entry || !await installed(entry)) throw new Error(tool + ' is not installed');
+    if (restore) throw new Error('The history restore entry was removed. Create a new session for the current work.');
     const directory=await nativeWorkspace();
     const args = tool === 'icode' ? ['-C', directory] : [directory];
     const terminal = await terminalPreferences.selected(expectedTerminal);
@@ -120,22 +120,22 @@ export async function nativeWorkDefaults(): Promise<(Omit<ProjectWorkPlan['insta
     execute(entry, ['model', '--json'], { timeout: 10000, maxBuffer: 262144, windowsHide: true }),
   ]);
   const agents = JSON.parse(agentReply.stdout), models = JSON.parse(modelReply.stdout);
-  if (!Array.isArray(agents.agents) || !Array.isArray(models.models)) throw new Error('iCode 默认配置响应无效');
+  if (!Array.isArray(agents.agents) || !Array.isArray(models.models)) throw new Error('Invalid iCode default configuration response');
   const role = agents.agents.find((agent: any) => agent.name === agents.default && agent.default === true);
-  if (!role || role.launchableAsMain !== true || role.subAgentOnly) throw new Error('iCode 默认角色不能作为主会话启动');
+  if (!role || role.launchableAsMain !== true || role.subAgentOnly) throw new Error('The iCode default role cannot be launched as a main session');
   const selector = role.model === 'active' ? models.active : role.model;
   const matches = models.models.filter((model: any) => model.id === selector || model.name === selector);
-  if (matches.length !== 1) throw new Error('iCode 默认角色的模型配置无效');
+  if (matches.length !== 1) throw new Error('Invalid model configuration for the iCode default role');
   const preference = await terminalPreferences.context();
   return { agent: role.id, agentLabel: role.displayName, model: matches[0].id, modelLabel: matches[0].name, terminal: { id: preference.selectedTerminal, name: preference.terminalName, error: preference.terminalError } };
 }
 export async function startNativeWork(input: { directory: string; agent: string; model: string; sessionId?: string; instruction: string; terminal: string; task?: { runId: string; path: string; scope: { projectId: string; taskId: string; nodeId: string }; preparedSession?: { preparationRunId: string; sourceRunId: string; sessionSha256: string; sessionId: string } } }) {
-  if (process.env.DEMO_NATIVE_DISABLED === '1') throw new Error('此验证实例未开放真实原生启动');
+  if (process.env.DEMO_NATIVE_DISABLED === '1') throw new Error('Real native launch is not enabled on this verification instance');
   const selection = await selectICode();
-  if (selection.status !== 'ready' || !selection.path) throw new Error('iCode 尚未安装');
+  if (selection.status !== 'ready' || !selection.path) throw new Error('iCode is not installed');
   const entry = selection.path;
   if (input.task) {
-    if (!/^[0-9a-f-]{36}$/i.test(input.task.runId) || input.sessionId && input.task.preparedSession?.sessionId !== input.sessionId) throw new Error('当前任务只允许新会话或已核验的同任务准备会话');
+    if (!/^[0-9a-f-]{36}$/i.test(input.task.runId) || input.sessionId && input.task.preparedSession?.sessionId !== input.sessionId) throw new Error('The current task only allows a new session or a verified preparation session of the same task');
     const output = join(runtimeDir, 'work-contexts', input.task.runId + '.native');
     await mkdir(output, { recursive: true });
     const manifest = join(output, 'manifest.json');
@@ -143,7 +143,7 @@ export async function startNativeWork(input: { directory: string; agent: string;
     const nativeEnvironment = await nativeSkillEnvironment();
     await ensureNativeTuiHooks(join(root, 'scripts/native/tui-work-hook.mjs'), join(runtimeDir, 'native-hook-backups'), nativeEnvironment.configDirectory, join(root, '..', 'demo', 'scripts/native/tui-work-hook.mjs'));
     const terminal = await terminalPreferences.selected(input.terminal);
-    const receipt = await terminalLauncher.launch({ executable: process.execPath, directory: input.directory, args: [join(root, 'scripts/native/run-project-tui.mjs'), manifest], instruction: input.sessionId ? '恢复当前任务已准备的 iCode 会话；保留阅读背景与待确认问题，等待你继续交互。' : '进入 iCode 交互界面；输入工作指令后，当前任务节点上下文将通过原生 Hook 附带。', terminal: terminal.id });
+    const receipt = await terminalLauncher.launch({ executable: process.execPath, directory: input.directory, args: [join(root, 'scripts/native/run-project-tui.mjs'), manifest], instruction: input.sessionId ? 'Resuming the prepared iCode session for the current task. Reading context and open questions are kept; waiting for you to continue.' : 'Entering the iCode interactive interface. After you enter a work instruction, the current task node context is attached through the native hook.', terminal: terminal.id });
     await atomicJson(join(output, 'terminal-receipt.json'), { runId: input.task.runId, ...input.task.scope, directory: input.directory, terminalKind: terminal.id, at: new Date().toISOString(), ...receipt });
     return receipt;
   }
@@ -154,11 +154,11 @@ export async function startNativeWork(input: { directory: string; agent: string;
 
 /** Explicit non-interactive work: no terminal and no implicit task advancement. */
 export async function startNativeCliWork(input: Omit<Parameters<typeof startNativeWork>[0], 'terminal'>) {
-  if(process.env.DEMO_NATIVE_DISABLED==='1')throw new Error('此验证实例未开放真实原生启动');
+  if(process.env.DEMO_NATIVE_DISABLED==='1')throw new Error('Real native launch is not enabled on this verification instance');
   const selection=(await selectICode());
-  if(selection.status!=='ready'||!selection.path)throw new Error('iCode 尚未安装');
+  if(selection.status!=='ready'||!selection.path)throw new Error('iCode is not installed');
   const entry=selection.path;
-  if(!input.task||!/^[0-9a-f-]{36}$/i.test(input.task.runId)||!input.task.preparedSession||input.sessionId!==input.task.preparedSession.sessionId)throw new Error('CLI 工作必须恢复当前任务已核验的准备会话');
+  if(!input.task||!/^[0-9a-f-]{36}$/i.test(input.task.runId)||!input.task.preparedSession||input.sessionId!==input.task.preparedSession.sessionId)throw new Error('CLI work must resume the verified preparation session of the current task');
   const output=join(runtimeDir,'work-contexts',input.task.runId+'.native');
   await mkdir(output,{recursive:true});
   const manifest=join(output,'manifest.json');

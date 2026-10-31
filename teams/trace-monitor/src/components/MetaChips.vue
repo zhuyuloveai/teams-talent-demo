@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 元数据 Chips：用轻量徽标展示类型/模型/工具/耗时/状态
+// Metadata chips: lightweight badges for type/model/tool/duration/status
 import { computed } from "vue";
 import {
   Cpu,
@@ -32,7 +32,7 @@ const items = computed<ChipItem[]>(() => {
     list.push({
       key: "status",
       icon: s.status === "success" ? CircleCheck : CircleClose,
-      text: s.status === "success" ? "成功" : "失败",
+      text: s.status === "success" ? "Success" : "Failed",
     });
   return list;
 });
