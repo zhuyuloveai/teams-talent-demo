@@ -1,37 +1,37 @@
-# REQ-2026-002 · 企业测试用例定义与验收
+# REQ-2026-002 · Enterprise Test Case Definition and Acceptance
 
-来源：原始需求 §9 场景矩阵与 §10 验收标准。版本 REQ-2026-002-cases-v1。以下均为待执行用例，不是已运行报告；存在冲突的期望必须关联PRD决策，禁止直接标通过。测试资产插件提供用例，Talent提供验证知识与Skill。
+Source: original requirement §9 Scenario Matrix and §10 Acceptance Criteria (Executable). Version REQ-2026-002-cases-v1. All cases below are pending execution, not reports of completed runs; conflicting expectations must be linked to a PRD decision and must not be marked as passed directly. The test asset plugin provides the cases; Talent provides the verification knowledge and Skills.
 
-## 9. 场景矩阵
+## 9. Scenario Matrix
 
-| 类型 | 场景 | 角色 | 数据/接口 | 预期 |
+| Type | Scenario | Role | Data/API | Expectation |
 |------|------|------|-----------|------|
-| 主流程 | `ACTIVE` 卡挂失 | 持卡人 | POST `/cards/4000000000005740/loss` | 201，`cardStatus=LOST`，`card_operation` 新增 1 条，通知发出 |
-| 主流程 | 挂失后申请补卡（金卡） | 持卡人 | POST `/cards/{cardNumber}/replacements` | 201，工单 `REQUESTED`，`feeAmount=50.00`，FEE 过账成功 |
-| 主流程 | 运营更新为 `SHIPPED` | 制卡运营 | POST `/admin/replacements/{id}/status` | 200，客户进度页展示快递单号与预计到达日期 |
-| 边界 | 白金卡申请补卡 | 持卡人 | 白金卡工单，`feeAmount=0.00` | `feeStatus=WAIVED`，无 FEE 过账 |
-| 边界 | 卡片刚挂失 1 秒内立即申请补卡 | 持卡人 | POST `/replacements` | 201，工单创建成功，状态 `REQUESTED` |
-| 边界 | 同一去重键在 30 分钟窗内第 3 次提交 | 持卡人 | POST `/replacements`，去重键固定 | 返回同一 `replacement_id`，工单数不变 |
-| 异常 | 已挂失卡再次挂失 | 持卡人 | POST `/loss` | 409 `CARD_ALREADY_LOST`，审计仅 1 条 LOSS 记录 |
-| 异常 | 补卡进行中再次申请 | 持卡人 | POST `/replacements` | 409 `REPLACEMENT_EXISTS` |
-| 异常 | 费用过账时 transaction-service 不可用 | 持卡人 | 停用 transaction-service 后申请补卡 | 工单存在且 `feeStatus=FEE_PENDING`，恢复后自动补收 |
-| 异常 | 运营在 `REQUESTED` 直接置 `ACTIVATED` | 制卡运营 | POST `/admin/replacements/{id}/status` | 409 `INVALID_STATE_TRANSITION` |
-| 权限 | 客户 A 查看客户 B 的补卡工单 | 持卡人 | GET `/replacements/{id}` | 404，「补卡记录不存在」 |
-| 权限 | 客服代客挂失 | 客服 | POST `/loss`，token 含 `card:loss:assist` | 201，审计 actor 为客服工号，记录核实方式 |
+| Main flow | Report an `ACTIVE` card lost | Cardholder | POST `/cards/4000000000005740/loss` | 201, `cardStatus=LOST`, 1 new `card_operation` record, notification sent |
+| Main flow | Request a replacement after the loss report (gold card) | Cardholder | POST `/cards/{cardNumber}/replacements` | 201, ticket `REQUESTED`, `feeAmount=50.00`, FEE posting succeeded |
+| Main flow | Operations updates the status to `SHIPPED` | Card production operations | POST `/admin/replacements/{id}/status` | 200, the customer progress page shows the tracking number and estimated arrival date |
+| Boundary | Platinum card requests a replacement | Cardholder | Platinum card ticket, `feeAmount=0.00` | `feeStatus=WAIVED`, no FEE posting |
+| Boundary | Request a replacement 1 second after reporting the loss | Cardholder | POST `/replacements` | 201, the ticket is created successfully with status `REQUESTED` |
+| Boundary | The same deduplication key submitted for the 3rd time within a 30-minute window | Cardholder | POST `/replacements`, fixed deduplication key | The same `replacement_id` is returned and the ticket count does not change |
+| Exception | Report an already lost card lost again | Cardholder | POST `/loss` | 409 `CARD_ALREADY_LOST`, only 1 LOSS audit record |
+| Exception | Request a replacement while one is in progress | Cardholder | POST `/replacements` | 409 `REPLACEMENT_EXISTS` |
+| Exception | transaction-service unavailable during fee posting | Cardholder | Request a replacement after stopping transaction-service | The ticket exists with `feeStatus=FEE_PENDING`, and the fee is collected automatically after recovery |
+| Exception | Operations sets `REQUESTED` directly to `ACTIVATED` | Card production operations | POST `/admin/replacements/{id}/status` | 409 `INVALID_STATE_TRANSITION` |
+| Permission | Customer A views customer B's replacement ticket | Cardholder | GET `/replacements/{id}` | 404, "No replacement record found" |
+| Permission | Customer service reports a loss on behalf of the customer | Customer service | POST `/loss` with a token containing `card:loss:assist` | 201, the audit actor is the customer service employee number and the verification method is recorded |
 
-## 10. 验收标准（可执行化）
+## 10. Acceptance Criteria (Executable)
 
-| 故事 | Given | When | Then | 数据准备 |
+| Story | Given | When | Then | Data preparation |
 |------|-------|------|------|---------|
-| US-001 | 存在 `ACTIVE` 卡 4000000000005740 | 客户确认挂失 | 卡状态立即 `LOST`，旧卡授权被拒，审计可查 | 卡与账户 00000000006 |
-| US-002 | 卡已 `LOST` | 再次提交挂失 | 409 `CARD_ALREADY_LOST`，通知仅 1 条 | 复用 US-001 数据 |
-| US-003 | 白金卡已挂失 | 提交补卡申请 | `feeAmount=0.00`、`feeStatus=WAIVED`，无 FEE 过账 | 白金卡 4000000000009999 |
-| US-004 | 金卡已挂失 | 提交补卡申请 | `feeAmount=50.00`，生成 FEE 过账，`fee_batch_id` 回填 | 金卡 4000000000005740 |
-| US-005 | 存在进行中补卡工单 | 再次提交补卡 | 409 `REPLACEMENT_EXISTS`，工单数不变 | 复用 US-004 数据 |
-| US-006 | 工单状态 `CARD_PRODUCED` | 运营更新为 `SHIPPED` 并回填单号 | 客户进度页展示快递单号与预计到达日期 | 工单 `replacement_id` |
-| US-007 | 新卡已生成未激活 | 用新卡发起交易 | 交易被拒，提示「新卡未激活」 | 新卡号 + 交易请求 |
-| US-008 | 停用 transaction-service | 提交金卡补卡申请 | 工单创建成功且 `feeStatus=FEE_PENDING`；恢复后 24 小时内补收成功 | 停用与恢复容器 |
+| US-001 | An `ACTIVE` card 4000000000005740 exists | The customer confirms the loss report | The card status becomes `LOST` immediately, authorization on the old card is declined, and the audit is queryable | Card and account 00000000006 |
+| US-002 | The card is already `LOST` | Submit the loss report again | 409 `CARD_ALREADY_LOST`, and only 1 notification exists | Reuse US-001 data |
+| US-003 | A platinum card has been reported lost | Submit a replacement request | `feeAmount=0.00`, `feeStatus=WAIVED`, no FEE posting | Platinum card 4000000000009999 |
+| US-004 | A gold card has been reported lost | Submit a replacement request | `feeAmount=50.00`, a FEE posting is created, and `fee_batch_id` is filled in | Gold card 4000000000005740 |
+| US-005 | A replacement ticket is in progress | Submit a replacement request again | 409 `REPLACEMENT_EXISTS`, and the ticket count does not change | Reuse US-004 data |
+| US-006 | The ticket status is `CARD_PRODUCED` | Operations updates it to `SHIPPED` and fills in the tracking number | The customer progress page shows the tracking number and estimated arrival date | Ticket `replacement_id` |
+| US-007 | A new card has been generated but not activated | Initiate a transaction with the new card | The transaction is declined with the message "The new card is not activated" | New card number + transaction request |
+| US-008 | transaction-service is stopped | Submit a gold card replacement request | The ticket is created successfully with `feeStatus=FEE_PENDING`; the fee is collected within 24 hours after recovery | Stop and restore the container |
 
-## 执行证据要求
+## Execution Evidence Requirements
 
-功能测试、静态工具检查、Agent Review、安全报告和问题复测分别记录实际命令/工具版本/代码commit/退出码/报告路径。Owner验收依据为这些实际结果；知识发布不表示已验收。
+Functional tests, static tool checks, Agent Review, security reports and issue re-tests each record the actual command, tool version, code commit, exit code and report path. Owner acceptance is based on these actual results; publishing knowledge does not mean the requirement is accepted.

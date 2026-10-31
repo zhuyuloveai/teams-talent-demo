@@ -1,12 +1,12 @@
 {
   "number": 19,
   "url": "https://code.bank.local/carddemo/carddemo-java-1025/pulls/19",
-  "title": "下游不可用统一映射 503",
-  "body": "账户服务宕机时，交易服务原先返回 500 并带出堆栈片段。本 PR 让出站客户端把连接失败、超时和非 2xx 统一转换为 `RemoteServiceException`，全局异常处理映射为 `503 DEPENDENCY_UNAVAILABLE`。下游 404、409 仍按原语义透传。\n\n## Validation\n\n- 新增 `TransactionControllerTest` 用例：账户服务不可用时返回 503。\n- 停掉 account-service 手工验证账单支付页面提示“服务暂不可用，请稍后重试”。",
+  "title": "Map unavailable downstream services to 503 uniformly",
+  "body": "When the account service was down, the transaction service used to return 500 with a stack trace fragment. This PR makes outbound clients translate connection failures, timeouts and non-2xx responses into `RemoteServiceException`, which global exception handling maps to `503 DEPENDENCY_UNAVAILABLE`. Downstream 404 and 409 are still passed through with their original meaning.\n\n## Validation\n\n- New `TransactionControllerTest` case: returns 503 when the account service is unavailable.\n- Stopped account-service and manually verified that the bill payment page shows \"Service temporarily unavailable, please try again later\".",
   "state": "merged",
   "mergedAt": "2026-09-25T11:05:00+08:00",
   "baseRef": "main",
-  "author": "赵宁",
+  "author": "Zhao Ning",
   "labels": [
     "error-handling"
   ]

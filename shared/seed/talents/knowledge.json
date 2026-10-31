@@ -5,35 +5,35 @@
     {
       "id": "a-platinum-cashback-page",
       "projectId": "carddemo",
-      "name": "白金卡消费返现权益说明页知识",
-      "description": "权益展示边界、待确认清单、已核实静态 Web 模块与待执行验收用例。",
+      "name": "Platinum Card Spending Cashback Benefit Page Knowledge",
+      "description": "Benefit display boundary, open questions checklist, verified static web modules and pending acceptance cases.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-27 21:00",
-      "note": "登记权益说明资料与源码核验依据；不代表需求已采用、开发或验收。",
+      "note": "Registers the benefit materials and the source-code verification basis; does not mean the requirement has been adopted, developed or accepted.",
       "delivery": "local",
       "files": [
         {
           "path": "platinum-cashback-page/Benefit Display Rules.md",
-          "title": "权益展示规则",
+          "title": "Benefit Display Rules",
           "type": "markdown"
         },
         {
           "path": "platinum-cashback-page/Open Questions Checklist.md",
-          "title": "待确认清单",
+          "title": "Open Questions Checklist",
           "type": "markdown"
         },
         {
           "path": "platinum-cashback-page/Existing Modules and UI Reference.md",
-          "title": "现有模块与UI参考",
+          "title": "Existing Modules and UI Reference",
           "type": "markdown"
         },
         {
           "path": "platinum-cashback-page/Acceptance Cases.md",
-          "title": "验收用例",
+          "title": "Acceptance Cases",
           "type": "markdown"
         },
         {
@@ -46,40 +46,40 @@
     {
       "id": "a-req-2026-001",
       "projectId": "carddemo",
-      "name": "REQ-2026-001 · 信用卡账单/消费分期节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-001 · Credit Card Statement/Purchase Installment node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-28 01:33",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-001/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -97,40 +97,40 @@
     {
       "id": "a-req-2026-002",
       "projectId": "carddemo",
-      "name": "REQ-2026-002 · 信用卡挂失与补卡节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-002 · Credit Card Loss Reporting and Replacement node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-28 01:33",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-002/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -148,40 +148,40 @@
     {
       "id": "a-req-2026-003",
       "projectId": "carddemo",
-      "name": "REQ-2026-003 · 信用卡额度调整申请与审批节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-003 · Credit Card Limit Increase Application and Approval node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-28 01:33",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-003/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -199,40 +199,40 @@
     {
       "id": "a-req-2026-004",
       "projectId": "carddemo",
-      "name": "REQ-2026-004 · 交易争议在线申请与处理节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-004 · Transaction Dispute Online Application and Handling node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-28 01:33",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-004/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -250,40 +250,40 @@
     {
       "id": "a-req-2026-001-v2",
       "projectId": "carddemo",
-      "name": "REQ-2026-001 · 信用卡账单/消费分期节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-001 · Credit Card Statement/Purchase Installment node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-28 02:14",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-001/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/v2/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/v2/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/v2/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-001/v2/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -301,40 +301,40 @@
     {
       "id": "a-req-2026-002-v2",
       "projectId": "carddemo",
-      "name": "REQ-2026-002 · 信用卡挂失与补卡节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-002 · Credit Card Loss Reporting and Replacement node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-28 02:14",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-002/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/v2/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/v2/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/v2/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-002/v2/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -352,40 +352,40 @@
     {
       "id": "a-req-2026-003-v2",
       "projectId": "carddemo",
-      "name": "REQ-2026-003 · 信用卡额度调整申请与审批节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-003 · Credit Card Limit Increase Application and Approval node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-28 02:14",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-003/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/v2/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/v2/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/v2/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-003/v2/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -403,40 +403,40 @@
     {
       "id": "a-req-2026-004-v2",
       "projectId": "carddemo",
-      "name": "REQ-2026-004 · 交易争议在线申请与处理节点资料",
-      "description": "完整原始需求、规则、差异清单、基线事实与待执行测试定义。",
+      "name": "REQ-2026-004 · Transaction Dispute Online Application and Handling node materials",
+      "description": "Full original requirement, rules, differences list, baseline facts and pending test definitions.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-28 02:14",
-      "note": "登记用户提供的需求与测试资料；原文模拟属性及待确认事项保留。",
+      "note": "Registers the requirement and test materials provided by the user; the simulated attributes and open questions of the source are kept.",
       "delivery": "local",
       "files": [
         {
           "path": "four-requirements/REQ-2026-004/Original Requirement.md",
-          "title": "原始需求",
+          "title": "Original Requirement",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/v2/Business Rules and Scope.md",
-          "title": "业务规则与范围",
+          "title": "Business Rules and Scope",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/v2/Open Questions and Differences.md",
-          "title": "待确认与差异",
+          "title": "Open Questions and Differences",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/v2/Baseline and Implementation Constraints.md",
-          "title": "基线与实现约束",
+          "title": "Baseline and Implementation Constraints",
           "type": "markdown"
         },
         {
           "path": "four-requirements/REQ-2026-004/v2/Test Definition and Acceptance.md",
-          "title": "测试定义与验收",
+          "title": "Test Definition and Acceptance",
           "type": "markdown"
         },
         {
@@ -454,27 +454,27 @@
     {
       "id": "a-docidx",
       "projectId": "carddemo",
-      "name": "设计文档检索索引",
-      "description": "按问题检索设计文档中的相关段落。",
+      "name": "Design document search index",
+      "description": "Searches the design documents for passages relevant to a question.",
       "capability": "doc-index",
-      "capabilityName": "文档 RAG 检索",
+      "capabilityName": "Document RAG search",
       "category": "index",
       "kind": "index",
       "version": 2,
       "publishedAt": "2026-10-27 09:12",
-      "note": "同步文档变化：新增 1",
+      "note": "Synced document changes: 1 added",
       "delivery": "cloud",
       "stats": [
         [
-          "文档",
+          "Documents",
           "3"
         ],
         [
-          "片段",
+          "Passages",
           "146"
         ],
         [
-          "向量维度",
+          "Vector dimensions",
           "1,024"
         ]
       ],
@@ -486,35 +486,35 @@
     {
       "id": "a-biz",
       "projectId": "carddemo",
-      "name": "信用卡营销返现业务知识",
-      "description": "业务规则目录、统一语言术语表和数据字典，每条注明出处。",
+      "name": "Credit Card Marketing Cashback Business Knowledge",
+      "description": "Business rules catalog, ubiquitous language glossary and data dictionary, each item with its source.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-26 14:40",
-      "note": "首次发布",
+      "note": "First publish",
       "delivery": "local",
       "files": [
         {
           "path": "doc-knowledge/index.md",
-          "title": "索引",
+          "title": "Index",
           "type": "markdown"
         },
         {
           "path": "doc-knowledge/Business Rules Catalog.md",
-          "title": "业务规则目录",
+          "title": "Business Rules Catalog",
           "type": "markdown"
         },
         {
           "path": "doc-knowledge/Ubiquitous Language Glossary.md",
-          "title": "统一语言术语表",
+          "title": "Ubiquitous Language Glossary",
           "type": "markdown"
         },
         {
           "path": "doc-knowledge/Data Dictionary.md",
-          "title": "数据字典",
+          "title": "Data Dictionary",
           "type": "markdown"
         }
       ]
@@ -522,15 +522,15 @@
     {
       "id": "a-std",
       "projectId": null,
-      "name": "银行编码规范要点",
-      "description": "分层、建模、接口与安全约定，以及五类检查规则。",
+      "name": "Bank coding standards essentials",
+      "description": "Layering, modelling, API and security conventions, plus five categories of check rules.",
       "capability": "doc-extract",
-      "capabilityName": "业务知识提取",
+      "capabilityName": "Business knowledge extraction",
       "category": "doc",
       "kind": "files",
       "version": 1,
       "publishedAt": "2026-10-18 14:02",
-      "note": "首次发布",
+      "note": "First publish",
       "delivery": "local",
       "agents": [
         "Code",
@@ -539,7 +539,7 @@
       "files": [
         {
           "path": "doc-knowledge/Bank Coding Standards Essentials.md",
-          "title": "银行编码规范要点",
+          "title": "Bank Coding Standards Essentials",
           "type": "markdown"
         }
       ]
@@ -547,105 +547,105 @@
     {
       "id": "a-miner",
       "projectId": "carddemo",
-      "name": "carddemo-java-1025 开发范式",
-      "description": "从已合并 PR 与代码片段挖掘的实现范式，含步骤、约束和示例代码。",
+      "name": "carddemo-java-1025 development patterns",
+      "description": "Implementation patterns mined from merged PRs and code snippets, with steps, constraints and sample code.",
       "capability": "miner-diff",
-      "capabilityName": "开发范式挖掘（代码片段）",
+      "capabilityName": "Pattern mining (code snippets)",
       "category": "code",
       "kind": "files",
       "version": 2,
       "publishedAt": "2026-10-27 18:50",
-      "note": "新增 5 个代码片段挖掘的开发范式，保留「Unified Error Codes and Exception Handling」",
+      "note": "Added 5 development patterns mined from code snippets; kept \"Unified Error Codes and Exception Handling\"",
       "delivery": "local",
       "files": [
         {
           "path": "miner/index.md",
-          "title": "范式索引",
+          "title": "Pattern index",
           "type": "markdown"
         },
         {
           "path": "miner/Spending Cashback and Reward Issuance/summary.md",
-          "title": "Spending Cashback and Reward Issuance：范式总结",
+          "title": "Spending Cashback and Reward Issuance: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/Spending Cashback and Reward Issuance/analyzer.md",
-          "title": "Spending Cashback and Reward Issuance：代码分析报告",
+          "title": "Spending Cashback and Reward Issuance: Code analysis report",
           "type": "markdown"
         },
         {
           "path": "miner/Spending Cashback and Reward Issuance/meta.json",
-          "title": "Spending Cashback and Reward Issuance：挖掘元数据",
+          "title": "Spending Cashback and Reward Issuance: Mining metadata",
           "type": "json"
         },
         {
           "path": "miner/Cross-Service Idempotent Posting and Retry/summary.md",
-          "title": "Cross-Service Idempotent Posting and Retry：范式总结",
+          "title": "Cross-Service Idempotent Posting and Retry: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/Cross-Service Idempotent Posting and Retry/analyzer.md",
-          "title": "Cross-Service Idempotent Posting and Retry：代码分析报告",
+          "title": "Cross-Service Idempotent Posting and Retry: Code analysis report",
           "type": "markdown"
         },
         {
           "path": "miner/Cross-Service Idempotent Posting and Retry/meta.json",
-          "title": "Cross-Service Idempotent Posting and Retry：挖掘元数据",
+          "title": "Cross-Service Idempotent Posting and Retry: Mining metadata",
           "type": "json"
         },
         {
           "path": "miner/Campaign Eligibility and Validity Control/summary.md",
-          "title": "Campaign Eligibility and Validity Control：范式总结",
+          "title": "Campaign Eligibility and Validity Control: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/Campaign Eligibility and Validity Control/analyzer.md",
-          "title": "Campaign Eligibility and Validity Control：代码分析报告",
+          "title": "Campaign Eligibility and Validity Control: Code analysis report",
           "type": "markdown"
         },
         {
           "path": "miner/Campaign Eligibility and Validity Control/meta.json",
-          "title": "Campaign Eligibility and Validity Control：挖掘元数据",
+          "title": "Campaign Eligibility and Validity Control: Mining metadata",
           "type": "json"
         },
         {
           "path": "miner/Account Balance Optimistic Lock Update/summary.md",
-          "title": "Account Balance Optimistic Lock Update：范式总结",
+          "title": "Account Balance Optimistic Lock Update: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/Account Balance Optimistic Lock Update/analyzer.md",
-          "title": "Account Balance Optimistic Lock Update：代码分析报告",
+          "title": "Account Balance Optimistic Lock Update: Code analysis report",
           "type": "markdown"
         },
         {
           "path": "miner/Account Balance Optimistic Lock Update/meta.json",
-          "title": "Account Balance Optimistic Lock Update：挖掘元数据",
+          "title": "Account Balance Optimistic Lock Update: Mining metadata",
           "type": "json"
         },
         {
           "path": "miner/User Maintenance and Delete Protection/summary.md",
-          "title": "User Maintenance and Delete Protection：范式总结",
+          "title": "User Maintenance and Delete Protection: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/User Maintenance and Delete Protection/analyzer.md",
-          "title": "User Maintenance and Delete Protection：代码分析报告",
+          "title": "User Maintenance and Delete Protection: Code analysis report",
           "type": "markdown"
         },
         {
           "path": "miner/User Maintenance and Delete Protection/meta.json",
-          "title": "User Maintenance and Delete Protection：挖掘元数据",
+          "title": "User Maintenance and Delete Protection: Mining metadata",
           "type": "json"
         },
         {
           "path": "miner/Unified Error Codes and Exception Handling/summary.md",
-          "title": "Unified Error Codes and Exception Handling：范式总结",
+          "title": "Unified Error Codes and Exception Handling: Pattern summary",
           "type": "markdown"
         },
         {
           "path": "miner/Unified Error Codes and Exception Handling/analyzer.md",
-          "title": "Unified Error Codes and Exception Handling：代码分析报告",
+          "title": "Unified Error Codes and Exception Handling: Code analysis report",
           "type": "markdown"
         },
         {

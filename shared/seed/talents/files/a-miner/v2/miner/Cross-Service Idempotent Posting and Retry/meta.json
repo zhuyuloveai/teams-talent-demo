@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "72965a7c-be81-4e0c-9c6a-bac8f37c7a76",
   "name": "Cross-Service Idempotent Posting and Retry",
-  "description": "跨服务奖励幂等入账开发范式：重复评估检查、账户入账去重、失败保留待处理状态及人工重试",
-  "scenario": "Cross-Service Idempotent Posting and Retry：实现跨服务奖励幂等入账，包含重复评估检查、账户入账去重、失败保留待处理状态及人工重试。",
+  "description": "Development pattern for idempotent cross-service reward posting: duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry",
+  "scenario": "Cross-Service Idempotent Posting and Retry: implement idempotent cross-service reward posting, including a duplicate-evaluation check, account posting deduplication, keeping failures in pending status, and manual retry.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {
@@ -15,27 +15,27 @@
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-idempotent-posting/snippets/01-reward-orchestration.patch",
       "archived": "input/snippets/snippets/01-reward-orchestration.patch",
-      "sha256": "f7acb9aa763d30fcf1b3e476a892db7ac101ab4bc64d946a103beedd4fdd8c77",
-      "size": 20617
+      "sha256": "19b666fca8a4ffd46e09f062a05d1e620e7defaaf9917c48fb36f73bcf523089",
+      "size": 20654
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-idempotent-posting/snippets/02-account-credit.patch",
       "archived": "input/snippets/snippets/02-account-credit.patch",
-      "sha256": "071fbe0f02e78d6c82aca33df0054c7223ce6a17bfef1b2ed3fe820f753ac256",
-      "size": 6892
+      "sha256": "0814a9a1d235bf78ff2673fc7971e165e886037c165fbf80f1dc78283fed9071",
+      "size": 6925
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-idempotent-posting/snippets/03-tests.patch",
       "archived": "input/snippets/snippets/03-tests.patch",
-      "sha256": "a30dc0641803b4c3e540b98db9d1637801cb8de15ddc3953b320ed65ec04da70",
-      "size": 13808
+      "sha256": "68e37d59a5046312be493dd7432fb43c9466be85cf5ee72761cdc2dbcb92815d",
+      "size": 13814
     }
   ],
   "template": {
     "kind": "default",
     "original": null,
     "archived": "input/template.md",
-    "sha256": "c5f0ede39dccccd21d003707cd548b9ca8bd2f76f2e20c620e01218187f2211d"
+    "sha256": "fc57ecb170cc53ad0965bf0c8e11b785095e80aebf5017c0b0cc618484abf177"
   },
   "engine": {
     "id": "icode-miner-diff",

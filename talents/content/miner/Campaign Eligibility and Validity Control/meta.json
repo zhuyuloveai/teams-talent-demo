@@ -15,21 +15,21 @@
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-campaign-eligibility/snippets/01-campaign-policy.patch",
       "archived": "input/snippets/snippets/01-campaign-policy.patch",
-      "sha256": "7f5281c7f11579d2b756a63bbf81d61e51d337ee81f2720aa82153e76f7399f0",
-      "size": 20485
+      "sha256": "7eb3e776709efca740e0ae6ffc446db361228c41c356c79f0321e4f82a9616ca",
+      "size": 20578
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-campaign-eligibility/snippets/02-tests.patch",
       "archived": "input/snippets/snippets/02-tests.patch",
-      "sha256": "ea8e9850c36b9ea83410ff2fee16ed931e618abc2154b749dfc58e0bcd3d55be",
-      "size": 10815
+      "sha256": "463947eb17a56bc75858f2cccb4d0d79cf373a59e7cc93abea0485f4a4ccfd29",
+      "size": 10810
     }
   ],
   "template": {
     "kind": "default",
     "original": null,
     "archived": "input/template.md",
-    "sha256": "c5f0ede39dccccd21d003707cd548b9ca8bd2f76f2e20c620e01218187f2211d"
+    "sha256": "fc57ecb170cc53ad0965bf0c8e11b785095e80aebf5017c0b0cc618484abf177"
   },
   "engine": {
     "id": "icode-miner-diff",

@@ -1,94 +1,94 @@
-# 餐饮消费返现开发范式总结
+# Spending Cashback and Reward Issuance: Development Pattern Summary
 
-> 场景：在既有微服务体系中新增“消费返现/奖励发放”能力 —— 活动资格校验、按比例/固定额/积分计算奖励、消费入账后触发发奖、幂等入账与失败重试。
-> 依据：`analyzer.md`（餐饮返现 CATEGORY_CASHBACK 案例分析）与代码片段 01–04。
+> Scenario: add a "spending cashback / reward issuance" capability to an existing microservice system: campaign eligibility checks, reward calculation by rate / fixed amount / points, reward issuance triggered after a purchase is posted, idempotent posting and failure retry.
+> Basis: `analyzer.md` (analysis of the dining cashback CATEGORY_CASHBACK case) and code snippets 01–04.
 
-## 一、总体范式
+## 1. Overall pattern
 
-| 维度 | 约定 |
+| Dimension | Convention |
 |---|---|
-| 架构 | 支撑域独立微服务（如 marketing-service）+ 存量域横向侵入点（transaction 入账触发、account 幂等入账） |
-| 一致性 | 无 MQ 时用“本地事务 + 同步调用 + 幂等键 + 人工重试”（ADR-009 方案 A）；营销失败不影响账务主链路 |
-| 分层 | interfaces → application → domain ← infrastructure（依赖倒置，domain 无 Spring 依赖） |
-| 幂等 | 评估侧 `(campaign_id, transaction_id)` 唯一；入账侧 `reward_credit.reward_id` 唯一，先查后写双保险 |
-| 金额/标识 | 全程 `BigDecimal(12,2)`；遗留标识零填充字符串（交易号 16 位、卡号 16 位、账户 11 位）；时间 `LocalDateTime` |
-| 并发 | 聚合根带 `@Version` 乐观锁；极端并发预算可能超发 1 笔，需对账 |
+| Architecture | A separate supporting-domain microservice (such as marketing-service) + cross-cutting touch points in existing domains (posting trigger in transaction, idempotent posting in account) |
+| Consistency | Without MQ, use "local transaction + synchronous call + idempotency key + manual retry" (ADR-009 option A); marketing failures do not affect the main accounting path |
+| Layering | interfaces → application → domain ← infrastructure (dependency inversion, domain has no Spring dependency) |
+| Idempotency | Evaluation side: `(campaign_id, transaction_id)` unique; posting side: `reward_credit.reward_id` unique; check-then-write as a double safeguard |
+| Amounts/identifiers | `BigDecimal(12,2)` throughout; legacy identifiers are zero-padded strings (transaction ID 16 digits, card number 16 digits, account 11 digits); times are `LocalDateTime` |
+| Concurrency | Aggregate roots carry an `@Version` optimistic lock; under extreme concurrency the budget may be overspent by 1 grant, which requires reconciliation |
 
-## 二、实现步骤
+## 2. Implementation steps
 
-### 步骤 1：定义活动聚合根与规则模型
+### Step 1: Define the campaign aggregate root and rule model
 
-**实现逻辑**：以聚合根承载活动规则、状态机与预算不变量；构造与编辑共用同一校验方法，按活动类型分支校验计价字段组合；状态迁移方法校验前置状态与时间/预算约束。
+**Implementation logic**: the aggregate root holds the campaign rules, state machine and budget invariants; construction and editing share one validation method that checks the pricing field combination per campaign type; state transition methods check the prior state and time/budget constraints.
 
-**规范约束**：
-- 状态机：`DRAFT → ACTIVE ⇄ PAUSED → ENDED`，ENDED 为终态，仅 DRAFT 可编辑规则。
-- 计价字段按类型自洽：固定返现要求 `fixedRewardAmount > 0`；比例返现要求 `rewardRate ∈ (0, 1]` 且预算 `> 0`（现金返现类）；积分要求 `pointsMultiplier > 0`。
-- 通用规则校验：名称非空且 ≤ 长度上限、`startAt < endAt`、最低金额/预算非负、类别码格式。
-- 业务断言统一抛 `BusinessRuleException("CODE", "message")`，不返回 null/哨兵。
+**Standards and constraints**:
+- State machine: `DRAFT → ACTIVE ⇄ PAUSED → ENDED`; ENDED is final, and rules can only be edited in DRAFT.
+- Pricing fields must be consistent with the type: fixed cashback requires `fixedRewardAmount > 0`; rate-based cashback requires `rewardRate ∈ (0, 1]` and a budget `> 0` (cash cashback types); points require `pointsMultiplier > 0`.
+- General rule checks: name not empty and ≤ the length limit, `startAt < endAt`, minimum amount/budget non-negative, category code format.
+- Business assertions always throw `BusinessRuleException("CODE", "message")`; never return null or sentinels.
 
-**注意事项**：判定/金额比较用 `compareTo/signum`，严禁 `double`；预算不变量（`consumedAmount ≤ budget`）的扣减与校验方法成对出现，扣减前必须再查一次；聚合根 `updatedAt` 语义保持一致（统一用入参 `now`，避免混用 `LocalDateTime.now()`）。
+**Notes**: use `compareTo/signum` for decisions and amount comparisons, never `double`; deduction and checks of the budget invariant (`consumedAmount ≤ budget`) come in pairs, and the budget must be checked again right before deducting; keep the meaning of the aggregate root's `updatedAt` consistent (always use the `now` parameter instead of mixing in `LocalDateTime.now()`).
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
 @Entity
 @Table(name = "campaign")
 public class Campaign {
-    // 状态机与规则字段（类型枚举、起止时间、最低金额、比例/固定额/单笔上限/每卡次数/预算/已消耗/倍数/是否需报名）
+    // State machine and rule fields (type enum, start/end time, minimum amount, rate/fixed amount/per-transaction cap/per-card count/budget/consumed/multiplier/enrollment required)
     public void applyDraft(CampaignDraft draft, LocalDateTime now) {
         if (status != DRAFT) throw new BusinessRuleException("CAMPAIGN_NOT_EDITABLE", ...);
-        validate(draft);   // 按类型分支校验
-        // 复制 draft 字段，trim / blankToNull 归一化
+        validate(draft);   // validate per type
+        // copy the draft fields, normalizing with trim / blankToNull
     }
-    public void activate(LocalDateTime now) { /* 仅 DRAFT/PAUSED；未过期；现金返现需正预算 */ }
+    public void activate(LocalDateTime now) { /* only DRAFT/PAUSED; not expired; cash cashback needs a positive budget */ }
     public boolean isActiveAt(LocalDateTime moment) { /* status==ACTIVE && [startAt, endAt) */ }
     public boolean hasBudgetFor(BigDecimal amount) { /* consumedAmount+amount <= budget */ }
-    public void consumeCashback(BigDecimal amount) { /* 校验后累加 consumedAmount */ }
+    public void consumeCashback(BigDecimal amount) { /* check, then add to consumedAmount */ }
 }
 ```
 
-**参考文件**：`marketing-service/.../domain/model/Campaign.java` 103–277 行；`CampaignDraft.java` 全部。
+**Reference files**: `marketing-service/.../domain/model/Campaign.java` lines 103–277; `CampaignDraft.java` in full.
 
-### 步骤 2：实现计价器与资格判定（纯领域服务）
+### Step 2: Implement the calculator and eligibility decision (pure domain services)
 
-**实现逻辑**：计价与资格判定做成无 Spring 依赖的静态/无状态领域服务，输入聚合根与交易上下文，输出结果对象；资格判定顺序即原因码优先级，命中即返回，便于前端直接展示原因。
+**Implementation logic**: pricing and eligibility are static/stateless domain services with no Spring dependency; they take the aggregate root and the transaction context and return a result object. The order of the eligibility checks is the priority of the reason codes; the first failing check returns, so the frontend can show the reason directly.
 
-**规范约束**：
-- 计价：现金取固定额（优先）或 `round(amount × rate, 2)`（HALF_UP），再与单笔上限 `min`；积分 `floor(amount × multiplier)`；奖励必须 > 0 否则不发。
-- 资格顺序：活动 ACTIVE 且在期内 → 账户状态 Y → 账户组匹配 → 类别匹配 → 金额 ≥ 最低 → 需报名时已报名 → 每卡次数未达上限 → 首刷类无历史奖励 → 预算充足。
-- 结果用不可变 record（如 `Evaluation(eligible, reason, reward)`），失败原因用常量代码（如 `AMOUNT_TOO_LOW`），不返回异常。
+**Standards and constraints**:
+- Pricing: cash uses the fixed amount (preferred) or `round(amount × rate, 2)` (HALF_UP), then `min` with the per-transaction cap; points use `floor(amount × multiplier)`; the reward must be > 0, otherwise nothing is issued.
+- Eligibility order: campaign ACTIVE and within its period → account status Y → account group matches → category matches → amount ≥ minimum → enrolled when enrollment is required → per-card count below the limit → no previous reward for first-purchase campaigns → sufficient budget.
+- Results are immutable records (such as `Evaluation(eligible, reason, reward)`); failure reasons are constant codes (such as `AMOUNT_TOO_LOW`), not exceptions.
 
-**注意事项**：判定顺序与文档（如 MK-ELI）一一对应，顺序即对外语义；参与判定（只看能否参与）与交易判定（完整 + 计价）可拆两个入口；原因码统一常量集中定义。
+**Notes**: the check order maps one to one to the documents (such as MK-ELI), and the order is the external meaning; participation checks (can the customer take part at all) and transaction checks (full check + pricing) can be two separate entry points; reason codes are defined centrally as constants.
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
 public final class EligibilityPolicy {
     public static final String AMOUNT_TOO_LOW = "AMOUNT_TOO_LOW";
-    public record Evaluation(boolean eligible, String reason, RewardComputation reward) { /* eligible/rejected 工厂 */ }
+    public record Evaluation(boolean eligible, String reason, RewardComputation reward) { /* eligible/rejected factories */ }
     public static Evaluation evaluateTransaction(Campaign c, AccountSnapshot a, BigDecimal amount,
                                                  String category, boolean enrolled, long rewardsOnCard, LocalDateTime now) {
-        // 按顺序逐个 if 返回 rejected(reason)；全部通过后 compute 并校验 REWARD_ZERO / BUDGET_EXHAUSTED
+        // one if per check in order, returning rejected(reason); when all pass, compute and check REWARD_ZERO / BUDGET_EXHAUSTED
     }
 }
 public final class RewardCalculator {
-    public static RewardComputation compute(Campaign c, BigDecimal amount) { /* POINTS 取整 / CASHBACK 固定额优先+封顶 */ }
+    public static RewardComputation compute(Campaign c, BigDecimal amount) { /* POINTS rounded down / CASHBACK fixed amount first + cap */ }
 }
 ```
 
-**参考文件**：`EligibilityPolicy.java` 403–470 行；`RewardCalculator.java` 495–516 行；`RewardComputation.java` 全部。
+**Reference files**: `EligibilityPolicy.java` lines 403–470; `RewardCalculator.java` lines 495–516; `RewardComputation.java` in full.
 
-### 步骤 3：建立发奖记录实体（评估幂等载体）
+### Step 3: Create the reward record entity (carrier of evaluation idempotency)
 
-**实现逻辑**：发奖记录实体承载奖励类型/金额/积分、状态机与失败原因；以业务自然键建数据库唯一约束，作为评估侧幂等的最终保障。
+**Implementation logic**: the reward record entity holds the reward type/amount/points, its state machine and the failure reason; a database unique constraint on the business natural key is the final guarantee of evaluation-side idempotency.
 
-**规范约束**：
-- 表唯一键 `(campaign_id, transaction_id)`（如 `uk_reward_campaign_txn`），建索引支持 `exists/count` 查询。
-- 状态机 `PENDING → GRANTED / FAILED`；现金返现必须最终 GRANTED 或可重试 PENDING。
-- 构造时校验奖励 > 0（金额与积分至少一项为正）；带 `@Version` 乐观锁列。
-- Flyway 迁移脚本建表（`V1__xxx_schema.sql`），表名小写下划线，字段与实体 `@Column` 一一对应。
+**Standards and constraints**:
+- Table unique key `(campaign_id, transaction_id)` (such as `uk_reward_campaign_txn`), indexed to support `exists/count` queries.
+- State machine `PENDING → GRANTED / FAILED`; cash cashback must end as GRANTED or as a retryable PENDING.
+- The constructor checks that the reward is > 0 (at least one of amount and points positive); the table has an `@Version` optimistic lock column.
+- A Flyway migration script creates the table (`V1__xxx_schema.sql`); table names are lower case with underscores and columns map one to one to the entity's `@Column`s.
 
-**注意事项**：唯一约束与代码 `exists` 检查双保险——检查防重复发奖，约束防并发竞态；状态方法（markGranted/markPending）幂等且清空/设置 failureReason。
+**Notes**: the unique constraint and the `exists` check in code are a double safeguard: the check prevents duplicate rewards, the constraint prevents concurrency races; the state methods (markGranted/markPending) are idempotent and clear/set failureReason.
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
 @Entity
 @Table(name = "reward_grant", uniqueConstraints = @UniqueConstraint(name = "uk_reward_campaign_txn",
@@ -99,23 +99,23 @@ public class RewardGrant {
 }
 ```
 
-**参考文件**：`RewardGrant.java` 75–109 行；`V1__marketing_schema.sql` 463–479 行。
+**Reference files**: `RewardGrant.java` lines 75–109; `V1__marketing_schema.sql` lines 463–479.
 
-### 步骤 4：编写评估与发放编排（应用服务）
+### Step 4: Write the evaluation and issuance orchestration (application service)
 
-**实现逻辑**：应用服务注入仓储端口、出站客户端与 `Clock`，编排“幂等检查 → 资格判定 → 扣预算 → 建记录 → 下游入账 → 保存”；下游失败转 PENDING 不中断其他活动；提供人工重试入口。
+**Implementation logic**: the application service injects repository ports, outbound clients and a `Clock`, and orchestrates "idempotency check → eligibility decision → deduct budget → create record → downstream posting → save"; a downstream failure turns into PENDING without interrupting other campaigns; a manual retry entry point is provided.
 
-**规范约束**：
-- 事务边界：`@Transactional(noRollbackFor = RemoteServiceException.class)`——下游返现失败时保留已保存的 PENDING 记录，不回滚。
-- 多活动循环：单活动不满足只 `skipped` 并继续，不抛异常中断整批。
-- 幂等：每活动先 `existsByCampaignAndTransaction`，命中记 `ALREADY_EVALUATED` 跳过；重复评估返回既有结果。
-- 重试（fulfill）：先查记录，`!isGranted()` 才重试；cashback 再次调账户（幂等键兜底），成功 `markGranted`；失败 `markPending` + 保存 + 抛异常（由 noRollbackFor 保留状态）。
-- 时间源注入 `Clock`（测试固定时间）；金额参数校验（非空、> 0、位数格式）放应用层入口。
-- 参数校验失败抛 `InvalidRequestException`（400），记录不存在抛 `NotFoundException`（404）。
+**Standards and constraints**:
+- Transaction boundary: `@Transactional(noRollbackFor = RemoteServiceException.class)`, so that when the downstream cashback fails the saved PENDING record is kept, not rolled back.
+- Multi-campaign loop: a campaign that does not qualify is only added to `skipped` and the loop continues; no exception interrupts the batch.
+- Idempotency: each campaign first checks `existsByCampaignAndTransaction`; on a hit it records `ALREADY_EVALUATED` and skips; a repeated evaluation returns the existing result.
+- Retry (fulfill): load the record first and retry only when `!isGranted()`; cashback calls the account again (the idempotency key is the safety net) and calls `markGranted` on success; on failure `markPending` + save + throw (noRollbackFor keeps the status).
+- Inject `Clock` as the time source (fixed time in tests); amount parameter validation (not null, > 0, digit format) lives at the application entry point.
+- Parameter validation failures throw `InvalidRequestException` (400); a missing record throws `NotFoundException` (404).
 
-**注意事项**：外部调用放在事务内是方案 A 的明确取舍（长事务持有锁），依赖 noRollbackFor 保护；循环内每个下游失败点都要 try/catch 转状态而不是向上抛；`Clock` 统一时间戳避免测试不可控。
+**Notes**: making the external call inside the transaction is an explicit trade-off of option A (a long transaction holds locks) and relies on noRollbackFor for protection; every downstream failure point inside the loop must try/catch and turn into a status instead of throwing upward; `Clock` keeps timestamps uniform so tests stay deterministic.
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
 @Service
 @Transactional(noRollbackFor = RemoteServiceException.class)
@@ -136,28 +136,28 @@ public class RewardEvaluationService {
             rewards.saveReward(g); campaigns.saveCampaign(c);
         }
     }
-    public RewardView fulfill(String rewardId) { /* 幂等重试：isGranted 短路 */ }
+    public RewardView fulfill(String rewardId) { /* idempotent retry: short-circuit when isGranted */ }
 }
 ```
 
-**参考文件**：`RewardEvaluationService.java` 58–142 行；`RewardController.java` 34–65 行。
+**Reference files**: `RewardEvaluationService.java` lines 58–142; `RewardController.java` lines 34–65.
 
-### 步骤 5：主链路（入账方）增加触发点，失败仅告警
+### Step 5: Add the trigger point on the main path (posting side); failures only raise an alert
 
-**实现逻辑**：在入账用例的每笔成功交易后同步调用营销评估；调用失败捕获并告警，不影响入账结果；提供配置开关整体关闭。
+**Implementation logic**: after each successful transaction in the posting use case, call marketing evaluation synchronously; catch call failures and raise an alert without affecting the posting result; provide a configuration switch to turn it off entirely.
 
-**规范约束**：
-- 调用位置：本地事务内入账成功后（同一方法体内，但异常被吞故不触发回滚）。
-- 调用封装：独立出站适配器（如 `MarketingClient`），HTTP 异常转领域 `RemoteServiceException`；入参用 record DTO。
-- 失败语义：`catch (RuntimeException)` → `log.warn`（日志只含业务标识如 transactionId），不回滚、不抛。
-- 开关：`@Value("${marketing.enabled:true}")`，关闭即停止调用（回退路径）。
-- 入账自身幂等：交易号先查后写，重复提交计 duplicates 跳过；单笔拒付不中断整批（记 REJECTED 原因码）。
+**Standards and constraints**:
+- Call location: after a successful posting inside the local transaction (in the same method body, but the exception is swallowed so it does not trigger a rollback).
+- Call wrapper: a separate outbound adapter (such as `MarketingClient`) that turns HTTP exceptions into the domain `RemoteServiceException`; parameters are record DTOs.
+- Failure semantics: `catch (RuntimeException)` → `log.warn` (the log contains only business identifiers such as transactionId); no rollback, no rethrow.
+- Switch: `@Value("${marketing.enabled:true}")`; turning it off stops the calls (rollback path).
+- Posting itself is idempotent: check the transaction ID before writing, and count repeated submissions as duplicates and skip them; a single declined transaction does not interrupt the batch (record the REJECTED reason code).
 
-**注意事项**：这是“营销不阻塞账务”的关键实现——靠“捕获异常不抛出”而非“事务提交后回调”；触发点应复用已解析的快照（卡/账户）构造命令，避免二次查询；日志不得打印卡号等敏感字段。
+**Notes**: this is the key implementation of "marketing does not block accounting": it relies on "catching the exception without rethrowing", not on "a callback after the transaction commits"; the trigger point should reuse the already resolved snapshots (card/account) to build the command and avoid a second lookup; logs must not print sensitive fields such as card numbers.
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
-// PostingService.post() 每笔成功后：
+// after each successful transaction in PostingService.post():
 private void evaluateRewards(TransactionRecord record, CardSnapshot card, PostingCommand cmd) {
     if (!marketingEnabled) return;
     try {
@@ -170,24 +170,24 @@ private void evaluateRewards(TransactionRecord record, CardSnapshot card, Postin
 }
 ```
 
-**参考文件**：`PostingService.java` 290–314 行；`MarketingClient.java` 28–56 行。
+**Reference files**: `PostingService.java` lines 290–314; `MarketingClient.java` lines 28–56.
 
-### 步骤 6：下游账户幂等入账
+### Step 6: Idempotent posting in the downstream account service
 
-**实现逻辑**：账户域新增幂等入账用例：以业务幂等键（rewardId）先查后写，记录已入账事实；余额变动封装在聚合根方法内。
+**Implementation logic**: the account domain adds an idempotent posting use case: check-then-write by the business idempotency key (rewardId) and record that the posting happened; the balance change is encapsulated in an aggregate root method.
 
-**规范约束**：
-- 幂等表：`reward_credit(reward_id PK, account_id, campaign_id, amount, created_at)`，`reward_id` 即幂等键，重复调用直接返回当前账户，不重复扣减。
-- 聚合根方法（如 `applyCashback`）：金额 > 0 校验、冲减欠款、余额可为负（溢缴/贷记）——语义注释说明方向。
-- 双写顺序：先账户后幂等记录（同一本地事务）；先查后写。
-- API：`POST /api/v1/accounts/{id}/cashback-credits`，入参 record + 校验注解。
+**Standards and constraints**:
+- Idempotency table: `reward_credit(reward_id PK, account_id, campaign_id, amount, created_at)`; `reward_id` is the idempotency key, and a repeated call returns the current account directly without deducting again.
+- Aggregate root method (such as `applyCashback`): check amount > 0, reduce the amount owed; the balance may be negative (overpayment/credit); a comment states the direction.
+- Write order: account first, then the idempotency record (same local transaction); check before writing.
+- API: `POST /api/v1/accounts/{id}/cashback-credits`, with a record parameter + validation annotations.
 
-**注意事项**：幂等键语义写进注释与文档（如 NR-REWARD-01）；余额冲减方向（减欠款）与记账（加欠款）方向相反，避免符号错误；表名/字段与遗留数据字典对应。
+**Notes**: write the meaning of the idempotency key into comments and documents (such as NR-REWARD-01); the direction of the cashback reduction (lowering the amount owed) is opposite to posting (raising the amount owed), so watch the sign; table names/columns map to the legacy data dictionary.
 
-**历史参考代码（一般化）**：
+**Generalized reference code**:
 ```java
 public Account creditCashback(String accountId, String rewardId, String campaignId, BigDecimal amount) {
-    if (rewardCredits.existsByRewardId(rewardId)) return getById(accountId);   // 幂等
+    if (rewardCredits.existsByRewardId(rewardId)) return getById(accountId);   // idempotent
     Account account = getById(accountId);
     account.applyCashback(amount);
     Account saved = accounts.saveAccount(account);
@@ -196,29 +196,29 @@ public Account creditCashback(String accountId, String rewardId, String campaign
 }
 ```
 
-**参考文件**：`AccountApplicationService.java` 71–87 行；`Account.java` 212–218 行；`RewardCredit.java` 全部；`V3__reward_credit.sql` 全部；`AccountController.java` 73–79 行。
+**Reference files**: `AccountApplicationService.java` lines 71–87; `Account.java` lines 212–218; `RewardCredit.java` in full; `V3__reward_credit.sql` in full; `AccountController.java` lines 73–79.
 
-### 步骤 7：单元测试覆盖规则分支与幂等
+### Step 7: Unit tests covering rule branches and idempotency
 
-**实现逻辑**：对纯领域服务逐分支测试原因码；对应用服务用 Mockito 桩仓储与客户端，验证发奖、PENDING、幂等跳过、重试。
+**Implementation logic**: test each reason code branch of the pure domain services; for the application service, stub the repositories and clients with Mockito and verify issuance, PENDING, idempotent skipping and retry.
 
-**规范约束**：
-- 领域测试：纯 JUnit + AssertJ，无 Spring；断言原因码常量而非字符串；覆盖每个资格分支与计价精度（HALF_UP、封顶、取整）。
-- 应用测试：`@ExtendWith(MockitoExtension.class)` + `@Mock` 端口；固定 `Clock`；`ArgumentCaptor` 验证保存内容。
-- 幂等断言：`verify(rewards, never()).saveReward(any())`（重复评估不保存）；下游未调用断言 `verify(client, never()).creditCashback(...)`。
-- 失败分支：`doThrow(RemoteServiceException)` → 断言 grant 为 PENDING 且含原因。
-- 金额断言用 `isEqualByComparingTo`（BigDecimal 等值比较）。
+**Standards and constraints**:
+- Domain tests: plain JUnit + AssertJ, no Spring; assert reason code constants rather than strings; cover every eligibility branch and pricing precision (HALF_UP, cap, rounding down).
+- Application tests: `@ExtendWith(MockitoExtension.class)` + `@Mock` ports; a fixed `Clock`; `ArgumentCaptor` to verify what is saved.
+- Idempotency assertions: `verify(rewards, never()).saveReward(any())` (a repeated evaluation saves nothing); assert the downstream was not called with `verify(client, never()).creditCashback(...)`.
+- Failure branches: `doThrow(RemoteServiceException)` → assert the grant is PENDING and has a reason.
+- Assert amounts with `isEqualByComparingTo` (BigDecimal value comparison).
 
-**注意事项**：不要断言日志或实现细节（`07-java-conventions.md` §7）；测试不得依赖外部网络/其他服务。
+**Notes**: do not assert logs or implementation details (`07-java-conventions.md` §7); tests must not depend on external networks or other services.
 
-**参考文件**：`RewardEvaluationServiceTest.java` 45–179 行；`EligibilityPolicyTest.java` 全部；`RewardCalculatorTest.java` 全部。
+**Reference files**: `RewardEvaluationServiceTest.java` lines 45–179; `EligibilityPolicyTest.java` in full; `RewardCalculatorTest.java` in full.
 
-## 三、其他概念与最佳实践
+## 3. Other concepts and best practices
 
-- **跨服务一致性的三种选择**：方案 A 同步 + 幂等键 + 重试（无中间件、链路短、资金事实不受营销影响）；方案 B Outbox + MQ（彻底解耦、可重放，成本高）；方案 C 日终批量（简单但非实时）。幂等键设计同时服务同步重试与未来事件重放，不返工（ADR-009 理由 3）。
-- **失败域分离**：消费入账是资金事实，营销是附加权益，二者失败域必须分离——评估失败只告警不回滚；返现失败保留 PENDING 可重试。
-- **幂等三层保障**：业务先查后写（应用层）→ 数据库唯一约束（并发兜底）→ 重试入口短路（已 GRANTED 不重复调用）。
-- **乐观锁**：所有聚合根/实体带 `@Version`，替代遗留 READ-UPDATE + 人工并发比对（ADR-006）；预算消耗极端并发可能超发 1 笔，需对账（设计文档 §8 风险）。
-- **架构约定**（`07-java-conventions.md`）：包结构 interfaces/application/domain/infrastructure；领域异常统一 `BusinessRuleException("CODE", msg)`；每服务独立库，禁止跨库 JOIN；REST 基础路径 `/api/v1/<资源复数>`，错误响应统一 `{"code","message","details"}`，HTTP 语义 400/404/409/503；Flyway `V1__schema` + `V2__seed`（幂等 INSERT）；标识零填充字符串，金额 BigDecimal，时间 LocalDateTime。
-- **可观测性与回退**：服务暴露 `/actuator/health`；日志不打印卡号/SSN；开关配置（如 `marketing.enabled`）提供整体回退路径；重试接口（fulfill）是 PENDING 治理的必备入口。
-- **测试分层**：纯领域单测（无 Spring）+ `@SpringBootTest`/MockMvc 端到端 + H2 双跑迁移与种子数据。
+- **Three options for cross-service consistency**: option A, synchronous + idempotency key + retry (no middleware, short path, financial facts unaffected by marketing); option B, Outbox + MQ (fully decoupled, replayable, costly); option C, end-of-day batch (simple but not real time). The idempotency key design serves both synchronous retry and future event replay, so nothing has to be redone (ADR-009 reason 3).
+- **Separate failure domains**: posting a purchase is a financial fact and marketing is an add-on benefit, so their failure domains must be separate: a failed evaluation only raises an alert and does not roll back; a failed cashback stays PENDING and can be retried.
+- **Three layers of idempotency**: business check-then-write (application layer) → database unique constraint (concurrency safety net) → short-circuit at the retry entry point (no repeated call once GRANTED).
+- **Optimistic locking**: every aggregate root/entity carries `@Version`, replacing the legacy READ-UPDATE + manual concurrency comparison (ADR-006); under extreme concurrency budget consumption may overspend by 1 grant, which requires reconciliation (design document §8 risks).
+- **Architecture conventions** (`07-java-conventions.md`): package structure interfaces/application/domain/infrastructure; domain exceptions are always `BusinessRuleException("CODE", msg)`; each service has its own database, no cross-database JOINs; REST base path `/api/v1/<plural resource>`, error responses always `{"code","message","details"}`, HTTP semantics 400/404/409/503; Flyway `V1__schema` + `V2__seed` (idempotent INSERTs); identifiers are zero-padded strings, amounts BigDecimal, times LocalDateTime.
+- **Observability and rollback**: services expose `/actuator/health`; logs never print card numbers/SSNs; a switch (such as `marketing.enabled`) provides an overall rollback path; the retry API (fulfill) is the required entry point for handling PENDING.
+- **Test layers**: pure domain unit tests (no Spring) + `@SpringBootTest`/MockMvc end to end + H2 running both migrations and seed data.

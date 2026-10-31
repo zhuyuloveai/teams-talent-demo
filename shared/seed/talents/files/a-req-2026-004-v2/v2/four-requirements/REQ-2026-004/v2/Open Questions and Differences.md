@@ -1,33 +1,33 @@
-> v2 节点资料：以下原始章节/历史基线摘录保持原意。当前本地测试参数以本目录 `test-profile.md` v2 为准；正式第 12.3 节仍待确认。不得自行把其它推断政策转成已确认。
+> v2 node materials: the original chapters and historical baseline excerpts below keep their original meaning. The current local test parameters follow `test-profile.md` v2 in this directory; the formal §12.3 items are still to be confirmed. Do not turn any other inferred policy into a confirmed one on your own.
 
-# REQ-2026-004 · 待确认与差异
+# REQ-2026-004 · Open Questions and Differences
 
-以下为资料核对清单，未声明Owner已确认。
+The following is a materials checklist; it does not claim Owner confirmation.
 
-## 内部差异与未给定协议
+## Internal Differences and Unspecified Protocols
 
-1. 允许90天内开案与交易入账后30天chargeback是两个不同窗口；31–90天案件须保留人工升级分支，不能假定可自动退单。
-2. FRAUD/UNAUTHORIZED开案前必须已有证据，§7开案示例却无证据引用；§9列POST /disputes + /evidence顺序可能与先验校验冲突，需明确临时上传/引用协议。
-3. §4.2 description至少10字符，§7请求示例“未授权交易”仅5字符，不能直接当合法测试数据。
-4. 受理1工作日、夜间02:00扫描、提前24小时提醒需要明确工作日历与时区；材料未给法定节假日数据。
-5. BR-DSP-08撤案仅OPEN/UNDER_REVIEW，同时说明PROVISIONAL_CREDIT需主管确认；确认撤案状态与已贷记冲回顺序，不能跳过资金一致性。
+1. Opening a case within 90 days and chargeback within 30 days after posting are two different windows; cases at 31–90 days must keep a manual escalation path, and an automatic chargeback cannot be assumed.
+2. FRAUD/UNAUTHORIZED requires evidence before the case is opened, yet the §7 case-opening example has no evidence reference; the POST /disputes + /evidence order listed in §9 may conflict with the upfront check, so a temporary upload/reference protocol must be specified.
+3. §4.2 requires description to be at least 10 characters. Check the §7 request example ("unauthorized transaction") against the field rules before using it as test data; do not assume request examples are valid inputs.
+4. The 1-business-day intake, the nightly 02:00 scan and the 24-hour advance reminder need an explicit business calendar and time zone; the materials provide no statutory holiday data.
+5. BR-DSP-08 allows withdrawal only in OPEN/UNDER_REVIEW, while also saying a PROVISIONAL_CREDIT case needs supervisor confirmation; confirm the withdrawal states and the order of reversing the credit, and do not skip funds consistency.
 
-## 共同边界
+## Common Boundaries
 
-- 四份§6.2要求JWT与401，§11/§12引用ADR-007的POC不做接口级强鉴权；已核实基线IAM使用双段base64+HMAC-SHA256 token，并非JWT。认证范围需明确，本地归属校验、职责分离和敏感数据保护不可伪称已满足。
-- 第5章明确给出的模拟规则和数值是本次测试输入；第12.3正式投产待确认事项继续保留。未给值及内部冲突需形成明确决策/阻塞，不由Talent资料替代Owner确认。
-- 本资料只提供知识与待执行用例；单元测试、功能验证、静态工具、Agent Review、安全与复测报告必须来自实际执行并记录命令、版本、退出码和报告。
+- §6.2 in all four documents requires JWT and 401, while §11/§12 cite ADR-007, under which the POC does not enforce strong API-level authentication; the baseline IAM has been verified to use a two-part base64 + HMAC-SHA256 token, not JWT. The authentication scope must be made explicit; local ownership checks, separation of duties and sensitive data protection must not be falsely claimed as satisfied.
+- The simulated rules and values stated in Chapter 5 are the inputs for this test; the formal §12.3 pre-production items to be confirmed remain in place. Missing values and internal conflicts need an explicit decision or blocker; Talent materials do not replace Owner confirmation.
+- These materials provide only knowledge and pending cases; unit test, functional verification, static tool, Agent Review, security and re-test reports must come from actual execution and record the command, version, exit code and report.
 
-## 原始投产待确认事项
+## Original Pre-production Items to Be Confirmed
 
-### 12.3 待确认事项
+### 12.3 Open items
 
-1. 90 天争议窗口与 SLA 时限（待确认：按卡组织规则与行内制度确认，当前为模拟值）。
-2. 临时入账的会计科目与冲回策略（待确认：财务确认科目与冲回触发条件）。
-3. 证据保留期限与隐私合规（待确认：法务确认 7 年留存与归档方式）。
-4. 与 fraud-service 的欺诈案件联动范围（待确认：本期仅预留线索字段）。
-5. 大额临时入账阈值 1000.00（待确认：主管审批范围）。
+1. The 90-day dispute window and the SLA deadlines (open: to be confirmed against card scheme rules and bank policy; currently simulated values).
+2. The accounting entries and reversal strategy for provisional credit (open: Finance to confirm the accounts and the reversal trigger conditions).
+3. The evidence retention period and privacy compliance (open: Legal to confirm the 7-year retention and archiving method).
+4. The scope of fraud case linkage with fraud-service (open: only reserved lead fields in this iteration).
+5. The high-value provisional credit threshold of 1000.00 (open: supervisor approval scope).
 
-## v2 本地已明确项与正式待确认的区别
+## v2: Locally Specified Items vs. Formal Items to Be Confirmed
 
-本目录test-profile.md是当前协调会话制定的本地测试参数，非用户/业务正式政策签字。只对其明确列出的事项按v2执行；上述原始投产待确认列表仍保留，其余缺值不能自行确认。
+The test-profile.md in this directory holds local test parameters set by the current coordination session; it is not a formal user/business policy sign-off. Apply v2 only to the items it lists explicitly; the original pre-production list above stays in place, and other missing values must not be confirmed on your own.

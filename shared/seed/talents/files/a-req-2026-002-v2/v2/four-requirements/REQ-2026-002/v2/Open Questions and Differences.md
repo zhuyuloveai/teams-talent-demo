@@ -1,32 +1,32 @@
-> v2 节点资料：以下原始章节/历史基线摘录保持原意。当前本地测试参数以本目录 `test-profile.md` v2 为准；正式第 12.3 节仍待确认。不得自行把其它推断政策转成已确认。
+> v2 node materials: the original chapters and historical baseline excerpts below keep their original meaning. The current local test parameters follow `test-profile.md` v2 in this directory; the formal §12.3 items are still to be confirmed. Do not turn any other inferred policy into a confirmed one on your own.
 
-# REQ-2026-002 · 待确认与差异
+# REQ-2026-002 · Open Questions and Differences
 
-以下为资料核对清单，未声明Owner已确认。
+The following is a materials checklist; it does not claim Owner confirmation.
 
-## 内部差异与未给定协议
+## Internal Differences and Unspecified Protocols
 
-1. §4.2重复挂失写HTTP200返回首次结果，§7错误表、§9及§10 US-002写409 CARD_ALREADY_LOST。须区分同一去重键重放与不同键对已挂失卡的新请求，并在PRD明确响应合同。
-2. card_operation.maskedCardNumber字段表为前6后4，而§6.2/§8.2要求响应、日志、事件仅后4。必须明确各存储/展示渠道策略，避免泄露完整卡号。
-3. 补卡取消限制文字为制卡前；BR状态串尾含ACTIVATED/CANCELLED。状态机应以确认的合法边表描述，不能理解为激活后可取消。
-4. 挂失/补卡请求示例缺完整必填字段（挂失idempotencyKey、补卡reason等）；补齐合同需在PRD留依据。
+1. §4.2 says a duplicate loss report returns the first result with HTTP 200, while the §7 error table, §9 and §10 US-002 say 409 CARD_ALREADY_LOST. Distinguish a replay with the same deduplication key from a new request with a different key on a card already reported lost, and state the response contract in the PRD.
+2. The card_operation.maskedCardNumber field table keeps the first 6 and last 4 digits, while §6.2/§8.2 require only the last 4 in responses, logs and events. The policy for each storage/display channel must be explicit to avoid leaking full card numbers.
+3. The replacement cancellation limit is worded as "before card production"; the BR status sequence ends with ACTIVATED/CANCELLED. Describe the state machine with a confirmed table of legal transitions; do not read it as allowing cancellation after activation.
+4. The loss/replacement request examples lack some required fields (idempotencyKey for loss reporting, reason for replacement, etc.); the PRD must record the basis for completing the contract.
 
-## 共同边界
+## Common Boundaries
 
-- 四份§6.2要求JWT与401，§11/§12引用ADR-007的POC不做接口级强鉴权；已核实基线IAM使用双段base64+HMAC-SHA256 token，并非JWT。认证范围需明确，本地归属校验、职责分离和敏感数据保护不可伪称已满足。
-- 第5章明确给出的模拟规则和数值是本次测试输入；第12.3正式投产待确认事项继续保留。未给值及内部冲突需形成明确决策/阻塞，不由Talent资料替代Owner确认。
-- 本资料只提供知识与待执行用例；单元测试、功能验证、静态工具、Agent Review、安全与复测报告必须来自实际执行并记录命令、版本、退出码和报告。
+- §6.2 in all four documents requires JWT and 401, while §11/§12 cite ADR-007, under which the POC does not enforce strong API-level authentication; the baseline IAM has been verified to use a two-part base64 + HMAC-SHA256 token, not JWT. The authentication scope must be made explicit; local ownership checks, separation of duties and sensitive data protection must not be falsely claimed as satisfied.
+- The simulated rules and values stated in Chapter 5 are the inputs for this test; the formal §12.3 pre-production items to be confirmed remain in place. Missing values and internal conflicts need an explicit decision or blocker; Talent materials do not replace Owner confirmation.
+- These materials provide only knowledge and pending cases; unit test, functional verification, static tool, Agent Review, security and re-test reports must come from actual execution and record the command, version, exit code and report.
 
-## 原始投产待确认事项
+## Original Pre-production Items to Be Confirmed
 
-### 12.3 待确认事项
+### 12.3 Items to Be Confirmed
 
-1. 挂失后是否自动发起补卡（待确认：默认人工发起，产品确认后改为可选自动）。
-2. 客户是否可取消补卡及可取消的截止状态（待确认：当前设计为制卡前可取消）。
-3. 补卡新卡号生成规则与 BIN 段（待确认：卡组织规范对齐）。
-4. 补卡费减免策略与白金卡范围（待确认：定价与产品确认）。
-5. 补卡费欠款是否计入最低还款额（待确认：账单规则负责人确认）。
+1. Whether a replacement is initiated automatically after a loss report (to be confirmed: manual initiation by default; to become an optional automatic mode after product confirmation).
+2. Whether customers can cancel a replacement and up to which status cancellation is allowed (to be confirmed: currently designed as cancellable before card production).
+3. The new card number generation rule and BIN range for replacements (to be confirmed: alignment with card network specifications).
+4. The replacement fee waiver policy and the platinum card scope (to be confirmed: pricing and product confirmation).
+5. Whether the replacement fee debt counts toward the minimum payment amount (to be confirmed: confirmation by the statement rules owner).
 
-## v2 本地已明确项与正式待确认的区别
+## v2: Locally Specified Items vs. Formal Items to Be Confirmed
 
-本目录test-profile.md是当前协调会话制定的本地测试参数，非用户/业务正式政策签字。只对其明确列出的事项按v2执行；上述原始投产待确认列表仍保留，其余缺值不能自行确认。
+The test-profile.md in this directory holds local test parameters set by the current coordination session; it is not a formal user/business policy sign-off. Apply v2 only to the items it lists explicitly; the original pre-production list above stays in place, and other missing values must not be confirmed on your own.

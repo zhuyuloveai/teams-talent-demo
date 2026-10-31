@@ -15,33 +15,33 @@
     {
       "original": "/Users/doris/work/carddemo/teams-talent-demo/workspace/carddemo-java-1025/docs/demo/miner-diff-cashback/snippets/01-domain.patch",
       "archived": "input/snippets/snippets/01-domain.patch",
-      "sha256": "d95f125400c193ec2c243827c3ad5953cee1a8674aa139e308d5d13001d45e51",
-      "size": 20474
+      "sha256": "3baf7e67d40a80a2909f7ac7ce25d06a0c931d728e7e194db5dbdf2564efb913",
+      "size": 20581
     },
     {
       "original": "/Users/doris/work/carddemo/teams-talent-demo/workspace/carddemo-java-1025/docs/demo/miner-diff-cashback/snippets/02-evaluation-and-posting.patch",
       "archived": "input/snippets/snippets/02-evaluation-and-posting.patch",
-      "sha256": "0531e15315f1fd58e6ed93d02283bab3d9adee6466f4e6c290911037fa06636f",
-      "size": 18205
+      "sha256": "3969a8704505759dea9e3f71dee2a8bdb40ec3c3c0ec307e1879e184ce826192",
+      "size": 18380
     },
     {
       "original": "/Users/doris/work/carddemo/teams-talent-demo/workspace/carddemo-java-1025/docs/demo/miner-diff-cashback/snippets/03-account-idempotency.patch",
       "archived": "input/snippets/snippets/03-account-idempotency.patch",
-      "sha256": "cd18451a0a3b5ef44360f7054b8501cae18223fcb957282e9aae1257d6d01357",
-      "size": 18438
+      "sha256": "a0f14a5a8f148d50c4c329a1189deee6432fcca3daa8a9e3f452cdeb79938480",
+      "size": 18629
     },
     {
       "original": "/Users/doris/work/carddemo/teams-talent-demo/workspace/carddemo-java-1025/docs/demo/miner-diff-cashback/snippets/04-tests.patch",
       "archived": "input/snippets/snippets/04-tests.patch",
-      "sha256": "facce6cab88c8166b6831e3e25347af7bfa844882a2604cc264a314018683668",
-      "size": 17305
+      "sha256": "4c43e5fd1275c8322b81921cb6cbcd8708fe4e5b4edf9f5668b932b224d488b7",
+      "size": 17303
     }
   ],
   "template": {
     "kind": "default",
     "original": null,
     "archived": "input/template.md",
-    "sha256": "c5f0ede39dccccd21d003707cd548b9ca8bd2f76f2e20c620e01218187f2211d"
+    "sha256": "fc57ecb170cc53ad0965bf0c8e11b785095e80aebf5017c0b0cc618484abf177"
   },
   "engine": {
     "id": "icode-miner-diff",

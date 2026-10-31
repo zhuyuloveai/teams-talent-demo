@@ -6,19 +6,19 @@
   "artifactId": "a-req-2026-001",
   "version": 1,
   "exactTitle": "Credit Card Statement/Purchase Installment",
-  "sourceSha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13",
+  "sourceSha256": "ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8",
   "origin": "scenario-fixture",
   "sourceRequirement": {
     "archive": "requirements.zip",
     "file": "REQ-2026-001-installment.md",
-    "sha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13",
+    "sha256": "ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8",
     "version": "v1.0",
     "immutable": true
   },
   "testProfile": {
     "version": "test-profile-v1",
     "path": "four-requirements/REQ-2026-001/test-profile.md",
-    "sha256": "6a399929a5b2ae127a9af1b6bfc4492ba0f0924b45634745354f05f9f05db295",
+    "sha256": "0d12b64573f876236d53ad350220c0cc4ed74f2616bbcf34b25b621cc734be02",
     "authority": "On 2026-10-28 the user asked for end-to-end verification of the requirement package; the test implementation profile was compiled by the current coordination session according to the rule precedence"
   },
   "sourceFiles": [
@@ -36,107 +36,107 @@
   "knowledgeFiles": [
     {
       "path": "four-requirements/REQ-2026-001/Original Requirement.md",
-      "sha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13"
+      "sha256": "ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8"
     },
     {
       "path": "four-requirements/REQ-2026-001/Business Rules and Scope.md",
-      "sha256": "1aff9367f6563fcb878140866215433b939a2591248da573633fcdf4e1bacfa6"
+      "sha256": "7b6579d14ae67f064dd4c45c194996b70934234479450a9b363af75b013c95d2"
     },
     {
       "path": "four-requirements/REQ-2026-001/Open Questions and Differences.md",
-      "sha256": "f464284db46d57f848aa7d45240470b0f243b737cb618b62b7df6a2e7661c75f"
+      "sha256": "b75be0d57e8222a38072f749e23eaeca4e0aa38abe9eb74e667eaea3d30ea07e"
     },
     {
       "path": "four-requirements/REQ-2026-001/Baseline and Implementation Constraints.md",
-      "sha256": "4482d28894bfad6e693fb61607c5fd5850186ad89ca1ad1d3e12ffd129e1dfb1"
+      "sha256": "f512741219d0abc847e208ff783fb0004e6047fea17709aab44448086d785f4e"
     },
     {
       "path": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
-      "sha256": "5b01434fb5df582ef34a12a9ce57ae878b3d7d8f9b8f358fe17a6d390c4d5372"
+      "sha256": "9de63aaecfe39f8b1c5c0422a2f0db0bf81407e64a6f0d4ccd3347a0652b943d"
     },
     {
       "path": "four-requirements/REQ-2026-001/test-profile.md",
-      "sha256": "6a399929a5b2ae127a9af1b6bfc4492ba0f0924b45634745354f05f9f05db295"
+      "sha256": "0d12b64573f876236d53ad350220c0cc4ed74f2616bbcf34b25b621cc734be02"
     }
   ],
   "skillPackages": [
     {
       "id": "ba-requirement-analysis",
       "version": "1.0.0",
-      "sha256": "75075279f6d8cb8205f14469f04f574c7d58f4acaef31e9fecafbf76e96be17d",
-      "contentSha256": "015dacbfe6421cff210cbf8093f2ea55bb802a97de611ebc271379f117240571"
+      "sha256": "fc6bb9993db3b56e751eb2b0ab2fbf75fd1d802d8ad01eb7dd477832274b9069",
+      "contentSha256": "7f4c8cfacd244a3efbdac24ab2169781d5c42c5f83c2d7de34e5030d55cadb2f"
     },
     {
       "id": "ba-acceptance-criteria",
       "version": "1.0.0",
-      "sha256": "8082087ea53200296623adc96d8aa013d4672c8e8975e6df12d3e1bfd1d1cf03",
-      "contentSha256": "f70a1e6209873d4181a0a7af81a729fd6155012a468dd59ab4dd508b7dd3c6cd"
+      "sha256": "a8bb2e35141fd0e0c29f36091bdc1dd2e13dd771e89685e3e0ba68c639172d19",
+      "contentSha256": "8aa4133695d30d18db50011491f0777260073340a48207ccaa37230430d403e1"
     },
     {
       "id": "bank-domain-payments",
       "version": "2.0.0",
-      "sha256": "78284b202a88c14cb8da11a6e825f373f7d9f84bc730f719c486dd70e9995727",
-      "contentSha256": "c20c598707aea7b56c795f23662f5cdf47cb01d88ec01545c344a886a7c579ef"
+      "sha256": "d4cd907e9fa1f83473fdf2318f8c8af228f1831ad0344a8191dbd513ecc32990",
+      "contentSha256": "b83c45531216b64f2983462cd06c7170b69b982c24f792ec0f64a07e249bf228"
     },
     {
       "id": "arch-solution-design",
       "version": "1.0.0",
-      "sha256": "4e8a7343030a1132ea0a26e6ed2ba39806b8407b6a8c39fc4c94892fea10f013",
-      "contentSha256": "98c9e2e25e435eaf8968713f206fc65b4dc53a9c669b4189f3b6864706c03c25"
+      "sha256": "73d92f30f78ceb984e21a5da1d7f47e705f1a4e60159d48b9a8b916a3160dfa7",
+      "contentSha256": "53af65ecbe80d2176646f92c8093344da5eb80dd723fab56bbfeabc49df4b6d8"
     },
     {
       "id": "dev-backend-service",
       "version": "1.0.0",
-      "sha256": "5c47417d64147d17cc69688a5980fdbdfcad74d2ea179c2a39d1ccb8d8d5a246",
-      "contentSha256": "3bb2a87b0a70257ca24e72959f04f62b93df22d9f7433f4ec570581ad0df3d9c"
+      "sha256": "9719baff446fa8cf932ec30abcda532bbb8bb3b9b142675ce61bf60340185036",
+      "contentSha256": "a80d82ddd9da56aebdc275e3b0fe004dd42d7c95931f0b08b969c806a1de59a2"
     },
     {
       "id": "dev-api-integration",
       "version": "1.0.0",
-      "sha256": "7db7433a219a6fa3a6026e6b0e2d2d0575a23b01645b6c0942eaf088c9de1886",
-      "contentSha256": "a9bbc4328364a8541afc27a6c03bb049ac5b56771fc63dfad2f6eb020149186f"
+      "sha256": "6b6c143d41168e2eee069b642a329f8f83fd81fe9dd760838046e23d46540c74",
+      "contentSha256": "5503b816c5f0329abd7e42c74647b53d9077012d3a5d8a36c727ce0f4144534f"
     },
     {
       "id": "dev-frontend-ui",
       "version": "1.0.0",
-      "sha256": "568bbbee2a03150a76bb74b65b0fa7da57f3c8b007c3075d6d87bf15380b20c4",
-      "contentSha256": "320ce4d6edf32bfccf52c34270c02ff892e38e11540914f76b309d881c4ef419"
+      "sha256": "cb70e55b2eeb706b2a7ab1407da37254b2d231def052a3b2c210698ff75405c7",
+      "contentSha256": "0b59c10865544900540c8ed65ed44aea2016dca7b2bb78be62099059532716cd"
     },
     {
       "id": "dev-unit-test",
       "version": "1.0.0",
-      "sha256": "89aeecba3f6b77e7d35b16ae94c2b040263ec523dd4dbbc59b91ab5fbcf1ad24",
-      "contentSha256": "bd39c84706b597982c679d40744bd3bf08794bfc0993d29bb52198b7075273ea"
+      "sha256": "df796325c7f85aee716bb5b781d458f9cba709081b79dfbe3500945ab5c6edca",
+      "contentSha256": "fe820bd5b044a7aa5b5e3a46244e617674756e14d4045bb685e39a078a56131c"
     },
     {
       "id": "dev-bank-coding-standards",
       "version": "1.0.0",
-      "sha256": "c1ecbfdf2f42f04aebd84dcde93ff05b0fb618a40df61d4434f355afbcf2fbf4",
-      "contentSha256": "545c8066f1fd98cc9d3cfdc4b5ad2edba8831c70b2305c0a0f85766485f865c3"
+      "sha256": "4afae3bdd12a3b6cea5e4d4dfc64a24d7c1c7654594d06105898d8bf3a9c1762",
+      "contentSha256": "103fb0f279fb4dfb3bd96999b8ad57b4512dd3beafa7832b555be31fcd70d117"
     },
     {
       "id": "dev-code-reviewer",
       "version": "1.0.0",
-      "sha256": "4a7be9b99629d224a6853d9af0aaa177908f2ddc47de2c08fd3c867772c28890",
-      "contentSha256": "146c22f9465777f6737633ae388833174d2967d37a56b60a414d771769a987ad"
+      "sha256": "fe065dc095ad00620e171fe70be16964f782e20e1589a46d9f7875f1f24928c1",
+      "contentSha256": "6e2e349952768d9a035baf86fedf41aa7222c8d7c45dc19c4a7df1c8eb7504cc"
     },
     {
       "id": "qa-integration-test",
       "version": "1.0.0",
-      "sha256": "b37aada52a3a905c23d286d1ebab28160c810bf00e72ce7a281fc682e223402c",
-      "contentSha256": "4e8a6017d3af0a15935f65921d71610b9de3aecec8862745eea42ea33d311386"
+      "sha256": "cb823e976d4c62ee4177fc24d91ea3c8408c229a799c75e0b5df08ffc43a8e49",
+      "contentSha256": "7f21701d53537e5b3f43958cec1f9e5c9c60765caa7b177e5469e6b03620291b"
     },
     {
       "id": "sec-scan-review",
       "version": "1.0.0",
-      "sha256": "0e10a54c173cb115cafc11ef858a4deb49a5fa804fc65e7c3c699514bca48b36",
-      "contentSha256": "73943dc70bb95fb3545f145aa54c2037ce13dc792645e0c78e277c7c480f54ae"
+      "sha256": "496c7fae16d8a74b298f0472022ca47db8750aad9066f95ca07b30dc86bcde8b",
+      "contentSha256": "05d0e849379e765e6c2b062989e3e1b20e6542f0d57d4efef4cdb3b569f4e7cf"
     },
     {
       "id": "qa-uat-support",
       "version": "1.0.0",
-      "sha256": "19852f9b24a9068a83216561c8c4e0102bf6bebd709018e46a8396f0eaf52978",
-      "contentSha256": "dd9f686f55a899ad670eddd69e72a6ce4d35605974b9caf4659d7e8b301eafee"
+      "sha256": "fdd24ac18930592e8980dada9ab9effb9b579191cc85eab5faae5279e1a2a322",
+      "contentSha256": "f2a5a17797fdde29083767e3871c946a2a8ea95aa89ecb05be704ab78d930a54"
     }
   ]
 }

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "c89e5e0d-7d84-4e9a-94cd-0ecb750e5b48",
   "name": "User Maintenance and Delete Protection",
-  "description": "用户新增、修改与删除的开发范式：类型校验、密码哈希存储、禁止自删除与保留最后一名管理员",
-  "scenario": "User Maintenance and Delete Protection：实现用户新增、修改与删除，包含用户类型校验、密码哈希处理、禁止自删除及保留最后一名管理员。",
+  "description": "Development pattern for creating, updating and deleting users: type validation, hashed password storage, no self-deletion, and keeping the last admin",
+  "scenario": "User Maintenance and Delete Protection: implement creating, updating and deleting users, including user type validation, password hashing, no self-deletion, and keeping the last admin.",
   "scenarioSource": "user",
   "mode": "diff",
   "repository": {
@@ -15,27 +15,27 @@
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-role-access/snippets/01-user-maintenance.patch",
       "archived": "input/snippets/snippets/01-user-maintenance.patch",
-      "sha256": "571138b77c96829cbe465054fa3f442fdbfc9ea2963e498911a92f23943cd398",
-      "size": 13037
+      "sha256": "1179961076663972d78d6d3c0393e58368a8037996849c68b30f40c5fd494c40",
+      "size": 13157
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-role-access/snippets/02-api-validation.patch",
       "archived": "input/snippets/snippets/02-api-validation.patch",
-      "sha256": "1abcc09b1a4fd89a88dfdcf4a1db8695aed5f7d29beb7995856b545257d17f90",
-      "size": 8441
+      "sha256": "a92c829c9343385dd19553280c51fa52581b7f90e8a54c089c0ac652254911bf",
+      "size": 8465
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-role-access/snippets/03-tests.patch",
       "archived": "input/snippets/snippets/03-tests.patch",
-      "sha256": "63a52bd4c1d13f85ed5163065bc6c5083534dda7381096e4d89476ed9c0c7849",
-      "size": 6219
+      "sha256": "819e97e4d69f215ce6593b66d91b13c64342ab026f45f6501345cc73e018ddd6",
+      "size": 6217
     }
   ],
   "template": {
     "kind": "default",
     "original": null,
     "archived": "input/template.md",
-    "sha256": "c5f0ede39dccccd21d003707cd548b9ca8bd2f76f2e20c620e01218187f2211d"
+    "sha256": "fc57ecb170cc53ad0965bf0c8e11b785095e80aebf5017c0b0cc618484abf177"
   },
   "engine": {
     "id": "icode-miner-diff",

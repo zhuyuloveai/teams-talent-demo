@@ -15,8 +15,8 @@
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-account-concurrency/snippets/01-account-update.patch",
       "archived": "input/snippets/snippets/01-account-update.patch",
-      "sha256": "dc50bf56826caffaea2a732ae7e3543c484b6f7a2d408fc399f92f1da44d7a74",
-      "size": 14600
+      "sha256": "31d2301cef6842700d4dccc5e3110b9176f88ca3665ccc1584d29912bfad451d",
+      "size": 14760
     },
     {
       "original": "/Users/doris/work/temp/docs/demo/miner-diff-account-concurrency/snippets/02-error-response.patch",
@@ -35,7 +35,7 @@
     "kind": "default",
     "original": null,
     "archived": "input/template.md",
-    "sha256": "c5f0ede39dccccd21d003707cd548b9ca8bd2f76f2e20c620e01218187f2211d"
+    "sha256": "fc57ecb170cc53ad0965bf0c8e11b785095e80aebf5017c0b0cc618484abf177"
   },
   "engine": {
     "id": "icode-miner-diff",

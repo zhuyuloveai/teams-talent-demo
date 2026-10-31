@@ -9,7 +9,7 @@ export const fourRequirementScenarios = [
     "artifactId": "a-req-2026-001",
     "version": 1,
     "sourceFile": "REQ-2026-001-installment.md",
-    "sourceSha256": "6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13",
+    "sourceSha256": "ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8",
     "manifest": "four-requirements/REQ-2026-001/provenance.json",
     "files": {
       "requirement": "four-requirements/REQ-2026-001/Original Requirement.md",
@@ -19,7 +19,7 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-001/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-001/test-profile.md"
     },
-    "creationDescription": "Business requirement ID: REQ-2026-001\nOriginal requirement SHA256: 6d6a04c8b7e5b87a17429b0125f9485ee11a96d370e2e90944f309774e479e13\nFull requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (source v1.0).\nScope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
+    "creationDescription": "Business requirement ID: REQ-2026-001\nOriginal requirement SHA256: ff96572f45e1b510018156ca0932ec98af611f39ea9599754223946adf373ee8\nFull requirement: Talents published material four-requirements/REQ-2026-001/Original Requirement.md (source v1.0).\nScope: Credit Card Statement/Purchase Installment. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-001-cases-v1",
     "cases": [
       {
@@ -96,7 +96,7 @@ export const fourRequirementScenarios = [
     "artifactId": "a-req-2026-002",
     "version": 1,
     "sourceFile": "REQ-2026-002-card-loss.md",
-    "sourceSha256": "3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9",
+    "sourceSha256": "0ee5e11722f512cde04fe2aefc044ff357dcf131345709dbf06ba0f8817a841f",
     "manifest": "four-requirements/REQ-2026-002/provenance.json",
     "files": {
       "requirement": "four-requirements/REQ-2026-002/Original Requirement.md",
@@ -106,7 +106,7 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-002/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-002/test-profile.md"
     },
-    "creationDescription": "Business requirement ID: REQ-2026-002\nOriginal requirement SHA256: 3a4ab0444d948b2b8fa2bb2cf7c71cab0e0c2573c2b8dbbeb8ae4937c85744e9\nFull requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (source v1.0).\nScope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
+    "creationDescription": "Business requirement ID: REQ-2026-002\nOriginal requirement SHA256: 0ee5e11722f512cde04fe2aefc044ff357dcf131345709dbf06ba0f8817a841f\nFull requirement: Talents published material four-requirements/REQ-2026-002/Original Requirement.md (source v1.0).\nScope: Credit Card Loss Reporting and Replacement. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-002-cases-v1",
     "cases": [
       {
@@ -183,7 +183,7 @@ export const fourRequirementScenarios = [
     "artifactId": "a-req-2026-003",
     "version": 1,
     "sourceFile": "REQ-2026-003-limit-increase.md",
-    "sourceSha256": "a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01",
+    "sourceSha256": "19fd80d4079973ee03836edd82041d429ff840baf93a540eb09d1a36377e766c",
     "manifest": "four-requirements/REQ-2026-003/provenance.json",
     "files": {
       "requirement": "four-requirements/REQ-2026-003/Original Requirement.md",
@@ -193,7 +193,7 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-003/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-003/test-profile.md"
     },
-    "creationDescription": "Business requirement ID: REQ-2026-003\nOriginal requirement SHA256: a2c7283973c6cb115e9a8da5ba0154019b9ad84bb4f852b50abbb989130b5d01\nFull requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (source v1.0).\nScope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
+    "creationDescription": "Business requirement ID: REQ-2026-003\nOriginal requirement SHA256: 19fd80d4079973ee03836edd82041d429ff840baf93a540eb09d1a36377e766c\nFull requirement: Talents published material four-requirements/REQ-2026-003/Original Requirement.md (source v1.0).\nScope: Credit Card Limit Increase Application and Approval. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-003-cases-v1",
     "cases": [
       {
@@ -270,7 +270,7 @@ export const fourRequirementScenarios = [
     "artifactId": "a-req-2026-004",
     "version": 1,
     "sourceFile": "REQ-2026-004-dispute.md",
-    "sourceSha256": "341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484",
+    "sourceSha256": "5a50a0d85149db6df99f7273ef67251ca4729945aa33245d127f6dba937bd92e",
     "manifest": "four-requirements/REQ-2026-004/provenance.json",
     "files": {
       "requirement": "four-requirements/REQ-2026-004/Original Requirement.md",
@@ -280,7 +280,7 @@ export const fourRequirementScenarios = [
       "acceptance": "four-requirements/REQ-2026-004/Test Definition and Acceptance.md",
       "profile": "four-requirements/REQ-2026-004/test-profile.md"
     },
-    "creationDescription": "Business requirement ID: REQ-2026-004\nOriginal requirement SHA256: 341b329ed87b60ccc4a241423a5f76c0243e45f5e9737269e095a72b5cec1484\nFull requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (source v1.0).\nScope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
+    "creationDescription": "Business requirement ID: REQ-2026-004\nOriginal requirement SHA256: 5a50a0d85149db6df99f7273ef67251ca4729945aa33245d127f6dba937bd92e\nFull requirement: Talents published material four-requirements/REQ-2026-004/Original Requirement.md (source v1.0).\nScope: Transaction Dispute Online Application and Handling. Read all 13 chapters of the full source before starting; this task summary does not narrow the functional, interface, data, security or acceptance scope. Chapter 5 states that its simulated values are used for this test; the §12.3 items remain open for production sign-off, internal contradictions are clarified using the material's differences list, and Owner confirmation must not be faked.",
     "casesVersion": "REQ-2026-004-cases-v1",
     "cases": [
       {
@@ -355,7 +355,7 @@ export type FourRequirementScenario = Omit<typeof fourRequirementScenarios[numbe
  cases:ReadonlyArray<{id:string;title:string;given:string;steps:string;expected:string;sourceSection:string}>;profileSha256?:string;
 };
 /** v1 is immutable. New tasks must explicitly pin both v2 and its profile digest. */
-export const fourRequirementProfileV2Sha256 = 'b77c194258178a08ffd90beccb5e0f038472e69615655440bdc2493b2b3813cd';
+export const fourRequirementProfileV2Sha256 = '31d037f280a38855b4744b14c0ba95b48b9651becf32d604986230de4de0d2ff';
 export const fourRequirementScenariosV2: readonly FourRequirementScenario[] = fourRequirementScenarios.map(source=>({
  ...source,id:source.id.replace(/-v1$/,'-v2'),artifactId:source.artifactId+'-v2',version:2,
  manifest:`four-requirements/${source.businessId}/v2/provenance.json`,

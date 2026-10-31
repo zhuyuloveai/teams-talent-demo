@@ -1,12 +1,12 @@
 {
   "number": 35,
   "url": "https://code.bank.local/carddemo/carddemo-java-1025/pulls/35",
-  "title": "校验错误保留存量提示文案",
-  "body": "业务人员反馈新系统的校验提示与旧屏幕不一致，影响对照验收。本 PR 把客户、账户、卡片维护的校验提示改回存量屏幕的原文，并在 `details` 中带字段名，前端据此定位输入框。\n\n## Validation\n\n- 逐条对照 `COACTUPC`、`COCRDUPC` 的提示文案，共 31 条。\n- 控制器测试断言 `details[].field`。",
+  "title": "Keep legacy prompt text for validation errors",
+  "body": "Business users reported that the new system's validation prompts differ from the old screens, which gets in the way of side-by-side acceptance. This PR restores the original legacy screen text for the validation prompts of customer, account and card maintenance, and includes the field name in `details` so the frontend can locate the input box.\n\n## Validation\n\n- Compared the prompt text against `COACTUPC` and `COCRDUPC` one by one, 31 in total.\n- Controller tests assert `details[].field`.",
   "state": "merged",
   "mergedAt": "2026-10-03T16:45:00+08:00",
   "baseRef": "main",
-  "author": "陈晨",
+  "author": "Chen Chen",
   "labels": [
     "validation"
   ]

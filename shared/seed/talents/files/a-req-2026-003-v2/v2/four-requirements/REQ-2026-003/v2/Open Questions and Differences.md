@@ -1,32 +1,32 @@
-> v2 节点资料：以下原始章节/历史基线摘录保持原意。当前本地测试参数以本目录 `test-profile.md` v2 为准；正式第 12.3 节仍待确认。不得自行把其它推断政策转成已确认。
+> v2 node materials: the original chapters and historical baseline excerpts below keep their original meaning. The current local test parameters follow `test-profile.md` v2 in this directory; the formal §12.3 items are still to be confirmed. Do not turn any other inferred policy into a confirmed one on your own.
 
-# REQ-2026-003 · 待确认与差异
+# REQ-2026-003 · Open Questions and Differences
 
-以下为资料核对清单，未声明Owner已确认。
+The following is a materials checklist; it does not claim Owner confirmation.
 
-## 内部差异与未给定协议
+## Internal Differences and Unspecified Protocols
 
-1. §5 BR-LIM-05写超过当前额度2倍，但验证例8000→20000.01不是临界点；§9/§10明确16000.01才是8000的2倍+0.01。保留原示例并标注边界差异。
-2. §4.2 decisionNote字段标必填，文字为拒绝时必填；需明确通过时是否可空。
-3. SoD角色关系与本地U/A角色及现有HMAC token合同需设计确认，不能只按前端传入actor放行。
-4. 材料>2倍必填；产品上限示例25000与双人审批规则同时生效，不能把预审允许解释为无需材料/第二审批人。
+1. §5 BR-LIM-05 says more than 2x the current limit, but its verification example 8000→20000.01 is not the boundary; §9/§10 make clear that 16000.01 is 2x 8000 + 0.01. Keep the original example and flag the boundary difference.
+2. §4.2 marks the decisionNote field as required, while its text says required on rejection; state whether it may be empty on approval.
+3. The SoD role relationships, the local U/A roles and the existing HMAC token contract need design confirmation; do not allow an action based only on an actor passed in from the front end.
+4. Documents are required above 2x; the product maximum example of 25000 and the dual approval rule apply at the same time; do not read a pre-review pass as meaning no documents or second approver are needed.
 
-## 共同边界
+## Common Boundaries
 
-- 四份§6.2要求JWT与401，§11/§12引用ADR-007的POC不做接口级强鉴权；已核实基线IAM使用双段base64+HMAC-SHA256 token，并非JWT。认证范围需明确，本地归属校验、职责分离和敏感数据保护不可伪称已满足。
-- 第5章明确给出的模拟规则和数值是本次测试输入；第12.3正式投产待确认事项继续保留。未给值及内部冲突需形成明确决策/阻塞，不由Talent资料替代Owner确认。
-- 本资料只提供知识与待执行用例；单元测试、功能验证、静态工具、Agent Review、安全与复测报告必须来自实际执行并记录命令、版本、退出码和报告。
+- §6.2 in all four documents requires JWT and 401, while §11/§12 cite ADR-007, under which the POC does not enforce strong API-level authentication; the baseline IAM has been verified to use a two-part base64 + HMAC-SHA256 token, not JWT. The authentication scope must be made explicit; local ownership checks, separation of duties and sensitive data protection must not be falsely claimed as satisfied.
+- The simulated rules and values stated in Chapter 5 are the inputs for this test; the formal §12.3 pre-production items to be confirmed remain in place. Missing values and internal conflicts need an explicit decision or blocker; Talent materials do not replace Owner confirmation.
+- These materials provide only knowledge and pending cases; unit test, functional verification, static tool, Agent Review, security and re-test reports must come from actual execution and record the command, version, exit code and report.
 
-## 原始投产待确认事项
+## Original Pre-production Items to Be Confirmed
 
-### 12.3 待确认事项
+### 12.3 Open items
 
-1. 提额资格规则的具体阈值（待确认：风控出具正式规则表，当前为模拟值）。
-2. 是否需要征信查询或外部数据源（待确认：风险政策确认，本期不接）。
-3. 双人审批阈值的计算口径（待确认：当前按当前额度 2 倍）。
-4. 审批角色与权限矩阵（待确认：与 IAM/RBAC 对齐后落库）。
-5. 收入材料保留期限（待确认：当前设计为 2 年后归档删除，法务复核）。
+1. The specific thresholds of the limit increase eligibility rules (open: risk control to issue the formal rule table; currently simulated values).
+2. Whether a credit bureau query or external data source is required (open: risk policy to confirm; no integration in this iteration).
+3. The calculation basis for the dual approval threshold (open: currently 2x the current limit).
+4. The approval roles and permission matrix (open: to be persisted after alignment with IAM/RBAC).
+5. The retention period for income documents (open: currently designed to be archived and deleted after 2 years, subject to legal review).
 
-## v2 本地已明确项与正式待确认的区别
+## v2: Locally Specified Items vs. Formal Items to Be Confirmed
 
-本目录test-profile.md是当前协调会话制定的本地测试参数，非用户/业务正式政策签字。只对其明确列出的事项按v2执行；上述原始投产待确认列表仍保留，其余缺值不能自行确认。
+The test-profile.md in this directory holds local test parameters set by the current coordination session; it is not a formal user/business policy sign-off. Apply v2 only to the items it lists explicitly; the original pre-production list above stays in place, and other missing values must not be confirmed on your own.

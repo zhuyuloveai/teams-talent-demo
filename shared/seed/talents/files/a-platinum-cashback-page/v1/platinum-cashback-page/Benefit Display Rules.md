@@ -1,20 +1,20 @@
-# 白金卡消费返现权益说明页：展示规则
+# Platinum Card Spending Cashback Benefit Page: Display Rules
 
-本资料对应 Credit Card 项目的同名需求。它是需求澄清与实现的输入，不是已确认的 PRD、已执行检查或已验收成果。任务实际说明若有增删或与本文冲突，先向 Owner 确认；不能据标题相同直接宣称本资料已被采用。
+This material belongs to the requirement with the same name in the Credit Card project. It is input for requirement clarification and implementation, not a confirmed PRD, an executed check or an accepted result. If the actual task description adds, removes or conflicts with anything here, confirm with the Owner first; do not claim this material has been adopted just because the title matches.
 
-## 已明确的业务与展示范围
+## Confirmed business and display scope
 
-- 在信用卡详情增加“消费返现权益”入口。白金卡客户可见，已明确为非白金卡的客户不可见。
-- 说明页分别展示适用客户、期限、比例：白金卡、未来 3 个月、额外 0.5%。额外比例与基础权益应清楚区分，不能把“额外”改成总返现比例。
-- 已确认内容与待确认内容分组展示。日期起算未定，所以“未来 3 个月”只能作为期限说明，不能擅自计算起止日期、倒计时或承诺结束日。
-- 本次交付仅包含权益入口和说明页，不新增活动报名、营销资格执行、返现计算、奖励评估或入账操作。
+- Add a "Spending cashback benefit" entry to the credit card details. It is visible to platinum card customers and hidden for customers confirmed as non-platinum.
+- The description page shows eligible customers, period and rate separately: platinum card, next 3 months, extra 0.5%. The extra rate must be clearly distinguished from the base benefit; do not turn "extra" into the total cashback rate.
+- Confirmed and to-be-confirmed content are shown in separate groups. The start date is not set, so "next 3 months" can only describe the period; do not calculate start/end dates, show a countdown or promise an end date.
+- This delivery includes only the benefit entry and the description page. It adds no campaign enrollment, marketing eligibility execution, cashback calculation, reward evaluation or posting.
 
-## 边界与异常
+## Boundaries and error cases
 
-“不是白金卡”与“资格数据缺失”是不同情况。当前卡片接口未提供白金等级字段，资格来源及缺失时的展示需在 PRD/设计中明确，不能把缺失值当成有资格，也不能用卡号、卡面姓名或 activeStatus 推断白金等级。
+"Not a platinum card" and "eligibility data missing" are different cases. The current card API has no platinum tier field, so the eligibility source and the display when it is missing must be stated in the PRD/design. A missing value must not be treated as eligible, and the platinum tier must not be inferred from the card number, embossed name or activeStatus.
 
-活动日期起算、消费范围、返现上限、金额舍入、到账时间、退款口径尚未确认。说明页应如实表示待确认；不展示从既有活动种子值、系统时钟或营销计算默认值推导的承诺。
+The campaign start date, spending scope, cashback cap, amount rounding, crediting time and refund treatment are not confirmed yet. The description page must state them as "To be confirmed"; do not show promises derived from existing campaign seed values, the system clock or marketing calculation defaults.
 
-## 四节点交付衔接
+## Handoff across the four nodes
 
-需求澄清产出 PRD（目标、范围、规则、验收标准、待确认项）；功能开发产出设计、代码 PR/提交、单测；验证产出功能、Review、安全报告及问题复测；Owner 对照同一 PRD/代码版本人工验收。本文不替代这些新任务产物。
+Requirement clarification produces the PRD (goals, scope, rules, acceptance criteria, open questions); Feature development produces the design, code PR/commit and unit tests; verification produces the functional, Review and security reports plus issue retests; the Owner performs manual acceptance against the same PRD/code version. This document does not replace those new task artifacts.

@@ -1,32 +1,32 @@
-> v2 节点资料：以下原始章节/历史基线摘录保持原意。当前本地测试参数以本目录 `test-profile.md` v2 为准；正式第 12.3 节仍待确认。不得自行把其它推断政策转成已确认。
+> v2 node materials: the original chapters and historical baseline excerpts below keep their original meaning. The current local test parameters follow `test-profile.md` v2 in this directory; the formal §12.3 items are still to be confirmed. Do not turn any other inferred policy into a confirmed one on your own.
 
-# REQ-2026-001 · 待确认与差异
+# REQ-2026-001 · Open Questions and Differences
 
-以下为资料核对清单，未声明Owner已确认。
+The following is a materials checklist; it does not claim Owner confirmation.
 
-## 内部差异与未给定协议
+## Internal Differences and Unspecified Protocols
 
-1. §5 BR-INS-03、术语表规定按剩余本金计手续费，但§10 US-001把1000元6期每期手续费列为5.50、总手续费33.00；§9的500元3期总手续费9.00、首期175.67也不相容。须在PRD中明确采用的计费公式和修正后的示例，原文保留。
-2. 本金按HALF_UP统一两位与§5/§10给出的1000/6=166.66、末期166.70示例存在舍入差异；须明确本金分摊与手续费分别使用的舍入策略。
-3. §4.2要求提交previewToken，但§7请求示例缺此字段；实现和测试以确认后的字段合同为准。
-4. 提前结清feeRebate策略无确定值；§5已收手续费不退与§4.2减免字段须区分，不能将待确认策略当正式定价。
+1. §5 BR-INS-03 and the glossary (§1.3) charge fees on the remaining principal, but §10 US-001 lists a per-period fee of 5.50 and total fees of 33.00 for CNY 1000 over 6 periods; the §9 figures for CNY 500 over 3 periods (total fees 9.00, first-period total 175.67) are also inconsistent. The PRD must state the fee formula adopted and the corrected examples; the source stays unchanged.
+2. Rounding principal uniformly to two decimals with HALF_UP differs from the §5/§10 example of 1000/6 = 166.66 with 166.70 for the last period; state the rounding strategy used for principal allocation and for fees separately.
+3. §4.2 requires a previewToken on submit, but the §7 request example lacks this field; implementation and tests follow the confirmed field contract.
+4. The early-settlement feeRebate policy has no fixed value; keep the §5 rule that fees already collected are not refunded separate from the §4.2 rebate field, and do not treat a policy still to be confirmed as formal pricing.
 
-## 共同边界
+## Common Boundaries
 
-- 四份§6.2要求JWT与401，§11/§12引用ADR-007的POC不做接口级强鉴权；已核实基线IAM使用双段base64+HMAC-SHA256 token，并非JWT。认证范围需明确，本地归属校验、职责分离和敏感数据保护不可伪称已满足。
-- 第5章明确给出的模拟规则和数值是本次测试输入；第12.3正式投产待确认事项继续保留。未给值及内部冲突需形成明确决策/阻塞，不由Talent资料替代Owner确认。
-- 本资料只提供知识与待执行用例；单元测试、功能验证、静态工具、Agent Review、安全与复测报告必须来自实际执行并记录命令、版本、退出码和报告。
+- §6.2 in all four documents requires JWT and 401, while §11/§12 cite ADR-007, under which the POC does not enforce strong API-level authentication; the baseline IAM has been verified to use a two-part base64 + HMAC-SHA256 token, not JWT. The authentication scope must be made explicit; local ownership checks, separation of duties and sensitive data protection must not be falsely claimed as satisfied.
+- The simulated rules and values stated in Chapter 5 are the inputs for this test; the formal §12.3 pre-production items to be confirmed remain in place. Missing values and internal conflicts need an explicit decision or blocker; Talent materials do not replace Owner confirmation.
+- These materials provide only knowledge and pending cases; unit test, functional verification, static tool, Agent Review, security and re-test reports must come from actual execution and record the command, version, exit code and report.
 
-## 原始投产待确认事项
+## Original Pre-production Items to Be Confirmed
 
-### 12.3 待确认事项
+### 12.3 Items to Be Confirmed
 
-1. 费率、违约金比例、首期生效时点（待确认：业务与定价出具正式定价表）。
-2. 分期占用额度是「剩余本金」或「总本金」（待确认：与账户/授权口径对齐）。
-3. 提前结清的手续费减免策略（待确认：是否按未到期期数比例减免）。
-4. 账单分期与单笔分期是否允许叠加（待确认：产品与风控给出叠加规则）。
-5. 单账户分期笔数上限（待确认：当前按 20 笔设计）。
+1. Fee rate, penalty fee ratio, and first-period effective time (to be confirmed: business and pricing issue a formal pricing table).
+2. Whether the installment limit occupation is "remaining principal" or "total principal" (to be confirmed: align with the account/authorization basis).
+3. The fee rebate policy for early settlement (to be confirmed: whether to rebate proportionally to unexpired periods).
+4. Whether statement installments and single-purchase installments may be combined (to be confirmed: product and risk control provide the combination rules).
+5. The cap on installment plans per account (to be confirmed: currently designed as 20).
 
-## v2 本地已明确项与正式待确认的区别
+## v2: Locally Specified Items vs. Formal Items to Be Confirmed
 
-本目录test-profile.md是当前协调会话制定的本地测试参数，非用户/业务正式政策签字。只对其明确列出的事项按v2执行；上述原始投产待确认列表仍保留，其余缺值不能自行确认。
+The test-profile.md in this directory holds local test parameters set by the current coordination session; it is not a formal user/business policy sign-off. Apply v2 only to the items it lists explicitly; the original pre-production list above stays in place, and other missing values must not be confirmed on your own.
