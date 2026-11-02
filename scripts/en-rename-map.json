@@ -17,9 +17,9 @@
   "改进建议.md": "Improvement Suggestions.md",
   "Skill改进-dev-api-integration.md": "Skill Improvement - dev-api-integration.md",
   "Skill改进-dev-backend-service.md": "Skill Improvement - dev-backend-service.md",
-  "启动演示.command": "Start Demo.command",
-  "停止演示.command": "Stop Demo.command",
-  "重置任务.command": "Reset Task.command"
+  "启动演示.command": "start-demo.command",
+  "停止演示.command": "stop-demo.command",
+  "重置任务.command": "Reset-task.command"
  },
  "dirs": {
   "消费返现与奖励发放": "Spending Cashback and Reward Issuance",
