@@ -40,7 +40,7 @@ npm run setup      # npm ci for Teams and for Talents
 npm run dev        # build and start both; Ctrl+C stops both
 ```
 
-- Background start/stop: `npm start` / `npm stop`. On macOS you can also double-click `Start Demo.command` / `Stop Demo.command`; on Windows use `start-demo.cmd`.
+- Background start/stop: `npm start` / `npm stop`. On macOS you can also double-click `start-demo.command` / `stop-demo.command`; on Windows use `start-demo.cmd`.
 - Start one side only: `cd teams && npm run dev`, or `cd talents && npm run dev`. When the other side is not running, the committed initial data in `shared/seed/` is used.
 
 Task traceability keeps CLI progress and the native session transcript. iCode started by Teams no longer enables OTLP Trace, so you do not need to install a Trace service or exporter.
@@ -180,7 +180,7 @@ npm run reset:task -- --restore "/absolute/path/to/task-reset-backups/backup-id"
 
 Before restoring, also check the preview and end the target session; changes made after the backup are checked for conflicts. To include Teams CLI receipts from a custom directory, add `--receipt-root` with an absolute directory; it is still limited to the exact project and task.
 
-The macOS launcher is `./Reset Task.command` and the Windows launcher is `reset-task.cmd`. They take the same arguments as the command above, and with no arguments they only show help. You can also run `npm run reset:task -- …` inside `teams/`. The launchers use the existing local configuration; they do not install dependencies or pick a task.
+The macOS launcher is `./Reset-task.command` and the Windows launcher is `reset-task.cmd`. They take the same arguments as the command above, and with no arguments they only show help. You can also run `npm run reset:task -- …` inside `teams/`. The launchers use the existing local configuration; they do not install dependencies or pick a task.
 
 ## How data flows
 
