@@ -35,7 +35,8 @@ const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(valu
 export function resolveProjectWork(state: DemoState, data: Presentation, input: ProjectWorkSelection) {
   if (!input || typeof input.projectId !== 'string' || !Object.hasOwn(stageNames, input.tab)) throw new DomainError('Invalid project work location', 400);
   const target: ProjectWorkSelection = { projectId: input.projectId, tab: input.tab };
-  const requirement = deliveryRequirement(state, input.projectId, input.taskId ?? input.requirementId ?? (input.projectId==='carddemo'&&input.tab==='delivery'?'DEMO-MKT-001':undefined));
+  // requirementId is echoed back as context; only taskId (or the CardDemo delivery tab) identifies a delivery requirement.
+  const requirement = deliveryRequirement(state, input.projectId, input.taskId ?? (input.projectId === 'carddemo' && input.tab === 'delivery' ? 'DEMO-MKT-001' : undefined));
   if (requirement) {
     if (input.taskId && input.requirementId && input.taskId !== input.requirementId) throw new DomainError('Task and requirement IDs do not match', 400);
     const nodeId = input.nodeId ?? requirementNode(requirement);

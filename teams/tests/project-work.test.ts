@@ -11,7 +11,7 @@ import { updateWorkspace } from '../src/workspace.js';
 import { readFixtures } from '../server/http-shared.js';
 import { ProjectWorkService, resolveProjectWork, type WorkTransport } from '../server/project-work.js';
 const sessionId='6b82c08d-eb3b-4bdc-b373-54fed16a7fcd',workspace=tmpdir();
-import { createDeliveryRequirement } from '../src/delivery-requirements.js';
+import { createDeliveryRequirement, deliveryRequirement } from '../src/delivery-requirements.js';
 const fixtures = await readFixtures();
 function workingMain(role:'owner'|'member'='member',directory:string){execFileSync('git',['init','-q',directory]);const state=initialState();state.assigned=true;state.assigneeId=role;state.stage='assigned';migrateMainDelivery(state);state.workspace.deliveryRequirements!.find(task=>task.id==='DEMO-MKT-001')!.workDirectory=directory;return state;}
 function transport() {
@@ -33,6 +33,14 @@ test('work resolves precise Card/Teams/new-project scope and does not substitute
     state=updateWorkspace(state,'project.create','owner',p);
     const created=await service.plan('member',{projectId:p.id,tab:'content'});assert.equal(created.history,undefined);assert.equal(created.target.taskId,undefined);assert.equal(created.directory.valid,false);
   }finally{await rm(dir,{recursive:true,force:true});}
+});
+test('project-level CardDemo work keeps its own target and does not inherit the main requirement', () => {
+  const state=initialState();state.assigned=true;state.assigneeId='wang';state.stage='assigned';migrateMainDelivery(state);
+  const first=resolveProjectWork(state,fixtures,{projectId:'carddemo',tab:'management'});
+  assert.equal(first.target.taskId,undefined);assert.equal(first.target.requirementId,'DEMO-MKT-001');
+  const reopened=resolveProjectWork(state,fixtures,first.target);
+  assert.deepEqual(reopened.target,first.target);
+  assert.equal(deliveryRequirement(state,'carddemo',reopened.target.taskId),undefined);
 });
 test('one confirmation pins scope/config, repeated request does not launch again, changed basis is rejected', async () => {
   const dir=await mkdtemp(join(tmpdir(),'work-start-')), t=transport();let state=workingMain('member',dir);
